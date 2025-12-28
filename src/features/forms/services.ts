@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase'
-import { AttendanceFormConfig, attendanceFormConfigSchema } from '@/lib/schema'
+import { attendanceFormConfigSchema, type AttendanceFormConfig } from '@/lib/schema'
 
 export async function getFormBySlug(slug: string): Promise<AttendanceFormConfig | null> {
     const { data, error } = await supabase
@@ -14,6 +14,7 @@ export async function getFormBySlug(slug: string): Promise<AttendanceFormConfig 
     const mappedData = {
         ...data,
         isActive: data.is_active,
+        allowedCategories: data.allowed_categories || ['A', 'B', 'AR'],
         createdAt: data.created_at,
         updatedAt: data.updated_at
     }
@@ -21,7 +22,16 @@ export async function getFormBySlug(slug: string): Promise<AttendanceFormConfig 
     return attendanceFormConfigSchema.parse(mappedData)
 }
 
-export async function submitAttendanceForm(formId: string, data: any) {
+export async function submitAttendanceForm(formId: string, data: {
+    participantId?: string | null;
+    status?: string;
+    permissionReason?: string | null;
+    notes?: string | null;
+    tempName?: string;
+    tempKelompok?: string;
+    tempKategori?: string;
+    tempGender?: string;
+}) {
     const payload = {
         form_id: formId,
         participant_id: data.participantId || null,
@@ -42,35 +52,75 @@ export async function submitAttendanceForm(formId: string, data: any) {
     if (error) throw error
 }
 
-export async function searchParticipants(query: string) {
-    let queryBuilder = supabase
+interface ParticipantSearchResult {
+    id: string
+    name: string
+    gender: string
+    group: string
+    category: string
+}
+
+// Map database category values to internal form values
+// Database: "GPN A", "GPN B", "AR" -> Form: "A", "B", "AR"
+function mapDbCategoryToInternal(dbCategory: string): string {
+    if (dbCategory === 'GPN A') return 'A'
+    if (dbCategory === 'GPN B') return 'B'
+    return dbCategory // "AR" stays as "AR"
+}
+
+export async function searchParticipants(
+    query: string,
+    allowedCategories?: string[]
+): Promise<ParticipantSearchResult[]> {
+    const queryBuilder = supabase
         .from('participants')
         .select(`
             id,
             name,
             gender,
-            group:group_id(value),
-            category:category_id(value)
+            groups:group_id(value),
+            categories:category_id(value)
         `)
-        .limit(10)
-
-    // If query is provided, filter by name
-    if (query && query.trim().length > 0) {
-        queryBuilder = queryBuilder.ilike('name', `%${query}%`)
-    }
+        .ilike('name', `%${query || ''}%`)
+        .limit(20)
 
     const { data, error } = await queryBuilder
 
-    if (error) {
-        console.error('Error searching participants:', error)
+    if (error || !data) {
         return []
     }
 
-    return data.map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        gender: p.gender,
-        group: p.group?.value,
-        category: p.category?.value
-    }))
+    // Supabase returns foreign key relations as objects or arrays depending on the relationship
+    const mapped: ParticipantSearchResult[] = data.map((p) => {
+        // Handle both single object and array responses from Supabase
+        const groupData = p.groups as { value: string } | { value: string }[] | null
+        const categoryData = p.categories as { value: string } | { value: string }[] | null
+
+        const groupValue = Array.isArray(groupData)
+            ? groupData[0]?.value
+            : groupData?.value
+
+        const categoryValue = Array.isArray(categoryData)
+            ? categoryData[0]?.value
+            : categoryData?.value
+
+        return {
+            id: p.id as string,
+            name: p.name as string,
+            gender: p.gender as string,
+            group: groupValue || '',
+            category: categoryValue || '', // Keep original DB value for display
+        }
+    })
+
+    // Filter by allowed categories if provided
+    // Map DB category to internal form value for comparison
+    if (allowedCategories && allowedCategories.length > 0) {
+        return mapped.filter((p) => {
+            const internalCategory = mapDbCategoryToInternal(p.category)
+            return allowedCategories.includes(internalCategory)
+        })
+    }
+
+    return mapped
 }
