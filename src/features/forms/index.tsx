@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import {
+import type {
     ColumnDef,
     ColumnFiltersState,
     SortingState,
     VisibilityState,
+} from '@tanstack/react-table'
+import {
     getCoreRowModel,
     getFilteredRowModel,
     getPaginationRowModel,
@@ -22,7 +24,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-import { AttendanceFormConfig } from '@/lib/schema'
+import type { AttendanceFormConfig } from '@/lib/schema'
 import { FormsProvider, useFormsContext } from './context/forms-context'
 import { FormActions } from './components/form-actions'
 import { FormDialogs } from './components/form-dialogs'
