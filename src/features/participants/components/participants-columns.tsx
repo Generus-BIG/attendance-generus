@@ -66,9 +66,14 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Kategori' />
     ),
-    cell: ({ row }) => (
-      <Badge variant='outline'>GPN {row.getValue('kategori')}</Badge>
-    ),
+    cell: ({ row }) => {
+      const kategori = row.getValue('kategori') as string
+      return (
+        <Badge variant='outline'>
+          {kategori === 'AR' ? 'AR' : `GPN ${kategori}`}
+        </Badge>
+      )
+    },
     filterFn: (row, id, value) => {
       return Array.isArray(value) && value.includes(row.getValue(id))
     },

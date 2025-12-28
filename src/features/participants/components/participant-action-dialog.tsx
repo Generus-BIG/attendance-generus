@@ -29,10 +29,10 @@ import { useParticipants } from './participants-provider'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi.'),
-  kelompok: z.enum(KELOMPOK, { required_error: 'Kelompok wajib dipilih.' }),
-  kategori: z.enum(KATEGORI, { required_error: 'Kategori wajib dipilih.' }),
-  gender: z.enum(GENDER, { required_error: 'Jenis kelamin wajib dipilih.' }),
-  status: z.enum(PARTICIPANT_STATUS).default('active'),
+  kelompok: z.enum(KELOMPOK, { message: 'Kelompok wajib dipilih.' }),
+  kategori: z.enum(KATEGORI, { message: 'Kategori wajib dipilih.' }),
+  gender: z.enum(GENDER, { message: 'Jenis kelamin wajib dipilih.' }),
+  status: z.enum(PARTICIPANT_STATUS),
 })
 
 type ParticipantForm = z.infer<typeof formSchema>
@@ -53,21 +53,13 @@ export function ParticipantActionDialog({
 
   const form = useForm<ParticipantForm>({
     resolver: zodResolver(formSchema),
-    defaultValues: isEdit
-      ? {
-        name: currentRow.name,
-        kelompok: currentRow.kelompok,
-        kategori: currentRow.kategori,
-        gender: currentRow.gender,
-        status: currentRow.status,
-      }
-      : {
-        name: '',
-        kelompok: undefined,
-        kategori: undefined,
-        gender: undefined,
-        status: 'active',
-      },
+    defaultValues: {
+      name: currentRow?.name ?? '',
+      kelompok: currentRow?.kelompok ?? 'BIG 1',
+      kategori: currentRow?.kategori ?? 'A',
+      gender: currentRow?.gender ?? 'L',
+      status: currentRow?.status ?? 'active',
+    },
   })
 
   const onSubmit = (values: ParticipantForm) => {
