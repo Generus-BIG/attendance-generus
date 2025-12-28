@@ -53,8 +53,8 @@ import { useApprovals } from './approvals-provider'
 
 export function PendingParticipantsTab() {
   const { setRefreshData } = useApprovals()
-  const [pendingList, setPendingList] = useState<PendingParticipant[]>([])
-  const [participants, setParticipants] = useState<Participant[]>([])
+  const [pendingList, setPendingList] = useState<PendingParticipant[]>(() => pendingParticipantService.getPending())
+  const [participants, setParticipants] = useState<Participant[]>(() => participantService.getActive())
   const [approveDialogOpen, setApproveDialogOpen] = useState(false)
   const [selectedPending, setSelectedPending] = useState<PendingParticipant | null>(null)
   const [mergeTarget, setMergeTarget] = useState<string | null>(null)
@@ -66,7 +66,6 @@ export function PendingParticipantsTab() {
   }
 
   useEffect(() => {
-    loadData()
     setRefreshData(() => loadData)
   }, [setRefreshData])
 

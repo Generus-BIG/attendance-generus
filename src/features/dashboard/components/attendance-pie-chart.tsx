@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { startOfMonth, endOfMonth } from 'date-fns'
 import {
   PieChart,
@@ -18,25 +18,23 @@ const COLORS = {
 }
 
 export function AttendancePieChart() {
-  const [data, setData] = useState<Array<{ name: string; value: number }>>([])
-
-  useEffect(() => {
+  const data = useMemo(() => {
     const now = new Date()
     const startDate = startOfMonth(now)
     const endDate = endOfMonth(now)
 
     const summary = statsService.getAttendanceSummary(startDate, endDate)
-    setData([
+    return [
       { name: 'Hadir', value: summary.hadir },
       { name: 'Izin', value: summary.izin },
-    ])
+    ]
   }, [])
 
   const total = data.reduce((sum, d) => sum + d.value, 0)
 
   if (total === 0) {
     return (
-      <div className='flex h-[300px] items-center justify-center text-muted-foreground'>
+      <div className='flex h-75 items-center justify-center text-muted-foreground'>
         Belum ada data absensi bulan ini
       </div>
     )
