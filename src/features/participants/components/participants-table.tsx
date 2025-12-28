@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { type Participant } from '@/lib/schema'
-import { participantService } from '@/lib/storage'
+import { participantService } from '../services'
 import { kelompokOptions, kategoriOptions, statusOptions } from '../data/data'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { participantsColumns as columns } from './participants-columns'
@@ -37,16 +37,24 @@ type DataTableProps = {
 export function ParticipantsTable({ search, navigate }: DataTableProps) {
   const { setRefreshData } = useParticipants()
   const [data, setData] = useState<Participant[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
 
-  // Load data from localStorage
-  const loadData = useCallback(() => {
-    const participants = participantService.getAll()
-    setData(participants)
+  // Load data from Supabase
+  const loadData = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const participants = await participantService.getAll()
+      setData(participants)
+    } catch (error) {
+      console.error('Error loading participants:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -161,7 +169,16 @@ export function ParticipantsTable({ search, navigate }: DataTableProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className='h-24 text-center'
+                >
+                  Memuat data...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

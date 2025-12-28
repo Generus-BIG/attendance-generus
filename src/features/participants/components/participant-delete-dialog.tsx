@@ -3,7 +3,7 @@
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { type Participant } from '@/lib/schema'
-import { participantService } from '@/lib/storage'
+import { participantService } from '../services'
 import { useParticipants } from './participants-provider'
 
 type ParticipantDeleteDialogProps = {
@@ -19,11 +19,16 @@ export function ParticipantDeleteDialog({
 }: ParticipantDeleteDialogProps) {
   const { refreshData } = useParticipants()
 
-  const handleDelete = () => {
-    participantService.delete(currentRow.id)
-    toast.success('Peserta berhasil dihapus')
-    refreshData()
-    onOpenChange(false)
+  const handleDelete = async () => {
+    try {
+      await participantService.delete(currentRow.id)
+      toast.success('Peserta berhasil dihapus')
+      refreshData()
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Error deleting participant:', error)
+      toast.error('Gagal menghapus peserta')
+    }
   }
 
   return (

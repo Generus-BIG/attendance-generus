@@ -24,7 +24,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { SelectDropdown } from '@/components/select-dropdown'
 import { type Participant, KELOMPOK, KATEGORI, GENDER, PARTICIPANT_STATUS } from '@/lib/schema'
-import { participantService } from '@/lib/storage'
+import { participantService } from '../services'
 import { useParticipants } from './participants-provider'
 
 const formSchema = z.object({
@@ -62,17 +62,22 @@ export function ParticipantActionDialog({
     },
   })
 
-  const onSubmit = (values: ParticipantForm) => {
-    if (isEdit) {
-      participantService.update(currentRow.id, values)
-      toast.success('Peserta berhasil diperbarui')
-    } else {
-      participantService.create(values)
-      toast.success('Peserta berhasil ditambahkan')
+  const onSubmit = async (values: ParticipantForm) => {
+    try {
+      if (isEdit) {
+        await participantService.update(currentRow.id, values)
+        toast.success('Peserta berhasil diperbarui')
+      } else {
+        await participantService.create(values)
+        toast.success('Peserta berhasil ditambahkan')
+      }
+      refreshData()
+      form.reset()
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Error saving participant:', error)
+      toast.error('Gagal menyimpan peserta')
     }
-    refreshData()
-    form.reset()
-    onOpenChange(false)
   }
 
   return (

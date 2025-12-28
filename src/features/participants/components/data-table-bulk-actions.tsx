@@ -3,7 +3,7 @@ import { type Table } from '@tanstack/react-table'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { type Participant } from '@/lib/schema'
-import { participantService } from '@/lib/storage'
+import { participantService } from '../services'
 import { useParticipants } from './participants-provider'
 
 type DataTableBulkActionsProps = {
@@ -14,20 +14,30 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   const { refreshData } = useParticipants()
   const selectedRows = table.getSelectedRowModel().rows
 
-  const handleDeactivate = () => {
-    const ids = selectedRows.map((row) => row.original.id)
-    const count = participantService.bulkUpdateStatus(ids, 'inactive')
-    toast.success(`${count} peserta berhasil dinonaktifkan`)
-    table.resetRowSelection()
-    refreshData()
+  const handleDeactivate = async () => {
+    try {
+      const ids = selectedRows.map((row) => row.original.id)
+      const count = await participantService.bulkUpdateStatus(ids, 'inactive')
+      toast.success(`${count} peserta berhasil dinonaktifkan`)
+      table.resetRowSelection()
+      refreshData()
+    } catch (error) {
+      console.error('Error deactivating participants:', error)
+      toast.error('Gagal menonaktifkan peserta')
+    }
   }
 
-  const handleActivate = () => {
-    const ids = selectedRows.map((row) => row.original.id)
-    const count = participantService.bulkUpdateStatus(ids, 'active')
-    toast.success(`${count} peserta berhasil diaktifkan`)
-    table.resetRowSelection()
-    refreshData()
+  const handleActivate = async () => {
+    try {
+      const ids = selectedRows.map((row) => row.original.id)
+      const count = await participantService.bulkUpdateStatus(ids, 'active')
+      toast.success(`${count} peserta berhasil diaktifkan`)
+      table.resetRowSelection()
+      refreshData()
+    } catch (error) {
+      console.error('Error activating participants:', error)
+      toast.error('Gagal mengaktifkan peserta')
+    }
   }
 
   return (
