@@ -49,7 +49,7 @@ import {
   KATEGORI,
   GENDER,
 } from '@/lib/schema'
-import { attendanceService, participantService, pendingParticipantService, generateId } from '@/lib/storage'
+import { attendanceService, participantService, pendingParticipantService } from '@/lib/storage'
 import { useAttendance } from './attendance-provider'
 
 const formSchema = z.object({
@@ -58,7 +58,7 @@ const formSchema = z.object({
   permissionReason: z.enum(PERMISSION_REASONS).nullable().optional(),
   notes: z.string().nullable().optional(),
   // New participant fields
-  isNewParticipant: z.boolean().default(false),
+  isNewParticipant: z.boolean(),
   tempName: z.string().nullable().optional(),
   tempKelompok: z.enum(KELOMPOK).nullable().optional(),
   tempKategori: z.enum(KATEGORI).nullable().optional(),

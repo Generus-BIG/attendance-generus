@@ -111,7 +111,7 @@ export const attendanceColumns: ColumnDef<AttendanceWithParticipant>[] = [
       const kelompok = row.original.participant?.kelompok || row.original.tempKelompok
       return <span>{kelompok || '-'}</span>
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, _id, value) => {
       const kelompok = row.original.participant?.kelompok || row.original.tempKelompok
       return Array.isArray(value) && value.includes(kelompok)
     },

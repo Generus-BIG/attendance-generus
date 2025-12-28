@@ -37,7 +37,7 @@ type DataTableProps = {
 export function AttendanceTable({ search, navigate }: DataTableProps) {
   const { setRefreshData } = useAttendance()
 
-  const { data: rawData = [], refetch, isLoading } = useQuery<AttendanceWithParticipant[]>({
+  const { data: rawData = [], refetch, isLoading: _isLoading } = useQuery<AttendanceWithParticipant[]>({
     queryKey: ['attendance_list'],
     queryFn: getAttendanceList,
   })
