@@ -1,6 +1,9 @@
 import { create } from 'zustand'
-import { User, Session } from '@supabase/supabase-js'
+import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { getCookie, setSessionCookie } from '@/lib/cookies'
+
+const BROWSER_SESSION_COOKIE = 'absensi_browser_session'
 
 interface AuthState {
   auth: {
@@ -21,6 +24,19 @@ export const useAuthStore = create<AuthState>()((set) => ({
     isLoading: true,
     checkSession: async () => {
       try {
+        // If the browser was fully closed, session cookies are cleared.
+        // Supabase auth persists in localStorage, so we explicitly clear it
+        // on the next app start when no browser-session cookie exists.
+        const hasBrowserSession = !!getCookie(BROWSER_SESSION_COOKIE)
+        if (!hasBrowserSession) {
+          try {
+            await supabase.auth.signOut()
+          } catch {
+            // Ignore network errors; we mainly need local state cleared.
+          }
+          setSessionCookie(BROWSER_SESSION_COOKIE, '1')
+        }
+
         const {
           data: { session },
         } = await supabase.auth.getSession()
@@ -34,7 +50,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
             isLoading: false,
           },
         }))
-      } catch (error) {
+      } catch {
         set((state) => ({
           ...state,
           auth: { ...state.auth, isLoading: false },
