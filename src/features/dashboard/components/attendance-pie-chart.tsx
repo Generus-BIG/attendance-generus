@@ -13,8 +13,8 @@ import {
 import { statsService } from '@/lib/storage'
 
 const COLORS = {
-  hadir: '#14b8a6',
-  izin: '#f59e0b',
+  hadir: 'var(--chart-2)',
+  izin: 'var(--chart-1)',
 }
 
 export function AttendancePieChart() {
@@ -62,10 +62,27 @@ export function AttendancePieChart() {
           ))}
         </Pie>
         <Tooltip
-          contentStyle={{
-            backgroundColor: 'hsl(var(--background))',
-            border: '1px solid hsl(var(--border))',
-            borderRadius: '6px',
+          content={({ active, payload }) => {
+            if (active && payload && payload.length) {
+              const data = payload[0]
+              return (
+                <div className='rounded-lg border bg-card px-2.5 py-2 shadow-lg dark:bg-zinc-950 dark:border-zinc-800 text-xs min-w-[120px]'>
+                  <div className='flex items-center justify-between gap-3'>
+                    <div className='flex items-center gap-1.5'>
+                      <div
+                        className='w-2 h-2 rounded-full'
+                        style={{ backgroundColor: data.payload.fill || (data.name === 'Hadir' ? COLORS.hadir : COLORS.izin) }}
+                      />
+                      <span className='text-muted-foreground'>{data.name}</span>
+                    </div>
+                    <span className='font-semibold tabular-nums'>
+                      {data.value} ({((data.payload.percent || (data.value as number) / total) * 100).toFixed(0)}%)
+                    </span>
+                  </div>
+                </div>
+              )
+            }
+            return null
           }}
         />
         <Legend />

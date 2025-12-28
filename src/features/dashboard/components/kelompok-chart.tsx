@@ -13,8 +13,8 @@ import {
 import { supabase } from '@/lib/supabase'
 
 const COLORS = {
-  hadir: '#14b8a6',
-  izin: '#f59e0b',
+  hadir: 'var(--chart-2)',
+  izin: 'var(--chart-1)',
 }
 
 async function getKelompokStats() {
@@ -83,7 +83,7 @@ export function KelompokChart() {
               return (
                 <div className='rounded-lg border bg-card px-2.5 py-2 shadow-lg dark:bg-zinc-950 dark:border-zinc-800 text-xs min-w-[120px]'>
                   <p className='font-semibold mb-1.5 text-foreground'>{label}</p>
-                  {payload.map((entry: any, index: number) => (
+                  {payload.map((entry: { name: string; value: number; color: string }, index: number) => (
                     <div key={index} className='flex items-center justify-between gap-3'>
                       <div className='flex items-center gap-1.5'>
                         <div

@@ -1,10 +1,8 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { useMemo, useState } from 'react'
+import { format, startOfMonth } from 'date-fns'
+import { id as idLocale } from 'date-fns/locale'
+import { Calendar } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
@@ -12,12 +10,17 @@ import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { StatsCards } from './components/stats-cards'
-import { KelompokChart } from './components/kelompok-chart'
-import { AttendancePieChart } from './components/attendance-pie-chart'
-import { IndividualReportTable } from './components/individual-report-table'
+import { MonthlyFormDashboard } from './components/monthly-form-dashboard'
 
 export function Dashboard() {
+  // MVP: use current month, can be extended with month picker later
+  const [selectedMonth] = useState(() => startOfMonth(new Date()))
+
+  const monthLabel = useMemo(
+    () => format(selectedMonth, 'MMMM yyyy', { locale: idLocale }),
+    [selectedMonth]
+  )
+
   return (
     <>
       {/* ===== Top Heading ===== */}
@@ -32,70 +35,36 @@ export function Dashboard() {
 
       {/* ===== Main ===== */}
       <Main>
-        <div className='mb-4 flex items-center justify-between space-y-2'>
+        <div className='mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
           <div>
             <h1 className='text-2xl font-bold tracking-tight'>Dashboard Absensi</h1>
             <p className='text-muted-foreground'>
-              Ringkasan kehadiran peserta GPN MuMiBig bulan ini
+              Rekap bulanan per form absensi (pertemuan mingguan)
             </p>
+          </div>
+          <div className='flex items-center gap-2'>
+            <Button variant='outline' size='sm' className='pointer-events-none'>
+              <Calendar className='mr-2 h-4 w-4' />
+              {monthLabel}
+            </Button>
+            {/* TODO: Add month picker popover for navigation */}
           </div>
         </div>
 
-        <Tabs
-          orientation='vertical'
-          defaultValue='overview'
-          className='space-y-4'
-        >
+        <Tabs orientation='vertical' defaultValue='profmud' className='space-y-4'>
           <div className='w-full overflow-x-auto pb-2'>
             <TabsList>
-              <TabsTrigger value='overview'>Ringkasan</TabsTrigger>
-              <TabsTrigger value='individual'>Laporan Individu</TabsTrigger>
+              <TabsTrigger value='profmud'>Profmud GPN</TabsTrigger>
+              <TabsTrigger value='ar'>AR Intensif</TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value='overview' className='space-y-4'>
-            {/* Stats Cards */}
-            <StatsCards />
-
-            {/* Charts Row */}
-            <div className='grid grid-cols-1 gap-4 lg:grid-cols-7'>
-              <Card className='col-span-1 lg:col-span-4'>
-                <CardHeader>
-                  <CardTitle>Kehadiran per Kelompok</CardTitle>
-                  <CardDescription>
-                    Distribusi kehadiran dan izin berdasarkan kelompok
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className='ps-2'>
-                  <KelompokChart />
-                </CardContent>
-              </Card>
-              <Card className='col-span-1 lg:col-span-3'>
-                <CardHeader>
-                  <CardTitle>Persentase Kehadiran</CardTitle>
-                  <CardDescription>
-                    Perbandingan Hadir vs Izin bulan ini
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <AttendancePieChart />
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value='profmud' className='space-y-4'>
+            <MonthlyFormDashboard formKey='profmud' month={selectedMonth} />
           </TabsContent>
 
-          <TabsContent value='individual' className='space-y-4'>
-            <Card>
-              <CardHeader>
-                <CardTitle>Laporan Kehadiran Individu</CardTitle>
-                <CardDescription>
-                  Tingkat kehadiran masing-masing peserta bulan ini
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <IndividualReportTable />
-              </CardContent>
-            </Card>
+          <TabsContent value='ar' className='space-y-4'>
+            <MonthlyFormDashboard formKey='ar' month={selectedMonth} />
           </TabsContent>
         </Tabs>
       </Main>
