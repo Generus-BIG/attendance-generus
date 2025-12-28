@@ -21,8 +21,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
       toast.success(`${count} peserta berhasil dinonaktifkan`)
       table.resetRowSelection()
       refreshData()
-    } catch (error) {
-      console.error('Error deactivating participants:', error)
+    } catch {
       toast.error('Gagal menonaktifkan peserta')
     }
   }
@@ -34,8 +33,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
       toast.success(`${count} peserta berhasil diaktifkan`)
       table.resetRowSelection()
       refreshData()
-    } catch (error) {
-      console.error('Error activating participants:', error)
+    } catch {
       toast.error('Gagal mengaktifkan peserta')
     }
   }

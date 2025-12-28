@@ -74,8 +74,7 @@ export function ParticipantActionDialog({
       refreshData()
       form.reset()
       onOpenChange(false)
-    } catch (error) {
-      console.error('Error saving participant:', error)
+    } catch {
       toast.error('Gagal menyimpan peserta')
     }
   }

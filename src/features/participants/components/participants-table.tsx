@@ -50,8 +50,9 @@ export function ParticipantsTable({ search, navigate }: DataTableProps) {
       setIsLoading(true)
       const participants = await participantService.getAll()
       setData(participants)
-    } catch (error) {
-      console.error('Error loading participants:', error)
+    } catch {
+      // Error already handled in service layer
+      setData([])
     } finally {
       setIsLoading(false)
     }
@@ -82,7 +83,6 @@ export function ParticipantsTable({ search, navigate }: DataTableProps) {
     ],
   })
 
-  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,

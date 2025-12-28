@@ -2,14 +2,25 @@ import { supabase } from '@/lib/supabase'
 import type { Participant } from '@/lib/schema'
 
 // Map database snake_case to camelCase for the application
-function mapParticipantFromDb(dbParticipant: any): Participant {
+function mapParticipantFromDb(dbParticipant: {
+  id: string
+  name: string
+  gender: string
+  group?: { value: string } | null
+  group_id: string
+  category?: { value: string } | null
+  category_id: string
+  status: string
+  created_at: string
+  updated_at: string
+}): Participant {
   return {
     id: dbParticipant.id,
     name: dbParticipant.name,
-    gender: dbParticipant.gender,
-    kelompok: dbParticipant.group?.value || dbParticipant.group_id,
-    kategori: dbParticipant.category?.value || dbParticipant.category_id,
-    status: dbParticipant.status,
+    gender: dbParticipant.gender as 'L' | 'P',
+    kelompok: (dbParticipant.group?.value || dbParticipant.group_id) as 'BIG 1' | 'BIG 2' | 'Cakra' | 'Limo' | 'Meruyung',
+    kategori: (dbParticipant.category?.value || dbParticipant.category_id) as 'A' | 'B' | 'AR',
+    status: dbParticipant.status as 'active' | 'inactive',
     createdAt: new Date(dbParticipant.created_at),
     updatedAt: new Date(dbParticipant.updated_at),
   }
@@ -40,7 +51,6 @@ export const participantService = {
       .order('name', { ascending: true })
 
     if (error) {
-      console.error('Error fetching participants:', error)
       throw error
     }
 
@@ -59,7 +69,6 @@ export const participantService = {
       .single()
 
     if (error) {
-      console.error('Error fetching participant:', error)
       return null
     }
 
@@ -78,7 +87,6 @@ export const participantService = {
       .order('name', { ascending: true })
 
     if (error) {
-      console.error('Error fetching active participants:', error)
       throw error
     }
 
@@ -99,7 +107,6 @@ export const participantService = {
       .single()
 
     if (error) {
-      console.error('Error creating participant:', error)
       throw error
     }
 
@@ -127,7 +134,6 @@ export const participantService = {
       .single()
 
     if (error) {
-      console.error('Error updating participant:', error)
       throw error
     }
 
@@ -138,7 +144,6 @@ export const participantService = {
     const { error } = await supabase.from('participants').delete().eq('id', id)
 
     if (error) {
-      console.error('Error deleting participant:', error)
       return false
     }
 
@@ -152,7 +157,6 @@ export const participantService = {
       .in('id', ids)
 
     if (error) {
-      console.error('Error bulk updating participants:', error)
       throw error
     }
 
@@ -172,7 +176,6 @@ export const participantService = {
       .limit(20)
 
     if (error) {
-      console.error('Error searching participants:', error)
       throw error
     }
 

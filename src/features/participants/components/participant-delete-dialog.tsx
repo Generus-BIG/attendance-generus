@@ -25,8 +25,7 @@ export function ParticipantDeleteDialog({
       toast.success('Peserta berhasil dihapus')
       refreshData()
       onOpenChange(false)
-    } catch (error) {
-      console.error('Error deleting participant:', error)
+    } catch {
       toast.error('Gagal menghapus peserta')
     }
   }
