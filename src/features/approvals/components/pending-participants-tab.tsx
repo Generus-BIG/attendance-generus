@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import { toast } from 'sonner'
-import { Check, X, Merge, Link2 } from 'lucide-react'
+import { Check, X, Merge, ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -48,13 +48,11 @@ import { type PendingParticipant, type Participant } from '@/lib/schema'
 import {
   pendingParticipantService,
   participantService,
-  attendanceService,
 } from '@/lib/storage'
 import { useApprovals } from './approvals-provider'
-import { ChevronsUpDown } from 'lucide-react'
 
 export function PendingParticipantsTab() {
-  const { refreshData, setRefreshData } = useApprovals()
+  const { setRefreshData } = useApprovals()
   const [pendingList, setPendingList] = useState<PendingParticipant[]>([])
   const [participants, setParticipants] = useState<Participant[]>([])
   const [approveDialogOpen, setApproveDialogOpen] = useState(false)
