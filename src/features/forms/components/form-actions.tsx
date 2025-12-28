@@ -10,9 +10,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useFormsContext } from '../context/forms-context'
-import { AttendanceFormConfig } from '@/lib/schema'
+import type { AttendanceFormConfig } from '@/lib/schema'
 import { toast } from 'sonner'
-import { ConfigDrawer } from '@/components/config-drawer' // Assuming standard components
 import {
     AlertDialog,
     AlertDialogAction,
