@@ -270,12 +270,12 @@ export function seedParticipants(data: Array<{
   name: string
   gender: 'L' | 'P'
   kelompok: 'BIG 1' | 'BIG 2' | 'Cakra' | 'Limo' | 'Meruyung'
-  kategori: 'A' | 'B'
+  kategori: 'A' | 'B' | 'AR'
 }>): void {
   if (isSeeded()) return
 
   const now = new Date()
-  const participants: Participant[] = data.map((item, index) => ({
+  const participants: Participant[] = data.map((item) => ({
     id: generateId(),
     name: item.name.trim(),
     gender: item.gender,
@@ -344,6 +344,7 @@ export const statsService = {
     const kategoriMap: Record<string, { hadir: number; izin: number }> = {
       'A': { hadir: 0, izin: 0 },
       'B': { hadir: 0, izin: 0 },
+      'AR': { hadir: 0, izin: 0 },
     }
 
     records.forEach((record) => {
