@@ -22,8 +22,9 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
-import { AttendanceFormConfig, attendanceFormConfigSchema } from '@/lib/schema'
+import type { AttendanceFormConfig } from '@/lib/schema'
 import { useFormsContext } from '../context/forms-context'
+import { kategoriOptions } from '../../participants/data/data'
 import { toast } from 'sonner'
 import { slugify } from '@/lib/utils'
 
@@ -31,10 +32,11 @@ import { slugify } from '@/lib/utils'
 const formSchema = z.object({
     title: z.string().min(1, 'Title is required'),
     description: z.string().optional(),
-    date: z.string(), // Input type="date" returns string
-    time: z.string(), // Input type="time"
+    date: z.string().min(1, 'Date is required'),
+    time: z.string().min(1, 'Time is required'),
     slug: z.string().min(1, 'Slug is required'),
-    isActive: z.boolean().default(true),
+    isActive: z.boolean(),
+    allowedCategories: z.array(z.string()).min(1, 'Select at least one category'),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -58,6 +60,7 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
             time: new Date().toTimeString().slice(0, 5),
             slug: '',
             isActive: true,
+            allowedCategories: ['A', 'B', 'AR'],
         },
     })
 
@@ -73,6 +76,7 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                     time: dateObj.toTimeString().slice(0, 5),
                     slug: formToEdit.slug,
                     isActive: formToEdit.isActive,
+                    allowedCategories: formToEdit.allowedCategories || ['A', 'B', 'AR'],
                 })
             } else {
                 form.reset({
@@ -82,6 +86,7 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                     time: new Date().toTimeString().slice(0, 5),
                     slug: '',
                     isActive: true,
+                    allowedCategories: ['A', 'B', 'AR'],
                 })
             }
         }
@@ -110,6 +115,7 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                     date: datetime,
                     slug: values.slug,
                     isActive: values.isActive,
+                    allowedCategories: values.allowedCategories as ('A' | 'B' | 'AR')[],
                 })
                 toast.success('Form updated successfully')
             } else {
@@ -119,19 +125,19 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                     date: datetime,
                     slug: values.slug,
                     isActive: values.isActive,
+                    allowedCategories: values.allowedCategories as ('A' | 'B' | 'AR')[],
                 })
                 toast.success('Form created successfully')
             }
             setOpen(false)
-        } catch (error) {
-            console.error(error)
+        } catch (_error) {
             toast.error('Failed to save form')
         }
     }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className='sm:max-w-[425px]'>
+            <DialogContent className='sm:max-w-md'>
                 <DialogHeader>
                     <DialogTitle>{isEditing ? 'Edit Form' : 'Create New Form'}</DialogTitle>
                     <DialogDescription>
@@ -205,6 +211,56 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                                     <FormControl>
                                         <Input placeholder='weekly-meeting-1' {...field} />
                                     </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name='allowedCategories'
+                            render={() => (
+                                <FormItem>
+                                    <div className='mb-4'>
+                                        <FormLabel className='text-base'>Sensus yang diikut sertakan</FormLabel>
+                                        <DialogDescription>
+                                            Pilih kategori peserta yang diperbolehkan mengisi form ini.
+                                        </DialogDescription>
+                                    </div>
+                                    <div className='grid grid-cols-2 gap-2'>
+                                        {kategoriOptions.map((option) => (
+                                            <FormField
+                                                key={option.value}
+                                                control={form.control}
+                                                name='allowedCategories'
+                                                render={({ field }) => {
+                                                    return (
+                                                        <FormItem
+                                                            key={option.value}
+                                                            className='flex flex-row items-start space-x-3 space-y-0'
+                                                        >
+                                                            <FormControl>
+                                                                <Checkbox
+                                                                    checked={field.value?.includes(option.value)}
+                                                                    onCheckedChange={(checked) => {
+                                                                        return checked
+                                                                            ? field.onChange([...field.value, option.value])
+                                                                            : field.onChange(
+                                                                                field.value?.filter(
+                                                                                    (value) => value !== option.value
+                                                                                )
+                                                                            )
+                                                                    }}
+                                                                />
+                                                            </FormControl>
+                                                            <FormLabel className='font-normal'>
+                                                                {option.label}
+                                                            </FormLabel>
+                                                        </FormItem>
+                                                    )
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}

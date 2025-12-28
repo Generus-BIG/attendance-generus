@@ -12,7 +12,6 @@ import {
     FormLabel,
     FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import {
     Select,
     SelectContent,
@@ -60,6 +59,7 @@ interface PublicAttendanceFormProps {
         id: string
         title: string
         description?: string | null
+        allowedCategories?: string[]
     }
 }
 
@@ -92,8 +92,8 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
 
     // Fetch participants - also fetch when popover opens with empty query for preview
     const { data: participants = [], isLoading: isLoadingParticipants } = useQuery({
-        queryKey: ['participants', debouncedQuery],
-        queryFn: () => searchParticipants(debouncedQuery),
+        queryKey: ['participants', debouncedQuery, formConfig.allowedCategories],
+        queryFn: () => searchParticipants(debouncedQuery, formConfig.allowedCategories),
         enabled: open, // Fetch when popover is open, even with empty query
         staleTime: 1000 * 60, // 1 minute
     })
@@ -101,38 +101,47 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
     async function onSubmit(data: PublicFormValues) {
         setIsSubmitting(true)
         try {
-            await submitAttendanceForm(formConfig.id, data)
+            await submitAttendanceForm(formConfig.id, {
+                participantId: data.participantId ?? undefined,
+                status: data.status,
+                permissionReason: data.permissionReason ?? undefined,
+                notes: data.notes ?? undefined,
+                tempName: data.tempName,
+                tempKelompok: data.tempKelompok,
+                tempKategori: data.tempKategori,
+                tempGender: data.tempGender,
+            })
             setIsSubmitted(true)
             toast.success('Absensi berhasil dikirim!')
-        } catch (error) {
-            console.error(error)
+        } catch (_error) {
             toast.error('Gagal mengirim absensi. Silakan coba lagi.')
         } finally {
             setIsSubmitting(false)
         }
     }
 
-    const handleSelectParticipant = (participant: any) => {
+    const handleSelectParticipant = (participant: { id: string; name: string; gender: string; group: string; category: string }) => {
         form.setValue('participantId', participant.id)
         form.setValue('tempName', participant.name)
 
         // Auto-fill and map values if possible
         if (participant.gender === 'L' || participant.gender === 'P') {
-            form.setValue('tempGender', participant.gender)
+            form.setValue('tempGender', participant.gender as 'L' | 'P')
         }
 
         // Validate against enums or set directly if matching
-        if (KELOMPOK.includes(participant.group as any)) {
-            form.setValue('tempKelompok', participant.group as any)
+        if (KELOMPOK.includes(participant.group as typeof KELOMPOK[number])) {
+            form.setValue('tempKelompok', participant.group as typeof KELOMPOK[number])
         }
 
-        // Map Categories: "GPN A" -> "A", "GPN B" -> "B"
+        // Map Categories: "GPN A" -> "A", "GPN B" -> "B", "AR" -> "AR"
         let category = participant.category
-        if (category?.includes('A')) category = 'A'
-        if (category?.includes('B')) category = 'B'
+        if (category === 'GPN A') category = 'A'
+        if (category === 'GPN B') category = 'B'
+        if (category === 'Anak Remaja') category = 'AR'
 
-        if (KATEGORI.includes(category as any)) {
-            form.setValue('tempKategori', category as any)
+        if (KATEGORI.includes(category as typeof KATEGORI[number])) {
+            form.setValue('tempKategori', category as typeof KATEGORI[number])
         }
 
         setOpen(false)
@@ -221,7 +230,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                                         <CommandEmpty>Nama tidak ditemukan.</CommandEmpty>
                                                     )}
                                                     <CommandGroup>
-                                                        {participants.map((participant: any) => (
+                                                        {participants.map((participant) => (
                                                             <CommandItem
                                                                 key={participant.id}
                                                                 value={participant.name} // Value for filtering if enabled, but here serves as ID
@@ -308,15 +317,15 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                         <RadioGroup
                                             onValueChange={field.onChange}
                                             value={field.value || undefined}
-                                            className='flex flex-row space-x-4'
+                                            className='flex flex-row flex-wrap gap-4'
                                         >
-                                            {KATEGORI.map((k) => (
+                                            {KATEGORI.filter(k => !formConfig.allowedCategories || formConfig.allowedCategories.includes(k)).map((k) => (
                                                 <FormItem key={k} className='flex items-center space-x-3 space-y-0'>
                                                     <FormControl>
                                                         <RadioGroupItem value={k} />
                                                     </FormControl>
                                                     <FormLabel className='font-normal cursor-pointer'>
-                                                        GPN {k}
+                                                        {k === 'AR' ? 'Anak Remaja' : `GPN ${k}`}
                                                     </FormLabel>
                                                 </FormItem>
                                             ))}
@@ -401,7 +410,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                             <FormControl>
                                                 <Textarea
                                                     placeholder='Berikan sedikit penjelasan...'
-                                                    className='min-h-[100px] resize-none'
+                                                    className='min-h-25 resize-none'
                                                     {...field}
                                                     value={field.value || ''}
                                                 />

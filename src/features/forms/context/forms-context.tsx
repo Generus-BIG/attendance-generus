@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { AttendanceFormConfig, attendanceFormConfigListSchema } from '@/lib/schema'
+import { createContext, useContext, type ReactNode } from 'react'
+import { attendanceFormConfigListSchema, type AttendanceFormConfig } from '@/lib/schema'
 import { supabase } from '../../../lib/supabase' // Assuming initialized client
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -31,13 +31,14 @@ export function FormsProvider({ children }: { children: ReactNode }) {
             }
 
             // Map snake_case to camelCase
-            const mapped = data.map((item: any) => ({
+            const mapped = data.map((item) => ({
                 id: item.id,
                 title: item.title,
                 description: item.description,
                 date: item.date,
                 isActive: item.is_active,
                 slug: item.slug,
+                allowedCategories: item.allowed_categories || ['A', 'B', 'AR'],
                 createdAt: item.created_at,
                 updatedAt: item.updated_at,
             }))
@@ -55,6 +56,7 @@ export function FormsProvider({ children }: { children: ReactNode }) {
                 date: newForm.date,
                 is_active: newForm.isActive,
                 slug: newForm.slug,
+                allowed_categories: newForm.allowedCategories,
             }
 
             const { error } = await supabase
@@ -78,6 +80,7 @@ export function FormsProvider({ children }: { children: ReactNode }) {
                 date: updatedForm.date,
                 is_active: updatedForm.isActive,
                 slug: updatedForm.slug,
+                allowed_categories: updatedForm.allowedCategories,
                 updated_at: new Date().toISOString()
             }
 
