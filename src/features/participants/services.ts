@@ -1,6 +1,22 @@
 import { supabase } from '@/lib/supabase'
 import type { Participant } from '@/lib/schema'
 
+// Map database category values to internal form values
+// Database: "GPN A", "GPN B", "AR" -> Form: "A", "B", "AR"
+function mapDbCategoryToInternal(dbCategory: string): string {
+  if (dbCategory === 'GPN A') return 'A'
+  if (dbCategory === 'GPN B') return 'B'
+  return dbCategory // "AR" stays as "AR"
+}
+
+// Map internal form values to database category values
+// Form: "A", "B", "AR" -> Database: "GPN A", "GPN B", "AR"
+function mapInternalToDbCategory(category: string): string {
+  if (category === 'A') return 'GPN A'
+  if (category === 'B') return 'GPN B'
+  return category // "AR" stays as "AR"
+}
+
 // Map database snake_case to camelCase for the application
 function mapParticipantFromDb(dbParticipant: {
   id: string
@@ -14,12 +30,16 @@ function mapParticipantFromDb(dbParticipant: {
   created_at: string
   updated_at: string
 }): Participant {
+  // Get the group and category values, handling the case where they might not be joined
+  const groupValue = dbParticipant.group?.value || dbParticipant.group_id
+  const categoryValue = dbParticipant.category?.value || dbParticipant.category_id
+  
   return {
     id: dbParticipant.id,
     name: dbParticipant.name,
     gender: dbParticipant.gender as 'L' | 'P',
-    kelompok: (dbParticipant.group?.value || dbParticipant.group_id) as 'BIG 1' | 'BIG 2' | 'Cakra' | 'Limo' | 'Meruyung',
-    kategori: (dbParticipant.category?.value || dbParticipant.category_id) as 'A' | 'B' | 'AR',
+    kelompok: groupValue as 'BIG 1' | 'BIG 2' | 'Cakra' | 'Limo' | 'Meruyung',
+    kategori: mapDbCategoryToInternal(categoryValue) as 'A' | 'B' | 'AR',
     status: dbParticipant.status as 'active' | 'inactive',
     createdAt: new Date(dbParticipant.created_at),
     updatedAt: new Date(dbParticipant.updated_at),
@@ -27,14 +47,14 @@ function mapParticipantFromDb(dbParticipant: {
 }
 
 // Map application camelCase to database snake_case
-function mapParticipantToDb(participant: Partial<Participant>) {
+async function mapParticipantToDb(participant: Partial<Participant>) {
+  // We need to store the actual values that match the database
+  // The database uses these values directly (not IDs)
   return {
     name: participant.name,
     gender: participant.gender,
-    // Map kelompok and kategori to their IDs
-    // For now, we'll use the value directly, assuming the database accepts it
-    group_id: participant.kelompok,
-    category_id: participant.kategori,
+    group_id: participant.kelompok, // Store the group value directly
+    category_id: participant.kategori ? mapInternalToDbCategory(participant.kategori) : undefined,
     status: participant.status,
   }
 }
@@ -69,7 +89,12 @@ export const participantService = {
       .single()
 
     if (error) {
-      return null
+      // Check if it's a "not found" error
+      if (error.code === 'PGRST116') {
+        return null
+      }
+      // For other errors, throw to allow proper error handling
+      throw error
     }
 
     return mapParticipantFromDb(data)
@@ -94,7 +119,7 @@ export const participantService = {
   },
 
   async create(data: Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>): Promise<Participant> {
-    const payload = mapParticipantToDb(data)
+    const payload = await mapParticipantToDb(data)
 
     const { data: result, error } = await supabase
       .from('participants')
@@ -118,7 +143,7 @@ export const participantService = {
     data: Partial<Omit<Participant, 'id' | 'createdAt'>>
   ): Promise<Participant | null> {
     const payload = {
-      ...mapParticipantToDb(data),
+      ...(await mapParticipantToDb(data)),
       updated_at: new Date().toISOString(),
     }
 
@@ -144,7 +169,8 @@ export const participantService = {
     const { error } = await supabase.from('participants').delete().eq('id', id)
 
     if (error) {
-      return false
+      // Throw error to allow proper error handling by calling code
+      throw error
     }
 
     return true
