@@ -35,15 +35,15 @@
 }
 
 .dark {
-  /* Area Pendukung (Background) - Abu-abu tua */
-  --background: oklch(0.12 0 0);
+  /* Area Pendukung (Background) - Dark Gray (#252525) */
+  --background: oklch(0.16 0 0);
   --foreground: oklch(0.98 0 0);
 
-  /* Area Utama (Card) - Hitam Solid / Lebih Pekat */
-  --card: oklch(0.0 0 0);
+  /* Area Utama (Card) - Hitam Solid / Lebih Pekat (#0D0D0D) */
+  --card: oklch(0.052 0 0);
   --card-foreground: oklch(0.98 0 0);
 
-  --popover: oklch(0.0 0 0);
+  --popover: oklch(0.052 0 0);
   --popover-foreground: oklch(0.98 0 0);
 
   --primary: oklch(0.98 0 0);
@@ -71,7 +71,7 @@
   --chart-4: oklch(0.6 0.2 280);
   --chart-5: oklch(0.65 0.2 30);
 
-  --sidebar-background: oklch(0.12 0 0);
+  --sidebar-background: oklch(0.16 0 0);
   --sidebar-foreground: oklch(0.96 0 0);
   --sidebar-primary: oklch(0.98 0 0);
   --sidebar-primary-foreground: oklch(0.1 0 0);
