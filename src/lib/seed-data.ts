@@ -1,7 +1,7 @@
 // Initial participant data from Sensus GPN.csv
 // This data will be seeded on first app load
 
-import { seedParticipants, isSeeded } from './storage'
+import { seedParticipants, isSeeded, participantService } from './storage'
 
 const INITIAL_PARTICIPANTS = [
   { name: 'Ardansyah', gender: 'L' as const, kelompok: 'BIG 1' as const, kategori: 'A' as const },
@@ -116,12 +116,33 @@ const INITIAL_PARTICIPANTS = [
   { name: 'Mulya Sakti M', gender: 'L' as const, kelompok: 'Meruyung' as const, kategori: 'B' as const },
   { name: 'Sevina Dian Sabilla', gender: 'P' as const, kelompok: 'Meruyung' as const, kategori: 'B' as const },
   { name: 'Wildanu Firmansyah', gender: 'L' as const, kelompok: 'Meruyung' as const, kategori: 'B' as const },
+  { name: 'Kaila Nafisah Zahra', gender: 'P' as const, kelompok: 'Limo' as const, kategori: 'AR' as const },
+  { name: 'Aysah Febrianti Permana', gender: 'P' as const, kelompok: 'Limo' as const, kategori: 'AR' as const },
+  { name: 'Nikita Mei Zahra', gender: 'P' as const, kelompok: 'Limo' as const, kategori: 'AR' as const },
 ]
 
 export function initializeData(): void {
   if (!isSeeded()) {
     seedParticipants(INITIAL_PARTICIPANTS)
-    console.log('✅ Initial participant data seeded successfully!')
+  } else {
+    // Migration: Ensure the 3 new AR participants are added if they don't exist
+    const currentParticipants = participantService.getAll()
+    const newNames = ['Kaila Nafisah Zahra', 'Aysah Febrianti Permana', 'Nikita Mei Zahra']
+
+    newNames.forEach((name) => {
+      const exists = currentParticipants.some(
+        (p) => p.name.toLowerCase() === name.toLowerCase()
+      )
+      if (!exists) {
+        participantService.create({
+          name,
+          gender: 'P',
+          kelompok: 'Limo',
+          kategori: 'AR',
+          status: 'active',
+        })
+      }
+    })
   }
 }
 
