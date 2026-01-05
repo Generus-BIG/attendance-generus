@@ -148,7 +148,7 @@ export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
             <LabelList 
               dataKey='percentage' 
               position='right' 
-              formatter={(val: number) => `${val}%`}
+              formatter={(val) => `${val}%`}
               fontSize={11}
               className='fill-foreground'
             />
