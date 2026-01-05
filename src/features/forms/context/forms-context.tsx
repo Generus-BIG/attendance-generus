@@ -99,6 +99,15 @@ export function FormsProvider({ children }: { children: ReactNode }) {
 
     const deleteFormMutation = useMutation({
         mutationFn: async (id: string) => {
+            // First delete related attendance records
+            const { error: attendanceError } = await supabase
+                .from('attendance')
+                .delete()
+                .eq('form_id', id)
+
+            if (attendanceError) throw attendanceError
+
+            // Then delete the form
             const { error } = await supabase
                 .from('attendance_forms')
                 .delete()
@@ -108,6 +117,10 @@ export function FormsProvider({ children }: { children: ReactNode }) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['attendance_forms'] })
+            toast.success('Form deleted successfully')
+        },
+        onError: (error: Error) => {
+            toast.error(`Failed to delete form: ${error.message}`)
         }
     })
 
