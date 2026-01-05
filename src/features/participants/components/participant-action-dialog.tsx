@@ -3,7 +3,6 @@
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -24,8 +23,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { SelectDropdown } from '@/components/select-dropdown'
 import { type Participant, KELOMPOK, KATEGORI, GENDER, PARTICIPANT_STATUS } from '@/lib/schema'
-import { participantService } from '@/lib/storage'
-import { useParticipants } from './participants-provider'
+import { useParticipantsCRUD } from '../context/participants-context'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi.'),
@@ -49,7 +47,7 @@ export function ParticipantActionDialog({
   onOpenChange,
 }: ParticipantActionDialogProps) {
   const isEdit = !!currentRow
-  const { refreshData } = useParticipants()
+  const { createParticipant, updateParticipant } = useParticipantsCRUD()
 
   const form = useForm<ParticipantForm>({
     resolver: zodResolver(formSchema),
@@ -62,17 +60,18 @@ export function ParticipantActionDialog({
     },
   })
 
-  const onSubmit = (values: ParticipantForm) => {
-    if (isEdit) {
-      participantService.update(currentRow.id, values)
-      toast.success('Peserta berhasil diperbarui')
-    } else {
-      participantService.create(values)
-      toast.success('Peserta berhasil ditambahkan')
+  const onSubmit = async (values: ParticipantForm) => {
+    try {
+      if (isEdit) {
+        await updateParticipant(currentRow.id, values)
+      } else {
+        await createParticipant(values)
+      }
+      form.reset()
+      onOpenChange(false)
+    } catch {
+      // Error is already handled by the mutation's onError
     }
-    refreshData()
-    form.reset()
-    onOpenChange(false)
   }
 
   return (
