@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import {
   type SortingState,
   type VisibilityState,
@@ -22,12 +22,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
-import { type Participant } from '@/lib/schema'
-import { participantService } from '@/lib/storage'
+import { useParticipantsCRUD } from '../context/participants-context'
 import { kelompokOptions, kategoriOptions, statusOptions } from '../data/data'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { participantsColumns as columns } from './participants-columns'
-import { useParticipants } from './participants-provider'
 
 type DataTableProps = {
   search: Record<string, unknown>
@@ -35,24 +33,12 @@ type DataTableProps = {
 }
 
 export function ParticipantsTable({ search, navigate }: DataTableProps) {
-  const { setRefreshData } = useParticipants()
-  const [data, setData] = useState<Participant[]>([])
+  const { participants: data, isLoading: _isLoading } = useParticipantsCRUD()
 
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
-
-  // Load data from localStorage
-  const loadData = useCallback(() => {
-    const participants = participantService.getAll()
-    setData(participants)
-  }, [])
-
-  useEffect(() => {
-    loadData()
-    setRefreshData(() => loadData)
-  }, [loadData, setRefreshData])
 
   // Synced with URL states
   const {
