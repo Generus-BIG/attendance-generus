@@ -44,10 +44,13 @@ export function FormActions({ form }: FormActionsProps) {
         toast.success(`Form ${form.isActive ? 'deactivated' : 'activated'}`)
     }
 
-    const handleDelete = () => {
-        deleteForm(form.id)
-        setOpenDelete(false)
-        toast.success('Form deleted')
+    const handleDelete = async () => {
+        try {
+            await deleteForm(form.id)
+            setOpenDelete(false)
+        } catch {
+            // Error is already handled by the mutation's onError
+        }
     }
 
     return (
