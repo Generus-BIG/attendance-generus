@@ -1,8 +1,5 @@
-import { useMemo, useState } from 'react'
-import { format, startOfMonth } from 'date-fns'
-import { id as idLocale } from 'date-fns/locale'
-import { Calendar } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+import { startOfMonth } from 'date-fns'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
@@ -11,15 +8,11 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { MonthlyFormDashboard } from './components/monthly-form-dashboard'
+import { MonthNavigator } from './components/month-navigator'
 
 export function Dashboard() {
   // MVP: use current month, can be extended with month picker later
-  const [selectedMonth] = useState(() => startOfMonth(new Date()))
-
-  const monthLabel = useMemo(
-    () => format(selectedMonth, 'MMMM yyyy', { locale: idLocale }),
-    [selectedMonth]
-  )
+  const [selectedMonth, setSelectedMonth] = useState(() => startOfMonth(new Date()))
 
   return (
     <>
@@ -42,13 +35,10 @@ export function Dashboard() {
               Rekap bulanan per form absensi (pertemuan mingguan)
             </p>
           </div>
-          <div className='flex items-center gap-2'>
-            <Button variant='outline' size='sm' className='pointer-events-none'>
-              <Calendar className='mr-2 h-4 w-4' />
-              {monthLabel}
-            </Button>
-            {/* TODO: Add month picker popover for navigation */}
-          </div>
+          <MonthNavigator 
+            date={selectedMonth} 
+            onDateChange={setSelectedMonth} 
+          />
         </div>
 
         <Tabs orientation='vertical' defaultValue='profmud' className='space-y-4'>
