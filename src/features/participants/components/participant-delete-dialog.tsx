@@ -1,10 +1,8 @@
 'use client'
 
-import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { type Participant } from '@/lib/schema'
-import { participantService } from '@/lib/storage'
-import { useParticipants } from './participants-provider'
+import { useParticipantsCRUD } from '../context/participants-context'
 
 type ParticipantDeleteDialogProps = {
   currentRow: Participant
@@ -17,13 +15,15 @@ export function ParticipantDeleteDialog({
   open,
   onOpenChange,
 }: ParticipantDeleteDialogProps) {
-  const { refreshData } = useParticipants()
+  const { deleteParticipant } = useParticipantsCRUD()
 
-  const handleDelete = () => {
-    participantService.delete(currentRow.id)
-    toast.success('Peserta berhasil dihapus')
-    refreshData()
-    onOpenChange(false)
+  const handleDelete = async () => {
+    try {
+      await deleteParticipant(currentRow.id)
+      onOpenChange(false)
+    } catch {
+      // Error is already handled by the mutation's onError
+    }
   }
 
   return (
