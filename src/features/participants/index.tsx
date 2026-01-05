@@ -8,6 +8,7 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { ParticipantsDialogs } from './components/participants-dialogs'
 import { ParticipantsPrimaryButtons } from './components/participants-primary-buttons'
 import { ParticipantsProvider } from './components/participants-provider'
+import { ParticipantsCRUDProvider } from './context/participants-context'
 import { ParticipantsTable } from './components/participants-table'
 
 const route = getRouteApi('/_authenticated/participants/')
@@ -17,7 +18,8 @@ export function Participants() {
   const navigate = route.useNavigate()
 
   return (
-    <ParticipantsProvider>
+    <ParticipantsCRUDProvider>
+      <ParticipantsProvider>
       <Header fixed>
         <Search />
         <div className='ms-auto flex items-center space-x-4'>
@@ -42,5 +44,6 @@ export function Participants() {
 
       <ParticipantsDialogs />
     </ParticipantsProvider>
+    </ParticipantsCRUDProvider>
   )
 }
