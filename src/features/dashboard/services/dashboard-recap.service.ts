@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { startOfMonth, endOfMonth, format } from 'date-fns'
 import type {
+  AllowedCategory,
   AttendanceRecord,
   MeetingRecap,
   MonthlyFormRecap,
@@ -10,6 +11,51 @@ import type {
 type FetchParams = {
   formId: string
   month: Date
+}
+
+// Census participant for calculating rates
+export type CensusParticipant = {
+  id: string
+  name: string
+  group: string | null
+  category: string | null
+}
+
+/**
+ * Fetch census participants for allowed categories
+ * Census = all active participants in the allowed categories
+ */
+export async function fetchCensusParticipants(
+  allowedCategories: AllowedCategory[]
+): Promise<CensusParticipant[]> {
+  const { data, error } = await supabase
+    .from('participants')
+    .select(`
+      id,
+      name,
+      status_active,
+      category:lookup_values!participants_category_id_fkey (value),
+      group:lookup_values!participants_group_id_fkey (value)
+    `)
+    .eq('status_active', true)
+
+  if (error) {
+    throw error
+  }
+
+  // Filter by allowed categories
+  return (data ?? [])
+    .map((row) => {
+      const category = row.category as unknown as { value: string } | null
+      const group = row.group as unknown as { value: string } | null
+      return {
+        id: row.id,
+        name: row.name,
+        category: category?.value ?? null,
+        group: group?.value ?? null,
+      }
+    })
+    .filter((p) => p.category && allowedCategories.includes(p.category as AllowedCategory))
 }
 
 /**
@@ -82,13 +128,21 @@ export async function fetchMonthlyAttendance({
  * - Per meeting: count HADIR vs IZIN
  * - Per participant: count across all meetings
  * - Attendance rate (participant): hadirCount / totalMeetings
- * - Attendance rate (totals): totalHadir / totalSubmissions
+ * - Attendance rate (totals): totalHadir / (totalMeetings * totalCensus) [census-based]
  */
 export function aggregateMonthlyRecap(
   records: AttendanceRecord[],
-  month: Date
+  month: Date,
+  censusParticipants: CensusParticipant[] = []
 ): MonthlyFormRecap {
   const monthKey = format(month, 'yyyy-MM')
+  const totalCensus = censusParticipants.length
+
+  // Build census lookup map for participant info
+  const censusMap = new Map<string, CensusParticipant>()
+  for (const p of censusParticipants) {
+    censusMap.set(p.id, p)
+  }
 
   if (records.length === 0) {
     return {
@@ -100,6 +154,7 @@ export function aggregateMonthlyRecap(
         totalHadir: 0,
         totalIzin: 0,
         totalSubmissions: 0,
+        totalCensus,
         attendanceRate: 0,
         izinRate: 0,
         avgHadirPerMeeting: 0,
@@ -139,6 +194,7 @@ export function aggregateMonthlyRecap(
     {
       name: string
       group: string | null
+      category: string | null
       hadir: number
       izin: number
     }
@@ -150,9 +206,12 @@ export function aggregateMonthlyRecap(
     if (!key) continue
 
     if (!byParticipant.has(key)) {
+      // Get category from census map if available
+      const censusInfo = rec.participant_id ? censusMap.get(rec.participant_id) : null
       byParticipant.set(key, {
         name: rec.participant_name ?? 'Unknown',
-        group: rec.group_value,
+        group: censusInfo?.group ?? rec.group_value,
+        category: censusInfo?.category ?? rec.category_value,
         hadir: 0,
         izin: 0,
       })
@@ -174,11 +233,13 @@ export function aggregateMonthlyRecap(
       participantId: id,
       participantName: data.name,
       participantGroup: data.group,
+      participantCategory: data.category,
       hadirCount: data.hadir,
       izinCount: data.izin,
       totalCount,
       // Meeting-based: how many meetings did they attend?
       attendanceRate: totalMeetings > 0 ? data.hadir / totalMeetings : 0,
+      izinRate: totalMeetings > 0 ? data.izin / totalMeetings : 0,
     })
   }
   // Sort by attendance rate ascending (worst first for follow-up)
@@ -189,6 +250,9 @@ export function aggregateMonthlyRecap(
   const totalIzin = records.filter((r) => r.status === 'IZIN').length
   const totalSubmissions = records.length
 
+  // Census-based rate calculation: totalHadir / (totalMeetings * totalCensus)
+  const maxPossibleAttendance = totalMeetings * totalCensus
+
   return {
     monthKey,
     meetings,
@@ -198,8 +262,9 @@ export function aggregateMonthlyRecap(
       totalHadir,
       totalIzin,
       totalSubmissions,
-      attendanceRate: totalSubmissions > 0 ? totalHadir / totalSubmissions : 0,
-      izinRate: totalSubmissions > 0 ? totalIzin / totalSubmissions : 0,
+      totalCensus,
+      attendanceRate: maxPossibleAttendance > 0 ? totalHadir / maxPossibleAttendance : 0,
+      izinRate: maxPossibleAttendance > 0 ? totalIzin / maxPossibleAttendance : 0,
       avgHadirPerMeeting: totalMeetings > 0 ? totalHadir / totalMeetings : 0,
     },
   }
