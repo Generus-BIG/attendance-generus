@@ -70,11 +70,14 @@ export type ParticipantMonthlyRecap = {
   participantId: string
   participantName: string
   participantGroup: string | null
+  participantCategory: string | null
   hadirCount: number
   izinCount: number
   totalCount: number
   /** attendanceRate = hadirCount / totalMeetings (meeting-based) */
   attendanceRate: number
+  /** izinRate = izinCount / totalMeetings (meeting-based) */
+  izinRate: number
 }
 
 // Complete monthly form recap
@@ -87,9 +90,11 @@ export type MonthlyFormRecap = {
     totalHadir: number
     totalIzin: number
     totalSubmissions: number
-    /** Submission-based: totalHadir / totalSubmissions */
+    /** Census: total participants in allowed categories */
+    totalCensus: number
+    /** Census-based: totalHadir / (totalMeetings * totalCensus) */
     attendanceRate: number
-    /** Submission-based: totalIzin / totalSubmissions */
+    /** Census-based: totalIzin / (totalMeetings * totalCensus) */
     izinRate: number
     avgHadirPerMeeting: number
   }
