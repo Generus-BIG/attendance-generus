@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import { toast } from 'sonner'
@@ -45,52 +45,76 @@ import {
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import { type PendingParticipant, type Participant } from '@/lib/schema'
-import {
-  pendingParticipantService,
-  participantService,
-} from '@/lib/storage'
+import { approvalService } from '../services'
 import { useApprovals } from './approvals-provider'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 export function PendingParticipantsTab() {
   const { setRefreshData } = useApprovals()
-  const [pendingList, setPendingList] = useState<PendingParticipant[]>(() => pendingParticipantService.getPending())
-  const [participants, setParticipants] = useState<Participant[]>(() => participantService.getActive())
   const [approveDialogOpen, setApproveDialogOpen] = useState(false)
   const [selectedPending, setSelectedPending] = useState<PendingParticipant | null>(null)
   const [mergeTarget, setMergeTarget] = useState<string | null>(null)
   const [openCombobox, setOpenCombobox] = useState(false)
 
-  const loadData = () => {
-    setPendingList(pendingParticipantService.getPending())
-    setParticipants(participantService.getActive())
-  }
+  const queryClient = useQueryClient()
+  const pendingQuery = useQuery({
+    queryKey: ['approvals', 'pending'],
+    queryFn: approvalService.getPending,
+  })
+  const participantsQuery = useQuery({
+    queryKey: ['approvals', 'activeParticipants'],
+    queryFn: approvalService.getActiveParticipants,
+  })
+
+  const pendingList = (pendingQuery.data ?? []) as PendingParticipant[]
+  const participants = (participantsQuery.data ?? []) as Participant[]
 
   useEffect(() => {
-    setRefreshData(() => loadData)
-  }, [setRefreshData])
+    setRefreshData(() => () => {
+      void queryClient.invalidateQueries({ queryKey: ['approvals'] })
+    })
+  }, [queryClient, setRefreshData])
 
-  const handleApproveNew = (pending: PendingParticipant) => {
-    pendingParticipantService.approve(pending.id, true)
-    toast.success(`Peserta "${pending.name}" berhasil ditambahkan`)
-    loadData()
+  useEffect(() => {
+    if (pendingQuery.error || participantsQuery.error) {
+      toast.error('Gagal memuat data persetujuan')
+    }
+  }, [pendingQuery.error, participantsQuery.error])
+
+  const handleApproveNew = async (pending: PendingParticipant) => {
+    try {
+      await approvalService.approve(pending, true)
+      toast.success(`Peserta "${pending.name}" berhasil ditambahkan`)
+      void queryClient.invalidateQueries({ queryKey: ['approvals'] })
+    } catch (_error) {
+      toast.error('Gagal menyetujui peserta')
+    }
   }
 
-  const handleApproveMerge = () => {
+  const handleApproveMerge = async () => {
     if (!selectedPending || !mergeTarget) return
 
-    pendingParticipantService.approve(selectedPending.id, false, mergeTarget)
-    const targetParticipant = participants.find((p) => p.id === mergeTarget)
-    toast.success(`Absensi berhasil dihubungkan ke "${targetParticipant?.name}"`)
-    setApproveDialogOpen(false)
-    setSelectedPending(null)
-    setMergeTarget(null)
-    loadData()
+    try {
+      await approvalService.approve(selectedPending, false, mergeTarget)
+      const targetParticipant = participants.find((p) => p.id === mergeTarget)
+      toast.success(`Absensi berhasil dihubungkan ke "${targetParticipant?.name}"`)
+      setApproveDialogOpen(false)
+      setSelectedPending(null)
+      setMergeTarget(null)
+      void queryClient.invalidateQueries({ queryKey: ['approvals'] })
+    } catch (_error) {
+      toast.error('Gagal menghubungkan data')
+    }
   }
 
-  const handleReject = (pending: PendingParticipant) => {
-    pendingParticipantService.reject(pending.id)
-    toast.success(`Pengajuan "${pending.name}" ditolak`)
-    loadData()
+  const handleReject = async (pending: PendingParticipant) => {
+    try {
+      await approvalService.reject(pending.id)
+      toast.success(`Pengajuan "${pending.name}" ditolak`)
+      void queryClient.invalidateQueries({ queryKey: ['approvals'] })
+    } catch (_error) {
+      toast.error('Gagal menolak pengajuan')
+    }
   }
 
   const openMergeDialog = (pending: PendingParticipant) => {
