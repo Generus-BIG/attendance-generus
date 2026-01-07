@@ -13,6 +13,7 @@ import {
     useReactTable,
     flexRender,
 } from '@tanstack/react-table'
+import { Link } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,7 +28,6 @@ import {
 import type { AttendanceFormConfig } from '@/lib/schema'
 import { FormsProvider, useFormsContext } from './context/forms-context'
 import { FormActions } from './components/form-actions'
-import { FormDialogs } from './components/form-dialogs'
 import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
@@ -63,7 +63,6 @@ function FormsList() {
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = useState({})
-    const [openCreate, setOpenCreate] = useState(false)
     const [globalFilter, setGlobalFilter] = useState('')
 
     const columns: ColumnDef<AttendanceFormConfig>[] = [
@@ -136,8 +135,10 @@ function FormsList() {
                     </p>
                 </div>
                 <div className='flex items-center gap-2'>
-                    <Button onClick={() => setOpenCreate(true)}>
-                        <Plus className='mr-2 h-4 w-4' /> Create Form
+                    <Button asChild>
+                        <Link to="/admin/forms/create">
+                            <Plus className='mr-2 h-4 w-4' /> Create Form
+                        </Link>
                     </Button>
                 </div>
             </div>
@@ -224,8 +225,6 @@ function FormsList() {
                     </Button>
                 </div>
             </div>
-
-            <FormDialogs open={openCreate} setOpen={setOpenCreate} />
         </div>
     )
 }

@@ -52,6 +52,58 @@ export async function submitAttendanceForm(formId: string, data: {
     if (error) throw error
 }
 
+export async function submitPendingAttendance(formId: string, data: {
+    status: string;
+    permissionReason?: string;
+    notes?: string;
+    tempName: string;
+    tempKelompok: string;
+    tempKategori: string;
+    tempGender: string;
+    birthPlace: string;
+    birthDate: Date;
+}) {
+    // 1. Insert into attendance table with temp fields
+    const attendancePayload = {
+        form_id: formId,
+        participant_id: null,
+        status: data.status.toUpperCase(),
+        permission_reason: data.permissionReason || null,
+        permission_description: data.notes || null,
+        temp_name: data.tempName,
+        temp_group: data.tempKelompok,
+        temp_category: data.tempKategori,
+        temp_gender: data.tempGender,
+        timestamp: new Date().toISOString()
+    }
+
+    const { data: attendanceData, error: attendanceError } = await supabase
+        .from('attendance')
+        .insert(attendancePayload)
+        .select()
+        .single()
+
+    if (attendanceError) throw attendanceError
+
+    // 2. Insert into pending_participants
+    const pendingPayload = {
+        name: data.tempName,
+        suggested_group: data.tempKelompok,
+        suggested_gender: data.tempGender,
+        suggested_category: data.tempKategori,
+        attendance_ref_ids: [attendanceData.id],
+        status: 'pending',
+        birth_place: data.birthPlace,
+        birth_date: data.birthDate.toISOString().split('T')[0]
+    }
+
+    const { error: pendingError } = await supabase
+        .from('pending_participants')
+        .insert(pendingPayload)
+
+    if (pendingError) throw pendingError
+}
+
 interface ParticipantSearchResult {
     id: string
     name: string
@@ -65,26 +117,50 @@ interface ParticipantSearchResult {
 function mapDbCategoryToInternal(dbCategory: string): string {
     if (dbCategory === 'GPN A') return 'A'
     if (dbCategory === 'GPN B') return 'B'
+    if (dbCategory === 'Anak Remaja') return 'AR'
     return dbCategory // "AR" stays as "AR"
+}
+
+// Map internal form values back to database category values for filtering
+function mapInternalToDbCategories(allowedCategories: string[]): string[] {
+    const dbCategories: string[] = []
+    if (allowedCategories.includes('A')) dbCategories.push('GPN A')
+    if (allowedCategories.includes('B')) dbCategories.push('GPN B')
+    if (allowedCategories.includes('AR')) {
+        dbCategories.push('Anak Remaja')
+        dbCategories.push('AR')
+    }
+    return dbCategories
 }
 
 export async function searchParticipants(
     query: string,
     allowedCategories?: string[]
 ): Promise<ParticipantSearchResult[]> {
-    const queryBuilder = supabase
-        .from('participants')
-        .select(`
-            id,
-            name,
-            gender,
-            groups:group_id(value),
-            categories:category_id(value)
-        `)
-        .ilike('name', `%${query || ''}%`)
-        .limit(20)
+    // Construct the select string based on whether we need to filter by category (inner join) or not
+    const hasCategoryFilter = allowedCategories && allowedCategories.length > 0
+    
+    const selectQuery = `
+        id,
+        name,
+        gender,
+        groups:group_id(value),
+        categories:category_id${hasCategoryFilter ? '!inner' : ''}(value)
+    `
 
-    const { data, error } = await queryBuilder
+    let queryBuilder = supabase
+        .from('participants')
+        .select(selectQuery)
+        .ilike('name', `%${query || ''}%`)
+
+    // Apply category filter if needed
+    if (hasCategoryFilter) {
+        const dbAllowedValues = mapInternalToDbCategories(allowedCategories)
+        queryBuilder = queryBuilder.in('categories.value', dbAllowedValues)
+    }
+
+    // Apply limit after filtering
+    const { data, error } = await queryBuilder.limit(20)
 
     if (error || !data) {
         return []
@@ -114,8 +190,13 @@ export async function searchParticipants(
     })
 
     // Filter by allowed categories if provided
-    // Map DB category to internal form value for comparison
+    // Since we now filter in the DB using !inner join, we can skip strict filtering here,
+    // but we still map the category value for the frontend.
+    // However, if the mapping logic differs (e.g. multiple DB values mapping to one internal),
+    // we should ensure the returned object uses the "display" or "internal" value?
+    // The current code keeps the original DB value.
     if (allowedCategories && allowedCategories.length > 0) {
+        // Redundant client-side check but safe to keep
         return mapped.filter((p) => {
             const internalCategory = mapDbCategoryToInternal(p.category)
             return allowedCategories.includes(internalCategory)
