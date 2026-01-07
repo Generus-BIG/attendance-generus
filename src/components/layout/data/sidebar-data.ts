@@ -40,27 +40,27 @@ export const sidebarData: SidebarData = {
       items: [
         {
           title: 'Dashboard',
-          url: '/',
+          url: '/admin/dashboard',
           icon: LayoutDashboard,
         },
         {
           title: 'Peserta',
-          url: '/participants',
+          url: '/admin/participants',
           icon: Users,
         },
         {
           title: 'Absensi',
-          url: '/attendance',
+          url: '/admin/attendance',
           icon: CalendarCheck,
         },
         {
           title: 'Approval',
-          url: '/approvals',
+          url: '/admin/approvals',
           icon: UserCheck,
         },
         {
           title: 'Forms',
-          url: '/forms',
+          url: '/admin/forms',
           icon: FileSpreadsheet,
         },
       ],
@@ -74,34 +74,34 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Profile',
-              url: '/settings',
+              url: '/admin/settings',
               icon: UserCog,
             },
             {
               title: 'Account',
-              url: '/settings/account',
+              url: '/admin/settings/account',
               icon: Wrench,
             },
             {
               title: 'Appearance',
-              url: '/settings/appearance',
+              url: '/admin/settings/appearance',
               icon: Palette,
             },
             {
               title: 'Notifications',
-              url: '/settings/notifications',
+              url: '/admin/settings/notifications',
               icon: Bell,
             },
             {
               title: 'Display',
-              url: '/settings/display',
+              url: '/admin/settings/display',
               icon: Monitor,
             },
           ],
         },
         {
           title: 'Help Center',
-          url: '/help-center',
+          url: '/admin/help-center',
           icon: HelpCircle,
         },
       ],

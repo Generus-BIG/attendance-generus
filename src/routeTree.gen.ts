@@ -10,9 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ClerkRouteRouteImport } from './routes/clerk/route'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as FormsSlugRouteImport } from './routes/forms/$slug'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as AbsensiFormIdRouteImport } from './routes/absensi/$formId'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
 import { Route as errors404RouteImport } from './routes/(errors)/404'
@@ -25,43 +26,49 @@ import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as ClerkAuthenticatedRouteRouteImport } from './routes/clerk/_authenticated/route'
 import { Route as ClerkauthRouteRouteImport } from './routes/clerk/(auth)/route'
-import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
-import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
-import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
-import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
-import { Route as AuthenticatedParticipantsIndexRouteImport } from './routes/_authenticated/participants/index'
-import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
-import { Route as AuthenticatedFormsIndexRouteImport } from './routes/_authenticated/forms/index'
-import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
-import { Route as AuthenticatedAttendanceIndexRouteImport } from './routes/_authenticated/attendance/index'
-import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
-import { Route as AuthenticatedApprovalsIndexRouteImport } from './routes/_authenticated/approvals/index'
+import { Route as AdminSettingsRouteRouteImport } from './routes/admin/settings/route'
+import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
+import { Route as AdminTasksIndexRouteImport } from './routes/admin/tasks/index'
+import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
+import { Route as AdminParticipantsIndexRouteImport } from './routes/admin/participants/index'
+import { Route as AdminHelpCenterIndexRouteImport } from './routes/admin/help-center/index'
+import { Route as AdminFormsIndexRouteImport } from './routes/admin/forms/index'
+import { Route as AdminChatsIndexRouteImport } from './routes/admin/chats/index'
+import { Route as AdminAttendanceIndexRouteImport } from './routes/admin/attendance/index'
+import { Route as AdminAppsIndexRouteImport } from './routes/admin/apps/index'
+import { Route as AdminApprovalsIndexRouteImport } from './routes/admin/approvals/index'
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
 import { Route as ClerkauthSignUpRouteImport } from './routes/clerk/(auth)/sign-up'
 import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-in'
-import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
-import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
-import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
-import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
-import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
+import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/settings/notifications'
+import { Route as AdminSettingsDisplayRouteImport } from './routes/admin/settings/display'
+import { Route as AdminSettingsAppearanceRouteImport } from './routes/admin/settings/appearance'
+import { Route as AdminSettingsAccountRouteImport } from './routes/admin/settings/account'
+import { Route as AdminErrorsErrorRouteImport } from './routes/admin/errors/$error'
 
 const ClerkRouteRoute = ClerkRouteRouteImport.update({
   id: '/clerk',
   path: '/clerk',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-const FormsSlugRoute = FormsSlugRouteImport.update({
-  id: '/forms/$slug',
-  path: '/forms/$slug',
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AbsensiFormIdRoute = AbsensiFormIdRouteImport.update({
+  id: '/absensi/$formId',
+  path: '/absensi/$formId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const errors503Route = errors503RouteImport.update({
@@ -122,67 +129,61 @@ const ClerkauthRouteRoute = ClerkauthRouteRouteImport.update({
   id: '/(auth)',
   getParentRoute: () => ClerkRouteRoute,
 } as any)
-const AuthenticatedSettingsRouteRoute =
-  AuthenticatedSettingsRouteRouteImport.update({
-    id: '/settings',
-    path: '/settings',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
+const AdminSettingsRouteRoute = AdminSettingsRouteRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => AdminRouteRoute,
 } as any)
-const AuthenticatedTasksIndexRoute = AuthenticatedTasksIndexRouteImport.update({
+const AdminTasksIndexRoute = AdminTasksIndexRouteImport.update({
   id: '/tasks/',
   path: '/tasks/',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => AdminRouteRoute,
 } as any)
-const AuthenticatedSettingsIndexRoute =
-  AuthenticatedSettingsIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedSettingsRouteRoute,
-  } as any)
-const AuthenticatedParticipantsIndexRoute =
-  AuthenticatedParticipantsIndexRouteImport.update({
-    id: '/participants/',
-    path: '/participants/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedHelpCenterIndexRoute =
-  AuthenticatedHelpCenterIndexRouteImport.update({
-    id: '/help-center/',
-    path: '/help-center/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedFormsIndexRoute = AuthenticatedFormsIndexRouteImport.update({
+const AdminSettingsIndexRoute = AdminSettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminSettingsRouteRoute,
+} as any)
+const AdminParticipantsIndexRoute = AdminParticipantsIndexRouteImport.update({
+  id: '/participants/',
+  path: '/participants/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminHelpCenterIndexRoute = AdminHelpCenterIndexRouteImport.update({
+  id: '/help-center/',
+  path: '/help-center/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminFormsIndexRoute = AdminFormsIndexRouteImport.update({
   id: '/forms/',
   path: '/forms/',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => AdminRouteRoute,
 } as any)
-const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
+const AdminChatsIndexRoute = AdminChatsIndexRouteImport.update({
   id: '/chats/',
   path: '/chats/',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => AdminRouteRoute,
 } as any)
-const AuthenticatedAttendanceIndexRoute =
-  AuthenticatedAttendanceIndexRouteImport.update({
-    id: '/attendance/',
-    path: '/attendance/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedAppsIndexRoute = AuthenticatedAppsIndexRouteImport.update({
+const AdminAttendanceIndexRoute = AdminAttendanceIndexRouteImport.update({
+  id: '/attendance/',
+  path: '/attendance/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAppsIndexRoute = AdminAppsIndexRouteImport.update({
   id: '/apps/',
   path: '/apps/',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => AdminRouteRoute,
 } as any)
-const AuthenticatedApprovalsIndexRoute =
-  AuthenticatedApprovalsIndexRouteImport.update({
-    id: '/approvals/',
-    path: '/approvals/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+const AdminApprovalsIndexRoute = AdminApprovalsIndexRouteImport.update({
+  id: '/approvals/',
+  path: '/approvals/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const ClerkAuthenticatedUserManagementRoute =
   ClerkAuthenticatedUserManagementRouteImport.update({
     id: '/user-management',
@@ -199,40 +200,38 @@ const ClerkauthSignInRoute = ClerkauthSignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => ClerkauthRouteRoute,
 } as any)
-const AuthenticatedSettingsNotificationsRoute =
-  AuthenticatedSettingsNotificationsRouteImport.update({
+const AdminSettingsNotificationsRoute =
+  AdminSettingsNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
-    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+    getParentRoute: () => AdminSettingsRouteRoute,
   } as any)
-const AuthenticatedSettingsDisplayRoute =
-  AuthenticatedSettingsDisplayRouteImport.update({
-    id: '/display',
-    path: '/display',
-    getParentRoute: () => AuthenticatedSettingsRouteRoute,
-  } as any)
-const AuthenticatedSettingsAppearanceRoute =
-  AuthenticatedSettingsAppearanceRouteImport.update({
-    id: '/appearance',
-    path: '/appearance',
-    getParentRoute: () => AuthenticatedSettingsRouteRoute,
-  } as any)
-const AuthenticatedSettingsAccountRoute =
-  AuthenticatedSettingsAccountRouteImport.update({
-    id: '/account',
-    path: '/account',
-    getParentRoute: () => AuthenticatedSettingsRouteRoute,
-  } as any)
-const AuthenticatedErrorsErrorRoute =
-  AuthenticatedErrorsErrorRouteImport.update({
-    id: '/errors/$error',
-    path: '/errors/$error',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+const AdminSettingsDisplayRoute = AdminSettingsDisplayRouteImport.update({
+  id: '/display',
+  path: '/display',
+  getParentRoute: () => AdminSettingsRouteRoute,
+} as any)
+const AdminSettingsAppearanceRoute = AdminSettingsAppearanceRouteImport.update({
+  id: '/appearance',
+  path: '/appearance',
+  getParentRoute: () => AdminSettingsRouteRoute,
+} as any)
+const AdminSettingsAccountRoute = AdminSettingsAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AdminSettingsRouteRoute,
+} as any)
+const AdminErrorsErrorRoute = AdminErrorsErrorRouteImport.update({
+  id: '/errors/$error',
+  path: '/errors/$error',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
-  '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
+  '/admin/settings': typeof AdminSettingsRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
   '/sign-in': typeof authSignInRoute
@@ -243,28 +242,30 @@ export interface FileRoutesByFullPath {
   '/404': typeof errors404Route
   '/500': typeof errors500Route
   '/503': typeof errors503Route
-  '/forms/$slug': typeof FormsSlugRoute
-  '/': typeof AuthenticatedIndexRoute
-  '/errors/$error': typeof AuthenticatedErrorsErrorRoute
-  '/settings/account': typeof AuthenticatedSettingsAccountRoute
-  '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
-  '/settings/display': typeof AuthenticatedSettingsDisplayRoute
-  '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/absensi/$formId': typeof AbsensiFormIdRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/errors/$error': typeof AdminErrorsErrorRoute
+  '/admin/settings/account': typeof AdminSettingsAccountRoute
+  '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
+  '/admin/settings/display': typeof AdminSettingsDisplayRoute
+  '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
-  '/approvals': typeof AuthenticatedApprovalsIndexRoute
-  '/apps': typeof AuthenticatedAppsIndexRoute
-  '/attendance': typeof AuthenticatedAttendanceIndexRoute
-  '/chats': typeof AuthenticatedChatsIndexRoute
-  '/forms': typeof AuthenticatedFormsIndexRoute
-  '/help-center': typeof AuthenticatedHelpCenterIndexRoute
-  '/participants': typeof AuthenticatedParticipantsIndexRoute
-  '/settings/': typeof AuthenticatedSettingsIndexRoute
-  '/tasks': typeof AuthenticatedTasksIndexRoute
-  '/users': typeof AuthenticatedUsersIndexRoute
+  '/admin/approvals': typeof AdminApprovalsIndexRoute
+  '/admin/apps': typeof AdminAppsIndexRoute
+  '/admin/attendance': typeof AdminAttendanceIndexRoute
+  '/admin/chats': typeof AdminChatsIndexRoute
+  '/admin/forms': typeof AdminFormsIndexRoute
+  '/admin/help-center': typeof AdminHelpCenterIndexRoute
+  '/admin/participants': typeof AdminParticipantsIndexRoute
+  '/admin/settings/': typeof AdminSettingsIndexRoute
+  '/admin/tasks': typeof AdminTasksIndexRoute
+  '/admin/users': typeof AdminUsersIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
@@ -276,32 +277,33 @@ export interface FileRoutesByTo {
   '/404': typeof errors404Route
   '/500': typeof errors500Route
   '/503': typeof errors503Route
-  '/forms/$slug': typeof FormsSlugRoute
-  '/': typeof AuthenticatedIndexRoute
-  '/errors/$error': typeof AuthenticatedErrorsErrorRoute
-  '/settings/account': typeof AuthenticatedSettingsAccountRoute
-  '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
-  '/settings/display': typeof AuthenticatedSettingsDisplayRoute
-  '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/absensi/$formId': typeof AbsensiFormIdRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/errors/$error': typeof AdminErrorsErrorRoute
+  '/admin/settings/account': typeof AdminSettingsAccountRoute
+  '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
+  '/admin/settings/display': typeof AdminSettingsDisplayRoute
+  '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
-  '/approvals': typeof AuthenticatedApprovalsIndexRoute
-  '/apps': typeof AuthenticatedAppsIndexRoute
-  '/attendance': typeof AuthenticatedAttendanceIndexRoute
-  '/chats': typeof AuthenticatedChatsIndexRoute
-  '/forms': typeof AuthenticatedFormsIndexRoute
-  '/help-center': typeof AuthenticatedHelpCenterIndexRoute
-  '/participants': typeof AuthenticatedParticipantsIndexRoute
-  '/settings': typeof AuthenticatedSettingsIndexRoute
-  '/tasks': typeof AuthenticatedTasksIndexRoute
-  '/users': typeof AuthenticatedUsersIndexRoute
+  '/admin/approvals': typeof AdminApprovalsIndexRoute
+  '/admin/apps': typeof AdminAppsIndexRoute
+  '/admin/attendance': typeof AdminAttendanceIndexRoute
+  '/admin/chats': typeof AdminChatsIndexRoute
+  '/admin/forms': typeof AdminFormsIndexRoute
+  '/admin/help-center': typeof AdminHelpCenterIndexRoute
+  '/admin/participants': typeof AdminParticipantsIndexRoute
+  '/admin/settings': typeof AdminSettingsIndexRoute
+  '/admin/tasks': typeof AdminTasksIndexRoute
+  '/admin/users': typeof AdminUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/clerk': typeof ClerkRouteRouteWithChildren
-  '/_authenticated/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
+  '/admin/settings': typeof AdminSettingsRouteRouteWithChildren
   '/clerk/(auth)': typeof ClerkauthRouteRouteWithChildren
   '/clerk/_authenticated': typeof ClerkAuthenticatedRouteRouteWithChildren
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
@@ -314,32 +316,34 @@ export interface FileRoutesById {
   '/(errors)/404': typeof errors404Route
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
-  '/forms/$slug': typeof FormsSlugRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
-  '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
-  '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
-  '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
-  '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/absensi/$formId': typeof AbsensiFormIdRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/errors/$error': typeof AdminErrorsErrorRoute
+  '/admin/settings/account': typeof AdminSettingsAccountRoute
+  '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
+  '/admin/settings/display': typeof AdminSettingsDisplayRoute
+  '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/clerk/(auth)/sign-in': typeof ClerkauthSignInRoute
   '/clerk/(auth)/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/_authenticated/user-management': typeof ClerkAuthenticatedUserManagementRoute
-  '/_authenticated/approvals/': typeof AuthenticatedApprovalsIndexRoute
-  '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
-  '/_authenticated/attendance/': typeof AuthenticatedAttendanceIndexRoute
-  '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
-  '/_authenticated/forms/': typeof AuthenticatedFormsIndexRoute
-  '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
-  '/_authenticated/participants/': typeof AuthenticatedParticipantsIndexRoute
-  '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
-  '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
-  '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/admin/approvals/': typeof AdminApprovalsIndexRoute
+  '/admin/apps/': typeof AdminAppsIndexRoute
+  '/admin/attendance/': typeof AdminAttendanceIndexRoute
+  '/admin/chats/': typeof AdminChatsIndexRoute
+  '/admin/forms/': typeof AdminFormsIndexRoute
+  '/admin/help-center/': typeof AdminHelpCenterIndexRoute
+  '/admin/participants/': typeof AdminParticipantsIndexRoute
+  '/admin/settings/': typeof AdminSettingsIndexRoute
+  '/admin/tasks/': typeof AdminTasksIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
+    | '/admin'
     | '/clerk'
-    | '/settings'
+    | '/admin/settings'
     | '/forgot-password'
     | '/otp'
     | '/sign-in'
@@ -350,28 +354,30 @@ export interface FileRouteTypes {
     | '/404'
     | '/500'
     | '/503'
-    | '/forms/$slug'
-    | '/'
-    | '/errors/$error'
-    | '/settings/account'
-    | '/settings/appearance'
-    | '/settings/display'
-    | '/settings/notifications'
+    | '/absensi/$formId'
+    | '/admin/dashboard'
+    | '/admin/errors/$error'
+    | '/admin/settings/account'
+    | '/admin/settings/appearance'
+    | '/admin/settings/display'
+    | '/admin/settings/notifications'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
-    | '/approvals'
-    | '/apps'
-    | '/attendance'
-    | '/chats'
-    | '/forms'
-    | '/help-center'
-    | '/participants'
-    | '/settings/'
-    | '/tasks'
-    | '/users'
+    | '/admin/approvals'
+    | '/admin/apps'
+    | '/admin/attendance'
+    | '/admin/chats'
+    | '/admin/forms'
+    | '/admin/help-center'
+    | '/admin/participants'
+    | '/admin/settings/'
+    | '/admin/tasks'
+    | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
+    | '/admin'
     | '/clerk'
     | '/forgot-password'
     | '/otp'
@@ -383,31 +389,32 @@ export interface FileRouteTypes {
     | '/404'
     | '/500'
     | '/503'
-    | '/forms/$slug'
-    | '/'
-    | '/errors/$error'
-    | '/settings/account'
-    | '/settings/appearance'
-    | '/settings/display'
-    | '/settings/notifications'
+    | '/absensi/$formId'
+    | '/admin/dashboard'
+    | '/admin/errors/$error'
+    | '/admin/settings/account'
+    | '/admin/settings/appearance'
+    | '/admin/settings/display'
+    | '/admin/settings/notifications'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
-    | '/approvals'
-    | '/apps'
-    | '/attendance'
-    | '/chats'
-    | '/forms'
-    | '/help-center'
-    | '/participants'
-    | '/settings'
-    | '/tasks'
-    | '/users'
+    | '/admin/approvals'
+    | '/admin/apps'
+    | '/admin/attendance'
+    | '/admin/chats'
+    | '/admin/forms'
+    | '/admin/help-center'
+    | '/admin/participants'
+    | '/admin/settings'
+    | '/admin/tasks'
+    | '/admin/users'
   id:
     | '__root__'
-    | '/_authenticated'
+    | '/'
+    | '/admin'
     | '/clerk'
-    | '/_authenticated/settings'
+    | '/admin/settings'
     | '/clerk/(auth)'
     | '/clerk/_authenticated'
     | '/(auth)/forgot-password'
@@ -420,30 +427,31 @@ export interface FileRouteTypes {
     | '/(errors)/404'
     | '/(errors)/500'
     | '/(errors)/503'
-    | '/forms/$slug'
-    | '/_authenticated/'
-    | '/_authenticated/errors/$error'
-    | '/_authenticated/settings/account'
-    | '/_authenticated/settings/appearance'
-    | '/_authenticated/settings/display'
-    | '/_authenticated/settings/notifications'
+    | '/absensi/$formId'
+    | '/admin/dashboard'
+    | '/admin/errors/$error'
+    | '/admin/settings/account'
+    | '/admin/settings/appearance'
+    | '/admin/settings/display'
+    | '/admin/settings/notifications'
     | '/clerk/(auth)/sign-in'
     | '/clerk/(auth)/sign-up'
     | '/clerk/_authenticated/user-management'
-    | '/_authenticated/approvals/'
-    | '/_authenticated/apps/'
-    | '/_authenticated/attendance/'
-    | '/_authenticated/chats/'
-    | '/_authenticated/forms/'
-    | '/_authenticated/help-center/'
-    | '/_authenticated/participants/'
-    | '/_authenticated/settings/'
-    | '/_authenticated/tasks/'
-    | '/_authenticated/users/'
+    | '/admin/approvals/'
+    | '/admin/apps/'
+    | '/admin/attendance/'
+    | '/admin/chats/'
+    | '/admin/forms/'
+    | '/admin/help-center/'
+    | '/admin/participants/'
+    | '/admin/settings/'
+    | '/admin/tasks/'
+    | '/admin/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  IndexRoute: typeof IndexRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   ClerkRouteRoute: typeof ClerkRouteRouteWithChildren
   authForgotPasswordRoute: typeof authForgotPasswordRoute
   authOtpRoute: typeof authOtpRoute
@@ -455,7 +463,7 @@ export interface RootRouteChildren {
   errors404Route: typeof errors404Route
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
-  FormsSlugRoute: typeof FormsSlugRoute
+  AbsensiFormIdRoute: typeof AbsensiFormIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -467,25 +475,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClerkRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/': {
-      id: '/_authenticated/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/forms/$slug': {
-      id: '/forms/$slug'
-      path: '/forms/$slug'
-      fullPath: '/forms/$slug'
-      preLoaderRoute: typeof FormsSlugRouteImport
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/absensi/$formId': {
+      id: '/absensi/$formId'
+      path: '/absensi/$formId'
+      fullPath: '/absensi/$formId'
+      preLoaderRoute: typeof AbsensiFormIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(errors)/503': {
@@ -572,82 +587,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClerkauthRouteRouteImport
       parentRoute: typeof ClerkRouteRoute
     }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
+    '/admin/settings': {
+      id: '/admin/settings'
       path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
-    '/_authenticated/users/': {
-      id: '/_authenticated/users/'
+    '/admin/users/': {
+      id: '/admin/users/'
       path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
-    '/_authenticated/tasks/': {
-      id: '/_authenticated/tasks/'
+    '/admin/tasks/': {
+      id: '/admin/tasks/'
       path: '/tasks'
-      fullPath: '/tasks'
-      preLoaderRoute: typeof AuthenticatedTasksIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      fullPath: '/admin/tasks'
+      preLoaderRoute: typeof AdminTasksIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
-    '/_authenticated/settings/': {
-      id: '/_authenticated/settings/'
+    '/admin/settings/': {
+      id: '/admin/settings/'
       path: '/'
-      fullPath: '/settings/'
-      preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
-      parentRoute: typeof AuthenticatedSettingsRouteRoute
+      fullPath: '/admin/settings/'
+      preLoaderRoute: typeof AdminSettingsIndexRouteImport
+      parentRoute: typeof AdminSettingsRouteRoute
     }
-    '/_authenticated/participants/': {
-      id: '/_authenticated/participants/'
+    '/admin/participants/': {
+      id: '/admin/participants/'
       path: '/participants'
-      fullPath: '/participants'
-      preLoaderRoute: typeof AuthenticatedParticipantsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      fullPath: '/admin/participants'
+      preLoaderRoute: typeof AdminParticipantsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
-    '/_authenticated/help-center/': {
-      id: '/_authenticated/help-center/'
+    '/admin/help-center/': {
+      id: '/admin/help-center/'
       path: '/help-center'
-      fullPath: '/help-center'
-      preLoaderRoute: typeof AuthenticatedHelpCenterIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      fullPath: '/admin/help-center'
+      preLoaderRoute: typeof AdminHelpCenterIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
-    '/_authenticated/forms/': {
-      id: '/_authenticated/forms/'
+    '/admin/forms/': {
+      id: '/admin/forms/'
       path: '/forms'
-      fullPath: '/forms'
-      preLoaderRoute: typeof AuthenticatedFormsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      fullPath: '/admin/forms'
+      preLoaderRoute: typeof AdminFormsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
-    '/_authenticated/chats/': {
-      id: '/_authenticated/chats/'
+    '/admin/chats/': {
+      id: '/admin/chats/'
       path: '/chats'
-      fullPath: '/chats'
-      preLoaderRoute: typeof AuthenticatedChatsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      fullPath: '/admin/chats'
+      preLoaderRoute: typeof AdminChatsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
-    '/_authenticated/attendance/': {
-      id: '/_authenticated/attendance/'
+    '/admin/attendance/': {
+      id: '/admin/attendance/'
       path: '/attendance'
-      fullPath: '/attendance'
-      preLoaderRoute: typeof AuthenticatedAttendanceIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      fullPath: '/admin/attendance'
+      preLoaderRoute: typeof AdminAttendanceIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
-    '/_authenticated/apps/': {
-      id: '/_authenticated/apps/'
+    '/admin/apps/': {
+      id: '/admin/apps/'
       path: '/apps'
-      fullPath: '/apps'
-      preLoaderRoute: typeof AuthenticatedAppsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      fullPath: '/admin/apps'
+      preLoaderRoute: typeof AdminAppsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
-    '/_authenticated/approvals/': {
-      id: '/_authenticated/approvals/'
+    '/admin/approvals/': {
+      id: '/admin/approvals/'
       path: '/approvals'
-      fullPath: '/approvals'
-      preLoaderRoute: typeof AuthenticatedApprovalsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      fullPath: '/admin/approvals'
+      preLoaderRoute: typeof AdminApprovalsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/clerk/_authenticated/user-management': {
       id: '/clerk/_authenticated/user-management'
@@ -670,99 +685,96 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClerkauthSignInRouteImport
       parentRoute: typeof ClerkauthRouteRoute
     }
-    '/_authenticated/settings/notifications': {
-      id: '/_authenticated/settings/notifications'
+    '/admin/settings/notifications': {
+      id: '/admin/settings/notifications'
       path: '/notifications'
-      fullPath: '/settings/notifications'
-      preLoaderRoute: typeof AuthenticatedSettingsNotificationsRouteImport
-      parentRoute: typeof AuthenticatedSettingsRouteRoute
+      fullPath: '/admin/settings/notifications'
+      preLoaderRoute: typeof AdminSettingsNotificationsRouteImport
+      parentRoute: typeof AdminSettingsRouteRoute
     }
-    '/_authenticated/settings/display': {
-      id: '/_authenticated/settings/display'
+    '/admin/settings/display': {
+      id: '/admin/settings/display'
       path: '/display'
-      fullPath: '/settings/display'
-      preLoaderRoute: typeof AuthenticatedSettingsDisplayRouteImport
-      parentRoute: typeof AuthenticatedSettingsRouteRoute
+      fullPath: '/admin/settings/display'
+      preLoaderRoute: typeof AdminSettingsDisplayRouteImport
+      parentRoute: typeof AdminSettingsRouteRoute
     }
-    '/_authenticated/settings/appearance': {
-      id: '/_authenticated/settings/appearance'
+    '/admin/settings/appearance': {
+      id: '/admin/settings/appearance'
       path: '/appearance'
-      fullPath: '/settings/appearance'
-      preLoaderRoute: typeof AuthenticatedSettingsAppearanceRouteImport
-      parentRoute: typeof AuthenticatedSettingsRouteRoute
+      fullPath: '/admin/settings/appearance'
+      preLoaderRoute: typeof AdminSettingsAppearanceRouteImport
+      parentRoute: typeof AdminSettingsRouteRoute
     }
-    '/_authenticated/settings/account': {
-      id: '/_authenticated/settings/account'
+    '/admin/settings/account': {
+      id: '/admin/settings/account'
       path: '/account'
-      fullPath: '/settings/account'
-      preLoaderRoute: typeof AuthenticatedSettingsAccountRouteImport
-      parentRoute: typeof AuthenticatedSettingsRouteRoute
+      fullPath: '/admin/settings/account'
+      preLoaderRoute: typeof AdminSettingsAccountRouteImport
+      parentRoute: typeof AdminSettingsRouteRoute
     }
-    '/_authenticated/errors/$error': {
-      id: '/_authenticated/errors/$error'
+    '/admin/errors/$error': {
+      id: '/admin/errors/$error'
       path: '/errors/$error'
-      fullPath: '/errors/$error'
-      preLoaderRoute: typeof AuthenticatedErrorsErrorRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      fullPath: '/admin/errors/$error'
+      preLoaderRoute: typeof AdminErrorsErrorRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
   }
 }
 
-interface AuthenticatedSettingsRouteRouteChildren {
-  AuthenticatedSettingsAccountRoute: typeof AuthenticatedSettingsAccountRoute
-  AuthenticatedSettingsAppearanceRoute: typeof AuthenticatedSettingsAppearanceRoute
-  AuthenticatedSettingsDisplayRoute: typeof AuthenticatedSettingsDisplayRoute
-  AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
-  AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
+interface AdminSettingsRouteRouteChildren {
+  AdminSettingsAccountRoute: typeof AdminSettingsAccountRoute
+  AdminSettingsAppearanceRoute: typeof AdminSettingsAppearanceRoute
+  AdminSettingsDisplayRoute: typeof AdminSettingsDisplayRoute
+  AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
+  AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
 }
 
-const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteChildren =
-  {
-    AuthenticatedSettingsAccountRoute: AuthenticatedSettingsAccountRoute,
-    AuthenticatedSettingsAppearanceRoute: AuthenticatedSettingsAppearanceRoute,
-    AuthenticatedSettingsDisplayRoute: AuthenticatedSettingsDisplayRoute,
-    AuthenticatedSettingsNotificationsRoute:
-      AuthenticatedSettingsNotificationsRoute,
-    AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
-  }
-
-const AuthenticatedSettingsRouteRouteWithChildren =
-  AuthenticatedSettingsRouteRoute._addFileChildren(
-    AuthenticatedSettingsRouteRouteChildren,
-  )
-
-interface AuthenticatedRouteRouteChildren {
-  AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
-  AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
-  AuthenticatedApprovalsIndexRoute: typeof AuthenticatedApprovalsIndexRoute
-  AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
-  AuthenticatedAttendanceIndexRoute: typeof AuthenticatedAttendanceIndexRoute
-  AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
-  AuthenticatedFormsIndexRoute: typeof AuthenticatedFormsIndexRoute
-  AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
-  AuthenticatedParticipantsIndexRoute: typeof AuthenticatedParticipantsIndexRoute
-  AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
-  AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+const AdminSettingsRouteRouteChildren: AdminSettingsRouteRouteChildren = {
+  AdminSettingsAccountRoute: AdminSettingsAccountRoute,
+  AdminSettingsAppearanceRoute: AdminSettingsAppearanceRoute,
+  AdminSettingsDisplayRoute: AdminSettingsDisplayRoute,
+  AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
+  AdminSettingsIndexRoute: AdminSettingsIndexRoute,
 }
 
-const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
-  AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
-  AuthenticatedApprovalsIndexRoute: AuthenticatedApprovalsIndexRoute,
-  AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
-  AuthenticatedAttendanceIndexRoute: AuthenticatedAttendanceIndexRoute,
-  AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
-  AuthenticatedFormsIndexRoute: AuthenticatedFormsIndexRoute,
-  AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
-  AuthenticatedParticipantsIndexRoute: AuthenticatedParticipantsIndexRoute,
-  AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
-  AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+const AdminSettingsRouteRouteWithChildren =
+  AdminSettingsRouteRoute._addFileChildren(AdminSettingsRouteRouteChildren)
+
+interface AdminRouteRouteChildren {
+  AdminSettingsRouteRoute: typeof AdminSettingsRouteRouteWithChildren
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminErrorsErrorRoute: typeof AdminErrorsErrorRoute
+  AdminApprovalsIndexRoute: typeof AdminApprovalsIndexRoute
+  AdminAppsIndexRoute: typeof AdminAppsIndexRoute
+  AdminAttendanceIndexRoute: typeof AdminAttendanceIndexRoute
+  AdminChatsIndexRoute: typeof AdminChatsIndexRoute
+  AdminFormsIndexRoute: typeof AdminFormsIndexRoute
+  AdminHelpCenterIndexRoute: typeof AdminHelpCenterIndexRoute
+  AdminParticipantsIndexRoute: typeof AdminParticipantsIndexRoute
+  AdminTasksIndexRoute: typeof AdminTasksIndexRoute
+  AdminUsersIndexRoute: typeof AdminUsersIndexRoute
 }
 
-const AuthenticatedRouteRouteWithChildren =
-  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminSettingsRouteRoute: AdminSettingsRouteRouteWithChildren,
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminErrorsErrorRoute: AdminErrorsErrorRoute,
+  AdminApprovalsIndexRoute: AdminApprovalsIndexRoute,
+  AdminAppsIndexRoute: AdminAppsIndexRoute,
+  AdminAttendanceIndexRoute: AdminAttendanceIndexRoute,
+  AdminChatsIndexRoute: AdminChatsIndexRoute,
+  AdminFormsIndexRoute: AdminFormsIndexRoute,
+  AdminHelpCenterIndexRoute: AdminHelpCenterIndexRoute,
+  AdminParticipantsIndexRoute: AdminParticipantsIndexRoute,
+  AdminTasksIndexRoute: AdminTasksIndexRoute,
+  AdminUsersIndexRoute: AdminUsersIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
 
 interface ClerkauthRouteRouteChildren {
   ClerkauthSignInRoute: typeof ClerkauthSignInRoute
@@ -808,7 +820,8 @@ const ClerkRouteRouteWithChildren = ClerkRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  IndexRoute: IndexRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   ClerkRouteRoute: ClerkRouteRouteWithChildren,
   authForgotPasswordRoute: authForgotPasswordRoute,
   authOtpRoute: authOtpRoute,
@@ -820,7 +833,7 @@ const rootRouteChildren: RootRouteChildren = {
   errors404Route: errors404Route,
   errors500Route: errors500Route,
   errors503Route: errors503Route,
-  FormsSlugRoute: FormsSlugRoute,
+  AbsensiFormIdRoute: AbsensiFormIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

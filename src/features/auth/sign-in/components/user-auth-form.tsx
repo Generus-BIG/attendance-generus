@@ -71,7 +71,7 @@ export function UserAuthForm({
       // The listener in auth-store.ts should pick this up automatically.
 
       // Redirect
-      const targetPath = redirectTo || '/'
+      const targetPath = redirectTo || '/admin/dashboard'
       navigate({ to: targetPath, replace: true })
     } catch (err) {
       console.error(err)
