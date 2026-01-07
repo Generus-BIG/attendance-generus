@@ -7,6 +7,7 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ApprovalsProvider } from './components/approvals-provider'
 import { PendingParticipantsTab } from './components/pending-participants-tab'
+import { HistoryApprovalTab } from './components/history-approval-tab'
 import { UnmatchedAttendanceTab } from './components/unmatched-attendance-tab'
 
 export function Approvals() {
@@ -34,10 +35,14 @@ export function Approvals() {
         <Tabs defaultValue='pending' className='w-full'>
           <TabsList>
             <TabsTrigger value='pending'>Pending Participants</TabsTrigger>
+            <TabsTrigger value='history'>History Approval</TabsTrigger>
             <TabsTrigger value='unmatched'>Unmatched Attendance</TabsTrigger>
           </TabsList>
           <TabsContent value='pending' className='mt-4'>
             <PendingParticipantsTab />
+          </TabsContent>
+          <TabsContent value='history' className='mt-4'>
+            <HistoryApprovalTab />
           </TabsContent>
           <TabsContent value='unmatched' className='mt-4'>
             <UnmatchedAttendanceTab />
