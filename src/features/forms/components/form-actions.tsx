@@ -34,7 +34,7 @@ export function FormActions({ form }: FormActionsProps) {
     const { deleteForm, updateForm } = useFormsContext()
 
     const copyLink = () => {
-        const url = `${window.location.origin}/forms/${form.slug}`
+        const url = `${window.location.origin}/absensi/${form.slug}`
         navigator.clipboard.writeText(url)
         toast.success('Link copied to clipboard')
     }
