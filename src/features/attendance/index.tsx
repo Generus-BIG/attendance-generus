@@ -10,7 +10,7 @@ import { AttendancePrimaryButtons } from './components/attendance-primary-button
 import { AttendanceProvider } from './components/attendance-provider'
 import { AttendanceTable } from './components/attendance-table'
 
-const route = getRouteApi('/_authenticated/attendance/')
+const route = getRouteApi('/admin/attendance/')
 
 export function Attendance() {
   const search = route.useSearch()

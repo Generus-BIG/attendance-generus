@@ -11,7 +11,7 @@ import { ParticipantsProvider } from './components/participants-provider'
 import { ParticipantsCRUDProvider } from './context/participants-context'
 import { ParticipantsTable } from './components/participants-table'
 
-const route = getRouteApi('/_authenticated/participants/')
+const route = getRouteApi('/admin/participants/')
 
 export function Participants() {
   const search = route.useSearch()
