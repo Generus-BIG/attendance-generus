@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ClerkRouteRouteImport } from './routes/clerk/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RegisterAddParticipantRouteImport } from './routes/register/add-participant'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AbsensiFormIdRouteImport } from './routes/absensi/$formId'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
@@ -44,6 +45,7 @@ import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/s
 import { Route as AdminSettingsDisplayRouteImport } from './routes/admin/settings/display'
 import { Route as AdminSettingsAppearanceRouteImport } from './routes/admin/settings/appearance'
 import { Route as AdminSettingsAccountRouteImport } from './routes/admin/settings/account'
+import { Route as AdminFormsCreateRouteImport } from './routes/admin/forms/create'
 import { Route as AdminErrorsErrorRouteImport } from './routes/admin/errors/$error'
 
 const ClerkRouteRoute = ClerkRouteRouteImport.update({
@@ -59,6 +61,11 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterAddParticipantRoute = RegisterAddParticipantRouteImport.update({
+  id: '/register/add-participant',
+  path: '/register/add-participant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
@@ -221,6 +228,11 @@ const AdminSettingsAccountRoute = AdminSettingsAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AdminSettingsRouteRoute,
 } as any)
+const AdminFormsCreateRoute = AdminFormsCreateRouteImport.update({
+  id: '/forms/create',
+  path: '/forms/create',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminErrorsErrorRoute = AdminErrorsErrorRouteImport.update({
   id: '/errors/$error',
   path: '/errors/$error',
@@ -244,7 +256,9 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/absensi/$formId': typeof AbsensiFormIdRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/register/add-participant': typeof RegisterAddParticipantRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
+  '/admin/forms/create': typeof AdminFormsCreateRoute
   '/admin/settings/account': typeof AdminSettingsAccountRoute
   '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
   '/admin/settings/display': typeof AdminSettingsDisplayRoute
@@ -279,7 +293,9 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/absensi/$formId': typeof AbsensiFormIdRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/register/add-participant': typeof RegisterAddParticipantRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
+  '/admin/forms/create': typeof AdminFormsCreateRoute
   '/admin/settings/account': typeof AdminSettingsAccountRoute
   '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
   '/admin/settings/display': typeof AdminSettingsDisplayRoute
@@ -318,7 +334,9 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/absensi/$formId': typeof AbsensiFormIdRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/register/add-participant': typeof RegisterAddParticipantRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
+  '/admin/forms/create': typeof AdminFormsCreateRoute
   '/admin/settings/account': typeof AdminSettingsAccountRoute
   '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
   '/admin/settings/display': typeof AdminSettingsDisplayRoute
@@ -356,7 +374,9 @@ export interface FileRouteTypes {
     | '/503'
     | '/absensi/$formId'
     | '/admin/dashboard'
+    | '/register/add-participant'
     | '/admin/errors/$error'
+    | '/admin/forms/create'
     | '/admin/settings/account'
     | '/admin/settings/appearance'
     | '/admin/settings/display'
@@ -391,7 +411,9 @@ export interface FileRouteTypes {
     | '/503'
     | '/absensi/$formId'
     | '/admin/dashboard'
+    | '/register/add-participant'
     | '/admin/errors/$error'
+    | '/admin/forms/create'
     | '/admin/settings/account'
     | '/admin/settings/appearance'
     | '/admin/settings/display'
@@ -429,7 +451,9 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/absensi/$formId'
     | '/admin/dashboard'
+    | '/register/add-participant'
     | '/admin/errors/$error'
+    | '/admin/forms/create'
     | '/admin/settings/account'
     | '/admin/settings/appearance'
     | '/admin/settings/display'
@@ -464,6 +488,7 @@ export interface RootRouteChildren {
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
   AbsensiFormIdRoute: typeof AbsensiFormIdRoute
+  RegisterAddParticipantRoute: typeof RegisterAddParticipantRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -487,6 +512,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register/add-participant': {
+      id: '/register/add-participant'
+      path: '/register/add-participant'
+      fullPath: '/register/add-participant'
+      preLoaderRoute: typeof RegisterAddParticipantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/dashboard': {
@@ -713,6 +745,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsAccountRouteImport
       parentRoute: typeof AdminSettingsRouteRoute
     }
+    '/admin/forms/create': {
+      id: '/admin/forms/create'
+      path: '/forms/create'
+      fullPath: '/admin/forms/create'
+      preLoaderRoute: typeof AdminFormsCreateRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/errors/$error': {
       id: '/admin/errors/$error'
       path: '/errors/$error'
@@ -746,6 +785,7 @@ interface AdminRouteRouteChildren {
   AdminSettingsRouteRoute: typeof AdminSettingsRouteRouteWithChildren
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminErrorsErrorRoute: typeof AdminErrorsErrorRoute
+  AdminFormsCreateRoute: typeof AdminFormsCreateRoute
   AdminApprovalsIndexRoute: typeof AdminApprovalsIndexRoute
   AdminAppsIndexRoute: typeof AdminAppsIndexRoute
   AdminAttendanceIndexRoute: typeof AdminAttendanceIndexRoute
@@ -761,6 +801,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminSettingsRouteRoute: AdminSettingsRouteRouteWithChildren,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminErrorsErrorRoute: AdminErrorsErrorRoute,
+  AdminFormsCreateRoute: AdminFormsCreateRoute,
   AdminApprovalsIndexRoute: AdminApprovalsIndexRoute,
   AdminAppsIndexRoute: AdminAppsIndexRoute,
   AdminAttendanceIndexRoute: AdminAttendanceIndexRoute,
@@ -834,6 +875,7 @@ const rootRouteChildren: RootRouteChildren = {
   errors500Route: errors500Route,
   errors503Route: errors503Route,
   AbsensiFormIdRoute: AbsensiFormIdRoute,
+  RegisterAddParticipantRoute: RegisterAddParticipantRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
