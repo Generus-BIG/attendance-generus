@@ -83,6 +83,8 @@ export const pendingParticipantSchema = z.object({
   suggestedKelompok: kelompokSchema,
   suggestedGender: genderSchema,
   suggestedKategori: kategoriSchema,
+  birthPlace: z.string().optional().nullable(),
+  birthDate: z.coerce.date().optional().nullable(),
   attendanceRefIds: z.array(z.string()), // linked attendance records
   status: pendingStatusSchema.default('pending'),
   createdAt: z.coerce.date(),
