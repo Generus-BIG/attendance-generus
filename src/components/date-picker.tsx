@@ -25,7 +25,7 @@ export function DatePicker({
         <Button
           variant='outline'
           data-empty={!selected}
-          className='w-[240px] justify-start text-start font-normal data-[empty=true]:text-muted-foreground'
+          className='w-60 justify-start text-start font-normal data-[empty=true]:text-muted-foreground'
         >
           {selected ? (
             format(selected, 'MMM d, yyyy')
@@ -44,6 +44,7 @@ export function DatePicker({
           disabled={(date: Date) =>
             date > new Date() || date < new Date('1900-01-01')
           }
+          initialFocus
         />
       </PopoverContent>
     </Popover>

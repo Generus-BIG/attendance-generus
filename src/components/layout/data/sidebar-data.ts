@@ -1,6 +1,5 @@
 import {
   LayoutDashboard,
-  Monitor,
   HelpCircle,
   Bell,
   Palette,
@@ -91,11 +90,6 @@ export const sidebarData: SidebarData = {
               title: 'Notifications',
               url: '/admin/settings/notifications',
               icon: Bell,
-            },
-            {
-              title: 'Display',
-              url: '/admin/settings/display',
-              icon: Monitor,
             },
           ],
         },
