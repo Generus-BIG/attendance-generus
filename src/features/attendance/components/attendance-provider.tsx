@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { type Attendance } from '@/lib/schema'
 
-type AttendanceDialogType = 'add' | 'edit' | 'delete'
+type AttendanceDialogType = 'add' | 'edit' | 'edit-date' | 'delete'
 
 type AttendanceContextType = {
   open: AttendanceDialogType | null

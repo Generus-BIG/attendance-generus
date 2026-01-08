@@ -200,10 +200,19 @@ export function AttendanceActionDialog({
   // Update form values whenever currentRow changes (when dialog opens with edit data)
   useEffect(() => {
     if (isEdit && currentRow && open) {
+      // Ensure date is a Date object
+      const editDate = currentRow.date instanceof Date ? currentRow.date : new Date(currentRow.date)
+
+      const editParticipantId =
+        currentRow.participantId ??
+        // Some table rows may include joined participant without mapping participantId
+        (currentRow as unknown as { participant?: { id?: string } }).participant?.id ??
+        null
+      
       form.reset({
-        participantId: currentRow.participantId,
+        participantId: editParticipantId,
         formId: currentRow.formId || null,
-        date: currentRow.date,
+        date: editDate,
         status: currentRow.status,
         permissionReason: currentRow.permissionReason,
         notes: currentRow.notes,
@@ -213,10 +222,9 @@ export function AttendanceActionDialog({
         tempKategori: currentRow.tempKategori,
         tempGender: currentRow.tempGender,
       })
-      // Show new participant form if editing a new participant record
-      if (currentRow.tempName) {
-        setShowNewParticipantForm(true)
-      }
+
+      // Set new participant form deterministically based on the row being edited
+      setShowNewParticipantForm(!!currentRow.tempName)
     }
   }, [isEdit, currentRow, open, form])
 
@@ -233,17 +241,29 @@ export function AttendanceActionDialog({
       )).toISOString()
 
       if (isEdit) {
+        const fallbackParticipantId =
+          values.participantId ??
+          currentRow.participantId ??
+          (currentRow as unknown as { participant?: { id?: string } }).participant?.id ??
+          null
+
+        const fallbackFormId = values.formId ?? currentRow.formId ?? null
+
+        // If this record is actually a pending/new participant row, keep it that way
+        const effectiveIsNewParticipant =
+          values.isNewParticipant || (!!currentRow.tempName && !fallbackParticipantId)
+
         // Update existing attendance record in Supabase
         const updatePayload = {
-          participant_id: values.isNewParticipant ? null : values.participantId,
-          form_id: values.formId || null,
+          participant_id: effectiveIsNewParticipant ? null : fallbackParticipantId,
+          form_id: fallbackFormId,
           status: values.status.toUpperCase(),
           permission_reason: values.status === 'izin' ? values.permissionReason : null,
           permission_description: values.status === 'izin' ? values.notes : null,
-          temp_name: values.isNewParticipant ? values.tempName : null,
-          temp_group: values.isNewParticipant ? values.tempKelompok : null,
-          temp_category: values.isNewParticipant ? values.tempKategori : null,
-          temp_gender: values.isNewParticipant ? values.tempGender : null,
+          temp_name: effectiveIsNewParticipant ? values.tempName ?? currentRow.tempName : null,
+          temp_group: effectiveIsNewParticipant ? values.tempKelompok ?? currentRow.tempKelompok : null,
+          temp_category: effectiveIsNewParticipant ? values.tempKategori ?? currentRow.tempKategori : null,
+          temp_gender: effectiveIsNewParticipant ? values.tempGender ?? currentRow.tempGender : null,
           timestamp: timestamp,
         }
 
@@ -341,8 +361,11 @@ export function AttendanceActionDialog({
     <Dialog
       open={open}
       onOpenChange={(state) => {
-        form.reset()
-        setShowNewParticipantForm(false)
+        // Only reset on close to avoid wiping values unexpectedly
+        if (!state) {
+          form.reset()
+          setShowNewParticipantForm(false)
+        }
         onOpenChange(state)
       }}
     >
@@ -386,7 +409,8 @@ export function AttendanceActionDialog({
                 <FormItem className='flex flex-col'>
                   <FormLabel>Pilih Kegiatan (Opsional)</FormLabel>
                   <SelectDropdown
-                    defaultValue={field.value || undefined}
+                    isControlled
+                    value={field.value || undefined}
                     onValueChange={field.onChange}
                     placeholder='Pilih kegiatan/form...'
                     items={activeForms.map((f) => ({
@@ -485,24 +509,6 @@ export function AttendanceActionDialog({
               />
             ) : (
               <>
-                <div className='rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950'>
-                  <div className='flex items-center justify-between'>
-                    <span className='text-sm font-medium text-amber-800 dark:text-amber-200'>
-                      Mengajukan Peserta Baru
-                    </span>
-                    <Button
-                      type='button'
-                      variant='ghost'
-                      size='sm'
-                      onClick={() => {
-                        setShowNewParticipantForm(false)
-                        form.setValue('isNewParticipant', false)
-                      }}
-                    >
-                      Batal
-                    </Button>
-                  </div>
-                </div>
                 <FormField
                   control={form.control}
                   name='tempName'
@@ -528,7 +534,8 @@ export function AttendanceActionDialog({
                       <FormItem>
                         <FormLabel>Kelompok</FormLabel>
                         <SelectDropdown
-                          defaultValue={field.value || undefined}
+                          isControlled
+                          value={field.value || undefined}
                           onValueChange={field.onChange}
                           placeholder='Pilih kelompok'
                           items={KELOMPOK.map((k) => ({ label: k, value: k }))}
@@ -544,7 +551,8 @@ export function AttendanceActionDialog({
                       <FormItem>
                         <FormLabel>Kategori</FormLabel>
                         <SelectDropdown
-                          defaultValue={field.value || undefined}
+                          isControlled
+                          value={field.value || undefined}
                           onValueChange={field.onChange}
                           placeholder='Pilih kategori'
                           items={KATEGORI.map((k) => ({
@@ -564,7 +572,8 @@ export function AttendanceActionDialog({
                     <FormItem>
                       <FormLabel>Jenis Kelamin</FormLabel>
                       <SelectDropdown
-                        defaultValue={field.value || undefined}
+                        isControlled
+                        value={field.value || undefined}
                         onValueChange={field.onChange}
                         placeholder='Pilih jenis kelamin'
                         items={[

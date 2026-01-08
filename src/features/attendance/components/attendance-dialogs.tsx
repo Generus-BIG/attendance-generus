@@ -1,5 +1,6 @@
 import { AttendanceActionDialog } from './attendance-action-dialog'
 import { AttendanceDeleteDialog } from './attendance-delete-dialog'
+import { AttendanceEditDateDialog } from './attendance-edit-date-dialog'
 import { useAttendance } from './attendance-provider'
 
 export function AttendanceDialogs() {
@@ -10,19 +11,21 @@ export function AttendanceDialogs() {
       <AttendanceActionDialog
         key='attendance-add'
         open={open === 'add'}
-        onOpenChange={() => setOpen('add')}
+        onOpenChange={(nextOpen) => setOpen(nextOpen ? 'add' : null)}
       />
 
       {currentRow && (
         <>
-          <AttendanceActionDialog
-            key={`attendance-edit-${currentRow.id}`}
-            open={open === 'edit'}
-            onOpenChange={() => {
-              setOpen('edit')
-              setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
+          <AttendanceEditDateDialog
+            key={`attendance-edit-date-${currentRow.id}`}
+            open={open === 'edit-date'}
+            onOpenChange={(nextOpen) => {
+              setOpen(nextOpen ? 'edit-date' : null)
+              if (!nextOpen) {
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 500)
+              }
             }}
             currentRow={currentRow}
           />
@@ -30,11 +33,13 @@ export function AttendanceDialogs() {
           <AttendanceDeleteDialog
             key={`attendance-delete-${currentRow.id}`}
             open={open === 'delete'}
-            onOpenChange={() => {
-              setOpen('delete')
-              setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
+            onOpenChange={(nextOpen) => {
+              setOpen(nextOpen ? 'delete' : null)
+              if (!nextOpen) {
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 500)
+              }
             }}
             currentRow={currentRow}
           />
