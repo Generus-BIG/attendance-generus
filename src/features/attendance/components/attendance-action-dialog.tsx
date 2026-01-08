@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -196,6 +196,29 @@ export function AttendanceActionDialog({
 
   const watchStatus = useWatch({ control: form.control, name: 'status' })
   const watchParticipantId = useWatch({ control: form.control, name: 'participantId' })
+
+  // Update form values whenever currentRow changes (when dialog opens with edit data)
+  useEffect(() => {
+    if (isEdit && currentRow && open) {
+      form.reset({
+        participantId: currentRow.participantId,
+        formId: currentRow.formId || null,
+        date: currentRow.date,
+        status: currentRow.status,
+        permissionReason: currentRow.permissionReason,
+        notes: currentRow.notes,
+        isNewParticipant: !!currentRow.tempName, // If tempName exists, it's a new participant
+        tempName: currentRow.tempName,
+        tempKelompok: currentRow.tempKelompok,
+        tempKategori: currentRow.tempKategori,
+        tempGender: currentRow.tempGender,
+      })
+      // Show new participant form if editing a new participant record
+      if (currentRow.tempName) {
+        setShowNewParticipantForm(true)
+      }
+    }
+  }, [isEdit, currentRow, open, form])
 
   const onSubmit = async (values: AttendanceForm) => {
     setIsSubmitting(true)
