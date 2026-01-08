@@ -529,6 +529,26 @@ export function AttendanceActionDialog({
                 <div className='grid grid-cols-2 gap-4'>
                   <FormField
                     control={form.control}
+                    name='tempGender'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Jenis Kelamin</FormLabel>
+                        <SelectDropdown
+                          isControlled
+                          value={field.value || undefined}
+                          onValueChange={field.onChange}
+                          placeholder='Pilih'
+                          items={[
+                            { label: 'Laki-laki', value: 'L' },
+                            { label: 'Perempuan', value: 'P' },
+                          ]}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
                     name='tempKelompok'
                     render={({ field }) => (
                       <FormItem>
@@ -544,42 +564,22 @@ export function AttendanceActionDialog({
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name='tempKategori'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Kategori</FormLabel>
-                        <SelectDropdown
-                          isControlled
-                          value={field.value || undefined}
-                          onValueChange={field.onChange}
-                          placeholder='Pilih kategori'
-                          items={KATEGORI.map((k) => ({
-                            label: k === 'A' ? 'GPN A' : k === 'B' ? 'GPN B' : 'AR',
-                            value: k,
-                          }))}
-                        />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
                 <FormField
                   control={form.control}
-                  name='tempGender'
+                  name='tempKategori'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Jenis Kelamin</FormLabel>
+                      <FormLabel>Kategori</FormLabel>
                       <SelectDropdown
                         isControlled
                         value={field.value || undefined}
                         onValueChange={field.onChange}
-                        placeholder='Pilih jenis kelamin'
-                        items={[
-                          { label: 'Laki-laki', value: 'L' },
-                          { label: 'Perempuan', value: 'P' },
-                        ]}
+                        placeholder='Pilih kategori'
+                        items={KATEGORI.map((k) => ({
+                          label: k === 'A' ? 'GPN A' : k === 'B' ? 'GPN B' : 'AR',
+                          value: k,
+                        }))}
                       />
                       <FormMessage />
                     </FormItem>
