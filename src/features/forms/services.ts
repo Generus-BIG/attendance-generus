@@ -166,24 +166,29 @@ export async function searchParticipants(
         return []
     }
 
+    // Type-safe mapping for Supabase foreign key relations
+    type ParticipantRow = {
+        id: string
+        name: string
+        gender: string
+        groups: { value: string } | null
+        categories: { value: string } | null
+    }
+
     // Supabase returns foreign key relations as objects or arrays depending on the relationship
-    const mapped: ParticipantSearchResult[] = data.map((p) => {
+    const mapped: ParticipantSearchResult[] = (data as unknown as ParticipantRow[]).map((p) => {
         // Handle both single object and array responses from Supabase
-        const groupData = p.groups as { value: string } | { value: string }[] | null
-        const categoryData = p.categories as { value: string } | { value: string }[] | null
+        const groupData = p.groups
+        const categoryData = p.categories
 
-        const groupValue = Array.isArray(groupData)
-            ? groupData[0]?.value
-            : groupData?.value
+        const groupValue = groupData?.value
 
-        const categoryValue = Array.isArray(categoryData)
-            ? categoryData[0]?.value
-            : categoryData?.value
+        const categoryValue = categoryData?.value
 
         return {
-            id: p.id as string,
-            name: p.name as string,
-            gender: p.gender as string,
+            id: p.id,
+            name: p.name,
+            gender: p.gender,
             group: groupValue || '',
             category: categoryValue || '', // Keep original DB value for display
         }
