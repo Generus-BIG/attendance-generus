@@ -125,8 +125,12 @@ export function MultiParticipantInput({
           />
         </div>
         <div
-          className='max-h-64 touch-pan-y overflow-y-auto overscroll-contain p-1'
-          style={{ WebkitOverflowScrolling: 'touch' }}
+          className='touch-pan-y overscroll-contain p-1'
+          style={{
+            maxHeight: '16rem',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+          }}
           role='listbox'
         >
           {filteredParticipants.length === 0 ? (

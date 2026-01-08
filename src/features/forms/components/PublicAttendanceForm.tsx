@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link } from '@tanstack/react-router'
 import { CheckCircle2, Loader2, Check, ChevronsUpDown } from 'lucide-react'
+import { format } from 'date-fns'
+import { id as idLocale } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import {
     Form,
@@ -192,8 +194,11 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
 
     return (
         <Card className='mx-auto w-full max-w-lg border-primary/10 shadow-lg overflow-hidden'>
-            <CardHeader>
+            <CardHeader className='relative'>
                 <CardTitle className='text-2xl font-bold'>{formConfig.title}</CardTitle>
+                <span className='absolute top-4 end-4 text-sm font-medium text-muted-foreground'>
+                    {format(new Date(), 'dd MMM yyyy', { locale: idLocale })}
+                </span>
                 {formConfig.description && (
                     <CardDescription className='text-base whitespace-pre-wrap'>{formConfig.description}</CardDescription>
                 )}
