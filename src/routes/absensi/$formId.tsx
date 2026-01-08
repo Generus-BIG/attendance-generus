@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 
+import { useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { getFormBySlug } from '@/features/forms/services'
@@ -19,6 +20,44 @@ function PublicFormPage() {
     queryFn: () => getFormBySlug(formId),
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
+
+  useEffect(() => {
+    if (!formConfig) return
+
+    const title = `Shadcn Absensi ${formConfig.title}`
+    const description = 'Form atendance integrate DB'
+
+    document.title = title
+
+    const setMetaByName = (name: string, content: string) => {
+      let element = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)
+      if (!element) {
+        element = document.createElement('meta')
+        element.setAttribute('name', name)
+        document.head.appendChild(element)
+      }
+      element.setAttribute('content', content)
+    }
+
+    const setMetaByProperty = (property: string, content: string) => {
+      let element = document.querySelector<HTMLMetaElement>(`meta[property="${property}"]`)
+      if (!element) {
+        element = document.createElement('meta')
+        element.setAttribute('property', property)
+        document.head.appendChild(element)
+      }
+      element.setAttribute('content', content)
+    }
+
+    setMetaByName('title', title)
+    setMetaByName('description', description)
+    setMetaByProperty('og:title', title)
+    setMetaByProperty('og:description', description)
+    setMetaByProperty('og:url', window.location.href)
+    setMetaByProperty('twitter:title', title)
+    setMetaByProperty('twitter:description', description)
+    setMetaByProperty('twitter:url', window.location.href)
+  }, [formConfig])
 
   if (isLoading) {
     return (
