@@ -174,7 +174,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                 ? 'Mba'
                                 : submittedGender === 'L'
                                 ? 'Mas'
-                                : 'Mas/Mba'}{' '}
+                                : 'Mas atau Mba'}{' '}
                             {submittedName || 'peserta'}
                         </span>{' '}
                         untuk{' '}
@@ -183,7 +183,6 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                         </span>{' '}
                         sudah berhasil disimpan.
                     </p>
-                    <br />
                     <p>Alhamdulillahi Jazakumullahu Khoiro.</p>
                     <p>Kalau ada teman yang belum absen, boleh diingatkan ya 😊</p>
                     <p className='text-foreground'>Kamu bisa tutup halaman ini sekarang.</p>
