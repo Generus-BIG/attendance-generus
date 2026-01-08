@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { Check, ChevronsUpDown, Search, UserPlus } from 'lucide-react'
+import { Check, ChevronsUpDown, UserPlus } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { analytics } from '@/lib/analytics'
@@ -30,6 +30,14 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { SelectDropdown } from '@/components/select-dropdown'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
 import {
   Popover,
   PopoverContent,
@@ -394,14 +402,6 @@ export function AttendanceActionDialog({
   }
 
   const selectedParticipant = participants.find((p) => p.id === watchParticipantId)
-  const filteredParticipants = useMemo(() => {
-    const query = participantQuery.trim().toLowerCase()
-    if (!query) return participants
-    return participants.filter((participant) => {
-      const haystack = `${participant.name} ${participant.kelompok} ${participant.kategori}`.toLowerCase()
-      return haystack.includes(query)
-    })
-  }, [participants, participantQuery])
 
   return (
     <Dialog
@@ -507,80 +507,72 @@ export function AttendanceActionDialog({
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className='w-full p-0' align='start'>
-                          <div className='flex h-10 items-center gap-2 border-b px-3'>
-                            <Search className='size-4 shrink-0 opacity-50' />
-                            <Input
+                          <Command shouldFilter>
+                            <CommandInput
                               ref={participantSearchRef}
                               value={participantQuery}
-                              onChange={(event) => setParticipantQuery(event.target.value)}
+                              onValueChange={setParticipantQuery}
                               placeholder='Cari nama peserta...'
-                              className='h-8 border-0 px-0 shadow-none focus-visible:ring-0'
                             />
-                          </div>
-                          <div
-                            className='touch-pan-y overscroll-contain p-1'
-                            style={{
-                              maxHeight: '16rem',
-                              overflowY: 'auto',
-                              WebkitOverflowScrolling: 'touch',
-                            }}
-                            role='listbox'
-                          >
-                            {filteredParticipants.length === 0 ? (
-                              <div className='flex flex-col items-center gap-2 py-4'>
-                                <span className='text-sm text-muted-foreground'>
-                                  Peserta tidak ditemukan
-                                </span>
-                                <Button
-                                  type='button'
-                                  variant='outline'
-                                  size='sm'
-                                  onClick={() => {
-                                    setShowNewParticipantForm(true)
-                                    form.setValue('isNewParticipant', true)
-                                    form.setValue('participantIds', [])
-                                    setOpenCombobox(false)
-                                  }}
-                                >
-                                  <UserPlus className='mr-2 h-4 w-4' />
-                                  Ajukan Peserta Baru
-                                </Button>
-                              </div>
-                            ) : (
-                              filteredParticipants.map((participant) => (
-                                <button
-                                  key={participant.id}
-                                  type='button'
-                                  role='option'
-                                  aria-selected={field.value === participant.id}
-                                  onClick={() => {
-                                    form.setValue('participantId', participant.id)
-                                    form.setValue('isNewParticipant', false)
-                                    setOpenCombobox(false)
-                                  }}
-                                  className={cn(
-                                    'flex w-full items-start gap-2 rounded-sm px-2 py-2 text-left text-sm outline-none',
-                                    'hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground'
-                                  )}
-                                >
-                                  <Check
-                                    className={cn(
-                                      'mt-0.5 h-4 w-4',
-                                      field.value === participant.id
-                                        ? 'opacity-100'
-                                        : 'opacity-0'
-                                    )}
-                                  />
-                                  <div className='flex flex-col'>
-                                    <span>{participant.name}</span>
-                                    <span className='text-muted-foreground text-xs'>
-                                      {participant.kelompok} - {participant.kategori === 'A' ? 'GPN A' : participant.kategori === 'B' ? 'GPN B' : `Kategori ${participant.kategori}`}
-                                    </span>
-                                  </div>
-                                </button>
-                              ))
-                            )}
-                          </div>
+                            <CommandList
+                              className='touch-pan-y overscroll-contain'
+                              style={{
+                                maxHeight: '16rem',
+                                overflowY: 'auto',
+                                WebkitOverflowScrolling: 'touch',
+                              }}
+                            >
+                              <CommandEmpty>
+                                <div className='flex flex-col items-center gap-2 py-4'>
+                                  <span className='text-sm text-muted-foreground'>
+                                    Peserta tidak ditemukan
+                                  </span>
+                                  <Button
+                                    type='button'
+                                    variant='outline'
+                                    size='sm'
+                                    onClick={() => {
+                                      setShowNewParticipantForm(true)
+                                      form.setValue('isNewParticipant', true)
+                                      form.setValue('participantIds', [])
+                                      setOpenCombobox(false)
+                                    }}
+                                  >
+                                    <UserPlus className='mr-2 h-4 w-4' />
+                                    Ajukan Peserta Baru
+                                  </Button>
+                                </div>
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {participants.map((participant) => (
+                                  <CommandItem
+                                    key={participant.id}
+                                    value={`${participant.name} ${participant.kelompok} ${participant.kategori}`}
+                                    onSelect={() => {
+                                      form.setValue('participantId', participant.id)
+                                      form.setValue('isNewParticipant', false)
+                                      setOpenCombobox(false)
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        'mr-2 h-4 w-4',
+                                        field.value === participant.id
+                                          ? 'opacity-100'
+                                          : 'opacity-0'
+                                      )}
+                                    />
+                                    <div className='flex flex-col'>
+                                      <span>{participant.name}</span>
+                                      <span className='text-muted-foreground text-xs'>
+                                        {participant.kelompok} - {participant.kategori === 'A' ? 'GPN A' : participant.kategori === 'B' ? 'GPN B' : `Kategori ${participant.kategori}`}
+                                      </span>
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
                         </PopoverContent>
                       </Popover>
                       <FormMessage />

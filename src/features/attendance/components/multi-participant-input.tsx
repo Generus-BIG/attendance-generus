@@ -1,13 +1,20 @@
 import { useMemo, useRef, useState } from 'react'
-import { Check, ChevronsUpDown, Search, X } from 'lucide-react'
+import { Check, ChevronsUpDown, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { type Participant } from '@/lib/schema'
 
@@ -50,15 +57,6 @@ export function MultiParticipantInput({
   const removeParticipant = (participantId: string) => {
     onChange(value.filter((id) => id !== participantId))
   }
-
-  const filteredParticipants = useMemo(() => {
-    const query = searchValue.trim().toLowerCase()
-    if (!query) return participants
-    return participants.filter((participant) => {
-      const haystack = `${participant.name} ${participant.kelompok} ${participant.kategori}`.toLowerCase()
-      return haystack.includes(query)
-    })
-  }, [participants, searchValue])
 
   return (
     <Popover
@@ -114,47 +112,34 @@ export function MultiParticipantInput({
         </Button>
       </PopoverTrigger>
       <PopoverContent className='w-full p-0' align='start'>
-        <div className='flex h-10 items-center gap-2 border-b px-3'>
-          <Search className='size-4 shrink-0 opacity-50' />
-          <Input
+        <Command shouldFilter>
+          <CommandInput
             ref={inputRef}
             value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
+            onValueChange={setSearchValue}
             placeholder='Cari nama peserta...'
-            className='h-8 border-0 px-0 shadow-none focus-visible:ring-0'
           />
-        </div>
-        <div
-          className='touch-pan-y overscroll-contain p-1'
-          style={{
-            maxHeight: '16rem',
-            overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch',
-          }}
-          role='listbox'
-        >
-          {filteredParticipants.length === 0 ? (
-            <div className='py-6 text-center text-sm text-muted-foreground'>
-              Peserta tidak ditemukan.
-            </div>
-          ) : (
-            filteredParticipants.map((participant) => {
-              const isSelected = value.includes(participant.id)
-              return (
-                <button
-                  key={participant.id}
-                  type='button'
-                  role='option'
-                  aria-selected={isSelected}
-                  onClick={() => toggleParticipant(participant.id)}
-                  className={cn(
-                    'flex w-full items-start gap-2 rounded-sm px-2 py-2 text-left text-sm outline-none',
-                    'hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground'
-                  )}
-                >
+          <CommandList
+            className='touch-pan-y overscroll-contain'
+            style={{
+              maxHeight: '16rem',
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
+            <CommandEmpty>Peserta tidak ditemukan.</CommandEmpty>
+            <CommandGroup>
+              {participants.map((participant) => {
+                const isSelected = value.includes(participant.id)
+                return (
+                  <CommandItem
+                    key={participant.id}
+                    value={`${participant.name} ${participant.kelompok} ${participant.kategori}`}
+                    onSelect={() => toggleParticipant(participant.id)}
+                  >
                   <Check
                     className={cn(
-                      'mt-0.5 h-4 w-4',
+                      'mr-2 h-4 w-4',
                       isSelected ? 'opacity-100' : 'opacity-0'
                     )}
                   />
@@ -164,11 +149,12 @@ export function MultiParticipantInput({
                       {participant.kelompok} - {participant.kategori}
                     </span>
                   </div>
-                </button>
-              )
-            })
-          )}
-        </div>
+                  </CommandItem>
+                )
+              })}
+            </CommandGroup>
+          </CommandList>
+        </Command>
       </PopoverContent>
     </Popover>
   )

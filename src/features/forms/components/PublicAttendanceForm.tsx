@@ -70,6 +70,8 @@ interface PublicAttendanceFormProps {
 export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) {
     const [isSubmitted, setIsSubmitted] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [submittedName, setSubmittedName] = useState('')
+    const [submittedGender, setSubmittedGender] = useState<'L' | 'P' | undefined>()
 
     // Search state
     const [open, setOpen] = useState(false)
@@ -115,6 +117,8 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                 tempKategori: data.tempKategori,
                 tempGender: data.tempGender,
             })
+            setSubmittedName(data.tempName)
+            setSubmittedGender(data.tempGender)
             setIsSubmitted(true)
             toast.success('Absensi berhasil dikirim!')
         } catch (_error) {
@@ -160,18 +164,36 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                             <CheckCircle2 className='h-12 w-12 text-primary animate-in zoom-in duration-300' />
                         </div>
                     </div>
-                    <CardTitle className='text-2xl font-bold'>Disyukuri, Alhamdulillah Jaza Kumullahu Khioro!</CardTitle>
-                    <CardDescription className='text-base'>
-                        Absensi Anda untuk <strong>{formConfig.title}</strong> telah berhasil disimpan.
-                    </CardDescription>
+                    <CardTitle className='text-2xl font-bold'>Done! Alhamdulillah 🙌</CardTitle>
                 </CardHeader>
-                <CardFooter className='flex justify-center flex-col gap-4'>
-                    <p className='text-sm text-muted-foreground text-center'>
-                        Anda dapat menutup halaman ini sekarang.
+                <CardContent className='space-y-3 text-sm text-muted-foreground'>
+                    <p className='text-base'>
+                        Absensi{' '}
+                        <span className='font-semibold text-foreground'>
+                            {submittedGender === 'P'
+                                ? 'Mba'
+                                : submittedGender === 'L'
+                                ? 'Mas'
+                                : 'Mas/Mba'}{' '}
+                            {submittedName || 'peserta'}
+                        </span>{' '}
+                        untuk{' '}
+                        <span className='font-semibold text-foreground'>
+                            {formConfig.title}
+                        </span>{' '}
+                        sudah berhasil disimpan.
                     </p>
+                    <br />
+                    <p>Alhamdulillahi Jazakumullahu Khoiro.</p>
+                    <p>Kalau ada teman yang belum absen, boleh diingatkan ya 😊</p>
+                    <p className='text-foreground'>Kamu bisa tutup halaman ini sekarang.</p>
+                </CardContent>
+                <CardFooter className='flex justify-center flex-col gap-4'>
                     <Button variant='outline' onClick={() => {
                         // Reset form dan state
                         setIsSubmitted(false)
+                        setSubmittedName('')
+                        setSubmittedGender(undefined)
                         form.reset({
                             participantId: undefined,
                             tempName: '',
