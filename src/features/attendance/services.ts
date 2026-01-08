@@ -26,13 +26,19 @@ export async function getAttendanceList() {
 
     return data.map((item: any) => ({
         ...item,
-        date: item.timestamp, // Map timestamp to date for table sorting
+        // Normalize foreign keys to camelCase for dialogs/edit flow
+        participantId: item.participant_id ?? item.participantId ?? null,
+        formId: item.form_id ?? item.formId ?? null,
+        // Map timestamp to date for table sorting
+        date: item.timestamp,
         status: item.status?.toLowerCase(),
         permissionReason: item.permission_reason, // Map snake_case to camelCase
         notes: item.permission_description,
+        // Pending/new participant fields
         tempName: item.temp_name,
         tempKelompok: item.temp_group,
         tempKategori: item.temp_category,
+        tempGender: item.temp_gender,
         participant: item.participant ? {
             ...item.participant,
             kelompok: item.participant.group?.value,
