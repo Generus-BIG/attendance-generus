@@ -1,13 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { z } from 'zod'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { Check, ChevronsUpDown, UserPlus } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { DatePicker } from '@/components/date-picker'
 import {
   Dialog,
   DialogContent,
@@ -49,11 +51,73 @@ import {
   KATEGORI,
   GENDER,
 } from '@/lib/schema'
-import { attendanceService, participantService, pendingParticipantService } from '@/lib/storage'
+import { supabase } from '@/lib/supabase'
 import { useAttendance } from './attendance-provider'
+
+// Fetch active participants from Supabase
+async function getActiveParticipants(): Promise<Participant[]> {
+  const { data, error } = await supabase
+    .from('participants')
+    .select(`
+      id,
+      name,
+      gender,
+      groups:group_id(value),
+      categories:category_id(value),
+      status_active,
+      created_at
+    `)
+    .eq('status_active', true)
+    .order('name')
+
+  if (error) throw error
+
+  type ParticipantRow = {
+    id: string
+    name: string
+    gender: 'L' | 'P'
+    groups: { value: string } | null
+    categories: { value: string } | null
+    status_active: boolean | null
+    created_at: string
+  }
+
+  function mapDbCategoryToInternal(dbCategory: string): Participant['kategori'] {
+    if (dbCategory === 'GPN A') return 'A'
+    if (dbCategory === 'GPN B') return 'B'
+    if (dbCategory === 'AR') return 'AR'
+    if (dbCategory === 'A' || dbCategory === 'B' || dbCategory === 'AR') return dbCategory
+    return 'AR'
+  }
+
+  return (data as unknown as ParticipantRow[]).map((p) => ({
+    id: p.id,
+    name: p.name,
+    gender: p.gender,
+    kelompok: (p.groups?.value || 'BIG 1') as Participant['kelompok'],
+    kategori: mapDbCategoryToInternal(p.categories?.value || ''),
+    status: p.status_active ? 'active' : 'inactive',
+    createdAt: new Date(p.created_at),
+    updatedAt: new Date(p.created_at),
+  }))
+}
+
+// Fetch active forms from Supabase
+async function getActiveForms() {
+  const { data, error } = await supabase
+    .from('attendance_forms')
+    .select('id, title, date')
+    .eq('is_active', true)
+    .order('date', { ascending: false })
+
+  if (error) throw error
+  return data
+}
 
 const formSchema = z.object({
   participantId: z.string().nullable(),
+  formId: z.string().nullable().optional(),
+  date: z.date({ message: 'Tanggal absensi wajib diisi' }),
   status: z.enum(ATTENDANCE_STATUS),
   permissionReason: z.enum(PERMISSION_REASONS).nullable().optional(),
   notes: z.string().nullable().optional(),
@@ -80,19 +144,31 @@ export function AttendanceActionDialog({
 }: AttendanceActionDialogProps) {
   const isEdit = !!currentRow
   const { refreshData } = useAttendance()
-  const [participants, setParticipants] = useState<Participant[]>([])
   const [openCombobox, setOpenCombobox] = useState(false)
   const [showNewParticipantForm, setShowNewParticipantForm] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  useEffect(() => {
-    setParticipants(participantService.getActive())
-  }, [open])
+  // Fetch participants from Supabase
+  const { data: participants = [] } = useQuery<Participant[]>({
+    queryKey: ['active_participants_for_dialog'],
+    queryFn: getActiveParticipants,
+    enabled: open, // Only fetch when dialog is open
+  })
+
+  // Fetch active forms for lookup
+  const { data: activeForms = [] } = useQuery({
+    queryKey: ['active_attendance_forms'],
+    queryFn: getActiveForms,
+    enabled: open,
+  })
 
   const form = useForm<AttendanceForm>({
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
       ? {
           participantId: currentRow.participantId,
+          formId: currentRow.formId || null,
+          date: currentRow.date,
           status: currentRow.status,
           permissionReason: currentRow.permissionReason,
           notes: currentRow.notes,
@@ -104,6 +180,8 @@ export function AttendanceActionDialog({
         }
       : {
           participantId: null,
+          formId: null,
+          date: new Date(),
           status: 'hadir',
           permissionReason: null,
           notes: null,
@@ -115,57 +193,100 @@ export function AttendanceActionDialog({
         },
   })
 
-  const watchStatus = form.watch('status')
-  const watchParticipantId = form.watch('participantId')
+  const watchStatus = useWatch({ control: form.control, name: 'status' })
+  const watchParticipantId = useWatch({ control: form.control, name: 'participantId' })
 
-  const onSubmit = (values: AttendanceForm) => {
-    const now = new Date()
+  const onSubmit = async (values: AttendanceForm) => {
+    setIsSubmitting(true)
+    try {
+      // Construct timestamp: selected date at 00:00 UTC
+      const selectedDate = values.date
+      const timestamp = new Date(Date.UTC(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        selectedDate.getDate(),
+        0, 0, 0, 0
+      )).toISOString()
 
-    if (isEdit) {
-      attendanceService.update(currentRow.id, {
-        participantId: values.participantId,
-        status: values.status,
-        permissionReason: values.status === 'izin' ? values.permissionReason : null,
-        notes: values.status === 'izin' ? values.notes : null,
-        tempName: values.isNewParticipant ? values.tempName : null,
-        tempKelompok: values.isNewParticipant ? values.tempKelompok : null,
-        tempKategori: values.isNewParticipant ? values.tempKategori : null,
-        tempGender: values.isNewParticipant ? values.tempGender : null,
-      })
-      toast.success('Data absensi berhasil diperbarui')
-    } else {
-      // Create attendance record
-      const attendance = attendanceService.create({
-        participantId: values.isNewParticipant ? null : values.participantId,
-        date: now,
-        timestamp: now,
-        status: values.status,
-        permissionReason: values.status === 'izin' ? values.permissionReason : null,
-        notes: values.status === 'izin' ? values.notes : null,
-        tempName: values.isNewParticipant ? values.tempName : null,
-        tempKelompok: values.isNewParticipant ? values.tempKelompok : null,
-        tempKategori: values.isNewParticipant ? values.tempKategori : null,
-        tempGender: values.isNewParticipant ? values.tempGender : null,
-      })
+      if (isEdit) {
+        // Update existing attendance record in Supabase
+        const updatePayload = {
+          participant_id: values.isNewParticipant ? null : values.participantId,
+          form_id: values.formId || null,
+          status: values.status.toUpperCase(),
+          permission_reason: values.status === 'izin' ? values.permissionReason : null,
+          permission_description: values.status === 'izin' ? values.notes : null,
+          temp_name: values.isNewParticipant ? values.tempName : null,
+          temp_group: values.isNewParticipant ? values.tempKelompok : null,
+          temp_category: values.isNewParticipant ? values.tempKategori : null,
+          temp_gender: values.isNewParticipant ? values.tempGender : null,
+          timestamp: timestamp,
+        }
 
-      // If new participant, create pending participant
-      if (values.isNewParticipant && values.tempName && values.tempKelompok && values.tempGender && values.tempKategori) {
-        pendingParticipantService.create({
-          name: values.tempName,
-          suggestedKelompok: values.tempKelompok,
-          suggestedGender: values.tempGender,
-          suggestedKategori: values.tempKategori,
-          attendanceRefIds: [attendance.id],
-        })
+        const { error } = await supabase
+          .from('attendance')
+          .update(updatePayload)
+          .eq('id', currentRow.id)
+
+        if (error) throw error
+        toast.success('Data absensi berhasil diperbarui')
+      } else {
+        // Create new attendance record in Supabase
+        const insertPayload = {
+          participant_id: values.isNewParticipant ? null : values.participantId,
+          form_id: values.formId || null, // Link to selected form/event
+          status: values.status.toUpperCase(),
+          permission_reason: values.status === 'izin' ? values.permissionReason : null,
+          permission_description: values.status === 'izin' ? values.notes : null,
+          temp_name: values.isNewParticipant ? values.tempName : null,
+          temp_group: values.isNewParticipant ? values.tempKelompok : null,
+          temp_category: values.isNewParticipant ? values.tempKategori : null,
+          temp_gender: values.isNewParticipant ? values.tempGender : null,
+          timestamp: timestamp,
+        }
+
+        const { data: attendanceData, error: attendanceError } = await supabase
+          .from('attendance')
+          .insert(insertPayload)
+          .select()
+          .single()
+
+        if (attendanceError) throw attendanceError
+
+        // If new participant, create pending participant in Supabase
+        if (values.isNewParticipant && values.tempName && values.tempKelompok && values.tempGender && values.tempKategori) {
+          const pendingPayload = {
+            name: values.tempName,
+            suggested_group: values.tempKelompok,
+            suggested_gender: values.tempGender,
+            suggested_category: values.tempKategori,
+            attendance_ref_ids: [attendanceData.id],
+            status: 'pending',
+          }
+
+          const { error: pendingError } = await supabase
+            .from('pending_participants')
+            .insert(pendingPayload)
+
+          if (pendingError) {
+            console.error('Error creating pending participant:', pendingError)
+            // Don't fail the whole operation, just log it
+          }
+        }
+
+        toast.success('Absensi berhasil dicatat')
       }
 
-      toast.success('Absensi berhasil dicatat')
+      refreshData()
+      form.reset()
+      setShowNewParticipantForm(false)
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Error saving attendance:', error)
+      toast.error('Gagal menyimpan absensi: ' + (error as Error).message)
+    } finally {
+      setIsSubmitting(false)
     }
-
-    refreshData()
-    form.reset()
-    setShowNewParticipantForm(false)
-    onOpenChange(false)
   }
 
   const selectedParticipant = participants.find((p) => p.id === watchParticipantId)
@@ -194,6 +315,44 @@ export function AttendanceActionDialog({
             onSubmit={form.handleSubmit(onSubmit)}
             className='space-y-4 p-0.5'
           >
+            <FormField
+              control={form.control}
+              name='date'
+              render={({ field }) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel>Tanggal Absensi</FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      placeholder='Pilih tanggal...'
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='formId'
+              render={({ field }) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel>Pilih Kegiatan (Opsional)</FormLabel>
+                  <SelectDropdown
+                    defaultValue={field.value || undefined}
+                    onValueChange={field.onChange}
+                    placeholder='Pilih kegiatan/form...'
+                    items={activeForms.map((f) => ({
+                      label: `${f.title} (${new Date(f.date).toLocaleDateString('id-ID')})`,
+                      value: f.id,
+                    }))}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {!showNewParticipantForm ? (
               <FormField
                 control={form.control}
@@ -264,7 +423,7 @@ export function AttendanceActionDialog({
                                   <div className='flex flex-col'>
                                     <span>{participant.name}</span>
                                     <span className='text-muted-foreground text-xs'>
-                                      {participant.kelompok} - Kategori {participant.kategori}
+                                      {participant.kelompok} - {participant.kategori === 'A' ? 'GPN A' : participant.kategori === 'B' ? 'GPN B' : `Kategori ${participant.kategori}`}
                                     </span>
                                   </div>
                                 </CommandItem>
@@ -342,7 +501,10 @@ export function AttendanceActionDialog({
                           defaultValue={field.value || undefined}
                           onValueChange={field.onChange}
                           placeholder='Pilih kategori'
-                          items={KATEGORI.map((k) => ({ label: `Kategori ${k}`, value: k }))}
+                          items={KATEGORI.map((k) => ({
+                            label: k === 'A' ? 'GPN A' : k === 'B' ? 'GPN B' : 'AR',
+                            value: k,
+                          }))}
                         />
                         <FormMessage />
                       </FormItem>
@@ -431,8 +593,8 @@ export function AttendanceActionDialog({
           </form>
         </Form>
         <DialogFooter>
-          <Button type='submit' form='attendance-form'>
-            Simpan
+          <Button type='submit' form='attendance-form' disabled={isSubmitting}>
+            {isSubmitting ? 'Menyimpan...' : 'Simpan'}
           </Button>
         </DialogFooter>
       </DialogContent>
