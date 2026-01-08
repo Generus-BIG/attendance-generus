@@ -240,7 +240,7 @@ export function AttendanceActionDialog({
           permission_reason: values.status === 'izin' ? values.permissionReason : null,
           permission_description: values.status === 'izin' ? values.notes : null,
           temp_name: values.isNewParticipant ? values.tempName : null,
-          temp_group: values.isNewParticipants ? values.tempKelompok : null,
+          temp_group: values.isNewParticipant ? values.tempKelompok : null,
           temp_category: values.isNewParticipant ? values.tempKategori : null,
           temp_gender: values.isNewParticipant ? values.tempGender : null,
           timestamp: timestamp,
