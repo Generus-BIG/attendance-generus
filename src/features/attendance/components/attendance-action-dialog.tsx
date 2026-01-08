@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { Check, ChevronsUpDown, UserPlus } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
+import { analytics } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/date-picker'
 import {
@@ -239,7 +240,7 @@ export function AttendanceActionDialog({
           permission_reason: values.status === 'izin' ? values.permissionReason : null,
           permission_description: values.status === 'izin' ? values.notes : null,
           temp_name: values.isNewParticipant ? values.tempName : null,
-          temp_group: values.isNewParticipant ? values.tempKelompok : null,
+          temp_group: values.isNewParticipants ? values.tempKelompok : null,
           temp_category: values.isNewParticipant ? values.tempKategori : null,
           temp_gender: values.isNewParticipant ? values.tempGender : null,
           timestamp: timestamp,
@@ -277,13 +278,33 @@ export function AttendanceActionDialog({
         toast.success('Absensi berhasil dicatat')
       }
 
+      // Track attendance submission with form details
+      analytics.submitAttendance({
+        status: values.status,
+        formId: values.formId || 'unknown',
+        formTitle: 'Attendance Record',
+        isNewParticipant: values.isNewParticipant,
+        kelompok: values.isNewParticipant ? values.tempKelompok : selectedParticipant?.kelompok,
+        kategori: values.isNewParticipant ? values.tempKategori : selectedParticipant?.kategori,
+        participantCount: 1, // Single attendance record per submission
+      })
+
       refreshData()
       form.reset()
       setShowNewParticipantForm(false)
       onOpenChange(false)
     } catch (error) {
       console.error('Error saving attendance:', error)
-      toast.error('Gagal menyimpan absensi: ' + (error as Error).message)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      
+      // Track failed attendance submission
+      analytics.submitAttendanceFailed(
+        errorMessage,
+        values.status,
+        'Attendance Record'
+      )
+      
+      toast.error('Gagal menyimpan absensi: ' + errorMessage)
     } finally {
       setIsSubmitting(false)
     }

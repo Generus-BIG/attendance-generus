@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { AxiosError } from 'axios'
+import { inject } from '@vercel/analytics'
 import {
   QueryCache,
   QueryClient,
@@ -18,6 +19,9 @@ import { ThemeProvider } from './context/theme-provider'
 import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
+
+// Initialize Vercel Web Analytics
+inject()
 
 // Initialize seed data on first load
 // Initialize seed data on first load

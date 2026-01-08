@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
+import { analytics } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -60,11 +61,15 @@ export function UserAuthForm({
       })
 
       if (error) {
+        // Track failed sign in
+        analytics.signInFailed(data.email, error.message)
         toast.error(error.message)
         setIsLoading(false)
         return
       }
 
+      // Track successful sign in
+      analytics.signIn(data.email, true)
       toast.success('Signed in successfully')
 
       // Let the store listener handle state updates, or Force check?
@@ -75,6 +80,9 @@ export function UserAuthForm({
       navigate({ to: targetPath, replace: true })
     } catch (err) {
       console.error(err)
+      // Track sign in error
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      analytics.signInFailed(data.email, errorMessage)
       toast.error('Something went wrong')
       setIsLoading(false)
     }
