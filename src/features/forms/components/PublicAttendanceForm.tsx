@@ -215,11 +215,13 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
 
     return (
         <Card className='mx-auto w-full max-w-lg border-primary/10 shadow-lg overflow-hidden'>
-            <CardHeader className='relative'>
-                <CardTitle className='text-2xl font-bold'>{formConfig.title}</CardTitle>
-                <span className='absolute top-4 end-4 text-sm font-medium text-muted-foreground'>
-                    {format(new Date(), 'dd MMM yyyy', { locale: idLocale })}
-                </span>
+            <CardHeader>
+                <div className='flex flex-col gap-1'>
+                    <CardTitle className='text-2xl font-bold'>{formConfig.title}</CardTitle>
+                    <span className='text-sm font-medium text-muted-foreground'>
+                        {format(new Date(), 'dd MMM yyyy', { locale: idLocale })}
+                    </span>
+                </div>
                 {formConfig.description && (
                     <CardDescription className='text-base whitespace-pre-wrap'>{formConfig.description}</CardDescription>
                 )}
