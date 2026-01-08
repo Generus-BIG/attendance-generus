@@ -293,8 +293,9 @@ export function AttendanceActionDialog({
             .insert(pendingPayload)
 
           if (pendingError) {
-            console.error('Error creating pending participant:', pendingError)
             // Don't fail the whole operation, just log it
+            // eslint-disable-next-line no-console
+            console.error('Error creating pending participant:', pendingError)
           }
         }
 
@@ -317,6 +318,7 @@ export function AttendanceActionDialog({
       setShowNewParticipantForm(false)
       onOpenChange(false)
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error saving attendance:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       
