@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { Check, ChevronsUpDown, UserPlus } from 'lucide-react'
+import { Check, ChevronsUpDown, Search, UserPlus } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { analytics } from '@/lib/analytics'
@@ -31,14 +31,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { SelectDropdown } from '@/components/select-dropdown'
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -54,6 +46,7 @@ import {
 } from '@/lib/schema'
 import { supabase } from '@/lib/supabase'
 import { useAttendance } from './attendance-provider'
+import { MultiParticipantInput } from './multi-participant-input'
 
 // Fetch active participants from Supabase
 async function getActiveParticipants(): Promise<Participant[]> {
@@ -117,6 +110,7 @@ async function getActiveForms() {
 
 const formSchema = z.object({
   participantId: z.string().nullable(),
+  participantIds: z.array(z.string()).optional(),
   formId: z.string().nullable().optional(),
   date: z.date({ message: 'Tanggal absensi wajib diisi' }),
   status: z.enum(ATTENDANCE_STATUS),
@@ -148,6 +142,8 @@ export function AttendanceActionDialog({
   const [openCombobox, setOpenCombobox] = useState(false)
   const [showNewParticipantForm, setShowNewParticipantForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [participantQuery, setParticipantQuery] = useState('')
+  const participantSearchRef = useRef<HTMLInputElement>(null)
 
   // Fetch participants from Supabase
   const { data: participants = [] } = useQuery<Participant[]>({
@@ -168,6 +164,7 @@ export function AttendanceActionDialog({
     defaultValues: isEdit
       ? {
           participantId: currentRow.participantId,
+          participantIds: currentRow.participantId ? [currentRow.participantId] : [],
           formId: currentRow.formId || null,
           date: currentRow.date,
           status: currentRow.status,
@@ -181,6 +178,7 @@ export function AttendanceActionDialog({
         }
       : {
           participantId: null,
+          participantIds: [],
           formId: null,
           date: new Date(),
           status: 'hadir',
@@ -211,6 +209,7 @@ export function AttendanceActionDialog({
       
       form.reset({
         participantId: editParticipantId,
+        participantIds: editParticipantId ? [editParticipantId] : [],
         formId: currentRow.formId || null,
         date: editDate,
         status: currentRow.status,
@@ -275,30 +274,62 @@ export function AttendanceActionDialog({
         if (error) throw error
         toast.success('Data absensi berhasil diperbarui')
       } else {
-        // Create new attendance record in Supabase
-        const insertPayload = {
-          participant_id: values.isNewParticipant ? null : values.participantId,
-          form_id: values.formId || null, // Link to selected form/event
-          status: values.status.toUpperCase(),
-          permission_reason: values.status === 'izin' ? values.permissionReason : null,
-          permission_description: values.status === 'izin' ? values.notes : null,
-          temp_name: values.isNewParticipant ? values.tempName : null,
-          temp_group: values.isNewParticipant ? values.tempKelompok : null,
-          temp_category: values.isNewParticipant ? values.tempKategori : null,
-          temp_gender: values.isNewParticipant ? values.tempGender : null,
-          timestamp: timestamp,
+        if (!values.isNewParticipant && (!values.participantIds || values.participantIds.length === 0)) {
+          form.setError('participantIds', {
+            type: 'manual',
+            message: 'Pilih minimal satu peserta',
+          })
+          setIsSubmitting(false)
+          return
         }
 
-        const { data: attendanceData, error: attendanceError } = await supabase
-          .from('attendance')
-          .insert(insertPayload)
-          .select()
-          .single()
+        // Create new attendance record in Supabase
+        let attendanceData: { id: string } | null = null
+        if (values.isNewParticipant) {
+          const insertPayload = {
+            participant_id: null,
+            form_id: values.formId || null, // Link to selected form/event
+            status: values.status.toUpperCase(),
+            permission_reason: values.status === 'izin' ? values.permissionReason : null,
+            permission_description: values.status === 'izin' ? values.notes : null,
+            temp_name: values.tempName,
+            temp_group: values.tempKelompok,
+            temp_category: values.tempKategori,
+            temp_gender: values.tempGender,
+            timestamp: timestamp,
+          }
 
-        if (attendanceError) throw attendanceError
+          const { data: insertedAttendance, error: attendanceError } = await supabase
+            .from('attendance')
+            .insert(insertPayload)
+            .select()
+            .single()
+
+          if (attendanceError) throw attendanceError
+          attendanceData = insertedAttendance
+        } else {
+          const insertPayloads = (values.participantIds || []).map((participantId) => ({
+            participant_id: participantId,
+            form_id: values.formId || null,
+            status: values.status.toUpperCase(),
+            permission_reason: values.status === 'izin' ? values.permissionReason : null,
+            permission_description: values.status === 'izin' ? values.notes : null,
+            temp_name: null,
+            temp_group: null,
+            temp_category: null,
+            temp_gender: null,
+            timestamp: timestamp,
+          }))
+
+          const { error: attendanceError } = await supabase
+            .from('attendance')
+            .insert(insertPayloads)
+
+          if (attendanceError) throw attendanceError
+        }
 
         // If new participant, create pending participant in Supabase
-        if (values.isNewParticipant && values.tempName && values.tempKelompok && values.tempGender && values.tempKategori) {
+        if (values.isNewParticipant && values.tempName && values.tempKelompok && values.tempGender && values.tempKategori && attendanceData?.id) {
           const pendingPayload = {
             name: values.tempName,
             suggested_group: values.tempKelompok,
@@ -323,19 +354,26 @@ export function AttendanceActionDialog({
       }
 
       // Track attendance submission with form details
+      const participantIds = values.isNewParticipant
+        ? []
+        : (values.participantIds || [])
+      const selectedParticipants = participants.filter((p) => participantIds.includes(p.id))
+      const selectedParticipantSummary = selectedParticipants.length === 1 ? selectedParticipants[0] : null
+
       analytics.submitAttendance({
         status: values.status,
         formId: values.formId || 'unknown',
         formTitle: 'Attendance Record',
         isNewParticipant: values.isNewParticipant,
-        kelompok: values.isNewParticipant ? values.tempKelompok : selectedParticipant?.kelompok,
-        kategori: values.isNewParticipant ? values.tempKategori : selectedParticipant?.kategori,
-        participantCount: 1, // Single attendance record per submission
+        kelompok: values.isNewParticipant ? values.tempKelompok : selectedParticipantSummary?.kelompok,
+        kategori: values.isNewParticipant ? values.tempKategori : selectedParticipantSummary?.kategori,
+        participantCount: values.isNewParticipant ? 1 : participantIds.length || 1,
       })
 
       refreshData()
       form.reset()
       setShowNewParticipantForm(false)
+      form.setValue('participantIds', [])
       onOpenChange(false)
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -356,6 +394,14 @@ export function AttendanceActionDialog({
   }
 
   const selectedParticipant = participants.find((p) => p.id === watchParticipantId)
+  const filteredParticipants = useMemo(() => {
+    const query = participantQuery.trim().toLowerCase()
+    if (!query) return participants
+    return participants.filter((participant) => {
+      const haystack = `${participant.name} ${participant.kelompok} ${participant.kategori}`.toLowerCase()
+      return haystack.includes(query)
+    })
+  }, [participants, participantQuery])
 
   return (
     <Dialog
@@ -424,38 +470,63 @@ export function AttendanceActionDialog({
             />
 
             {!showNewParticipantForm ? (
-              <FormField
-                control={form.control}
-                name='participantId'
-                render={({ field }) => (
-                  <FormItem className='flex flex-col'>
-                    <FormLabel>Nama Peserta</FormLabel>
-                    <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant='outline'
-                            role='combobox'
-                            aria-expanded={openCombobox}
-                            className={cn(
-                              'justify-between',
-                              !field.value && 'text-muted-foreground'
-                            )}
+              isEdit ? (
+                <FormField
+                  control={form.control}
+                  name='participantId'
+                  render={({ field }) => (
+                    <FormItem className='flex flex-col'>
+                      <FormLabel>Nama Peserta</FormLabel>
+                      <Popover
+                        open={openCombobox}
+                        onOpenChange={(nextOpen) => {
+                          setOpenCombobox(nextOpen)
+                          if (nextOpen) {
+                            queueMicrotask(() => participantSearchRef.current?.focus())
+                          } else {
+                            setParticipantQuery('')
+                          }
+                        }}
+                      >
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant='outline'
+                              role='combobox'
+                              aria-expanded={openCombobox}
+                              className={cn(
+                                'justify-between',
+                                !field.value && 'text-muted-foreground'
+                              )}
+                            >
+                              {selectedParticipant
+                                ? `${selectedParticipant.name} (${selectedParticipant.kelompok})`
+                                : 'Pilih peserta...'}
+                              <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className='w-full p-0' align='start'>
+                          <div className='flex h-10 items-center gap-2 border-b px-3'>
+                            <Search className='size-4 shrink-0 opacity-50' />
+                            <Input
+                              ref={participantSearchRef}
+                              value={participantQuery}
+                              onChange={(event) => setParticipantQuery(event.target.value)}
+                              placeholder='Cari nama peserta...'
+                              className='h-8 border-0 px-0 shadow-none focus-visible:ring-0'
+                            />
+                          </div>
+                          <div
+                            className='max-h-64 touch-pan-y overflow-y-auto overscroll-contain p-1'
+                            style={{ WebkitOverflowScrolling: 'touch' }}
+                            role='listbox'
                           >
-                            {selectedParticipant
-                              ? `${selectedParticipant.name} (${selectedParticipant.kelompok})`
-                              : 'Pilih peserta...'}
-                            <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className='w-full p-0' align='start'>
-                        <Command>
-                          <CommandInput placeholder='Cari nama peserta...' />
-                          <CommandList>
-                            <CommandEmpty>
+                            {filteredParticipants.length === 0 ? (
                               <div className='flex flex-col items-center gap-2 py-4'>
-                                <span>Peserta tidak ditemukan</span>
+                                <span className='text-sm text-muted-foreground'>
+                                  Peserta tidak ditemukan
+                                </span>
                                 <Button
                                   type='button'
                                   variant='outline'
@@ -463,6 +534,7 @@ export function AttendanceActionDialog({
                                   onClick={() => {
                                     setShowNewParticipantForm(true)
                                     form.setValue('isNewParticipant', true)
+                                    form.setValue('participantIds', [])
                                     setOpenCombobox(false)
                                   }}
                                 >
@@ -470,21 +542,26 @@ export function AttendanceActionDialog({
                                   Ajukan Peserta Baru
                                 </Button>
                               </div>
-                            </CommandEmpty>
-                            <CommandGroup>
-                              {participants.map((participant) => (
-                                <CommandItem
+                            ) : (
+                              filteredParticipants.map((participant) => (
+                                <button
                                   key={participant.id}
-                                  value={`${participant.name} ${participant.kelompok}`}
-                                  onSelect={() => {
+                                  type='button'
+                                  role='option'
+                                  aria-selected={field.value === participant.id}
+                                  onClick={() => {
                                     form.setValue('participantId', participant.id)
                                     form.setValue('isNewParticipant', false)
                                     setOpenCombobox(false)
                                   }}
+                                  className={cn(
+                                    'flex w-full items-start gap-2 rounded-sm px-2 py-2 text-left text-sm outline-none',
+                                    'hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground'
+                                  )}
                                 >
                                   <Check
                                     className={cn(
-                                      'mr-2 h-4 w-4',
+                                      'mt-0.5 h-4 w-4',
                                       field.value === participant.id
                                         ? 'opacity-100'
                                         : 'opacity-0'
@@ -496,17 +573,53 @@ export function AttendanceActionDialog({
                                       {participant.kelompok} - {participant.kategori === 'A' ? 'GPN A' : participant.kategori === 'B' ? 'GPN B' : `Kategori ${participant.kategori}`}
                                     </span>
                                   </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                                </button>
+                              ))
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : (
+                <FormField
+                  control={form.control}
+                  name='participantIds'
+                  render={({ field }) => (
+                    <FormItem className='flex flex-col'>
+                      <FormLabel>Nama Peserta</FormLabel>
+                      <FormControl>
+                        <MultiParticipantInput
+                          participants={participants}
+                          value={field.value || []}
+                          onChange={(nextValue) => {
+                            field.onChange(nextValue)
+                            form.setValue('isNewParticipant', false)
+                          }}
+                          placeholder='Pilih peserta...'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <Button
+                        type='button'
+                        variant='outline'
+                        size='sm'
+                        className='mt-2 w-fit'
+                        onClick={() => {
+                          setShowNewParticipantForm(true)
+                          form.setValue('isNewParticipant', true)
+                          form.setValue('participantIds', [])
+                        }}
+                      >
+                        <UserPlus className='mr-2 h-4 w-4' />
+                        Ajukan Peserta Baru
+                      </Button>
+                    </FormItem>
+                  )}
+                />
+              )
             ) : (
               <>
                 <FormField

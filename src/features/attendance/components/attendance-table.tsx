@@ -28,6 +28,7 @@ import { kelompokOptions } from '@/features/participants/data/data'
 import { attendanceColumns as columns, type AttendanceWithParticipant } from './attendance-columns'
 import { useAttendance } from './attendance-provider'
 import { getAttendanceList } from '../services'
+import { DataTableBulkActions } from './data-table-bulk-actions'
 
 type DataTableProps = {
   search: Record<string, unknown>
@@ -192,6 +193,7 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
         </Table>
       </div>
       <DataTablePagination table={table} className='mt-auto' />
+      <DataTableBulkActions table={table} />
     </div>
   )
 }
