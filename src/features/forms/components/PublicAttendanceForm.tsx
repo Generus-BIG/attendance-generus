@@ -167,7 +167,22 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                     <p className='text-sm text-muted-foreground text-center'>
                         Anda dapat menutup halaman ini sekarang.
                     </p>
-                    <Button variant='outline' onClick={() => setIsSubmitted(false)}>
+                    <Button variant='outline' onClick={() => {
+                        // Reset form dan state
+                        setIsSubmitted(false)
+                        form.reset({
+                            participantId: undefined,
+                            tempName: '',
+                            tempGender: undefined,
+                            tempKelompok: undefined,
+                            tempKategori: undefined,
+                            status: undefined,
+                            permissionReason: undefined,
+                            notes: '',
+                        })
+                        setSearchQuery('')
+                        setDebouncedQuery('')
+                    }}>
                         Kirim Absensi Lain
                     </Button>
                 </CardFooter>

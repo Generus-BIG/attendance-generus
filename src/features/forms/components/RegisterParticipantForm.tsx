@@ -106,7 +106,21 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                 </CardHeader>
                 <CardFooter className='flex justify-center flex-col gap-4'>
                     <Button asChild variant='outline'>
-                        <Link to="/absensi/$formId" params={{ formId: formConfig.slug }}>
+                        <Link to="/absensi/$formId" params={{ formId: formConfig.slug }} onClick={() => {
+                            // Reset form saat kembali ke form utama
+                            form.reset({
+                                tempName: '',
+                                tempGender: undefined,
+                                tempKelompok: undefined,
+                                tempKategori: undefined,
+                                birthPlace: '',
+                                birthDate: undefined,
+                                status: undefined,
+                                permissionReason: undefined,
+                                notes: '',
+                            })
+                            setIsSubmitted(false)
+                        }}>
                             Kembali ke Form Utama
                         </Link>
                     </Button>
