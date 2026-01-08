@@ -71,7 +71,7 @@ export function AttendanceEditDateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[425px]'>
+      <DialogContent className='sm:max-w-106.25'>
         <DialogHeader>
           <DialogTitle>Edit Tanggal Absensi</DialogTitle>
           <DialogDescription>

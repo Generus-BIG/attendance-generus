@@ -286,7 +286,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                             )}
                         />
 
-                        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                        <div className='grid grid-cols-2 gap-4'>
                             <FormField
                                 control={form.control}
                                 name='tempGender'
@@ -448,20 +448,22 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                             </div>
                         )}
 
-                        <Button
-                            type='submit'
-                            className='w-full h-12 text-lg font-bold shadow-md'
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className='mr-2 h-5 w-5 animate-spin' />
-                                    Submitting...
-                                </>
-                            ) : (
-                                'Submit'
-                            )}
-                        </Button>
+                        <div className='flex justify-end pt-2'>
+                            <Button
+                                type='submit'
+                                className='px-8 h-11 text-base font-bold shadow-md'
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                                        Submitting...
+                                    </>
+                                ) : (
+                                    'Submit'
+                                )}
+                            </Button>
+                        </div>
                         <div className="mt-2 text-center">
                              <Button variant="link" size="sm" asChild className="text-muted-foreground">
                                 <Link to="/register/add-participant" search={{ slug: formConfig.slug }}>
