@@ -50,8 +50,8 @@ export const analytics = {
     formId: string
     formTitle: string
     isNewParticipant: boolean
-    kelompok?: string
-    kategori?: string
+    kelompok?: string | null
+    kategori?: string | null
     participantCount: number
   }) => {
     track('attendance_submitted', {
