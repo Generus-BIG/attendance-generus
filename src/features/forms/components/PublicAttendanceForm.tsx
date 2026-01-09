@@ -182,9 +182,9 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                             {formConfig.title}
                         </span>{' '}
                         sudah berhasil disimpan.
+                    <br /><br />
                     </p>
-                    <p>Alhamdulillahi Jazakumullahu Khoiro.</p>
-                    <p>Kalau ada teman yang belum absen, boleh diingatkan ya 😊</p>
+                    <p>Alhamdulillahi Jazakumullahu Khoiro, kalau ada teman yang belum absen, boleh amsol diingatkan ya 😊</p>
                     <p className='text-foreground'>Kamu bisa tutup halaman ini sekarang.</p>
                 </CardContent>
                 <CardFooter className='flex justify-center flex-col gap-4'>
@@ -277,7 +277,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                                                 <span className="text-muted-foreground">Nama tidak ditemukan.</span>
                                                                 <Button variant="outline" size="sm" asChild className="w-full h-8">
                                                                     <Link to="/register/add-participant" search={{ slug: formConfig.slug }}>
-                                                                        Nama tidak ada? Daftar Baru
+                                                                       Klik buat daftar!
                                                                     </Link>
                                                                 </Button>
                                                             </div>
@@ -495,7 +495,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                         <div className="mt-2 text-center">
                              <Button variant="link" size="sm" asChild className="text-muted-foreground">
                                 <Link to="/register/add-participant" search={{ slug: formConfig.slug }}>
-                                    Belum terdaftar? Isi form peserta baru di sini
+                                    Belum nemu namamu? Yuk isi data dulu disini
                                 </Link>
                             </Button>
                         </div>

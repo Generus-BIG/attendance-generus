@@ -94,7 +94,7 @@ function PublicFormPage() {
 
         <div className='mt-8 text-center'>
           <p className='text-sm text-muted-foreground'>
-            &copy; {new Date().getFullYear()} Absensi MuMiBig Dashboard GPN
+            &copy; {new Date().getFullYear()} Developed with 💛
           </p>
         </div>
       </div>

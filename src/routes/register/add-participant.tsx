@@ -61,7 +61,7 @@ function RegisterPage() {
 
         <div className='mt-8 text-center'>
           <p className='text-sm text-muted-foreground/60'>
-            &copy; {new Date().getFullYear()} Absensi MuMiBig Dashboard GPN
+            &copy; {new Date().getFullYear()} Crafted for everyone 💛
           </p>
         </div>
       </div>
