@@ -137,6 +137,12 @@ export function aggregateMonthlyRecap(
 ): MonthlyFormRecap {
   const monthKey = format(month, 'yyyy-MM')
   const totalCensus = censusParticipants.length
+  const censusByGroup: Record<string, number> = {}
+
+  for (const participant of censusParticipants) {
+    const group = participant.group?.trim() || 'Unknown'
+    censusByGroup[group] = (censusByGroup[group] ?? 0) + 1
+  }
 
   // Build census lookup map for participant info
   const censusMap = new Map<string, CensusParticipant>()
@@ -149,6 +155,7 @@ export function aggregateMonthlyRecap(
       monthKey,
       meetings: [],
       participants: [],
+      censusByGroup,
       totals: {
         totalMeetings: 0,
         totalHadir: 0,
@@ -257,6 +264,7 @@ export function aggregateMonthlyRecap(
     monthKey,
     meetings,
     participants,
+    censusByGroup,
     totals: {
       totalMeetings,
       totalHadir,

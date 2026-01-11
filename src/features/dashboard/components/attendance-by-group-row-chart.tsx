@@ -19,7 +19,8 @@ type Props = {
 type GroupRow = {
   group: string
   census: number
-  hadir: number
+  totalHadir: number
+  avgHadir: number
   percentage: number
 }
 
@@ -49,32 +50,35 @@ export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
 
   const byGroup = new Map<string, { census: number; hadir: number }>()
 
-  // 1. Calculate census (unique participants) and total hadir per group
+  // 1. Seed census counts from realtime participants (dashboard recap)
+  for (const [group, count] of Object.entries(recap.censusByGroup ?? {})) {
+    byGroup.set(group, { census: count, hadir: 0 })
+  }
+
+  // 2. Add total hadir per group from attendance recap
   for (const p of recap.participants) {
     const group = p.participantGroup?.trim() || 'Unknown'
     const current = byGroup.get(group) ?? { census: 0, hadir: 0 }
-    
-    current.census += 1 // Each participant counts as 1 census unit
     current.hadir += p.hadirCount
-    
     byGroup.set(group, current)
   }
 
-  const totalMeetings = recap.totals.totalMeetings || 1
+  const totalMeetings = recap.totals.totalMeetings || 0
 
-  // 2. Calculate percentage: (Total Hadir / (Census * Total Meetings)) * 100
+  // 3. Calculate percentage: (Average Hadir per meeting / Census) * 100
   const data: GroupRow[] = Array.from(byGroup.entries())
     .map(([group, stats]) => {
-      const maxPossibleHadir = stats.census * totalMeetings
-      const percentage = maxPossibleHadir > 0 
-        ? Math.round((stats.hadir / maxPossibleHadir) * 100) 
+      const avgHadir = totalMeetings > 0 ? stats.hadir / totalMeetings : 0
+      const percentage = stats.census > 0 
+        ? Math.round((avgHadir / stats.census) * 100) 
         : 0
       
       return {
         group,
         census: stats.census,
-        hadir: stats.hadir,
-        percentage
+        totalHadir: stats.hadir,
+        avgHadir,
+        percentage,
       }
     })
     .sort((a, b) => b.percentage - a.percentage)
@@ -131,7 +135,13 @@ export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
                       </div>
                       <div className='flex justify-between gap-4'>
                         <span className='text-muted-foreground'>Total Hadir:</span>
-                        <span className='font-mono'>{row?.hadir}</span>
+                        <span className='font-mono'>{row?.totalHadir}</span>
+                      </div>
+                      <div className='flex justify-between gap-4'>
+                        <span className='text-muted-foreground'>Rata-rata Hadir:</span>
+                        <span className='font-mono'>
+                          {row?.avgHadir?.toFixed(1) ?? '0'}
+                        </span>
                       </div>
                       <div className='flex justify-between gap-4'>
                         <span className='text-muted-foreground'>Jumlah Sensus:</span>

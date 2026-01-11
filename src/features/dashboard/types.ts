@@ -85,6 +85,7 @@ export type MonthlyFormRecap = {
   monthKey: string // YYYY-MM
   meetings: MeetingRecap[]
   participants: ParticipantMonthlyRecap[]
+  censusByGroup: Record<string, number>
   totals: {
     totalMeetings: number
     totalHadir: number
