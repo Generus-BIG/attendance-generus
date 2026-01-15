@@ -493,11 +493,14 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                             </Button>
                         </div>
                         <div className="mt-2 text-center">
-                             <Button variant="link" size="sm" asChild className="text-muted-foreground">
-                                <Link to="/register/add-participant" search={{ slug: formConfig.slug }}>
-                                    Belum nemu namamu? Yuk isi data dulu disini
-                                </Link>
-                            </Button>
+                             <Link 
+                                to="/register/add-participant" 
+                                search={{ slug: formConfig.slug }}
+                                className="text-sm text-muted-foreground hover:text-muted-foreground"
+                            >
+                                <span>Belum nemu namamu?</span>
+                                <span className="underline hover:underline">Yuk isi data kamu disini</span>
+                            </Link>
                         </div>
                     </form>
                 </Form>
