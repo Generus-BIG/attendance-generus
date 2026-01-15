@@ -191,4 +191,13 @@ export const approvalService = {
       
       if (error) throw error
   }
+  ,
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('pending_participants')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+  }
 }
