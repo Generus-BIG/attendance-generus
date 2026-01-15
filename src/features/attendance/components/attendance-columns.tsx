@@ -145,15 +145,18 @@ export const attendanceColumns: ColumnDef<AttendanceWithParticipant>[] = [
       const reason = row.getValue('permissionReason') as string | null
       const notes = row.original.notes
       return (
-        <div className='flex flex-col'>
+        <div className='flex flex-col gap-1 py-2'>
           <span>{reason || '-'}</span>
           {notes && (
-            <span className='text-muted-foreground text-xs truncate max-w-32'>
+            <span className='text-muted-foreground text-xs whitespace-pre-wrap break-words'>
               {notes}
             </span>
           )}
         </div>
       )
+    },
+    meta: {
+      className: 'align-top w-48',
     },
   },
   {
