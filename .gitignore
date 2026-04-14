@@ -24,7 +24,9 @@ dist-ssr
 *.sln
 *.sw?
 *.opencode
+.mcp.json
 *_bmad
 *_bmad-output
 *docs
 *CLAUDE.md
+*.claude
