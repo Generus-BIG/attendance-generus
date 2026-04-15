@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { AuthenticatedLayout } from '@/components/layout/authenticated-layout'
 import { useAuthStore } from '@/stores/auth-store'
+import { AuthenticatedLayout } from '@/components/layout/authenticated-layout'
 
 export const Route = createFileRoute('/admin')({
   beforeLoad: async ({ location }) => {
@@ -15,6 +15,17 @@ export const Route = createFileRoute('/admin')({
         search: { redirect: location.href },
       })
     }
+
+    // Role-based route protection
+    const role = auth.user?.app_metadata?.role as string | undefined
+    if (
+      location.pathname.startsWith('/admin/manage-role') &&
+      role !== 'super_admin' &&
+      role !== 'admin'
+    ) {
+      throw redirect({ to: '/admin/403' })
+    }
+
     // Redirect /admin to /admin/dashboard
     if (location.pathname === '/admin' || location.pathname === '/admin/') {
       throw redirect({

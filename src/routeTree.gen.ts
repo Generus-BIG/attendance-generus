@@ -13,6 +13,7 @@ import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegisterAddParticipantRouteImport } from './routes/register/add-participant'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as Admin403RouteImport } from './routes/admin/403'
 import { Route as AbsensiFormIdRouteImport } from './routes/absensi/$formId'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
@@ -25,10 +26,10 @@ import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AdminSettingsRouteRouteImport } from './routes/admin/settings/route'
-import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
 import { Route as AdminTasksIndexRouteImport } from './routes/admin/tasks/index'
 import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
 import { Route as AdminParticipantsIndexRouteImport } from './routes/admin/participants/index'
+import { Route as AdminManageRoleIndexRouteImport } from './routes/admin/manage-role/index'
 import { Route as AdminHelpCenterIndexRouteImport } from './routes/admin/help-center/index'
 import { Route as AdminFormsIndexRouteImport } from './routes/admin/forms/index'
 import { Route as AdminChatsIndexRouteImport } from './routes/admin/chats/index'
@@ -59,6 +60,11 @@ const RegisterAddParticipantRoute = RegisterAddParticipantRouteImport.update({
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const Admin403Route = Admin403RouteImport.update({
+  id: '/403',
+  path: '/403',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AbsensiFormIdRoute = AbsensiFormIdRouteImport.update({
@@ -121,11 +127,6 @@ const AdminSettingsRouteRoute = AdminSettingsRouteRouteImport.update({
   path: '/settings',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
-  id: '/users/',
-  path: '/users/',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
 const AdminTasksIndexRoute = AdminTasksIndexRouteImport.update({
   id: '/tasks/',
   path: '/tasks/',
@@ -139,6 +140,11 @@ const AdminSettingsIndexRoute = AdminSettingsIndexRouteImport.update({
 const AdminParticipantsIndexRoute = AdminParticipantsIndexRouteImport.update({
   id: '/participants/',
   path: '/participants/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminManageRoleIndexRoute = AdminManageRoleIndexRouteImport.update({
+  id: '/manage-role/',
+  path: '/manage-role/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminHelpCenterIndexRoute = AdminHelpCenterIndexRouteImport.update({
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/absensi/$formId': typeof AbsensiFormIdRoute
+  '/admin/403': typeof Admin403Route
   '/admin/dashboard': typeof AdminDashboardRoute
   '/register/add-participant': typeof RegisterAddParticipantRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
@@ -226,10 +233,10 @@ export interface FileRoutesByFullPath {
   '/admin/chats': typeof AdminChatsIndexRoute
   '/admin/forms': typeof AdminFormsIndexRoute
   '/admin/help-center': typeof AdminHelpCenterIndexRoute
+  '/admin/manage-role': typeof AdminManageRoleIndexRoute
   '/admin/participants': typeof AdminParticipantsIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tasks': typeof AdminTasksIndexRoute
-  '/admin/users': typeof AdminUsersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -245,6 +252,7 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/absensi/$formId': typeof AbsensiFormIdRoute
+  '/admin/403': typeof Admin403Route
   '/admin/dashboard': typeof AdminDashboardRoute
   '/register/add-participant': typeof RegisterAddParticipantRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
@@ -258,10 +266,10 @@ export interface FileRoutesByTo {
   '/admin/chats': typeof AdminChatsIndexRoute
   '/admin/forms': typeof AdminFormsIndexRoute
   '/admin/help-center': typeof AdminHelpCenterIndexRoute
+  '/admin/manage-role': typeof AdminManageRoleIndexRoute
   '/admin/participants': typeof AdminParticipantsIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/tasks': typeof AdminTasksIndexRoute
-  '/admin/users': typeof AdminUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -279,6 +287,7 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/absensi/$formId': typeof AbsensiFormIdRoute
+  '/admin/403': typeof Admin403Route
   '/admin/dashboard': typeof AdminDashboardRoute
   '/register/add-participant': typeof RegisterAddParticipantRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
@@ -292,10 +301,10 @@ export interface FileRoutesById {
   '/admin/chats/': typeof AdminChatsIndexRoute
   '/admin/forms/': typeof AdminFormsIndexRoute
   '/admin/help-center/': typeof AdminHelpCenterIndexRoute
+  '/admin/manage-role/': typeof AdminManageRoleIndexRoute
   '/admin/participants/': typeof AdminParticipantsIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tasks/': typeof AdminTasksIndexRoute
-  '/admin/users/': typeof AdminUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -314,6 +323,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/absensi/$formId'
+    | '/admin/403'
     | '/admin/dashboard'
     | '/register/add-participant'
     | '/admin/errors/$error'
@@ -327,10 +337,10 @@ export interface FileRouteTypes {
     | '/admin/chats'
     | '/admin/forms'
     | '/admin/help-center'
+    | '/admin/manage-role'
     | '/admin/participants'
     | '/admin/settings/'
     | '/admin/tasks'
-    | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -346,6 +356,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/absensi/$formId'
+    | '/admin/403'
     | '/admin/dashboard'
     | '/register/add-participant'
     | '/admin/errors/$error'
@@ -359,10 +370,10 @@ export interface FileRouteTypes {
     | '/admin/chats'
     | '/admin/forms'
     | '/admin/help-center'
+    | '/admin/manage-role'
     | '/admin/participants'
     | '/admin/settings'
     | '/admin/tasks'
-    | '/admin/users'
   id:
     | '__root__'
     | '/'
@@ -379,6 +390,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/absensi/$formId'
+    | '/admin/403'
     | '/admin/dashboard'
     | '/register/add-participant'
     | '/admin/errors/$error'
@@ -392,10 +404,10 @@ export interface FileRouteTypes {
     | '/admin/chats/'
     | '/admin/forms/'
     | '/admin/help-center/'
+    | '/admin/manage-role/'
     | '/admin/participants/'
     | '/admin/settings/'
     | '/admin/tasks/'
-    | '/admin/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -443,6 +455,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/403': {
+      id: '/admin/403'
+      path: '/403'
+      fullPath: '/admin/403'
+      preLoaderRoute: typeof Admin403RouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/absensi/$formId': {
@@ -529,13 +548,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/admin/users/': {
-      id: '/admin/users/'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersIndexRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
     '/admin/tasks/': {
       id: '/admin/tasks/'
       path: '/tasks'
@@ -555,6 +567,13 @@ declare module '@tanstack/react-router' {
       path: '/participants'
       fullPath: '/admin/participants'
       preLoaderRoute: typeof AdminParticipantsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/manage-role/': {
+      id: '/admin/manage-role/'
+      path: '/manage-role'
+      fullPath: '/admin/manage-role'
+      preLoaderRoute: typeof AdminManageRoleIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/help-center/': {
@@ -656,6 +675,7 @@ const AdminSettingsRouteRouteWithChildren =
 
 interface AdminRouteRouteChildren {
   AdminSettingsRouteRoute: typeof AdminSettingsRouteRouteWithChildren
+  Admin403Route: typeof Admin403Route
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminErrorsErrorRoute: typeof AdminErrorsErrorRoute
   AdminFormsCreateRoute: typeof AdminFormsCreateRoute
@@ -665,13 +685,14 @@ interface AdminRouteRouteChildren {
   AdminChatsIndexRoute: typeof AdminChatsIndexRoute
   AdminFormsIndexRoute: typeof AdminFormsIndexRoute
   AdminHelpCenterIndexRoute: typeof AdminHelpCenterIndexRoute
+  AdminManageRoleIndexRoute: typeof AdminManageRoleIndexRoute
   AdminParticipantsIndexRoute: typeof AdminParticipantsIndexRoute
   AdminTasksIndexRoute: typeof AdminTasksIndexRoute
-  AdminUsersIndexRoute: typeof AdminUsersIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminSettingsRouteRoute: AdminSettingsRouteRouteWithChildren,
+  Admin403Route: Admin403Route,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminErrorsErrorRoute: AdminErrorsErrorRoute,
   AdminFormsCreateRoute: AdminFormsCreateRoute,
@@ -681,9 +702,9 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminChatsIndexRoute: AdminChatsIndexRoute,
   AdminFormsIndexRoute: AdminFormsIndexRoute,
   AdminHelpCenterIndexRoute: AdminHelpCenterIndexRoute,
+  AdminManageRoleIndexRoute: AdminManageRoleIndexRoute,
   AdminParticipantsIndexRoute: AdminParticipantsIndexRoute,
   AdminTasksIndexRoute: AdminTasksIndexRoute,
-  AdminUsersIndexRoute: AdminUsersIndexRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
