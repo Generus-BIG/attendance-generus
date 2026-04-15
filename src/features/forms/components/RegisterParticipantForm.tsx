@@ -159,10 +159,10 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                                 <FormItem className="flex flex-col space-y-2.5">
                                     <FormLabel className='text-[15px] font-semibold text-zinc-900 dark:text-zinc-100'>Nama Lengkap</FormLabel>
                                     <FormControl>
-                                        <Input 
-                                            placeholder="Masukkan nama lengkap..." 
-                                            className="h-[3rem] px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors focus-visible:ring-1 focus-visible:ring-zinc-400"
-                                            {...field} 
+                                        <Input
+                                            placeholder="Masukkan nama lengkap..."
+                                            className="h-12 px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors focus-visible:ring-1 focus-visible:ring-zinc-400"
+                                            {...field}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -178,10 +178,10 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                                     <FormItem className="flex flex-col space-y-2.5">
                                         <FormLabel className='text-[15px] font-semibold text-zinc-900 dark:text-zinc-100'>Tempat Lahir</FormLabel>
                                         <FormControl>
-                                            <Input 
-                                                placeholder="Contoh: Jakarta" 
-                                                className="h-[3rem] px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors focus-visible:ring-1 focus-visible:ring-zinc-400"
-                                                {...field} 
+                                            <Input
+                                                placeholder="Contoh: Jakarta"
+                                                className="h-12 px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors focus-visible:ring-1 focus-visible:ring-zinc-400"
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -198,7 +198,7 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                                             selected={field.value}
                                             onSelect={field.onChange}
                                             placeholder="Pilih tanggal lahir"
-                                            className="h-[3rem] px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+                                            className="h-12 px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
                                         />
                                         <FormMessage />
                                     </FormItem>
@@ -215,7 +215,7 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                                         <FormLabel className='text-[15px] font-semibold text-zinc-900 dark:text-zinc-100'>Jenis Kelamin</FormLabel>
                                         <Select onValueChange={field.onChange} value={field.value || undefined}>
                                             <FormControl>
-                                                <SelectTrigger className='h-[3rem] px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors'>
+                                                <SelectTrigger className='h-12 px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors'>
                                                     <SelectValue placeholder='Pilih' className="text-muted-foreground" />
                                                 </SelectTrigger>
                                             </FormControl>
@@ -237,11 +237,11 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                                         <FormLabel className='text-[15px] font-semibold text-zinc-900 dark:text-zinc-100'>Kelompok</FormLabel>
                                         <Select onValueChange={field.onChange} value={field.value || undefined}>
                                             <FormControl>
-                                                <SelectTrigger className='h-[3rem] px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors'>
+                                                <SelectTrigger className='h-12 px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors'>
                                                     <SelectValue placeholder='Pilih' className="text-muted-foreground" />
                                                 </SelectTrigger>
                                             </FormControl>
-                                            <SelectContent className="rounded-xl border-zinc-200 dark:border-zinc-800 shadow-lg max-h-[300px]">
+                                            <SelectContent className="rounded-xl border-zinc-200 dark:border-zinc-800 shadow-lg max-h-75">
                                                 {KELOMPOK.map((k) => (
                                                     <SelectItem key={k} value={k} className="cursor-pointer font-medium py-2.5 rounded-lg my-0.5">{k}</SelectItem>
                                                 ))}
@@ -268,7 +268,7 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                                             {KATEGORI.filter(k => !formConfig.allowedCategories || formConfig.allowedCategories.includes(k)).map((k) => (
                                                 <FormItem key={k} className='flex items-center space-x-3 space-y-0 group'>
                                                     <FormControl>
-                                                        <RadioGroupItem value={k} className="h-[18px] w-[18px] border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm" />
+                                                        <RadioGroupItem value={k} className="h-4.5 w-4.5 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm" />
                                                     </FormControl>
                                                     <FormLabel className='text-[15px] font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors'>
                                                         {k === 'AR' ? 'Anak Remaja' : `GPN ${k}`}
@@ -296,7 +296,7 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                                         >
                                             <FormItem className='flex items-center space-x-3 space-y-0 group'>
                                                 <FormControl>
-                                                    <RadioGroupItem value='hadir' className='h-[20px] w-[20px] border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm' />
+                                                    <RadioGroupItem value='hadir' className='h-5 w-5 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm' />
                                                 </FormControl>
                                                 <FormLabel className='text-[15px] font-bold cursor-pointer text-zinc-800 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors'>
                                                     Hadir
@@ -304,7 +304,7 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                                             </FormItem>
                                             <FormItem className='flex items-center space-x-3 space-y-0 group'>
                                                 <FormControl>
-                                                    <RadioGroupItem value='izin' className='h-[20px] w-[20px] border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm' />
+                                                    <RadioGroupItem value='izin' className='h-5 w-5 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm' />
                                                 </FormControl>
                                                 <FormLabel className='text-[15px] font-bold cursor-pointer text-zinc-800 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors'>
                                                     Izin
@@ -330,7 +330,7 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                                                 defaultValue={field.value || undefined}
                                             >
                                                 <FormControl>
-                                                    <SelectTrigger className='h-[3rem] px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors'>
+                                                    <SelectTrigger className='h-12 px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors'>
                                                         <SelectValue placeholder='Pilih Alasan' className="text-muted-foreground" />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -356,7 +356,7 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                                             <FormControl>
                                                 <Textarea
                                                     placeholder='Berikan sedikit penjelasan...'
-                                                    className='min-h-[100px] resize-none p-4 rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 focus:bg-transparent transition-colors'
+                                                    className='min-h-25 resize-none p-4 rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 focus:bg-transparent transition-colors'
                                                     {...field}
                                                     value={field.value || ''}
                                                 />
@@ -371,7 +371,7 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                         <div className='flex justify-end pt-4 sm:pt-6'>
                             <Button
                                 type='submit'
-                                className='w-[160px] h-[3.25rem] text-[15px] font-semibold rounded-xl sm:rounded-[0.85rem] bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-md sm:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.3)] dark:shadow-none transition-all hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50'
+                                className='w-40 h-13 text-[15px] font-semibold rounded-xl sm:rounded-[0.85rem] bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-md sm:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.3)] dark:shadow-none transition-all hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50'
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? (
