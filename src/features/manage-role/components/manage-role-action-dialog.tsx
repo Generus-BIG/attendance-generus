@@ -26,25 +26,39 @@ import { SelectDropdown } from '@/components/select-dropdown'
 import { useManageRoleCRUD } from '../context/manage-role-context'
 import { type ManagedUser } from '../types'
 
-const formSchema = z
-  .object({
-    full_name: z.string().min(1, 'Nama wajib diisi.'),
-    email: z.string().email('Email tidak valid.'),
-    password: z.string().min(7, 'Password minimal 7 karakter.'),
-    role: z.enum(ROLES, { message: 'Role wajib dipilih.' }),
-    kelompok: z.string().nullable().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.role === 'team_manager' && !data.kelompok) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Kelompok wajib dipilih untuk Team Manager.',
-        path: ['kelompok'],
-      })
-    }
-  })
+function buildSchema(isEdit: boolean) {
+  return z
+    .object({
+      full_name: z.string().min(1, 'Nama wajib diisi.'),
+      email: isEdit
+        ? z.string().optional()
+        : z.string().email('Email tidak valid.'),
+      password: isEdit
+        ? z.string().optional()
+        : z.string().min(7, 'Password minimal 7 karakter.'),
+      role: z.enum(ROLES, { message: 'Role wajib dipilih.' }),
+      kelompok: z.string().nullable().optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.role === 'team_manager' && !data.kelompok) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Kelompok wajib dipilih untuk Team Manager.',
+          path: ['kelompok'],
+        })
+      }
+      // In edit mode, if password is provided it must be >= 7 chars
+      if (isEdit && data.password && data.password.length > 0 && data.password.length < 7) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Password minimal 7 karakter.',
+          path: ['password'],
+        })
+      }
+    })
+}
 
-type ManageRoleForm = z.infer<typeof formSchema>
+type ManageRoleForm = z.infer<ReturnType<typeof buildSchema>>
 
 type ManageRoleActionDialogProps = {
   currentRow?: ManagedUser
@@ -61,7 +75,7 @@ export function ManageRoleActionDialog({
   const { createUser, updateUser } = useManageRoleCRUD()
 
   const form = useForm<ManageRoleForm>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(buildSchema(isEdit)),
     defaultValues: {
       full_name: currentRow?.full_name ?? '',
       email: currentRow?.email ?? '',
@@ -85,15 +99,18 @@ export function ManageRoleActionDialog({
         await updateUser(currentRow.id, {
           full_name: values.full_name,
           role: values.role,
-          kelompok: values.role === 'team_manager' ? values.kelompok : null,
+          kelompok:
+            values.role === 'team_manager' ? (values.kelompok ?? null) : null,
+          ...(values.password ? { password: values.password } : {}),
         })
       } else {
         await createUser({
-          email: values.email,
-          password: values.password,
+          email: values.email!,
+          password: values.password!,
           full_name: values.full_name,
           role: values.role,
-          kelompok: values.role === 'team_manager' ? values.kelompok : null,
+          kelompok:
+            values.role === 'team_manager' ? (values.kelompok ?? null) : null,
         })
       }
       form.reset()
@@ -145,49 +162,51 @@ export function ManageRoleActionDialog({
               )}
             />
             {!isEdit && (
-              <>
-                <FormField
-                  control={form.control}
-                  name='email'
-                  render={({ field }) => (
-                    <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                      <FormLabel className='col-span-2 text-right'>
-                        Email
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type='email'
-                          placeholder='email@example.com'
-                          className='col-span-4'
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className='col-span-4 col-start-3' />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name='password'
-                  render={({ field }) => (
-                    <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                      <FormLabel className='col-span-2 text-right'>
-                        Password
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type='password'
-                          placeholder='Min. 7 karakter'
-                          className='col-span-4'
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className='col-span-4 col-start-3' />
-                    </FormItem>
-                  )}
-                />
-              </>
+              <FormField
+                control={form.control}
+                name='email'
+                render={({ field }) => (
+                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                    <FormLabel className='col-span-2 text-right'>
+                      Email
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type='email'
+                        placeholder='email@example.com'
+                        className='col-span-4'
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className='col-span-4 col-start-3' />
+                  </FormItem>
+                )}
+              />
             )}
+            <FormField
+              control={form.control}
+              name='password'
+              render={({ field }) => (
+                <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                  <FormLabel className='col-span-2 text-right'>
+                    Password
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type='password'
+                      placeholder={
+                        isEdit
+                          ? 'Kosongkan jika tidak diubah'
+                          : 'Min. 7 karakter'
+                      }
+                      className='col-span-4'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className='col-span-4 col-start-3' />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name='role'
