@@ -37,6 +37,7 @@ export async function updateUser(
     full_name?: string
     role?: Role
     kelompok?: string | null
+    password?: string
   }
 ): Promise<ManagedUser> {
   const result = await callEdgeFunction<{ user: ManagedUser }>({
@@ -54,13 +55,13 @@ export async function deleteUser(userId: string): Promise<void> {
   })
 }
 
-export async function resetPassword(
+export async function changePassword(
   userId: string,
-  email: string
+  newPassword: string
 ): Promise<void> {
   await callEdgeFunction<{ success: boolean }>({
-    action: 'reset_password',
+    action: 'change_password',
     user_id: userId,
-    email,
+    new_password: newPassword,
   })
 }
