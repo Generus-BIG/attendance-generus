@@ -7,7 +7,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
-  resetPassword,
+  changePassword,
 } from '../services'
 import { type ManagedUser } from '../types'
 
@@ -23,10 +23,15 @@ interface ManageRoleCRUDContextType {
   }) => Promise<void>
   updateUser: (
     userId: string,
-    fields: { full_name?: string; role?: Role; kelompok?: string | null }
+    fields: {
+      full_name?: string
+      role?: Role
+      kelompok?: string | null
+      password?: string
+    }
   ) => Promise<void>
   deleteUser: (userId: string) => Promise<void>
-  resetPassword: (userId: string, email: string) => Promise<void>
+  changePassword: (userId: string, newPassword: string) => Promise<void>
 }
 
 const ManageRoleCRUDContext = createContext<
@@ -59,7 +64,12 @@ export function ManageRoleCRUDProvider({ children }: { children: ReactNode }) {
       fields,
     }: {
       userId: string
-      fields: { full_name?: string; role?: Role; kelompok?: string | null }
+      fields: {
+        full_name?: string
+        role?: Role
+        kelompok?: string | null
+        password?: string
+      }
     }) => updateUser(userId, fields),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['manage-role-users'] })
@@ -81,15 +91,20 @@ export function ManageRoleCRUDProvider({ children }: { children: ReactNode }) {
     },
   })
 
-  const resetPasswordMutation = useMutation({
-    mutationFn: ({ userId, email }: { userId: string; email: string }) =>
-      resetPassword(userId, email),
+  const changePasswordMutation = useMutation({
+    mutationFn: ({
+      userId,
+      newPassword,
+    }: {
+      userId: string
+      newPassword: string
+    }) => changePassword(userId, newPassword),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['manage-role-users'] })
-      toast.success('Password berhasil direset')
+      toast.success('Password berhasil diubah')
     },
     onError: (error: Error) => {
-      toast.error(`Gagal mereset password: ${error.message}`)
+      toast.error(`Gagal mengubah password: ${error.message}`)
     },
   })
 
@@ -105,8 +120,8 @@ export function ManageRoleCRUDProvider({ children }: { children: ReactNode }) {
           await updateMutation.mutateAsync({ userId, fields })
         },
         deleteUser: (userId) => deleteMutation.mutateAsync(userId),
-        resetPassword: (userId, email) =>
-          resetPasswordMutation.mutateAsync({ userId, email }),
+        changePassword: (userId, newPassword) =>
+          changePasswordMutation.mutateAsync({ userId, newPassword }),
       }}
     >
       {children}
