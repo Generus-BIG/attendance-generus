@@ -8,7 +8,7 @@
 ![Zustand](https://img.shields.io/badge/Zustand_5-%23000.svg?&logo=zustand&logoColor=white)
 ![Maintenance](https://img.shields.io/badge/Maintenance-Yes-green)
 ![Build](https://img.shields.io/badge/Build-Passing-green)
-[![Deploy](https://img.shields.io/badge/Live-big--attendance.vercel.app-brightgreen)](https://big-attendance.vercel.app)
+[![Deploy](https://img.shields.io/badge/Live-big--attendance.vercel.app-brightgreen)](https://generus-big.vercel.app/)
 
 Administration dashboard for managing attendance, participants, forms, and approvals for the MuMiBig organization. Built on React 19 with Supabase as the backend and a 4-tier RBAC system (Super Admin, Admin, Team Manager, Member).
 
