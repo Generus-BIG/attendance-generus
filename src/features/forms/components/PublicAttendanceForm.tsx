@@ -249,7 +249,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                                     role="combobox"
                                                     aria-expanded={open}
                                                     className={cn(
-                                                        "w-full justify-between h-[3rem] px-4 font-normal rounded-lg border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors group",
+                                                        "w-full justify-between h-12 px-4 font-normal rounded-lg border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors group",
                                                         !field.value && "text-muted-foreground"
                                                     )}
                                                 >
@@ -268,7 +268,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                                     onValueChange={setSearchQuery}
                                                     className="h-12 border-b border-zinc-100 dark:border-zinc-900 focus:ring-0"
                                                 />
-                                                <CommandList className="max-h-[300px] overflow-y-auto">
+                                                <CommandList className="max-h-75 overflow-y-auto">
                                                     {isLoadingParticipants && (
                                                         <CommandGroup>
                                                             <div className="flex items-center justify-center p-6 text-sm text-zinc-500 font-medium">
@@ -303,7 +303,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                                                           ? "bg-black border-black text-white dark:bg-white dark:border-white dark:text-black"
                                                                           : "border-zinc-200 dark:border-zinc-800 bg-transparent text-transparent"
                                                                   )}>
-                                                                      <Check className="h-3.5 w-3.5 stroke-[3]" />
+                                                                      <Check className="h-3.5 w-3.5 stroke-3" />
                                                                 </div>
                                                                 <div className="flex flex-col gap-0.5 min-w-0">
                                                                     <span className="font-medium text-[15px] truncate">{participant.name}</span>
@@ -334,7 +334,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                         </FormLabel>
                                         <Select onValueChange={field.onChange} value={field.value || undefined}>
                                             <FormControl>
-                                                <SelectTrigger className='h-[3rem] px-4 font-normal rounded-lg border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors'>
+                                                <SelectTrigger className='h-12 px-4 font-normal rounded-lg border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors'>
                                                     <SelectValue placeholder='Pilih' className="text-muted-foreground" />
                                                 </SelectTrigger>
                                             </FormControl>
@@ -358,11 +358,11 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                         </FormLabel>
                                         <Select onValueChange={field.onChange} value={field.value || undefined}>
                                             <FormControl>
-                                                <SelectTrigger className='h-[3rem] px-4 font-normal rounded-lg border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors'>
+                                                <SelectTrigger className='h-12 px-4 font-normal rounded-lg border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors'>
                                                     <SelectValue placeholder='Pilih' className="text-muted-foreground" />
                                                 </SelectTrigger>
                                             </FormControl>
-                                            <SelectContent className="rounded-lg border-zinc-200 dark:border-zinc-800 shadow-lg max-h-[300px]">
+                                            <SelectContent className="rounded-lg border-zinc-200 dark:border-zinc-800 shadow-lg max-h-75">
                                                 {KELOMPOK.map((k) => (
                                                     <SelectItem key={k} value={k} className="cursor-pointer font-medium py-2.5 rounded-lg my-0.5">{k}</SelectItem>
                                                 ))}
@@ -389,7 +389,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                             {KATEGORI.filter(k => !formConfig.allowedCategories || formConfig.allowedCategories.includes(k)).map((k) => (
                                                 <FormItem key={k} className='flex items-center space-x-3 space-y-0 group'>
                                                     <FormControl>
-                                                        <RadioGroupItem value={k} className="h-[18px] w-[18px] border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm" />
+                                                        <RadioGroupItem value={k} className="h-4.5 w-4.5 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm" />
                                                     </FormControl>
                                                     <FormLabel className='text-[15px] font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors'>
                                                         {k === 'AR' ? 'Anak Remaja' : `GPN ${k}`}
@@ -417,7 +417,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                         >
                                             <FormItem className='flex items-center space-x-3 space-y-0 group'>
                                                 <FormControl>
-                                                    <RadioGroupItem value='hadir' className='h-[20px] w-[20px] border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm' />
+                                                    <RadioGroupItem value='hadir' className='h-5 w-5 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm' />
                                                 </FormControl>
                                                 <FormLabel className='text-[15px] font-bold cursor-pointer text-zinc-800 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors'>
                                                     Hadir
@@ -425,7 +425,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                             </FormItem>
                                             <FormItem className='flex items-center space-x-3 space-y-0 group'>
                                                 <FormControl>
-                                                    <RadioGroupItem value='izin' className='h-[20px] w-[20px] border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm' />
+                                                    <RadioGroupItem value='izin' className='h-5 w-5 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm' />
                                                 </FormControl>
                                                 <FormLabel className='text-[15px] font-bold cursor-pointer text-zinc-800 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors'>
                                                     Izin
@@ -451,7 +451,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                                 defaultValue={field.value || undefined}
                                             >
                                                 <FormControl>
-                                                    <SelectTrigger className='h-[3rem] px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors'>
+                                                    <SelectTrigger className='h-12 px-4 font-normal rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors'>
                                                         <SelectValue placeholder='Pilih Alasan' className="text-muted-foreground" />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -477,7 +477,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                             <FormControl>
                                                 <Textarea
                                                     placeholder='Berikan sedikit penjelasan...'
-                                                    className='min-h-[100px] resize-none p-4 rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 focus:bg-transparent transition-colors'
+                                                    className='min-h-25 resize-none p-4 rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 focus:bg-transparent transition-colors'
                                                     {...field}
                                                     value={field.value || ''}
                                                 />
@@ -492,7 +492,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                         <div className='flex justify-end pt-4 sm:pt-6'>
                             <Button
                                 type='submit'
-                                className='w-[140px] h-[3.25rem] text-[15px] font-semibold rounded-xl sm:rounded-[0.85rem] bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-md sm:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.3)] dark:shadow-none transition-all hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50'
+                                className='w-35 h-13 text-[15px] font-semibold rounded-xl sm:rounded-[0.85rem] bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-md sm:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.3)] dark:shadow-none transition-all hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50'
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? (
