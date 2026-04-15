@@ -15,7 +15,7 @@ export function AttendancePrimaryButtons() {
   const { can } = usePermissions()
   const { data: attendanceData = [] } = useQuery({
     queryKey: ['attendance_list'],
-    queryFn: getAttendanceList,
+    queryFn: () => getAttendanceList(),
   })
 
   const handleExport = async () => {

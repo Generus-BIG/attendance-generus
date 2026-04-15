@@ -94,22 +94,28 @@ export function useManageRoleColumns(): ColumnDef<ManagedUser>[] {
         return <span>{kelompok ?? '-'}</span>
       },
     },
-    {
-      id: 'password',
-      accessorKey: 'temp_password',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title='Password Sementara' />
-      ),
-      cell: ({ row }) => <PasswordCell user={row.original} />,
-      enableSorting: false,
-    },
   ]
 
+  // Password and actions columns only for super_admin
   if (can.manageUsers) {
-    columns.push({
-      id: 'actions',
-      cell: ({ row }) => <DataTableRowActions row={row} />,
-    })
+    columns.push(
+      {
+        id: 'password',
+        accessorKey: 'temp_password',
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title='Password Sementara'
+          />
+        ),
+        cell: ({ row }) => <PasswordCell user={row.original} />,
+        enableSorting: false,
+      },
+      {
+        id: 'actions',
+        cell: ({ row }) => <DataTableRowActions row={row} />,
+      }
+    )
   }
 
   return columns

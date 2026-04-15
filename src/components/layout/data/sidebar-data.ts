@@ -24,24 +24,22 @@ interface SidebarUserInfo {
 
 export function getSidebarData(
   role: Role,
-  kelompok: string | null,
+  _kelompok: string | null,
   user: SidebarUserInfo
 ): SidebarData {
-  const isTM = role === 'team_manager' && kelompok
-
   const generalItems: NavItem[] = [
     {
-      title: isTM ? `Dashboard (default: ${kelompok})` : 'Dashboard',
+      title: 'Dashboard',
       url: '/admin/dashboard',
       icon: LayoutDashboard,
     },
     {
-      title: isTM ? `Peserta (${kelompok} only)` : 'Peserta',
+      title: 'Peserta',
       url: '/admin/participants',
       icon: Users,
     },
     {
-      title: isTM ? `Absensi (${kelompok} only)` : 'Absensi',
+      title: 'Absensi',
       url: '/admin/attendance',
       icon: CalendarCheck,
     },

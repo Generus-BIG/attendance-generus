@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
+import { usePermissions } from '@/hooks/use-permissions'
 import { useParticipantsCRUD } from '../context/participants-context'
 import { kelompokOptions, kategoriOptions, statusOptions } from '../data/data'
 import { DataTableBulkActions } from './data-table-bulk-actions'
@@ -34,6 +35,7 @@ type DataTableProps = {
 
 export function ParticipantsTable({ search, navigate }: DataTableProps) {
   const { participants: data, isLoading: _isLoading } = useParticipantsCRUD()
+  const { role } = usePermissions()
 
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
@@ -101,11 +103,16 @@ export function ParticipantsTable({ search, navigate }: DataTableProps) {
         searchPlaceholder='Cari nama peserta...'
         searchKey='name'
         filters={[
-          {
-            columnId: 'kelompok',
-            title: 'Kelompok',
-            options: kelompokOptions.map((k) => ({ label: k.label, value: k.value })),
-          },
+          // TM: hide kelompok filter (data is already scoped)
+          ...(role !== 'team_manager'
+            ? [
+                {
+                  columnId: 'kelompok',
+                  title: 'Kelompok',
+                  options: kelompokOptions.map((k) => ({ label: k.label, value: k.value })),
+                },
+              ]
+            : []),
           {
             columnId: 'kategori',
             title: 'Kategori',

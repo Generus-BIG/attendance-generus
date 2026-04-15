@@ -22,13 +22,11 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
-*.opencode
 .mcp.json
-*_bmad
-*_bmad-output
 *docs
 *CLAUDE.md
 *.claude
 *.superpowers
 *docs
+*.agents
+*skills-lock.json

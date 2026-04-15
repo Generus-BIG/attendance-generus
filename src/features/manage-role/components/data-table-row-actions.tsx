@@ -2,6 +2,7 @@ import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
+import { usePermissions } from '@/hooks/use-permissions'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -21,6 +22,9 @@ type DataTableRowActionsProps = {
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useManageRole()
   const currentUser = useAuthStore((state) => state.auth.user)
+  const { can } = usePermissions()
+
+  if (!can.manageUsers) return null
 
   const isSelf = currentUser?.id === row.original.id
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
   type SortingState,
   type VisibilityState,
@@ -12,6 +12,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
+import { useAuthStore } from '@/stores/auth-store'
 import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
 import {
   Table,
@@ -37,13 +38,45 @@ type DataTableProps = {
 
 export function AttendanceTable({ search, navigate }: DataTableProps) {
   const { setRefreshData } = useAttendance()
+  const role = useAuthStore((s) => s.auth.role)
+  const userKelompok = useAuthStore((s) => s.auth.kelompok)
 
-  const { data: rawData = [], refetch, isLoading: _isLoading } = useQuery<AttendanceWithParticipant[]>({
-    queryKey: ['attendance_list'],
-    queryFn: getAttendanceList,
+  // Fetch kelompok UUID for TM filtering
+  const { data: kelompokGroupId } = useQuery({
+    queryKey: ['lookup_kelompok_id', userKelompok],
+    queryFn: async () => {
+      if (!userKelompok) return undefined
+      const { data } = await (await import('@/lib/supabase')).supabase
+        .from('lookup_values')
+        .select('id')
+        .eq('type', 'GROUP')
+        .eq('value', userKelompok)
+        .maybeSingle()
+      return data?.id as string | undefined
+    },
+    enabled: role === 'team_manager' && !!userKelompok,
+    staleTime: 1000 * 60 * 10,
   })
 
-  const data = rawData as AttendanceWithParticipant[]
+  const tmGroupId = role === 'team_manager' ? kelompokGroupId : undefined
+  // For TM: wait until kelompok UUID is resolved before fetching attendance
+  const isTmReady = role !== 'team_manager' || !!tmGroupId
+
+  const { data: rawData = [], refetch, isLoading: _isLoading } = useQuery<AttendanceWithParticipant[]>({
+    queryKey: ['attendance_list', tmGroupId],
+    queryFn: () => getAttendanceList(tmGroupId),
+    enabled: isTmReady,
+  })
+
+  // TM: filter out rows where participant is from another kelompok (handles null participant edge cases)
+  const data = useMemo(() => {
+    if (role !== 'team_manager' || !userKelompok) return rawData
+    return rawData.filter(
+      (row) =>
+        row.participant?.kelompok === userKelompok ||
+        row.tempKelompok === userKelompok
+    )
+  }, [rawData, role, userKelompok])
 
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
@@ -114,11 +147,15 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
         searchPlaceholder='Cari nama peserta...'
         searchKey='participantName'
         filters={[
-          {
-            columnId: 'kelompok',
-            title: 'Kelompok',
-            options: kelompokOptions.map((k) => ({ label: k.label, value: k.value })),
-          },
+          ...(role !== 'team_manager'
+            ? [
+                {
+                  columnId: 'kelompok',
+                  title: 'Kelompok',
+                  options: kelompokOptions.map((k) => ({ label: k.label, value: k.value })),
+                },
+              ]
+            : []),
           {
             columnId: 'status',
             title: 'Status',

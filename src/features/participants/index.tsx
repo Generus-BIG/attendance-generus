@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { getRouteApi } from '@tanstack/react-router'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
@@ -6,7 +5,6 @@ import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { usePermissions } from '@/hooks/use-permissions'
 import { ParticipantsDialogs } from './components/participants-dialogs'
 import { ParticipantsPrimaryButtons } from './components/participants-primary-buttons'
 import { ParticipantsProvider } from './components/participants-provider'
@@ -18,27 +16,6 @@ const route = getRouteApi('/admin/participants/')
 export function Participants() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
-  const { role, kelompok } = usePermissions()
-  const hasSetDefault = useRef(false)
-
-  // Auto-set kelompok filter for team_manager on first visit
-  useEffect(() => {
-    if (
-      role === 'team_manager' &&
-      kelompok &&
-      !hasSetDefault.current &&
-      (!search.kelompok || search.kelompok.length === 0)
-    ) {
-      hasSetDefault.current = true
-      navigate({
-        search: (prev) => ({
-          ...prev,
-          kelompok: [kelompok] as typeof prev.kelompok,
-        }),
-        replace: true,
-      })
-    }
-  }, [role, kelompok, search.kelompok, navigate])
 
   return (
     <ParticipantsCRUDProvider>

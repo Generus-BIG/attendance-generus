@@ -56,7 +56,7 @@ const PERMISSION_MAP: Record<Role, Record<PermissionKey, boolean>> = {
     createForm: false,
     editForm: false,
     deleteForm: false,
-    approveParticipant: true,
+    approveParticipant: false,
     createAttendance: true,
     editAttendance: true,
     deleteAttendance: true,

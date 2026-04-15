@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/auth-store'
+import { ROUTE_ACCESS, type Role } from '@/lib/rbac'
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout'
 
 export const Route = createFileRoute('/admin')({
@@ -16,14 +17,15 @@ export const Route = createFileRoute('/admin')({
       })
     }
 
-    // Role-based route protection
-    const role = auth.user?.app_metadata?.role as string | undefined
-    if (
-      location.pathname.startsWith('/admin/manage-role') &&
-      role !== 'super_admin' &&
-      role !== 'admin'
-    ) {
-      throw redirect({ to: '/admin/403' })
+    // Role-based route protection using ROUTE_ACCESS map
+    const role: Role = auth.role
+    for (const [path, allowedRoles] of Object.entries(ROUTE_ACCESS)) {
+      if (
+        location.pathname.startsWith(path) &&
+        !allowedRoles.includes(role)
+      ) {
+        throw redirect({ to: '/admin/403' })
+      }
     }
 
     // Redirect /admin to /admin/dashboard

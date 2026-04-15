@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ROLES } from '@/lib/rbac'
+import { Loader2 } from 'lucide-react'
 import { KELOMPOK } from '@/lib/schema'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,6 +26,8 @@ import { SelectDropdown } from '@/components/select-dropdown'
 import { useManageRoleCRUD } from '../context/manage-role-context'
 import { type ManagedUser } from '../types'
 
+const ASSIGNABLE_ROLES = ['admin', 'team_manager', 'member'] as const
+
 function buildSchema(isEdit: boolean) {
   return z
     .object({
@@ -36,7 +38,7 @@ function buildSchema(isEdit: boolean) {
       password: isEdit
         ? z.string().optional()
         : z.string().min(7, 'Password minimal 7 karakter.'),
-      role: z.enum(ROLES, { message: 'Role wajib dipilih.' }),
+      role: z.enum(ASSIGNABLE_ROLES, { message: 'Role wajib dipilih.' }),
       kelompok: z.string().nullable().optional(),
     })
     .superRefine((data, ctx) => {
@@ -74,13 +76,19 @@ export function ManageRoleActionDialog({
   const isEdit = !!currentRow
   const { createUser, updateUser } = useManageRoleCRUD()
 
+  // Map super_admin to admin for the form (super_admin can't be assigned via this form)
+  const defaultRole =
+    currentRow?.role === 'super_admin'
+      ? ('admin' as const)
+      : (currentRow?.role ?? ('member' as const))
+
   const form = useForm<ManageRoleForm>({
     resolver: zodResolver(buildSchema(isEdit)),
     defaultValues: {
       full_name: currentRow?.full_name ?? '',
       email: currentRow?.email ?? '',
       password: '',
-      role: currentRow?.role ?? 'member',
+      role: defaultRole,
       kelompok: currentRow?.kelompok ?? null,
     },
   })
@@ -252,8 +260,16 @@ export function ManageRoleActionDialog({
           </form>
         </Form>
         <DialogFooter>
-          <Button type='submit' form='manage-role-form'>
-            {isEdit ? 'Simpan' : 'Buat User'}
+          <Button
+            type='submit'
+            form='manage-role-form'
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting ? (
+              <Loader2 className='h-4 w-4 animate-spin' />
+            ) : (
+              isEdit ? 'Simpan' : 'Buat User'
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
