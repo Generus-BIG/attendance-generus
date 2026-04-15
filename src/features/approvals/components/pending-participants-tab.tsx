@@ -2,9 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { id as idLocale } from 'date-fns/locale'
-import { toast } from 'sonner'
 import { Check, X, Merge, ChevronsUpDown } from 'lucide-react'
+import { toast } from 'sonner'
+import { type PendingParticipant, type Participant } from '@/lib/schema'
+import { cn } from '@/lib/utils'
+import { usePermissions } from '@/hooks/use-permissions'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -14,14 +19,13 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
 import {
   Dialog,
   DialogContent,
@@ -31,28 +35,28 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
-import { type PendingParticipant, type Participant } from '@/lib/schema'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { PermissionGate } from '@/components/permission-gate'
 import { approvalService } from '../services'
 import { useApprovals } from './approvals-provider'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 export function PendingParticipantsTab() {
   const { setRefreshData } = useApprovals()
+  const { can } = usePermissions()
   const [approveDialogOpen, setApproveDialogOpen] = useState(false)
-  const [selectedPending, setSelectedPending] = useState<PendingParticipant | null>(null)
+  const [selectedPending, setSelectedPending] =
+    useState<PendingParticipant | null>(null)
   const [mergeTarget, setMergeTarget] = useState<string | null>(null)
   const [openCombobox, setOpenCombobox] = useState(false)
 
@@ -97,7 +101,9 @@ export function PendingParticipantsTab() {
     try {
       await approvalService.approve(selectedPending, false, mergeTarget)
       const targetParticipant = participants.find((p) => p.id === mergeTarget)
-      toast.success(`Absensi berhasil dihubungkan ke "${targetParticipant?.name}"`)
+      toast.success(
+        `Absensi berhasil dihubungkan ke "${targetParticipant?.name}"`
+      )
       setApproveDialogOpen(false)
       setSelectedPending(null)
       setMergeTarget(null)
@@ -168,44 +174,52 @@ export function PendingParticipantsTab() {
                   <TableCell className='font-medium'>{pending.name}</TableCell>
                   <TableCell>{pending.suggestedKelompok}</TableCell>
                   <TableCell>
-                    <Badge variant='outline'>Kategori {pending.suggestedKategori}</Badge>
+                    <Badge variant='outline'>
+                      Kategori {pending.suggestedKategori}
+                    </Badge>
                   </TableCell>
                   <TableCell>
-                    {pending.suggestedGender === 'L' ? 'Laki-laki' : 'Perempuan'}
+                    {pending.suggestedGender === 'L'
+                      ? 'Laki-laki'
+                      : 'Perempuan'}
                   </TableCell>
                   <TableCell>{pending.attendanceRefIds.length}</TableCell>
                   <TableCell>
-                    {format(new Date(pending.createdAt), 'dd MMM yyyy', { locale: idLocale })}
+                    {format(new Date(pending.createdAt), 'dd MMM yyyy', {
+                      locale: idLocale,
+                    })}
                   </TableCell>
                   <TableCell className='text-right'>
                     <div className='flex justify-end gap-1'>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        className='text-green-600 hover:text-green-700'
-                        onClick={() => handleApproveNew(pending)}
-                        title='Setujui sebagai peserta baru'
-                      >
-                        <Check className='h-4 w-4' />
-                      </Button>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        className='text-blue-600 hover:text-blue-700'
-                        onClick={() => openMergeDialog(pending)}
-                        title='Gabungkan ke peserta yang ada'
-                      >
-                        <Merge className='h-4 w-4' />
-                      </Button>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        className='text-red-600 hover:text-red-700'
-                        onClick={() => handleReject(pending)}
-                        title='Tolak pengajuan'
-                      >
-                        <X className='h-4 w-4' />
-                      </Button>
+                      <PermissionGate allowed={can.approveParticipant}>
+                        <Button
+                          size='sm'
+                          variant='ghost'
+                          className='text-green-600 hover:text-green-700'
+                          onClick={() => handleApproveNew(pending)}
+                          title='Setujui sebagai peserta baru'
+                        >
+                          <Check className='h-4 w-4' />
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='ghost'
+                          className='text-blue-600 hover:text-blue-700'
+                          onClick={() => openMergeDialog(pending)}
+                          title='Gabungkan ke peserta yang ada'
+                        >
+                          <Merge className='h-4 w-4' />
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='ghost'
+                          className='text-red-600 hover:text-red-700'
+                          onClick={() => handleReject(pending)}
+                          title='Tolak pengajuan'
+                        >
+                          <X className='h-4 w-4' />
+                        </Button>
+                      </PermissionGate>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -220,7 +234,8 @@ export function PendingParticipantsTab() {
           <DialogHeader>
             <DialogTitle>Gabungkan ke Peserta yang Ada</DialogTitle>
             <DialogDescription>
-              Hubungkan absensi dari "{selectedPending?.name}" ke peserta yang sudah terdaftar.
+              Hubungkan absensi dari "{selectedPending?.name}" ke peserta yang
+              sudah terdaftar.
             </DialogDescription>
           </DialogHeader>
           <div className='py-4'>
@@ -256,13 +271,16 @@ export function PendingParticipantsTab() {
                           <Check
                             className={cn(
                               'mr-2 h-4 w-4',
-                              mergeTarget === participant.id ? 'opacity-100' : 'opacity-0'
+                              mergeTarget === participant.id
+                                ? 'opacity-100'
+                                : 'opacity-0'
                             )}
                           />
                           <div className='flex flex-col'>
                             <span>{participant.name}</span>
-                            <span className='text-muted-foreground text-xs'>
-                              {participant.kelompok} - Kategori {participant.kategori}
+                            <span className='text-xs text-muted-foreground'>
+                              {participant.kelompok} - Kategori{' '}
+                              {participant.kategori}
                             </span>
                           </div>
                         </CommandItem>
@@ -274,7 +292,10 @@ export function PendingParticipantsTab() {
             </Popover>
           </div>
           <DialogFooter>
-            <Button variant='outline' onClick={() => setApproveDialogOpen(false)}>
+            <Button
+              variant='outline'
+              onClick={() => setApproveDialogOpen(false)}
+            >
               Batal
             </Button>
             <Button onClick={handleApproveMerge} disabled={!mergeTarget}>

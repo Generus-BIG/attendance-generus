@@ -1,15 +1,18 @@
-import { Download, Plus } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
+import { useQuery } from '@tanstack/react-query'
 import { id as idLocale } from 'date-fns/locale'
+import { Download, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import { exportToExcel } from '@/lib/export'
+import { usePermissions } from '@/hooks/use-permissions'
+import { Button } from '@/components/ui/button'
+import { PermissionGate } from '@/components/permission-gate'
 import { getAttendanceList } from '../services'
 import { useAttendance } from './attendance-provider'
 
 export function AttendancePrimaryButtons() {
   const { setOpen } = useAttendance()
+  const { can } = usePermissions()
   const { data: attendanceData = [] } = useQuery({
     queryKey: ['attendance_list'],
     queryFn: getAttendanceList,
@@ -20,11 +23,16 @@ export function AttendancePrimaryButtons() {
       const dataToExport = attendanceData.map((item) => {
         const date = item.timestamp ? new Date(item.timestamp) : null
         return {
-          Tanggal: date ? format(date, 'dd MMMM yyyy HH:mm', { locale: idLocale }) : '-',
+          Tanggal: date
+            ? format(date, 'dd MMMM yyyy HH:mm', { locale: idLocale })
+            : '-',
           Nama: item.participant?.name || item.tempName || '-',
           Kelompok: item.participant?.kelompok || item.tempKelompok || '-',
           Kategori: item.participant?.kategori || item.tempKategori || '-',
-          Gender: (item.participant?.gender || item.tempGender) === 'L' ? 'Laki-laki' : 'Perempuan',
+          Gender:
+            (item.participant?.gender || item.tempGender) === 'L'
+              ? 'Laki-laki'
+              : 'Perempuan',
           Status: (item.status || '').toUpperCase(),
           Alasan: item.permissionReason || '-',
           Keterangan: item.notes || '-',
@@ -49,9 +57,11 @@ export function AttendancePrimaryButtons() {
       >
         <span>Export</span> <Download size={18} />
       </Button>
-      <Button className='space-x-1' onClick={() => setOpen('add')}>
-        <span>Input Absensi</span> <Plus size={18} />
-      </Button>
+      <PermissionGate allowed={can.createAttendance}>
+        <Button className='space-x-1' onClick={() => setOpen('add')}>
+          <span>Input Absensi</span> <Plus size={18} />
+        </Button>
+      </PermissionGate>
     </div>
   )
 }

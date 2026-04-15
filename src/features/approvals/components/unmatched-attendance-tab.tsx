@@ -3,8 +3,13 @@
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
-import { toast } from 'sonner'
 import { Check, X, Link2, ChevronsUpDown } from 'lucide-react'
+import { toast } from 'sonner'
+import { type Attendance, type Participant } from '@/lib/schema'
+import { attendanceService, participantService } from '@/lib/storage'
+import { cn } from '@/lib/utils'
+import { usePermissions } from '@/hooks/use-permissions'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -14,14 +19,13 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
 import {
   Dialog,
   DialogContent,
@@ -31,32 +35,29 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
-import { type Attendance, type Participant } from '@/lib/schema'
 import {
-  attendanceService,
-  participantService,
-} from '@/lib/storage'
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { PermissionGate } from '@/components/permission-gate'
 import { useApprovals } from './approvals-provider'
 
 export function UnmatchedAttendanceTab() {
   const { setRefreshData } = useApprovals()
+  const { can } = usePermissions()
   const [unmatchedList, setUnmatchedList] = useState<Attendance[]>([])
   const [participants, setParticipants] = useState<Participant[]>([])
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
-  const [selectedAttendance, setSelectedAttendance] = useState<Attendance | null>(null)
+  const [selectedAttendance, setSelectedAttendance] =
+    useState<Attendance | null>(null)
   const [linkTarget, setLinkTarget] = useState<string | null>(null)
   const [openCombobox, setOpenCombobox] = useState(false)
 
@@ -75,7 +76,9 @@ export function UnmatchedAttendanceTab() {
 
     attendanceService.linkToParticipant(selectedAttendance.id, linkTarget)
     const targetParticipant = participants.find((p) => p.id === linkTarget)
-    toast.success(`Absensi berhasil dihubungkan ke "${targetParticipant?.name}"`)
+    toast.success(
+      `Absensi berhasil dihubungkan ke "${targetParticipant?.name}"`
+    )
     setLinkDialogOpen(false)
     setSelectedAttendance(null)
     setLinkTarget(null)
@@ -135,7 +138,9 @@ export function UnmatchedAttendanceTab() {
               {unmatchedList.map((attendance) => (
                 <TableRow key={attendance.id}>
                   <TableCell>
-                    {format(new Date(attendance.date), 'dd MMM yyyy', { locale: idLocale })}
+                    {format(new Date(attendance.date), 'dd MMM yyyy', {
+                      locale: idLocale,
+                    })}
                   </TableCell>
                   <TableCell className='font-medium'>
                     {attendance.tempName || '-'}
@@ -146,8 +151,8 @@ export function UnmatchedAttendanceTab() {
                       variant='outline'
                       className={cn(
                         attendance.status === 'hadir'
-                          ? 'bg-teal-100/30 text-teal-900 dark:text-teal-200 border-teal-200'
-                          : 'bg-amber-100/30 text-amber-900 dark:text-amber-200 border-amber-200'
+                          ? 'border-teal-200 bg-teal-100/30 text-teal-900 dark:text-teal-200'
+                          : 'border-amber-200 bg-amber-100/30 text-amber-900 dark:text-amber-200'
                       )}
                     >
                       {attendance.status === 'hadir' ? 'Hadir' : 'Izin'}
@@ -155,24 +160,26 @@ export function UnmatchedAttendanceTab() {
                   </TableCell>
                   <TableCell className='text-right'>
                     <div className='flex justify-end gap-1'>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        className='text-blue-600 hover:text-blue-700'
-                        onClick={() => openLinkDialog(attendance)}
-                        title='Hubungkan ke peserta'
-                      >
-                        <Link2 className='h-4 w-4' />
-                      </Button>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        className='text-red-600 hover:text-red-700'
-                        onClick={() => handleDelete(attendance)}
-                        title='Hapus absensi'
-                      >
-                        <X className='h-4 w-4' />
-                      </Button>
+                      <PermissionGate allowed={can.approveParticipant}>
+                        <Button
+                          size='sm'
+                          variant='ghost'
+                          className='text-blue-600 hover:text-blue-700'
+                          onClick={() => openLinkDialog(attendance)}
+                          title='Hubungkan ke peserta'
+                        >
+                          <Link2 className='h-4 w-4' />
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='ghost'
+                          className='text-red-600 hover:text-red-700'
+                          onClick={() => handleDelete(attendance)}
+                          title='Hapus absensi'
+                        >
+                          <X className='h-4 w-4' />
+                        </Button>
+                      </PermissionGate>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -192,9 +199,19 @@ export function UnmatchedAttendanceTab() {
           </DialogHeader>
           <div className='py-4'>
             <div className='mb-4 rounded-md border p-3 text-sm'>
-              <p><strong>Nama:</strong> {selectedAttendance?.tempName || '-'}</p>
-              <p><strong>Tanggal:</strong> {selectedAttendance && format(new Date(selectedAttendance.date), 'dd MMM yyyy', { locale: idLocale })}</p>
-              <p><strong>Status:</strong> {selectedAttendance?.status}</p>
+              <p>
+                <strong>Nama:</strong> {selectedAttendance?.tempName || '-'}
+              </p>
+              <p>
+                <strong>Tanggal:</strong>{' '}
+                {selectedAttendance &&
+                  format(new Date(selectedAttendance.date), 'dd MMM yyyy', {
+                    locale: idLocale,
+                  })}
+              </p>
+              <p>
+                <strong>Status:</strong> {selectedAttendance?.status}
+              </p>
             </div>
             <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
               <PopoverTrigger asChild>
@@ -228,13 +245,16 @@ export function UnmatchedAttendanceTab() {
                           <Check
                             className={cn(
                               'mr-2 h-4 w-4',
-                              linkTarget === participant.id ? 'opacity-100' : 'opacity-0'
+                              linkTarget === participant.id
+                                ? 'opacity-100'
+                                : 'opacity-0'
                             )}
                           />
                           <div className='flex flex-col'>
                             <span>{participant.name}</span>
-                            <span className='text-muted-foreground text-xs'>
-                              {participant.kelompok} - Kategori {participant.kategori}
+                            <span className='text-xs text-muted-foreground'>
+                              {participant.kelompok} - Kategori{' '}
+                              {participant.kategori}
                             </span>
                           </div>
                         </CommandItem>
