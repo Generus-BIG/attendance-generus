@@ -14,6 +14,9 @@ export const PERMISSION_REASONS = [
   'Lainnya',
 ] as const
 
+export const FORM_TYPE = ['desa', 'kelompok'] as const
+export type FormTypeEnum = (typeof FORM_TYPE)[number]
+
 // === Zod Schemas ===
 export const kelompokSchema = z.enum(KELOMPOK)
 export const kategoriSchema = z.enum(KATEGORI)
@@ -47,6 +50,9 @@ export const attendanceFormConfigSchema = z.object({
   isActive: z.boolean().default(true),
   slug: z.string().min(1, 'Slug wajib diisi'),
   allowedCategories: z.array(kategoriSchema).default(['A', 'B', 'AR']),
+  formType: z.enum(FORM_TYPE).default('desa'),
+  kelompokId: z.string().uuid().nullable().default(null),
+  kelompokName: z.string().nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -59,6 +65,7 @@ export const attendanceSchema = z.object({
   id: z.string(),
   participantId: z.string().nullable(), // null jika pending participant
   formId: z.string().nullable().optional(), // Link ke specific form event
+  formTitle: z.string().nullable().optional(), // Denormalized form title from join
   date: z.coerce.date(),
   timestamp: z.coerce.date(),
   status: attendanceStatusSchema,
