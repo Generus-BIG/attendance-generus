@@ -27,6 +27,7 @@ export function CommandMenu() {
       (user?.user_metadata?.full_name as string) || user?.email || 'User',
     email: user?.email || '',
     avatar: '/avatars/shadcn.jpg',
+    role,
   })
 
   const runCommand = React.useCallback(

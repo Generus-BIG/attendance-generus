@@ -20,6 +20,7 @@ interface SidebarUserInfo {
   name: string
   email: string
   avatar: string
+  role: string
 }
 
 export function getSidebarData(
