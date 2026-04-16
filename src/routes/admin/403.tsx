@@ -16,7 +16,7 @@ function ForbiddenPage() {
       </p>
       <Button
         variant='outline'
-        onClick={() => router.navigate({ to: '/admin/dashboard' })}
+        onClick={() => router.navigate({ to: '/admin/dashboard', search: { tab: 'desa', month: new Date().toLocaleDateString('sv').slice(0, 7) } })}
       >
         Kembali ke Dashboard
       </Button>

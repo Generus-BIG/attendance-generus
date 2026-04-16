@@ -48,7 +48,7 @@ export function OtpForm({ className, ...props }: OtpFormProps) {
 
     setTimeout(() => {
       setIsLoading(false)
-      navigate({ to: '/admin/dashboard' })
+      navigate({ to: '/admin/dashboard', search: { tab: 'desa', month: new Date().toLocaleDateString('sv').slice(0, 7) } })
     }, 1000)
   }
 

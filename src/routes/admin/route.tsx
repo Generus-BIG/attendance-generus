@@ -32,6 +32,7 @@ export const Route = createFileRoute('/admin')({
     if (location.pathname === '/admin' || location.pathname === '/admin/') {
       throw redirect({
         to: '/admin/dashboard',
+        search: { tab: 'desa', month: new Date().toLocaleDateString('sv').slice(0, 7) },
       })
     }
   },
