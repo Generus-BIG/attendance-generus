@@ -1,0 +1,67 @@
+name: Wake Up Supabase
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping Supabase projects
+        env:
+          SUPABASE_PROJECTS_JSON: ${{ secrets.SUPABASE_PROJECTS_JSON }}
+        run: |
+          node <<'NODE'
+          const projectsJson = process.env.SUPABASE_PROJECTS_JSON;
+
+          if (!projectsJson) {
+            console.error('Missing SUPABASE_PROJECTS_JSON secret');
+            process.exit(1);
+          }
+
+          let projects;
+          try {
+            projects = JSON.parse(projectsJson);
+          } catch (error) {
+            console.error('SUPABASE_PROJECTS_JSON is not valid JSON');
+            process.exit(1);
+          }
+
+          if (!Array.isArray(projects) || projects.length === 0) {
+            console.error('SUPABASE_PROJECTS_JSON must be a non-empty array');
+            process.exit(1);
+          }
+
+          const ping = async ({ url, anon_key }) => {
+            if (!url || !anon_key) {
+              throw new Error('Each project must include url and anon_key');
+            }
+
+            const healthUrl = new URL('/auth/v1/health', url).toString();
+            console.log(`Pinging ${healthUrl} ...`);
+
+            const response = await fetch(healthUrl, {
+              method: 'GET',
+              headers: {
+                apikey: anon_key,
+                Authorization: `Bearer ${anon_key}`,
+              },
+            });
+
+            if (!response.ok) {
+              throw new Error(`${new URL(url).hostname} returned HTTP ${response.status}`);
+            }
+
+            console.log(`✔ ${new URL(url).hostname} is awake (HTTP ${response.status})`);
+          };
+
+          for (const project of projects) {
+            await ping(project);
+          }
+          NODE

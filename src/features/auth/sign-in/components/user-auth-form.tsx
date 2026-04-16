@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { Loader2, LogIn } from 'lucide-react'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { cn } from '@/lib/utils'
@@ -28,7 +28,7 @@ const formSchema = z.object({
   password: z
     .string()
     .min(1, 'Please enter your password')
-    .min(7, 'Password must be at least 7 characters long'),
+    .min(7, 'Password must be at least 7 characters'),
 })
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLFormElement> {
@@ -61,27 +61,20 @@ export function UserAuthForm({
       })
 
       if (error) {
-        // Track failed sign in
         analytics.signInFailed(data.email, error.message)
         toast.error(error.message)
         setIsLoading(false)
         return
       }
 
-      // Track successful sign in
       analytics.signIn(data.email, true)
       toast.success('Signed in successfully')
 
-      // Let the store listener handle state updates, or Force check?
-      // The listener in auth-store.ts should pick this up automatically.
-
-      // Redirect
       const targetPath = redirectTo || '/admin/dashboard'
       navigate({ to: targetPath, replace: true })
     } catch (err) {
-      console.error(err)
-      // Track sign in error
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      const errorMessage =
+        err instanceof Error ? err.message : 'Unknown error'
       analytics.signInFailed(data.email, errorMessage)
       toast.error('Something went wrong')
       setIsLoading(false)
@@ -92,7 +85,7 @@ export function UserAuthForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn('grid gap-3', className)}
+        className={cn('grid gap-4', className)}
         {...props}
       >
         <FormField
@@ -100,9 +93,15 @@ export function UserAuthForm({
           name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className='text-sm font-medium'>Email</FormLabel>
               <FormControl>
-                <Input placeholder='name@example.com' {...field} />
+                <Input
+                  placeholder='you@example.com'
+                  type='email'
+                  autoComplete='email'
+                  autoFocus
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -112,27 +111,37 @@ export function UserAuthForm({
           control={form.control}
           name='password'
           render={({ field }) => (
-            <FormItem className='relative'>
-              <FormLabel>Password</FormLabel>
+            <FormItem>
+              <div className='flex items-center justify-between'>
+                <FormLabel className='text-sm font-medium'>Password</FormLabel>
+                <Link
+                  to='/forgot-password'
+                  className='text-xs font-medium text-muted-foreground transition-colors hover:text-foreground'
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <FormControl>
-                <PasswordInput placeholder='********' {...field} />
+                <PasswordInput
+                  placeholder='Enter your password'
+                  autoComplete='current-password'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
-              <Link
-                to='/forgot-password'
-                className='absolute end-0 -top-0.5 text-sm font-medium text-muted-foreground hover:opacity-75'
-              >
-                Forgot password?
-              </Link>
             </FormItem>
           )}
         />
-        <Button className='mt-2' disabled={isLoading}>
-          {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
-          Sign in
+        <Button className='mt-1 w-full' size='lg' disabled={isLoading}>
+          {isLoading ? (
+            <Loader2 className='h-4 w-4 animate-spin' />
+          ) : (
+            <>
+              Continue
+              <ArrowRight className='ml-1.5 h-4 w-4' />
+            </>
+          )}
         </Button>
-
-
       </form>
     </Form>
   )

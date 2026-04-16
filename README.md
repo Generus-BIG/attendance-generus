@@ -1,71 +1,102 @@
-# MuMiBig Attendance Dashboard
+# Generus Attendance Dashboard
 
-A streamlined, high-performance administration dashboard built with **React 19**, **TypeScript**, and **shadcn/ui**. This platform is tailored for managing attendance, participant registries, and operational data for MuMiBig.
+![React](https://img.shields.io/badge/React_19-%2320232a.svg?&logo=react&logoColor=%2361DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript_5.9-%23007ACC.svg?&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite_7-%23646CFF.svg?&logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-%2306B6D4.svg?&logo=tailwindcss&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-%233FCF8E.svg?&logo=supabase&logoColor=white)
+![Zustand](https://img.shields.io/badge/Zustand_5-%23000.svg?&logo=zustand&logoColor=white)
+![Maintenance](https://img.shields.io/badge/Maintenance-Yes-green)
+![Build](https://img.shields.io/badge/Build-Passing-green)
+[![Deploy](https://img.shields.io/badge/Live-big--attendance.vercel.app-brightgreen)](https://generus-big.vercel.app/)
 
-## 🚀 Key Features
+Administration dashboard for managing attendance, participants, forms, and approvals for the MuMiBig organization. Built on React 19 with Supabase as the backend and a 4-tier RBAC system (Super Admin, Admin, Team Manager, Member).
 
-- **Attendance Tracking** – Comprehensive logging with mobile-optimized entry forms.
-- **Real-time Analytics** – Visualized metrics and status cards for performance monitoring.
-- **Participant Management** – Integrated database for tracking group-based attendance.
-- **Form System** – Dynamic form handling for public submissions and administrative updates.
-- **Responsive UI** – A mobile-first approach using **Tailwind CSS 4** and modern design patterns.
-- **Light/Dark Mode** – Flexible theme support with a default light mode configuration.
+## Features
 
-## 🛠 Tech Stack
+- **Attendance Tracking** -- Mobile-optimized public forms with real-time logging
+- **Participant Management** -- Group-based registry with CRUD, export to Excel
+- **Form System** -- Dynamic attendance forms with slug-based public URLs
+- **Dashboard Analytics** -- Monthly recap with per-kelompok charts (Recharts)
+- **RBAC** -- Role-based access control with Supabase RLS + client-side permission gates
+- **Manage Role** -- User CRUD via Supabase Edge Function (Super Admin only)
+- **Responsive UI** -- Mobile-first with light/dark mode
 
-- **Framework:** React 19 + Vite 7
-- **Routing:** TanStack Router (Type-safe, file-based routing)
-- **Data Fetching:** TanStack Query v5
-- **State Management:** Zustand v5
-- **Backend:** Supabase (Database & Authentication)
-- **Styling:** Tailwind CSS 4, Radix UI, shadcn/ui
-- **Analytics:** Vercel Analytics
+## Tech Stack
 
-## 🏁 Getting Started
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 19 + Vite 7 (SWC) |
+| Language | TypeScript ~5.9 |
+| Routing | TanStack Router v1 (file-based) |
+| Data Fetching | TanStack Query v5 |
+| Tables | TanStack Table v8 |
+| State | Zustand v5 |
+| Backend | Supabase (Postgres, Auth, Edge Functions, RLS) |
+| Styling | Tailwind CSS v4 + shadcn/ui (new-york) |
+| Forms | react-hook-form v7 + Zod v4 |
+| Charts | Recharts |
+| Icons | Lucide React |
+
+## Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
-- pnpm (recommended)
+- pnpm
 
 ### Setup
 
-1. **Clone & Install**
-   ```bash
-   git clone <repository-url>
-   pnpm install
-   ```
+```bash
+git clone <repository-url>
+pnpm install
+```
 
-2. **Environment Variables**
-   Create a `.env.local` file:
-   ```env
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_key
-   ```
+Create `.env.local`:
 
-3. **Run Locally**
-   ```bash
-   pnpm dev
-   ```
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_key
+```
 
-## 📂 Project Structure
+```bash
+pnpm dev
+```
 
-- `src/features/` – Core business logic and feature-specific components.
-- `src/components/` – Shared UI primitives and high-level components (Tables, Layouts).
-- `src/routes/` – TanStack Router route tree.
-- `src/lib/` – Utilities, Supabase configuration, and Zod schemas.
-- `src/context/` – React providers for global state (Theme, Layout, direction).
+## Project Structure
 
-## 📜 Available Scripts
+```
+src/
+  features/       # Feature modules (participants, attendance, forms, approvals, manage-role, dashboard)
+  components/     # Shared UI (data-table, layout, shadcn primitives)
+  routes/         # TanStack Router file-based routes (auto-generates routeTree.gen.ts)
+  lib/            # Supabase client, schema (Zod), RBAC config, utilities
+  hooks/          # usePermissions, useDialogState, useTableUrlState
+  stores/         # Zustand auth store (role, kelompok from app_metadata)
+  context/        # React providers (theme, layout, sidebar, search)
+```
 
-- `pnpm build` – Production build.
-- `pnpm lint` – Code quality checks.
-- `pnpm format` – Auto-format using Prettier.
-- `pnpm knip` – Find unused dependencies/files.
+## RBAC Roles
 
-## ⚖ License
+| Role | Scope |
+|------|-------|
+| Super Admin | Full access + user management |
+| Admin | Full data access, view-only on Manage Role |
+| Team Manager | CRUD scoped to own kelompok |
+| Member | Read-only |
 
-This project is licensed under the MIT License.
+Roles stored in Supabase `app_metadata` (server-only, tamper-proof). Enforced at DB level via RLS policies and at UI level via `usePermissions` hook + `PermissionGate` component.
 
----
+## Scripts
 
-Built with ❤️ using modern React technologies and the power of shadcn/ui components.
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start dev server |
+| `pnpm build` | TypeScript check + Vite production build |
+| `pnpm lint` | ESLint |
+| `pnpm format` | Prettier auto-fix |
+| `pnpm knip` | Find unused exports/dependencies |
+
+## License
+
+MIT

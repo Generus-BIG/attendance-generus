@@ -15,6 +15,8 @@ export async function getFormBySlug(slug: string): Promise<AttendanceFormConfig 
         ...data,
         isActive: data.is_active,
         allowedCategories: data.allowed_categories || ['A', 'B', 'AR'],
+        formType: data.form_type ?? 'desa',
+        kelompokId: data.kelompok_id ?? null,
         createdAt: data.created_at,
         updatedAt: data.updated_at
     }
@@ -135,11 +137,12 @@ function mapInternalToDbCategories(allowedCategories: string[]): string[] {
 
 export async function searchParticipants(
     query: string,
-    allowedCategories?: string[]
+    allowedCategories?: string[],
+    groupId?: string | null
 ): Promise<ParticipantSearchResult[]> {
     // Construct the select string based on whether we need to filter by category (inner join) or not
     const hasCategoryFilter = allowedCategories && allowedCategories.length > 0
-    
+
     const selectQuery = `
         id,
         name,
@@ -151,7 +154,13 @@ export async function searchParticipants(
     let queryBuilder = supabase
         .from('participants')
         .select(selectQuery)
+        .eq('status_active', true)
         .ilike('name', `%${query || ''}%`)
+
+    // Filter by kelompok (group_id) for kelompok-type forms
+    if (groupId) {
+        queryBuilder = queryBuilder.eq('group_id', groupId)
+    }
 
     // Apply category filter if needed
     if (hasCategoryFilter) {

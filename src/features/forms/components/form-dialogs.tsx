@@ -26,7 +26,11 @@ import type { AttendanceFormConfig } from '@/lib/schema'
 import { useFormsContext } from '../context/forms-context'
 import { kategoriOptions } from '../../participants/data/data'
 import { toast } from 'sonner'
-import { slugify } from '@/lib/utils'
+import { slugify, cn } from '@/lib/utils'
+import { FormTypeSelector } from './form-type-selector'
+import { usePermissions } from '@/hooks/use-permissions'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase'
 
 // Zod schema for the form creation/editing
 const formSchema = z.object({
@@ -37,6 +41,8 @@ const formSchema = z.object({
     slug: z.string().min(1, 'Slug is required'),
     isActive: z.boolean(),
     allowedCategories: z.array(z.string()).min(1, 'Select at least one category'),
+    formType: z.enum(['desa', 'kelompok']),
+    kelompokId: z.string().uuid().nullable(),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -49,7 +55,22 @@ interface FormDialogsProps {
 
 export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
     const { createForm, updateForm } = useFormsContext()
+    const { role, kelompok: userKelompok } = usePermissions()
     const isEditing = !!formToEdit
+    const isTeamManager = role === 'team_manager'
+
+    const { data: kelompokOptions = [] } = useQuery({
+        queryKey: ['lookup_values', 'GROUP'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('lookup_values')
+                .select('id, value')
+                .eq('type', 'GROUP')
+                .order('value')
+            if (error) throw error
+            return data as { id: string; value: string }[]
+        },
+    })
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -61,6 +82,8 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
             slug: '',
             isActive: true,
             allowedCategories: ['A', 'B', 'AR'],
+            formType: 'desa',
+            kelompokId: null,
         },
     })
 
@@ -77,6 +100,8 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                     slug: formToEdit.slug,
                     isActive: formToEdit.isActive,
                     allowedCategories: formToEdit.allowedCategories || ['A', 'B', 'AR'],
+                    formType: formToEdit.formType ?? 'desa',
+                    kelompokId: formToEdit.kelompokId ?? null,
                 })
             } else {
                 form.reset({
@@ -87,6 +112,8 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                     slug: '',
                     isActive: true,
                     allowedCategories: ['A', 'B', 'AR'],
+                    formType: 'desa',
+                    kelompokId: null,
                 })
             }
         }
@@ -97,10 +124,21 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
     useEffect(() => {
         if (!isEditing && title) {
             const slug = slugify(title)
-            // Simple slugify, might need random suffix if distinct
             form.setValue('slug', slug, { shouldValidate: true })
         }
     }, [title, isEditing, form])
+
+    const watchFormType = form.watch('formType')
+
+    // Auto-set kelompokId for team_manager when type is 'kelompok'
+    useEffect(() => {
+        if (isTeamManager && watchFormType === 'kelompok' && userKelompok && kelompokOptions.length > 0) {
+            const match = kelompokOptions.find((k) => k.value === userKelompok)
+            if (match) {
+                form.setValue('kelompokId', match.id)
+            }
+        }
+    }, [isTeamManager, watchFormType, userKelompok, kelompokOptions, form])
 
     const onSubmit = async (values: FormValues) => {
         try {
@@ -116,6 +154,8 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                     slug: values.slug,
                     isActive: values.isActive,
                     allowedCategories: values.allowedCategories as ('A' | 'B' | 'AR')[],
+                    formType: values.formType,
+                    kelompokId: values.formType === 'kelompok' ? values.kelompokId : null,
                 })
                 toast.success('Form updated successfully')
             } else {
@@ -126,6 +166,8 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                     slug: values.slug,
                     isActive: values.isActive,
                     allowedCategories: values.allowedCategories as ('A' | 'B' | 'AR')[],
+                    formType: values.formType,
+                    kelompokId: values.formType === 'kelompok' ? values.kelompokId : null,
                 })
                 toast.success('Form created successfully')
             }
@@ -137,50 +179,134 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className='sm:max-w-md'>
+            <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-2xl'>
                 <DialogHeader>
-                    <DialogTitle>{isEditing ? 'Edit Form' : 'Create New Form'}</DialogTitle>
+                    <DialogTitle>{isEditing ? 'Edit Form' : 'Buat Form Baru'}</DialogTitle>
                     <DialogDescription>
                         {isEditing
-                            ? 'Update the details of existing attendance form.'
-                            : 'Create a new attendance form to share with participants.'}
+                            ? 'Perbarui detail formulir absensi.'
+                            : 'Buat formulir absensi baru untuk dibagikan ke peserta.'}
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className='grid gap-4 py-4'>
-                        <FormField
-                            control={form.control}
-                            name='title'
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Title</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder='Weekly Meeting' {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
+                        {/* Row 1: Form Type + Kelompok (side by side on desktop) */}
+                        <div className='grid gap-4 sm:grid-cols-2'>
+                            <FormField
+                                control={form.control}
+                                name='formType'
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Tipe Form</FormLabel>
+                                        <FormControl>
+                                            <FormTypeSelector
+                                                value={field.value}
+                                                onChange={(val) => {
+                                                    field.onChange(val)
+                                                    if (val === 'desa') {
+                                                        form.setValue('kelompokId', null)
+                                                    }
+                                                }}
+                                                disabled={isTeamManager}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {watchFormType === 'kelompok' && (
+                                <FormField
+                                    control={form.control}
+                                    name='kelompokId'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Kelompok</FormLabel>
+                                            <div className='rounded-lg border p-3'>
+                                                <div className='grid grid-cols-2 gap-2 sm:grid-cols-3'>
+                                                    {kelompokOptions.map((k) => {
+                                                        const isSelected = field.value === k.id
+                                                        const isDisabled = isTeamManager && k.value !== userKelompok
+                                                        return (
+                                                            <button
+                                                                key={k.id}
+                                                                type='button'
+                                                                disabled={isDisabled}
+                                                                onClick={() => field.onChange(k.id)}
+                                                                className={cn(
+                                                                    'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
+                                                                    isSelected
+                                                                        ? 'border-primary bg-primary text-primary-foreground'
+                                                                        : 'border-border bg-background hover:bg-muted',
+                                                                    isDisabled && 'cursor-not-allowed opacity-40'
+                                                                )}
+                                                            >
+                                                                {k.value}
+                                                            </button>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </div>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             )}
-                        />
+                        </div>
+
+                        {/* Row 2: Title + Slug (side by side) */}
+                        <div className='grid gap-4 sm:grid-cols-2'>
+                            <FormField
+                                control={form.control}
+                                name='title'
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Judul</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder='Pertemuan Mingguan' {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name='slug'
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Slug (URL)</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder='pertemuan-mingguan' {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        {/* Row 3: Description (full width) */}
                         <FormField
                             control={form.control}
                             name='description'
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Description</FormLabel>
+                                    <FormLabel>Deskripsi</FormLabel>
                                     <FormControl>
-                                        <Textarea placeholder='Short description...' {...field} />
+                                        <Textarea placeholder='Deskripsi singkat...' rows={2} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                        <div className='grid grid-cols-2 gap-4'>
+
+                        {/* Row 4: Date + Time + Active (3 cols) */}
+                        <div className='grid gap-4 sm:grid-cols-3'>
                             <FormField
                                 control={form.control}
                                 name='date'
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Date</FormLabel>
+                                        <FormLabel>Tanggal</FormLabel>
                                         <FormControl>
                                             <Input type='date' {...field} />
                                         </FormControl>
@@ -193,7 +319,7 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                                 name='time'
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Time</FormLabel>
+                                        <FormLabel>Waktu</FormLabel>
                                         <FormControl>
                                             <Input type='time' {...field} />
                                         </FormControl>
@@ -201,63 +327,62 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                                     </FormItem>
                                 )}
                             />
+                            <FormField
+                                control={form.control}
+                                name='isActive'
+                                render={({ field }) => (
+                                    <FormItem className='flex flex-row items-end gap-3 space-y-0 pb-2'>
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <div className='leading-none'>
+                                            <FormLabel>Aktif</FormLabel>
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
                         </div>
-                        <FormField
-                            control={form.control}
-                            name='slug'
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Slug (URL Identifier)</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder='weekly-meeting-1' {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+
+                        {/* Row 5: Kategori (inline) */}
                         <FormField
                             control={form.control}
                             name='allowedCategories'
                             render={() => (
                                 <FormItem>
-                                    <div className='mb-4'>
-                                        <FormLabel className='text-base'>Sensus yang diikut sertakan</FormLabel>
-                                        <DialogDescription>
-                                            Pilih kategori peserta yang diperbolehkan mengisi form ini.
-                                        </DialogDescription>
-                                    </div>
-                                    <div className='grid grid-cols-2 gap-2'>
+                                    <FormLabel>Sensus yang diikutsertakan</FormLabel>
+                                    <div className='flex flex-wrap gap-4 pt-1'>
                                         {kategoriOptions.map((option) => (
                                             <FormField
                                                 key={option.value}
                                                 control={form.control}
                                                 name='allowedCategories'
-                                                render={({ field }) => {
-                                                    return (
-                                                        <FormItem
-                                                            key={option.value}
-                                                            className='flex flex-row items-start space-x-3 space-y-0'
-                                                        >
-                                                            <FormControl>
-                                                                <Checkbox
-                                                                    checked={field.value?.includes(option.value)}
-                                                                    onCheckedChange={(checked) => {
-                                                                        return checked
-                                                                            ? field.onChange([...field.value, option.value])
-                                                                            : field.onChange(
-                                                                                field.value?.filter(
-                                                                                    (value) => value !== option.value
-                                                                                )
+                                                render={({ field }) => (
+                                                    <FormItem
+                                                        key={option.value}
+                                                        className='flex flex-row items-center space-x-2 space-y-0'
+                                                    >
+                                                        <FormControl>
+                                                            <Checkbox
+                                                                checked={field.value?.includes(option.value)}
+                                                                onCheckedChange={(checked) => {
+                                                                    return checked
+                                                                        ? field.onChange([...field.value, option.value])
+                                                                        : field.onChange(
+                                                                            field.value?.filter(
+                                                                                (value) => value !== option.value
                                                                             )
-                                                                    }}
-                                                                />
-                                                            </FormControl>
-                                                            <FormLabel className='font-normal'>
-                                                                {option.label}
-                                                            </FormLabel>
-                                                        </FormItem>
-                                                    )
-                                                }}
+                                                                        )
+                                                                }}
+                                                            />
+                                                        </FormControl>
+                                                        <FormLabel className='font-normal'>
+                                                            {option.label}
+                                                        </FormLabel>
+                                                    </FormItem>
+                                                )}
                                             />
                                         ))}
                                     </div>
@@ -265,28 +390,12 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                                 </FormItem>
                             )}
                         />
-                        <FormField
-                            control={form.control}
-                            name='isActive'
-                            render={({ field }) => (
-                                <FormItem className='flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4'>
-                                    <FormControl>
-                                        <Checkbox
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                    <div className='space-y-1 leading-none'>
-                                        <FormLabel>Active</FormLabel>
-                                        <DialogDescription>
-                                            If inactive, the public link will not accept submissions.
-                                        </DialogDescription>
-                                    </div>
-                                </FormItem>
-                            )}
-                        />
-                        <DialogFooter>
-                            <Button type='submit'>{isEditing ? 'Save Changes' : 'Create Form'}</Button>
+
+                        <DialogFooter className='pt-2'>
+                            <Button type='button' variant='outline' onClick={() => setOpen(false)}>
+                                Batal
+                            </Button>
+                            <Button type='submit'>{isEditing ? 'Simpan Perubahan' : 'Buat Form'}</Button>
                         </DialogFooter>
                     </form>
                 </Form>

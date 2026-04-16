@@ -1,12 +1,5 @@
 import { useSearch } from '@tanstack/react-router'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Command } from 'lucide-react'
 import { AuthLayout } from '../auth-layout'
 import { UserAuthForm } from './components/user-auth-form'
 
@@ -15,37 +8,49 @@ export function SignIn() {
 
   return (
     <AuthLayout>
-      <Card className='gap-4'>
-        <CardHeader>
-          <CardTitle className='text-lg tracking-tight'>Sign in</CardTitle>
-          <CardDescription>
-            Enter your email and password below to <br />
-            log into your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <UserAuthForm redirectTo={redirect} />
-        </CardContent>
-        <CardFooter>
-          <p className='px-8 text-center text-sm text-muted-foreground'>
-            By clicking sign in, you agree to our{' '}
-            <a
-              href='/terms'
-              className='underline underline-offset-4 hover:text-primary'
-            >
-              Terms of Service
-            </a>{' '}
-            and{' '}
-            <a
-              href='/privacy'
-              className='underline underline-offset-4 hover:text-primary'
-            >
-              Privacy Policy
-            </a>
-            .
+      {/* Mobile-only logo (hidden on lg where left panel shows) */}
+      <div className='mb-8 flex items-center gap-2.5 lg:hidden'>
+        <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-primary'>
+          <Command className='h-4 w-4 text-primary-foreground' />
+        </div>
+        <span className='text-base font-semibold tracking-tight'>
+          Generus Dashboard
+        </span>
+      </div>
+
+      <div className='space-y-6'>
+        <div className='space-y-1.5'>
+          <h1
+            className='text-2xl font-bold tracking-tight'
+            style={{ fontFamily: 'Manrope, sans-serif' }}
+          >
+            Welcome back
+          </h1>
+          <p className='text-sm text-muted-foreground'>
+            Sign in to your account to continue
           </p>
-        </CardFooter>
-      </Card>
+        </div>
+
+        <UserAuthForm redirectTo={redirect} />
+
+        <p className='text-center text-xs text-muted-foreground'>
+          By signing in, you agree to our{' '}
+          <a
+            href='/terms'
+            className='underline underline-offset-4 transition-colors hover:text-foreground'
+          >
+            Terms
+          </a>{' '}
+          and{' '}
+          <a
+            href='/privacy'
+            className='underline underline-offset-4 transition-colors hover:text-foreground'
+          >
+            Privacy Policy
+          </a>
+          .
+        </p>
+      </div>
     </AuthLayout>
   )
 }

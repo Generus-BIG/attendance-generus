@@ -1,6 +1,7 @@
 import { createContext, useContext, type ReactNode } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { useAuthStore } from '@/stores/auth-store'
 import { supabase } from '@/lib/supabase'
 import { participantListSchema, type Participant, type KATEGORI } from '@/lib/schema'
 
@@ -65,11 +66,15 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
     staleTime: 1000 * 60 * 10, // Cache for 10 minutes
   })
 
-  // Fetch participants
+  // Get role and kelompok for TM scoping
+  const role = useAuthStore((s) => s.auth.role)
+  const userKelompok = useAuthStore((s) => s.auth.kelompok)
+
+  // Fetch participants (TM: scoped to own kelompok at query level)
   const { data: participants = [], isLoading } = useQuery({
-    queryKey: ['participants'],
+    queryKey: ['participants', role, userKelompok],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('participants')
         .select(`
           id,
@@ -81,6 +86,22 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
           category:category_id(value)
         `)
         .order('name', { ascending: true })
+
+      // Team Manager: resolve kelompok UUID and filter directly in this query
+      if (role === 'team_manager' && userKelompok) {
+        const { data: lookup } = await supabase
+          .from('lookup_values')
+          .select('id')
+          .eq('type', 'GROUP')
+          .eq('value', userKelompok)
+          .maybeSingle()
+
+        if (lookup?.id) {
+          query = query.eq('group_id', lookup.id)
+        }
+      }
+
+      const { data, error } = await query
 
       if (error) {
         toast.error('Failed to fetch participants')

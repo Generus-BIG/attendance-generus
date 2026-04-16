@@ -1,7 +1,8 @@
-import { create } from 'zustand'
 import type { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { create } from 'zustand'
 import { getCookie, setSessionCookie } from '@/lib/cookies'
+import { type Role } from '@/lib/rbac'
+import { supabase } from '@/lib/supabase'
 
 const BROWSER_SESSION_COOKIE = 'absensi_browser_session'
 
@@ -10,6 +11,8 @@ interface AuthState {
     user: User | null
     session: Session | null
     accessToken: string | null
+    role: Role
+    kelompok: string | null
     isLoading: boolean
     checkSession: () => Promise<void>
     signOut: () => Promise<void>
@@ -21,6 +24,8 @@ export const useAuthStore = create<AuthState>()((set) => ({
     user: null,
     session: null,
     accessToken: null,
+    role: 'member' as Role,
+    kelompok: null as string | null,
     isLoading: true,
     checkSession: async () => {
       try {
@@ -47,6 +52,8 @@ export const useAuthStore = create<AuthState>()((set) => ({
             session,
             user: session?.user ?? null,
             accessToken: session?.access_token ?? null,
+            role: (session?.user?.app_metadata?.role as Role) ?? 'member',
+            kelompok: (session?.user?.app_metadata?.kelompok as string) ?? null,
             isLoading: false,
           },
         }))
@@ -66,6 +73,8 @@ export const useAuthStore = create<AuthState>()((set) => ({
           user: null,
           session: null,
           accessToken: null,
+          role: 'member' as Role,
+          kelompok: null,
         },
       }))
     },
@@ -80,6 +89,8 @@ supabase.auth.onAuthStateChange((_event, session) => {
       session,
       user: session?.user ?? null,
       accessToken: session?.access_token ?? null,
+      role: (session?.user?.app_metadata?.role as Role) ?? 'member',
+      kelompok: (session?.user?.app_metadata?.kelompok as string) ?? null,
       isLoading: false,
     },
   }))

@@ -1,44 +1,35 @@
 import { useQuery } from '@tanstack/react-query'
-import { format } from 'date-fns'
-import { DASHBOARD_FORMS, type DashboardFormKey, type MonthlyFormRecap } from '../types'
 import {
   fetchMonthlyAttendance,
-  fetchCensusParticipants,
   aggregateMonthlyRecap,
+  fetchCensusParticipants,
 } from '../services/dashboard-recap.service'
+import { type MonthlyFormRecap } from '../types'
+import { format } from 'date-fns'
 
-type UseMonthlyFormRecapParams = {
-  formKey: DashboardFormKey
+interface UseMonthlyFormRecapParams {
+  formIds: string[]
   month: Date
+  enabled?: boolean
 }
 
-/**
- * Hook to fetch and aggregate monthly attendance data for a specific form
- * Uses census-based calculation for attendance rates
- * 
- * @param formKey - 'profmud' or 'ar'
- * @param month - Date object representing the month to query
- * @returns React Query result with MonthlyFormRecap data
- */
-export function useMonthlyFormRecap({ formKey, month }: UseMonthlyFormRecapParams) {
-  const config = DASHBOARD_FORMS[formKey]
+export function useMonthlyFormRecap({
+  formIds,
+  month,
+  enabled = true,
+}: UseMonthlyFormRecapParams) {
   const monthKey = format(month, 'yyyy-MM')
-  const formId = config.formId
-  const allowedCategories = config.allowedCategories
-  // Use monthTime for stable query key (Date objects don't work well as keys)
-  const monthTime = month.getTime()
 
-  return useQuery<MonthlyFormRecap, Error>({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- month is represented by monthTime
-    queryKey: ['dashboard-recap', formKey, monthKey, formId, monthTime],
+  return useQuery<MonthlyFormRecap>({
+    queryKey: ['dashboard-recap', monthKey, formIds] as const,
     queryFn: async () => {
-      // Fetch attendance records and census participants in parallel
       const [records, censusParticipants] = await Promise.all([
-        fetchMonthlyAttendance({ formId, month }),
-        fetchCensusParticipants(allowedCategories),
+        fetchMonthlyAttendance({ formIds, month }),
+        fetchCensusParticipants(['GPN A', 'GPN B', 'AR']),
       ])
       return aggregateMonthlyRecap(records, month, censusParticipants)
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
+    enabled: enabled && formIds.length > 0,
   })
 }

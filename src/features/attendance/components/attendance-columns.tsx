@@ -160,6 +160,16 @@ export const attendanceColumns: ColumnDef<AttendanceWithParticipant>[] = [
     },
   },
   {
+    id: 'formTitle',
+    accessorFn: (row) => row.formTitle ?? '',
+    header: 'Form',
+    enableHiding: true,
+    filterFn: (row, columnId, filterValue: string[]) => {
+      if (!filterValue || filterValue.length === 0) return true
+      return filterValue.includes(row.getValue(columnId))
+    },
+  },
+  {
     id: 'actions',
     cell: DataTableRowActions,
   },

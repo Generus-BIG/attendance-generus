@@ -1,15 +1,15 @@
 
 import { supabase } from '@/lib/supabase'
 
-export async function getAttendanceList() {
-    const { data, error } = await supabase
+export async function getAttendanceList(kelompokGroupId?: string) {
+    let query = supabase
         .from('attendance')
         .select(`
       *,
       participant:participants!attendance_participant_id_fkey(
-        id, 
-        name, 
-        gender, 
+        id,
+        name,
+        gender,
         group_id,
         category_id,
         group:group_id(value),
@@ -18,6 +18,13 @@ export async function getAttendanceList() {
       form:form_id(title)
     `)
         .order('timestamp', { ascending: false })
+
+    // Team Manager: filter to attendance from own kelompok only
+    if (kelompokGroupId) {
+        query = query.eq('participant.group_id', kelompokGroupId)
+    }
+
+    const { data, error } = await query
 
     if (error) {
         console.error('Error fetching attendance:', error)
@@ -29,6 +36,7 @@ export async function getAttendanceList() {
         // Normalize foreign keys to camelCase for dialogs/edit flow
         participantId: item.participant_id ?? item.participantId ?? null,
         formId: item.form_id ?? item.formId ?? null,
+        formTitle: item.form?.title ?? null,
         // Map timestamp to date for table sorting
         date: item.timestamp,
         status: item.status?.toLowerCase(),

@@ -1,230 +1,307 @@
-import { useState } from 'react'
-import type {
-    ColumnDef,
-    ColumnFiltersState,
-    SortingState,
-    VisibilityState,
-} from '@tanstack/react-table'
-import {
-    getCoreRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-    useReactTable,
-    flexRender,
-} from '@tanstack/react-table'
+import { useMemo, useState } from 'react'
+import { format } from 'date-fns'
 import { Link } from '@tanstack/react-router'
-import { Plus } from 'lucide-react'
+import {
+  type ColumnDef,
+  type SortingState,
+  type VisibilityState,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
+import { id as idLocale } from 'date-fns/locale'
+import { CalendarDays, ExternalLink, Plus } from 'lucide-react'
+import { type AttendanceFormConfig } from '@/lib/schema'
+import { cn } from '@/lib/utils'
+import { usePermissions } from '@/hooks/use-permissions'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table'
-import type { AttendanceFormConfig } from '@/lib/schema'
-import { FormsProvider, useFormsContext } from './context/forms-context'
-import { FormActions } from './components/form-actions'
-import { Badge } from '@/components/ui/badge'
-import { format } from 'date-fns'
-import { id } from 'date-fns/locale'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { PermissionGate } from '@/components/permission-gate'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { ConfigDrawer } from '@/components/config-drawer'
+import { FormActions } from './components/form-actions'
+import { FormTypeBadge } from './components/form-type-badge'
+import { FormsProvider, useFormsContext } from './context/forms-context'
 
-// Wrapper to provide context
 export function Forms() {
-    return (
-        <FormsProvider>
-            <Header fixed>
-                <Search />
-                <div className='ms-auto flex items-center space-x-4'>
-                    <ThemeSwitch />
-                    <ConfigDrawer />
-                    <ProfileDropdown />
-                </div>
-            </Header>
-            <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
-                <FormsList />
-            </Main>
-        </FormsProvider>
-    )
+  return (
+    <FormsProvider>
+      <Header fixed>
+        <Search />
+        <div className='ms-auto flex items-center space-x-4'>
+          <ThemeSwitch />
+          <ConfigDrawer />
+          <ProfileDropdown />
+        </div>
+      </Header>
+      <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+        <FormsList />
+      </Main>
+    </FormsProvider>
+  )
 }
 
 function FormsList() {
-    const { forms, isLoading } = useFormsContext()
-    const [sorting, setSorting] = useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-    const [rowSelection, setRowSelection] = useState({})
-    const [globalFilter, setGlobalFilter] = useState('')
+  const { forms, isLoading } = useFormsContext()
+  const { can } = usePermissions()
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [globalFilter, setGlobalFilter] = useState('')
+  const [typeFilter, setTypeFilter] = useState<'semua' | 'desa' | 'kelompok'>('semua')
 
-    const columns: ColumnDef<AttendanceFormConfig>[] = [
-        {
-            accessorKey: 'title',
-            header: 'Title',
-            cell: ({ row }) => <div className='font-medium'>{row.getValue('title')}</div>,
-        },
-        {
-            accessorKey: 'date',
-            header: 'Date',
-            cell: ({ row }) => {
-                return <div>{format(new Date(row.getValue('date')), 'dd MMMM yyyy HH:mm', { locale: id })}</div>
-            },
-        },
-        {
-            accessorKey: 'slug',
-            header: 'Slug (URL)',
-            cell: ({ row }) => <div className='font-mono text-xs'>{row.getValue('slug')}</div>,
-        },
-        {
-            accessorKey: 'isActive',
-            header: 'Status',
-            cell: ({ row }) => (
-                <Badge variant={row.getValue('isActive') ? 'default' : 'secondary'}>
-                    {row.getValue('isActive') ? 'Active' : 'Inactive'}
-                </Badge>
-            ),
-        },
-        {
-            id: 'actions',
-            enableHiding: false,
-            cell: ({ row }) => <FormActions form={row.original} />,
-        },
-    ]
+  const filteredForms = useMemo(
+    () =>
+      typeFilter === 'semua'
+        ? forms
+        : forms.filter((f) => f.formType === typeFilter),
+    [forms, typeFilter]
+  )
 
-    const table = useReactTable({
-        data: forms,
-        columns,
-        onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
-        getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-        onColumnVisibilityChange: setColumnVisibility,
-        onRowSelectionChange: setRowSelection,
-        onGlobalFilterChange: setGlobalFilter,
-        globalFilterFn: 'includesString', // Simple string search
-        state: {
-            sorting,
-            columnFilters,
-            columnVisibility,
-            rowSelection,
-            globalFilter,
-        },
-    })
+  const columns = useMemo<ColumnDef<AttendanceFormConfig>[]>(() => [
+    {
+      accessorKey: 'title',
+      header: 'Judul',
+      cell: ({ row }) => {
+        const title = row.getValue('title') as string
+        const slug = row.original.slug
+        return (
+          <div className='flex flex-col gap-0.5'>
+            <span className='font-medium'>{title}</span>
+            <span className='flex items-center gap-1 text-xs text-muted-foreground'>
+              <ExternalLink className='h-3 w-3' />
+              /absensi/{slug}
+            </span>
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'formType',
+      header: 'Tipe',
+      cell: ({ row }) => (
+        <FormTypeBadge
+          formType={row.original.formType}
+          kelompokName={row.original.kelompokName}
+        />
+      ),
+    },
+    {
+      accessorKey: 'date',
+      header: 'Tanggal',
+      cell: ({ row }) => {
+        const date = new Date(row.getValue('date'))
+        return (
+          <div className='flex items-center gap-2 text-sm'>
+            <CalendarDays className='h-3.5 w-3.5 text-muted-foreground' />
+            {format(date, 'dd MMM yyyy, HH:mm', { locale: idLocale })}
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'isActive',
+      header: 'Status',
+      cell: ({ row }) => {
+        const active = row.getValue('isActive') as boolean
+        return (
+          <Badge
+            variant='outline'
+            className={cn(
+              active
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400'
+                : 'border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400'
+            )}
+          >
+            {active ? 'Aktif' : 'Nonaktif'}
+          </Badge>
+        )
+      },
+    },
+    {
+      id: 'actions',
+      enableHiding: false,
+      cell: ({ row }) => <FormActions form={row.original} />,
+    },
+  ], [])
 
-    if (isLoading) {
-        return <div>Loading forms...</div> // Better loading skeleton can be added
-    }
+  const table = useReactTable({
+    data: filteredForms,
+    columns,
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: 'includesString',
+    state: {
+      sorting,
+      columnVisibility,
+      globalFilter,
+    },
+  })
 
-    return (
-        <div className='flex flex-1 flex-col gap-4'>
-            <div className='flex items-center justify-between'>
-                <div>
-                    <h2 className='text-2xl font-bold tracking-tight'>Attendance Forms</h2>
-                    <p className='text-muted-foreground'>
-                        Create and manage attendance sessions.
-                    </p>
-                </div>
-                <div className='flex items-center gap-2'>
-                    <Button asChild>
-                        <Link to="/admin/forms/create">
-                            <Plus className='mr-2 h-4 w-4' /> Create Form
-                        </Link>
-                    </Button>
-                </div>
-            </div>
-
-            <div className='flex items-center py-4'>
-                <Input
-                    placeholder='Search forms...'
-                    value={globalFilter ?? ''}
-                    onChange={(event) => setGlobalFilter(event.target.value)}
-                    className='max-w-sm'
-                />
-            </div>
-            <div className='rounded-md border'>
-                <Table>
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => {
-                                    return (
-                                        <TableHead key={header.id}>
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext()
-                                                )}
-                                        </TableHead>
-                                    )
-                                })}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={row.getIsSelected() && 'selected'}
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={columns.length}
-                                    className='h-24 text-center'
-                                >
-                                    No results.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-            <div className='flex items-center justify-end space-x-2 py-4'>
-                <div className='flex-1 text-sm text-muted-foreground'>
-                    {table.getFilteredSelectedRowModel().rows.length} of{' '}
-                    {table.getFilteredRowModel().rows.length} row(s) selected.
-                </div>
-                <div className='space-x-2'>
-                    <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        Previous
-                    </Button>
-                    <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        Next
-                    </Button>
-                </div>
-            </div>
+  return (
+    <div className='flex flex-1 flex-col gap-4'>
+      {/* Page header */}
+      <div className='flex flex-wrap items-end justify-between gap-2'>
+        <div>
+          <h2 className='text-2xl font-bold tracking-tight'>
+            Formulir Absensi
+          </h2>
+          <p className='text-muted-foreground'>
+            Buat dan kelola sesi absensi.
+          </p>
         </div>
-    )
+      </div>
+
+      {/* Toolbar */}
+      <div className='flex flex-wrap items-center gap-2'>
+        <Input
+          placeholder='Cari formulir...'
+          value={globalFilter ?? ''}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          className='max-w-sm'
+        />
+        <div className='flex items-center gap-1'>
+          {(['semua', 'desa', 'kelompok'] as const).map((t) => (
+            <button
+              key={t}
+              type='button'
+              onClick={() => setTypeFilter(t)}
+              className={cn(
+                'rounded border px-2.5 py-1 text-xs font-medium transition-colors',
+                typeFilter === t
+                  ? 'border-foreground/20 bg-foreground/5 text-foreground'
+                  : 'border-transparent text-muted-foreground hover:bg-muted hover:text-foreground'
+              )}
+            >
+              {t === 'semua' ? 'Semua' : t === 'desa' ? 'Desa' : 'Kelompok'}
+            </button>
+          ))}
+        </div>
+        <PermissionGate allowed={can.createForm}>
+          <Button asChild className='ms-auto'>
+            <Link to='/admin/forms/create'>
+              <Plus className='mr-2 h-4 w-4' />
+              Buat Form
+            </Link>
+          </Button>
+        </PermissionGate>
+      </div>
+
+      {/* Form List */}
+      <div className='rounded-lg border'>
+        {isLoading ? (
+          <div className='divide-y'>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className='flex items-center gap-4 px-4 py-3'>
+                <Skeleton className='h-5 w-16 rounded-full' />
+                <div className='flex-1 space-y-1'>
+                  <Skeleton className='h-4 w-48' />
+                  <Skeleton className='h-3 w-32' />
+                </div>
+                <Skeleton className='h-4 w-28' />
+                <Skeleton className='h-5 w-14 rounded-full' />
+                <Skeleton className='h-8 w-8' />
+              </div>
+            ))}
+          </div>
+        ) : table.getRowModel().rows?.length ? (
+          <div className='divide-y'>
+            {table.getRowModel().rows.map((row) => {
+              const form = row.original
+              const formUrl = `${window.location.origin}/absensi/${form.slug}`
+              return (
+                <div
+                  key={row.id}
+                  className='flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50'
+                >
+                  <a
+                    href={formUrl}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='min-w-0 flex-1'
+                  >
+                    <p className='truncate font-medium hover:underline'>
+                      {form.title}
+                    </p>
+                    <p className='flex items-center gap-1.5 truncate text-xs text-muted-foreground'>
+                      <FormTypeBadge
+                        formType={form.formType}
+                        kelompokName={form.kelompokName}
+                      />
+                      <span className='text-border'>|</span>
+                      /absensi/{form.slug}
+                    </p>
+                  </a>
+                  <div className='hidden items-center gap-2 text-sm text-muted-foreground sm:flex'>
+                    <CalendarDays className='h-3.5 w-3.5' />
+                    {format(new Date(form.date), 'dd MMM yyyy, HH:mm', {
+                      locale: idLocale,
+                    })}
+                  </div>
+                  <Badge
+                    variant='outline'
+                    className={cn(
+                      form.isActive
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400'
+                        : 'border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400'
+                    )}
+                  >
+                    {form.isActive ? 'Aktif' : 'Nonaktif'}
+                  </Badge>
+                  <FormActions form={form} />
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className='flex flex-col items-center gap-1.5 py-12 text-muted-foreground'>
+            <CalendarDays className='h-8 w-8 opacity-40' />
+            <p className='text-sm'>Belum ada formulir.</p>
+            <PermissionGate allowed={can.createForm}>
+              <Button variant='link' size='sm' asChild>
+                <Link to='/admin/forms/create'>Buat formulir pertama</Link>
+              </Button>
+            </PermissionGate>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
+      <div className='flex items-center justify-between'>
+        <p className='text-sm text-muted-foreground'>
+          {table.getFilteredRowModel().rows.length} formulir
+        </p>
+        <div className='flex gap-2'>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Sebelumnya
+          </Button>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Selanjutnya
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
 }

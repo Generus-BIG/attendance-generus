@@ -14,20 +14,20 @@ export async function exportToExcel(
   fileName: string,
   options: ExportToExcelOptions = {}
 ) {
-  const xlsxModule = await import('xlsx')
-  const XLSX = (xlsxModule as any).default ?? xlsxModule
+  const ExcelJS = await import('exceljs')
+  const workbook = new ExcelJS.Workbook()
+  const worksheet = workbook.addWorksheet(options.sheetName ?? 'Sheet1')
 
-  const worksheet = XLSX.utils.json_to_sheet(data)
-  const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, options.sheetName ?? 'Sheet1')
+  if (data.length > 0) {
+    const headers = Object.keys(data[0])
+    worksheet.columns = headers.map((key) => ({ header: key, key }))
+    worksheet.addRows(data)
+  }
 
   // Browser-safe export
-  const arrayBuffer: ArrayBuffer = XLSX.write(workbook, {
-    bookType: 'xlsx',
-    type: 'array',
-  })
+  const buffer = await workbook.xlsx.writeBuffer()
 
-  const blob = new Blob([arrayBuffer], {
+  const blob = new Blob([buffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   })
   const safeName = sanitizeFileName(fileName)

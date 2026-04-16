@@ -1,7 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { startOfMonth, endOfMonth, format } from 'date-fns'
 import type {
-  AllowedCategory,
   AttendanceRecord,
   MeetingRecap,
   MonthlyFormRecap,
@@ -9,7 +8,7 @@ import type {
 } from '../types'
 
 type FetchParams = {
-  formId: string
+  formIds: string[]
   month: Date
 }
 
@@ -26,7 +25,7 @@ export type CensusParticipant = {
  * Census = all active participants in the allowed categories
  */
 export async function fetchCensusParticipants(
-  allowedCategories: AllowedCategory[]
+  allowedCategories: string[]
 ): Promise<CensusParticipant[]> {
   const { data, error } = await supabase
     .from('participants')
@@ -55,7 +54,7 @@ export async function fetchCensusParticipants(
         group: group?.value ?? null,
       }
     })
-    .filter((p) => p.category && allowedCategories.includes(p.category as AllowedCategory))
+    .filter((p) => p.category && allowedCategories.includes(p.category))
 }
 
 /**
@@ -63,9 +62,11 @@ export async function fetchCensusParticipants(
  * Includes participant info via joins
  */
 export async function fetchMonthlyAttendance({
-  formId,
+  formIds,
   month,
 }: FetchParams): Promise<AttendanceRecord[]> {
+  if (formIds.length === 0) return []
+
   const start = startOfMonth(month)
   const end = endOfMonth(month)
 
@@ -86,7 +87,7 @@ export async function fetchMonthlyAttendance({
         group:lookup_values!participants_group_id_fkey (value)
       )
     `)
-    .eq('form_id', formId)
+    .in('form_id', formIds)
     .gte('timestamp', start.toISOString())
     .lte('timestamp', end.toISOString())
     .eq('is_pending', false)

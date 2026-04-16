@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
   type SortingState,
   type VisibilityState,
@@ -12,6 +12,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
+import { useAuthStore } from '@/stores/auth-store'
 import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
 import {
   Table,
@@ -37,17 +38,60 @@ type DataTableProps = {
 
 export function AttendanceTable({ search, navigate }: DataTableProps) {
   const { setRefreshData } = useAttendance()
+  const role = useAuthStore((s) => s.auth.role)
+  const userKelompok = useAuthStore((s) => s.auth.kelompok)
 
-  const { data: rawData = [], refetch, isLoading: _isLoading } = useQuery<AttendanceWithParticipant[]>({
-    queryKey: ['attendance_list'],
-    queryFn: getAttendanceList,
+  // Fetch kelompok UUID for TM filtering
+  const { data: kelompokGroupId } = useQuery({
+    queryKey: ['lookup_kelompok_id', userKelompok],
+    queryFn: async () => {
+      if (!userKelompok) return undefined
+      const { data } = await (await import('@/lib/supabase')).supabase
+        .from('lookup_values')
+        .select('id')
+        .eq('type', 'GROUP')
+        .eq('value', userKelompok)
+        .maybeSingle()
+      return data?.id as string | undefined
+    },
+    enabled: role === 'team_manager' && !!userKelompok,
+    staleTime: 1000 * 60 * 10,
   })
 
-  const data = rawData as AttendanceWithParticipant[]
+  const tmGroupId = role === 'team_manager' ? kelompokGroupId : undefined
+  // For TM: wait until kelompok UUID is resolved before fetching attendance
+  const isTmReady = role !== 'team_manager' || !!tmGroupId
+
+  const { data: rawData = [], refetch, isLoading: _isLoading } = useQuery<AttendanceWithParticipant[]>({
+    queryKey: ['attendance_list', tmGroupId],
+    queryFn: () => getAttendanceList(tmGroupId),
+    enabled: isTmReady,
+  })
+
+  // TM: filter out rows where participant is from another kelompok (handles null participant edge cases)
+  const data = useMemo(() => {
+    if (role !== 'team_manager' || !userKelompok) return rawData
+    return rawData.filter(
+      (row) =>
+        row.participant?.kelompok === userKelompok ||
+        row.tempKelompok === userKelompok
+    )
+  }, [rawData, role, userKelompok])
+
+  // Extract unique form titles for the form filter
+  const formFilterOptions = useMemo(() => {
+    const titles = new Set<string>()
+    data.forEach((row) => {
+      if (row.formTitle) titles.add(row.formTitle)
+    })
+    return Array.from(titles)
+      .sort()
+      .map((title) => ({ label: title, value: title }))
+  }, [data])
 
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({ formTitle: false })
   const [sorting, setSorting] = useState<SortingState>([{ id: 'date', desc: true }])
 
   useEffect(() => {
@@ -70,6 +114,7 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
       { columnId: 'participantName', searchKey: 'name', type: 'string' },
       { columnId: 'kelompok', searchKey: 'kelompok', type: 'array' },
       { columnId: 'status', searchKey: 'status', type: 'array' },
+      { columnId: 'formTitle', searchKey: 'form', type: 'array' },
     ],
   })
 
@@ -114,11 +159,24 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
         searchPlaceholder='Cari nama peserta...'
         searchKey='participantName'
         filters={[
-          {
-            columnId: 'kelompok',
-            title: 'Kelompok',
-            options: kelompokOptions.map((k) => ({ label: k.label, value: k.value })),
-          },
+          ...(formFilterOptions.length > 1
+            ? [
+                {
+                  columnId: 'formTitle',
+                  title: 'Form',
+                  options: formFilterOptions,
+                },
+              ]
+            : []),
+          ...(role !== 'team_manager'
+            ? [
+                {
+                  columnId: 'kelompok',
+                  title: 'Kelompok',
+                  options: kelompokOptions.map((k) => ({ label: k.label, value: k.value })),
+                },
+              ]
+            : []),
           {
             columnId: 'status',
             title: 'Status',

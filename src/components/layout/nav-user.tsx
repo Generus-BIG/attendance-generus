@@ -25,12 +25,14 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { SignOutDialog } from '@/components/sign-out-dialog'
+import { ROLE_LABELS, type Role } from '@/lib/rbac'
 
 type NavUserProps = {
   user: {
     name: string
     email: string
     avatar: string
+    role: string
   }
 }
 
@@ -54,7 +56,9 @@ export function NavUser({ user }: NavUserProps) {
                 </Avatar>
                 <div className='grid flex-1 text-start text-sm leading-tight'>
                   <span className='truncate font-semibold'>{user.name}</span>
-                  <span className='truncate text-xs'>{user.email}</span>
+                  <span className='truncate text-xs text-muted-foreground'>
+                    {ROLE_LABELS[user.role as Role] ?? user.role}
+                  </span>
                 </div>
                 <ChevronsUpDown className='ms-auto size-4' />
               </SidebarMenuButton>
