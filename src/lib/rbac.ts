@@ -91,6 +91,7 @@ export interface Permissions {
 // === Route Access ===
 export const ROUTE_ACCESS: Record<string, Role[]> = {
   '/admin/manage-role': ['super_admin', 'admin'],
+  '/admin/forms/create': ['super_admin', 'admin'],
 }
 
 // === Role Display ===
