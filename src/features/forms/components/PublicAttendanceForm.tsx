@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link } from '@tanstack/react-router'
-import { CheckCircle2, Loader2, Check, ChevronsUpDown } from 'lucide-react'
+import { CheckCircle2, Loader2, ChevronsUpDown } from 'lucide-react'
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
@@ -53,7 +53,10 @@ const publicFormSchema = z.object({
     status: z.enum(ATTENDANCE_STATUS),
     permissionReason: z.string().optional().nullable(),
     notes: z.string().optional().nullable(),
-})
+}).refine(
+    (data) => !(data.permissionReason === 'Lainnya' && (!data.notes || data.notes.trim().length < 2)),
+    { message: 'Detail izin wajib diisi minimal 2 karakter', path: ['notes'] }
+)
 
 type PublicFormValues = z.infer<typeof publicFormSchema>
 
@@ -64,6 +67,8 @@ interface PublicAttendanceFormProps {
         slug: string
         description?: string | null
         allowedCategories?: string[]
+        formType?: 'desa' | 'kelompok'
+        kelompokId?: string | null
     }
 }
 
@@ -87,6 +92,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
     })
 
     const attendanceStatus = form.watch('status')
+    const permissionReason = form.watch('permissionReason')
 
     // Debounce search query
     useEffect(() => {
@@ -96,10 +102,11 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
         return () => clearTimeout(timer)
     }, [searchQuery])
 
-    // Fetch participants - also fetch when popover opens with empty query for preview
+    // Fetch participants - filter by kelompok for kelompok-type forms
+    const kelompokGroupId = formConfig.formType === 'kelompok' ? formConfig.kelompokId : null
     const { data: participants = [], isLoading: isLoadingParticipants } = useQuery({
-        queryKey: ['participants', debouncedQuery, formConfig.allowedCategories],
-        queryFn: () => searchParticipants(debouncedQuery, formConfig.allowedCategories),
+        queryKey: ['participants', debouncedQuery, formConfig.allowedCategories, kelompokGroupId],
+        queryFn: () => searchParticipants(debouncedQuery, formConfig.allowedCategories, kelompokGroupId),
         enabled: open, // Fetch when popover is open, even with empty query
         staleTime: 1000 * 60, // 1 minute
     })
@@ -260,7 +267,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                                 </Button>
                                             </FormControl>
                                         </PopoverTrigger>
-                                        <PopoverContent className="w-[calc(100vw-3rem)] sm:w-[calc(100%-4rem)] max-w-lg p-0 rounded-xl overflow-hidden border-zinc-200 dark:border-zinc-800 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)]" align="start">
+                                        <PopoverContent className="w-[calc(100vw-2rem)] sm:w-md max-w-lg p-0 rounded-xl overflow-hidden border-zinc-200 dark:border-zinc-800 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)]" align="start">
                                             <Command shouldFilter={false} className="bg-white dark:bg-zinc-950">
                                                 <CommandInput
                                                     placeholder="Cari nama..."
@@ -293,22 +300,19 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                                         {participants.map((participant) => (
                                                             <CommandItem
                                                                 key={participant.id}
-                                                                value={participant.name} // Value for filtering if enabled, but here serves as ID
+                                                                value={participant.name}
                                                                 onSelect={() => handleSelectParticipant(participant)}
-                                                                className="flex items-center gap-3 px-3 py-2.5 my-0.5 rounded-lg cursor-pointer aria-selected:bg-zinc-100 dark:aria-selected:bg-zinc-900 transition-colors"
+                                                                className={cn(
+                                                                    "flex items-center px-3.5 py-3 my-0.5 rounded-lg cursor-pointer transition-colors",
+                                                                    participant.name === field.value
+                                                                        ? "bg-zinc-100 dark:bg-zinc-800"
+                                                                        : "aria-selected:bg-zinc-50 dark:aria-selected:bg-zinc-900/60"
+                                                                )}
                                                             >
-                                                                <div className={cn(
-                                                                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border transition-all duration-200 mt-0.5",
-                                                                      participant.name === field.value
-                                                                          ? "bg-black border-black text-white dark:bg-white dark:border-white dark:text-black"
-                                                                          : "border-zinc-200 dark:border-zinc-800 bg-transparent text-transparent"
-                                                                  )}>
-                                                                      <Check className="h-3.5 w-3.5 stroke-3" />
-                                                                </div>
-                                                                <div className="flex flex-col gap-0.5 min-w-0">
-                                                                    <span className="font-medium text-[15px] truncate">{participant.name}</span>
-                                                                    <span className="text-[13px] font-medium text-zinc-500 dark:text-zinc-400 truncate">
-                                                                        {participant.group} • {participant.category} • {participant.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
+                                                                <div className="flex flex-col gap-0.5 min-w-0 w-full">
+                                                                    <span className="font-medium text-[15px]">{participant.name}</span>
+                                                                    <span className="text-[13px] font-medium text-zinc-500 dark:text-zinc-400">
+                                                                        {participant.group} &bull; {participant.category} &bull; {participant.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
                                                                     </span>
                                                                 </div>
                                                             </CommandItem>
@@ -392,7 +396,7 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                                         <RadioGroupItem value={k} className="h-4.5 w-4.5 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm" />
                                                     </FormControl>
                                                     <FormLabel className='text-[15px] font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors'>
-                                                        {k === 'AR' ? 'Anak Remaja' : `GPN ${k}`}
+                                                        {k === 'AR' ? 'AR' : `GPN ${k}`}
                                                     </FormLabel>
                                                 </FormItem>
                                             ))}
@@ -466,26 +470,28 @@ export function PublicAttendanceForm({ formConfig }: PublicAttendanceFormProps) 
                                     )}
                                 />
 
-                                <FormField
-                                    control={form.control}
-                                    name='notes'
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-col space-y-2.5">
-                                            <FormLabel className='text-[15px] font-semibold text-zinc-900 dark:text-zinc-100'>
-                                                Detail Izin
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    placeholder='Berikan sedikit penjelasan...'
-                                                    className='min-h-25 resize-none p-4 rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 focus:bg-transparent transition-colors'
-                                                    {...field}
-                                                    value={field.value || ''}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                {permissionReason === 'Lainnya' && (
+                                    <FormField
+                                        control={form.control}
+                                        name='notes'
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-col space-y-2.5 animate-in fade-in slide-in-from-top-3 duration-400 ease-out-quart">
+                                                <FormLabel className='text-[15px] font-semibold text-zinc-900 dark:text-zinc-100'>
+                                                    Detail Izin <span className="text-red-500">*</span>
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Textarea
+                                                        placeholder='Jelaskan alasan izin kamu...'
+                                                        className='min-h-25 resize-none p-4 rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 focus:bg-transparent transition-colors'
+                                                        {...field}
+                                                        value={field.value || ''}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
                             </div>
                         )}
 

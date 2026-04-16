@@ -1,77 +1,50 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { DASHBOARD_FORMS, type DashboardFormKey } from '../types'
 import { useMonthlyFormRecap } from '../hooks/use-monthly-form-recap'
 import { MonthlyFormStatCards } from './monthly-form-stat-cards'
 import { AttendanceTrendChart } from './attendance-trend-chart'
 import { AttendanceByGroupRowChart } from './attendance-by-group-row-chart'
 import { FollowUpTable } from './follow-up-table'
+import { Card, CardContent } from '@/components/ui/card'
+import { AlertCircle } from 'lucide-react'
 
-type Props = {
-  formKey: DashboardFormKey
+interface Props {
+  formIds: string[]
   month: Date
+  showGroupChart?: boolean
 }
 
-export function MonthlyFormDashboard({ formKey, month }: Props) {
-  const config = DASHBOARD_FORMS[formKey]
-  const { data, isLoading, error } = useMonthlyFormRecap({ formKey, month })
+export function MonthlyFormDashboard({
+  formIds,
+  month,
+  showGroupChart = true,
+}: Props) {
+  const { data, isLoading, error } = useMonthlyFormRecap({
+    formIds,
+    month,
+  })
 
   return (
     <div className='space-y-4'>
-      {/* Stat Cards */}
       <MonthlyFormStatCards recap={data} isLoading={isLoading} />
 
-      {/* Charts Row */}
-      <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
-        {/* Trend Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Tren per Pertemuan</CardTitle>
-            <CardDescription>
-              Hadir vs Izin untuk setiap tanggal pertemuan
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AttendanceTrendChart recap={data} isLoading={isLoading} />
-          </CardContent>
-        </Card>
-
-        {/* Group Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Kehadiran per Kelompok</CardTitle>
-            <CardDescription>
-              Perbandingan hadir vs izin berdasarkan kelompok
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+      <div className='grid gap-4 lg:grid-cols-3'>
+        <div className='lg:col-span-2'>
+          <AttendanceTrendChart recap={data} isLoading={isLoading} />
+        </div>
+        {showGroupChart && (
+          <div>
             <AttendanceByGroupRowChart recap={data} isLoading={isLoading} />
-          </CardContent>
-        </Card>
+          </div>
+        )}
       </div>
 
-      {/* Follow-up Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Perlu Follow-up</CardTitle>
-          <CardDescription>Peserta dengan kehadiran terendah bulan ini</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FollowUpTable recap={data} isLoading={isLoading} />
-        </CardContent>
-      </Card>
+      <FollowUpTable recap={data} isLoading={isLoading} />
 
-      {/* Error State */}
       {error && (
         <Card className='border-destructive'>
-          <CardContent className='pt-6'>
+          <CardContent className='flex items-center gap-2 pt-6'>
+            <AlertCircle className='h-4 w-4 text-destructive' />
             <p className='text-sm text-destructive'>
-              Gagal memuat data {config.title}: {error.message}
+              Gagal memuat data: {error.message}
             </p>
           </CardContent>
         </Card>

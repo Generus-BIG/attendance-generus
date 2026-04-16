@@ -1,42 +1,13 @@
-/**
- * Dashboard Types for Monthly Form Recap
- * 
- * Form Keys:
- * - profmud: Pengajian GPN Profmud (kategori GPN A + GPN B)
- * - ar: Pengajian AR Intensif (kategori AR)
- */
+export type DashboardTab = 'desa' | 'kelompok'
 
-export type DashboardFormKey = 'profmud' | 'ar'
-
-export type AllowedCategory = 'GPN A' | 'GPN B' | 'AR'
-
-export type DashboardFormConfig = {
-  key: DashboardFormKey
+export interface DashboardFormItem {
+  id: string
   title: string
-  description: string
-  formId: string
-  allowedCategories: AllowedCategory[]
-}
-
-/**
- * Form configurations with actual Supabase form IDs
- * These IDs are from attendance_forms table
- */
-export const DASHBOARD_FORMS: Record<DashboardFormKey, DashboardFormConfig> = {
-  profmud: {
-    key: 'profmud',
-    title: 'Pengajian GPN Profmud',
-    description: 'Rekap bulanan per pertemuan (kategori GPN A & GPN B)',
-    formId: 'ead72bcf-128c-4542-8baa-adc11fae27b4',
-    allowedCategories: ['GPN A', 'GPN B'],
-  },
-  ar: {
-    key: 'ar',
-    title: 'Pengajian AR Intensif',
-    description: 'Rekap bulanan per pertemuan (kategori AR)',
-    formId: 'f9bb2544-c985-4381-adc5-76b80c93dd4f',
-    allowedCategories: ['AR'],
-  },
+  date: string
+  isActive: boolean
+  formType: DashboardTab
+  kelompokId: string | null
+  kelompokName: string | null
 }
 
 // Attendance status as stored in DB

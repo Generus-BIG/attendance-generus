@@ -3,6 +3,7 @@ import { attendanceFormConfigListSchema, type AttendanceFormConfig } from '@/lib
 import { supabase } from '../../../lib/supabase' // Assuming initialized client
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuthStore } from '@/stores/auth-store'
 
 interface FormsContextType {
     forms: AttendanceFormConfig[]
@@ -16,29 +17,71 @@ const FormsContext = createContext<FormsContextType | undefined>(undefined)
 
 export function FormsProvider({ children }: { children: ReactNode }) {
     const queryClient = useQueryClient()
+    const { role, kelompok } = useAuthStore((s) => s.auth)
 
     const { data: forms = [], isLoading } = useQuery({
-        queryKey: ['attendance_forms'],
+        queryKey: ['attendance_forms', role, kelompok],
         queryFn: async () => {
-            const { data, error } = await supabase
+            // Try with kelompok join first, fallback to plain select if FK doesn't exist yet
+            let data: Record<string, unknown>[] | null = null
+
+            const { data: joinData, error: joinError } = await supabase
                 .from('attendance_forms')
-                .select('*')
+                .select('*, kelompok:lookup_values!attendance_forms_kelompok_id_fkey(value)')
                 .order('created_at', { ascending: false })
 
-            if (error) {
-                toast.error('Failed to fetch forms')
-                throw error
+            if (joinError) {
+                // FK might not exist yet (migration not run) — fallback to plain select
+                const { data: plainData, error: plainError } = await supabase
+                    .from('attendance_forms')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+
+                if (plainError) {
+                    toast.error('Failed to fetch forms')
+                    throw plainError
+                }
+                data = plainData as Record<string, unknown>[]
+            } else {
+                data = joinData as Record<string, unknown>[]
+            }
+
+            // Apply RBAC filter for team_manager (client-side, RLS is server-side)
+            let filtered = data ?? []
+            if (role === 'team_manager' && kelompok) {
+                const { data: lookupData } = await supabase
+                    .from('lookup_values')
+                    .select('id')
+                    .eq('type', 'GROUP')
+                    .eq('value', kelompok)
+                    .single()
+
+                if (lookupData) {
+                    filtered = filtered.filter(
+                        (item) =>
+                            (item.form_type as string) === 'desa' ||
+                            (item.kelompok_id as string) === lookupData.id
+                    )
+                } else {
+                    // Kelompok not found in lookup_values — restrict to desa forms only
+                    filtered = filtered.filter(
+                        (item) => (item.form_type as string) === 'desa'
+                    )
+                }
             }
 
             // Map snake_case to camelCase
-            const mapped = data.map((item) => ({
+            const mapped = filtered.map((item) => ({
                 id: item.id,
                 title: item.title,
                 description: item.description,
                 date: item.date,
                 isActive: item.is_active,
                 slug: item.slug,
-                allowedCategories: item.allowed_categories || ['A', 'B', 'AR'],
+                allowedCategories: (item.allowed_categories as string[]) || ['A', 'B', 'AR'],
+                formType: (item.form_type as string) ?? 'desa',
+                kelompokId: (item.kelompok_id as string) ?? null,
+                kelompokName: (item.kelompok as { value: string } | null)?.value ?? null,
                 createdAt: item.created_at,
                 updatedAt: item.updated_at,
             }))
@@ -49,7 +92,6 @@ export function FormsProvider({ children }: { children: ReactNode }) {
 
     const createFormMutation = useMutation({
         mutationFn: async (newForm: Partial<AttendanceFormConfig>) => {
-            // Map camelCase back to snake_case for Supabase
             const payload = {
                 title: newForm.title,
                 description: newForm.description,
@@ -57,6 +99,8 @@ export function FormsProvider({ children }: { children: ReactNode }) {
                 is_active: newForm.isActive,
                 slug: newForm.slug,
                 allowed_categories: newForm.allowedCategories,
+                form_type: newForm.formType ?? 'desa',
+                kelompok_id: newForm.kelompokId ?? null,
             }
 
             const { error } = await supabase
@@ -67,13 +111,13 @@ export function FormsProvider({ children }: { children: ReactNode }) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['attendance_forms'] })
+            queryClient.invalidateQueries({ queryKey: ['dashboard-forms'] })
             toast.success('Form created successfully')
         }
     })
 
     const updateFormMutation = useMutation({
         mutationFn: async (updatedForm: AttendanceFormConfig) => {
-            // Map camelCase back to snake_case for Supabase
             const payload = {
                 title: updatedForm.title,
                 description: updatedForm.description,
@@ -81,6 +125,8 @@ export function FormsProvider({ children }: { children: ReactNode }) {
                 is_active: updatedForm.isActive,
                 slug: updatedForm.slug,
                 allowed_categories: updatedForm.allowedCategories,
+                form_type: updatedForm.formType ?? 'desa',
+                kelompok_id: updatedForm.kelompokId ?? null,
                 updated_at: new Date().toISOString()
             }
 
@@ -93,6 +139,7 @@ export function FormsProvider({ children }: { children: ReactNode }) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['attendance_forms'] })
+            queryClient.invalidateQueries({ queryKey: ['dashboard-forms'] })
             toast.success('Form updated successfully')
         }
     })
@@ -117,6 +164,7 @@ export function FormsProvider({ children }: { children: ReactNode }) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['attendance_forms'] })
+            queryClient.invalidateQueries({ queryKey: ['dashboard-forms'] })
             toast.success('Form deleted successfully')
         },
         onError: (error: Error) => {

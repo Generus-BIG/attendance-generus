@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { Link } from '@tanstack/react-router'
 import {
@@ -10,7 +10,6 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  flexRender,
 } from '@tanstack/react-table'
 import { id as idLocale } from 'date-fns/locale'
 import { CalendarDays, ExternalLink, Plus } from 'lucide-react'
@@ -20,14 +19,6 @@ import { usePermissions } from '@/hooks/use-permissions'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
@@ -37,6 +28,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { FormActions } from './components/form-actions'
+import { FormTypeBadge } from './components/form-type-badge'
 import { FormsProvider, useFormsContext } from './context/forms-context'
 
 export function Forms() {
@@ -63,8 +55,17 @@ function FormsList() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [globalFilter, setGlobalFilter] = useState('')
+  const [typeFilter, setTypeFilter] = useState<'semua' | 'desa' | 'kelompok'>('semua')
 
-  const columns: ColumnDef<AttendanceFormConfig>[] = [
+  const filteredForms = useMemo(
+    () =>
+      typeFilter === 'semua'
+        ? forms
+        : forms.filter((f) => f.formType === typeFilter),
+    [forms, typeFilter]
+  )
+
+  const columns = useMemo<ColumnDef<AttendanceFormConfig>[]>(() => [
     {
       accessorKey: 'title',
       header: 'Judul',
@@ -81,6 +82,16 @@ function FormsList() {
           </div>
         )
       },
+    },
+    {
+      accessorKey: 'formType',
+      header: 'Tipe',
+      cell: ({ row }) => (
+        <FormTypeBadge
+          formType={row.original.formType}
+          kelompokName={row.original.kelompokName}
+        />
+      ),
     },
     {
       accessorKey: 'date',
@@ -119,10 +130,10 @@ function FormsList() {
       enableHiding: false,
       cell: ({ row }) => <FormActions form={row.original} />,
     },
-  ]
+  ], [])
 
   const table = useReactTable({
-    data: forms,
+    data: filteredForms,
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -151,8 +162,35 @@ function FormsList() {
             Buat dan kelola sesi absensi.
           </p>
         </div>
+      </div>
+
+      {/* Toolbar */}
+      <div className='flex flex-wrap items-center gap-2'>
+        <Input
+          placeholder='Cari formulir...'
+          value={globalFilter ?? ''}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          className='max-w-sm'
+        />
+        <div className='flex items-center gap-1'>
+          {(['semua', 'desa', 'kelompok'] as const).map((t) => (
+            <button
+              key={t}
+              type='button'
+              onClick={() => setTypeFilter(t)}
+              className={cn(
+                'rounded border px-2.5 py-1 text-xs font-medium transition-colors',
+                typeFilter === t
+                  ? 'border-foreground/20 bg-foreground/5 text-foreground'
+                  : 'border-transparent text-muted-foreground hover:bg-muted hover:text-foreground'
+              )}
+            >
+              {t === 'semua' ? 'Semua' : t === 'desa' ? 'Desa' : 'Kelompok'}
+            </button>
+          ))}
+        </div>
         <PermissionGate allowed={can.createForm}>
-          <Button asChild>
+          <Button asChild className='ms-auto'>
             <Link to='/admin/forms/create'>
               <Plus className='mr-2 h-4 w-4' />
               Buat Form
@@ -161,94 +199,83 @@ function FormsList() {
         </PermissionGate>
       </div>
 
-      {/* Search */}
-      <div className='flex items-center'>
-        <Input
-          placeholder='Cari formulir...'
-          value={globalFilter ?? ''}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          className='max-w-sm'
-        />
-      </div>
-
-      {/* Table */}
-      <div className='rounded-md border'>
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
+      {/* Form List */}
+      <div className='rounded-lg border'>
+        {isLoading ? (
+          <div className='divide-y'>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className='flex items-center gap-4 px-4 py-3'>
+                <Skeleton className='h-5 w-16 rounded-full' />
+                <div className='flex-1 space-y-1'>
+                  <Skeleton className='h-4 w-48' />
+                  <Skeleton className='h-3 w-32' />
+                </div>
+                <Skeleton className='h-4 w-28' />
+                <Skeleton className='h-5 w-14 rounded-full' />
+                <Skeleton className='h-8 w-8' />
+              </div>
             ))}
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <div className='flex flex-col gap-1'>
-                      <Skeleton className='h-4 w-32' />
-                      <Skeleton className='h-3 w-24' />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className='h-4 w-28' />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className='h-5 w-14 rounded-full' />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className='h-8 w-8 rounded-md' />
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
+          </div>
+        ) : table.getRowModel().rows?.length ? (
+          <div className='divide-y'>
+            {table.getRowModel().rows.map((row) => {
+              const form = row.original
+              const formUrl = `${window.location.origin}/absensi/${form.slug}`
+              return (
+                <div
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
+                  className='flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50'
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-32 text-center'
-                >
-                  <div className='flex flex-col items-center gap-1.5 text-muted-foreground'>
-                    <CalendarDays className='h-8 w-8 opacity-40' />
-                    <p className='text-sm'>Belum ada formulir.</p>
-                    <PermissionGate allowed={can.createForm}>
-                      <Button variant='link' size='sm' asChild>
-                        <Link to='/admin/forms/create'>
-                          Buat formulir pertama
-                        </Link>
-                      </Button>
-                    </PermissionGate>
+                  <a
+                    href={formUrl}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='min-w-0 flex-1'
+                  >
+                    <p className='truncate font-medium hover:underline'>
+                      {form.title}
+                    </p>
+                    <p className='flex items-center gap-1.5 truncate text-xs text-muted-foreground'>
+                      <FormTypeBadge
+                        formType={form.formType}
+                        kelompokName={form.kelompokName}
+                      />
+                      <span className='text-border'>|</span>
+                      /absensi/{form.slug}
+                    </p>
+                  </a>
+                  <div className='hidden items-center gap-2 text-sm text-muted-foreground sm:flex'>
+                    <CalendarDays className='h-3.5 w-3.5' />
+                    {format(new Date(form.date), 'dd MMM yyyy, HH:mm', {
+                      locale: idLocale,
+                    })}
                   </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                  <Badge
+                    variant='outline'
+                    className={cn(
+                      form.isActive
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400'
+                        : 'border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400'
+                    )}
+                  >
+                    {form.isActive ? 'Aktif' : 'Nonaktif'}
+                  </Badge>
+                  <FormActions form={form} />
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className='flex flex-col items-center gap-1.5 py-12 text-muted-foreground'>
+            <CalendarDays className='h-8 w-8 opacity-40' />
+            <p className='text-sm'>Belum ada formulir.</p>
+            <PermissionGate allowed={can.createForm}>
+              <Button variant='link' size='sm' asChild>
+                <Link to='/admin/forms/create'>Buat formulir pertama</Link>
+              </Button>
+            </PermissionGate>
+          </div>
+        )}
       </div>
 
       {/* Pagination */}

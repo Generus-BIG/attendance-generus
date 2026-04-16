@@ -78,9 +78,20 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
     )
   }, [rawData, role, userKelompok])
 
+  // Extract unique form titles for the form filter
+  const formFilterOptions = useMemo(() => {
+    const titles = new Set<string>()
+    data.forEach((row) => {
+      if (row.formTitle) titles.add(row.formTitle)
+    })
+    return Array.from(titles)
+      .sort()
+      .map((title) => ({ label: title, value: title }))
+  }, [data])
+
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({ formTitle: false })
   const [sorting, setSorting] = useState<SortingState>([{ id: 'date', desc: true }])
 
   useEffect(() => {
@@ -103,6 +114,7 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
       { columnId: 'participantName', searchKey: 'name', type: 'string' },
       { columnId: 'kelompok', searchKey: 'kelompok', type: 'array' },
       { columnId: 'status', searchKey: 'status', type: 'array' },
+      { columnId: 'formTitle', searchKey: 'form', type: 'array' },
     ],
   })
 
@@ -147,6 +159,15 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
         searchPlaceholder='Cari nama peserta...'
         searchKey='participantName'
         filters={[
+          ...(formFilterOptions.length > 1
+            ? [
+                {
+                  columnId: 'formTitle',
+                  title: 'Form',
+                  options: formFilterOptions,
+                },
+              ]
+            : []),
           ...(role !== 'team_manager'
             ? [
                 {

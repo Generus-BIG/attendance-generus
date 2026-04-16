@@ -33,7 +33,14 @@ export function FormActions({ form }: FormActionsProps) {
   const [openDelete, setOpenDelete] = useState(false)
   const [openEdit, setOpenEdit] = useState(false)
   const { deleteForm, updateForm } = useFormsContext()
-  const { can } = usePermissions()
+  const { role, kelompok, can } = usePermissions()
+
+  const canModify =
+    role === 'super_admin' ||
+    role === 'admin' ||
+    (role === 'team_manager' &&
+      form.formType === 'kelompok' &&
+      form.kelompokName === kelompok)
 
   const copyLink = () => {
     const url = `${window.location.origin}/absensi/${form.slug}`
@@ -41,9 +48,12 @@ export function FormActions({ form }: FormActionsProps) {
     toast.success('Link copied to clipboard')
   }
 
-  const toggleStatus = () => {
-    updateForm({ ...form, isActive: !form.isActive })
-    toast.success(`Form ${form.isActive ? 'deactivated' : 'activated'}`)
+  const toggleStatus = async () => {
+    try {
+      await updateForm({ ...form, isActive: !form.isActive })
+    } catch {
+      toast.error('Gagal mengubah status form')
+    }
   }
 
   const handleDelete = async () => {
@@ -69,19 +79,21 @@ export function FormActions({ form }: FormActionsProps) {
           <DropdownMenuItem onClick={() => copyLink()}>
             <Link className='mr-2 h-4 w-4' /> Copy Link
           </DropdownMenuItem>
-          {(can.editForm || can.deleteForm) && <DropdownMenuSeparator />}
-          {can.editForm && (
+          {((can.editForm && canModify) || (can.deleteForm && canModify)) && (
+            <DropdownMenuSeparator />
+          )}
+          {can.editForm && canModify && (
             <DropdownMenuItem onClick={() => setOpenEdit(true)}>
               <SquarePen className='mr-2 h-4 w-4' /> Edit
             </DropdownMenuItem>
           )}
-          {can.editForm && (
+          {can.editForm && canModify && (
             <DropdownMenuItem onClick={() => toggleStatus()}>
               <Power className='mr-2 h-4 w-4' />{' '}
               {form.isActive ? 'Deactivate' : 'Activate'}
             </DropdownMenuItem>
           )}
-          {can.deleteForm && (
+          {can.deleteForm && canModify && (
             <DropdownMenuItem
               onClick={() => setOpenDelete(true)}
               className='text-red-600 focus:text-red-600'

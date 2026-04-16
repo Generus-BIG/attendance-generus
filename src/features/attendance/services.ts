@@ -36,6 +36,7 @@ export async function getAttendanceList(kelompokGroupId?: string) {
         // Normalize foreign keys to camelCase for dialogs/edit flow
         participantId: item.participant_id ?? item.participantId ?? null,
         formId: item.form_id ?? item.formId ?? null,
+        formTitle: item.form?.title ?? null,
         // Map timestamp to date for table sorting
         date: item.timestamp,
         status: item.status?.toLowerCase(),
