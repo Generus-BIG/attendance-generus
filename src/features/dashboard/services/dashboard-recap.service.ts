@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase'
 import { startOfMonth, endOfMonth, format } from 'date-fns'
+import { supabase } from '@/lib/supabase'
 import type {
   AttendanceRecord,
   MeetingRecap,
@@ -25,18 +25,27 @@ export type CensusParticipant = {
  * Census = all active participants in the allowed categories
  */
 export async function fetchCensusParticipants(
-  allowedCategories: string[]
+  allowedCategories: string[],
+  kelompokId?: string
 ): Promise<CensusParticipant[]> {
-  const { data, error } = await supabase
+  let query = supabase
     .from('participants')
-    .select(`
+    .select(
+      `
       id,
       name,
       status_active,
       category:lookup_values!participants_category_id_fkey (value),
       group:lookup_values!participants_group_id_fkey (value)
-    `)
+    `
+    )
     .eq('status_active', true)
+
+  if (kelompokId) {
+    query = query.eq('group_id', kelompokId)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     throw error
@@ -72,7 +81,8 @@ export async function fetchMonthlyAttendance({
 
   const { data, error } = await supabase
     .from('attendance')
-    .select(`
+    .select(
+      `
       id,
       form_id,
       participant_id,
@@ -86,7 +96,8 @@ export async function fetchMonthlyAttendance({
         lookup_values!participants_category_id_fkey (value),
         group:lookup_values!participants_group_id_fkey (value)
       )
-    `)
+    `
+    )
     .in('form_id', formIds)
     .gte('timestamp', start.toISOString())
     .lte('timestamp', end.toISOString())
@@ -123,7 +134,7 @@ export async function fetchMonthlyAttendance({
 
 /**
  * Aggregate raw attendance records into monthly recap
- * 
+ *
  * Aggregation rules:
  * - Meetings: distinct dates from timestamp (truncated to YYYY-MM-DD)
  * - Per meeting: count HADIR vs IZIN
@@ -215,7 +226,9 @@ export function aggregateMonthlyRecap(
 
     if (!byParticipant.has(key)) {
       // Get category from census map if available
-      const censusInfo = rec.participant_id ? censusMap.get(rec.participant_id) : null
+      const censusInfo = rec.participant_id
+        ? censusMap.get(rec.participant_id)
+        : null
       byParticipant.set(key, {
         name: rec.participant_name ?? 'Unknown',
         group: censusInfo?.group ?? rec.group_value,
@@ -272,8 +285,10 @@ export function aggregateMonthlyRecap(
       totalIzin,
       totalSubmissions,
       totalCensus,
-      attendanceRate: maxPossibleAttendance > 0 ? totalHadir / maxPossibleAttendance : 0,
-      izinRate: maxPossibleAttendance > 0 ? totalIzin / maxPossibleAttendance : 0,
+      attendanceRate:
+        maxPossibleAttendance > 0 ? totalHadir / maxPossibleAttendance : 0,
+      izinRate:
+        maxPossibleAttendance > 0 ? totalIzin / maxPossibleAttendance : 0,
       avgHadirPerMeeting: totalMeetings > 0 ? totalHadir / totalMeetings : 0,
     },
   }
