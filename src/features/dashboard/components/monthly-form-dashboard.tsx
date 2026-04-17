@@ -1,25 +1,28 @@
-import { useMonthlyFormRecap } from '../hooks/use-monthly-form-recap'
-import { MonthlyFormStatCards } from './monthly-form-stat-cards'
-import { AttendanceTrendChart } from './attendance-trend-chart'
-import { AttendanceByGroupRowChart } from './attendance-by-group-row-chart'
-import { FollowUpTable } from './follow-up-table'
-import { Card, CardContent } from '@/components/ui/card'
 import { AlertCircle } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { useMonthlyFormRecap } from '../hooks/use-monthly-form-recap'
+import { AttendanceByGroupRowChart } from './attendance-by-group-row-chart'
+import { AttendanceTrendChart } from './attendance-trend-chart'
+import { FollowUpTable } from './follow-up-table'
+import { MonthlyFormStatCards } from './monthly-form-stat-cards'
 
 interface Props {
   formIds: string[]
   month: Date
+  kelompokId?: string
   showGroupChart?: boolean
 }
 
 export function MonthlyFormDashboard({
   formIds,
   month,
+  kelompokId,
   showGroupChart = true,
 }: Props) {
   const { data, isLoading, error } = useMonthlyFormRecap({
     formIds,
     month,
+    kelompokId,
   })
 
   return (
