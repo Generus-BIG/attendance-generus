@@ -1,24 +1,24 @@
-import { useQuery } from '@tanstack/react-query'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
 import { format } from 'date-fns'
+import { useQuery } from '@tanstack/react-query'
 import { id as idLocale } from 'date-fns/locale'
+import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
+import { usePermissions } from '@/hooks/use-permissions'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { usePermissions } from '@/hooks/use-permissions'
+import { FormSelectorDropdown } from './components/form-selector-dropdown'
+import { KelompokPills } from './components/kelompok-pills'
+import { MonthlyFormDashboard } from './components/monthly-form-dashboard'
 import { useDashboardState } from './hooks/use-dashboard-state'
 import {
   fetchFormsByType,
   fetchKelompokOptions,
 } from './services/dashboard-forms.service'
-import { MonthlyFormDashboard } from './components/monthly-form-dashboard'
-import { KelompokPills } from './components/kelompok-pills'
-import { FormSelectorDropdown } from './components/form-selector-dropdown'
 
 export function Dashboard() {
   const { role, kelompok } = usePermissions()
@@ -178,6 +178,7 @@ export function Dashboard() {
             <MonthlyFormDashboard
               formIds={kelompokFormIds}
               month={monthDate}
+              kelompokId={resolvedKelompokId}
               showGroupChart={false}
             />
           </TabsContent>
