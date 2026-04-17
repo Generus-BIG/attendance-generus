@@ -47,7 +47,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
 
         {/* Bottom attribution */}
         <p className='relative z-10 text-xs text-[oklch(0.45_0.015_265)]'>
-          Developed by Royanrosyad 💌
+          Developed by PH Desa BIG 💌
         </p>
       </div>
 
