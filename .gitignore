@@ -25,6 +25,7 @@ dist-ssr
 .mcp.json
 *docs
 *CLAUDE.md
+*AGENTS.md
 *.claude
 *.superpowers
 *docs
