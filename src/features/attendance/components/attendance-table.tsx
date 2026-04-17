@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import {
   type SortingState,
   type VisibilityState,
@@ -11,8 +12,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth-store'
+import { cn } from '@/lib/utils'
 import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
 import {
   Table,
@@ -23,12 +24,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
-import { useQuery } from '@tanstack/react-query'
-import { attendanceStatusOptions } from '../data/data'
 import { kelompokOptions } from '@/features/participants/data/data'
-import { attendanceColumns as columns, type AttendanceWithParticipant } from './attendance-columns'
-import { useAttendance } from './attendance-provider'
+import { attendanceStatusOptions } from '../data/data'
 import { getAttendanceList } from '../services'
+import {
+  attendanceColumns as columns,
+  type AttendanceWithParticipant,
+} from './attendance-columns'
+import { useAttendance } from './attendance-provider'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 
 type DataTableProps = {
@@ -62,7 +65,11 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
   // For TM: wait until kelompok UUID is resolved before fetching attendance
   const isTmReady = role !== 'team_manager' || !!tmGroupId
 
-  const { data: rawData = [], refetch, isLoading: _isLoading } = useQuery<AttendanceWithParticipant[]>({
+  const {
+    data: rawData = [],
+    refetch,
+    isLoading: _isLoading,
+  } = useQuery<AttendanceWithParticipant[]>({
     queryKey: ['attendance_list', tmGroupId],
     queryFn: () => getAttendanceList(tmGroupId),
     enabled: isTmReady,
@@ -91,8 +98,12 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
 
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({ formTitle: false })
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'date', desc: true }])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    formTitle: false,
+  })
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'date', desc: true },
+  ])
 
   useEffect(() => {
     setRefreshData(() => refetch)
@@ -159,11 +170,11 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
         searchPlaceholder='Cari nama peserta...'
         searchKey='participantName'
         filters={[
-          ...(formFilterOptions.length > 1
+          ...(formFilterOptions.length > 0
             ? [
                 {
                   columnId: 'formTitle',
-                  title: 'Form',
+                  title: 'Forms',
                   options: formFilterOptions,
                 },
               ]
@@ -173,14 +184,20 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
                 {
                   columnId: 'kelompok',
                   title: 'Kelompok',
-                  options: kelompokOptions.map((k) => ({ label: k.label, value: k.value })),
+                  options: kelompokOptions.map((k) => ({
+                    label: k.label,
+                    value: k.value,
+                  })),
                 },
               ]
             : []),
           {
             columnId: 'status',
             title: 'Status',
-            options: attendanceStatusOptions.map((s) => ({ label: s.label, value: s.value })),
+            options: attendanceStatusOptions.map((s) => ({
+              label: s.label,
+              value: s.value,
+            })),
           },
         ]}
       />
@@ -203,9 +220,9 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   )
                 })}
