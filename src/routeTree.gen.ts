@@ -26,6 +26,7 @@ import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AdminSettingsRouteRouteImport } from './routes/admin/settings/route'
+import { Route as AdminLupgRouteRouteImport } from './routes/admin/lupg/route'
 import { Route as AdminTasksIndexRouteImport } from './routes/admin/tasks/index'
 import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
 import { Route as AdminParticipantsIndexRouteImport } from './routes/admin/participants/index'
@@ -39,8 +40,16 @@ import { Route as AdminApprovalsIndexRouteImport } from './routes/admin/approval
 import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/settings/notifications'
 import { Route as AdminSettingsAppearanceRouteImport } from './routes/admin/settings/appearance'
 import { Route as AdminSettingsAccountRouteImport } from './routes/admin/settings/account'
+import { Route as AdminLupgDashboardRouteImport } from './routes/admin/lupg/dashboard'
 import { Route as AdminFormsCreateRouteImport } from './routes/admin/forms/create'
 import { Route as AdminErrorsErrorRouteImport } from './routes/admin/errors/$error'
+import { Route as AdminLupgSensusIndexRouteImport } from './routes/admin/lupg/sensus/index'
+import { Route as AdminLupgReportsIndexRouteImport } from './routes/admin/lupg/reports/index'
+import { Route as AdminLupgRecapIndexRouteImport } from './routes/admin/lupg/recap/index'
+import { Route as AdminLupgMustinIndexRouteImport } from './routes/admin/lupg/mustin/index'
+import { Route as AdminLupgConfigIndexRouteImport } from './routes/admin/lupg/config/index'
+import { Route as AdminLupgReportsMonthlyReportIdRouteImport } from './routes/admin/lupg/reports/$monthlyReportId'
+import { Route as AdminLupgRecapPresentRouteImport } from './routes/admin/lupg/recap/present'
 
 const AdminRouteRoute = AdminRouteRouteImport.update({
   id: '/admin',
@@ -127,6 +136,11 @@ const AdminSettingsRouteRoute = AdminSettingsRouteRouteImport.update({
   path: '/settings',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminLupgRouteRoute = AdminLupgRouteRouteImport.update({
+  id: '/lupg',
+  path: '/lupg',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminTasksIndexRoute = AdminTasksIndexRouteImport.update({
   id: '/tasks/',
   path: '/tasks/',
@@ -193,6 +207,11 @@ const AdminSettingsAccountRoute = AdminSettingsAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AdminSettingsRouteRoute,
 } as any)
+const AdminLupgDashboardRoute = AdminLupgDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminLupgRouteRoute,
+} as any)
 const AdminFormsCreateRoute = AdminFormsCreateRouteImport.update({
   id: '/forms/create',
   path: '/forms/create',
@@ -203,10 +222,47 @@ const AdminErrorsErrorRoute = AdminErrorsErrorRouteImport.update({
   path: '/errors/$error',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminLupgSensusIndexRoute = AdminLupgSensusIndexRouteImport.update({
+  id: '/sensus/',
+  path: '/sensus/',
+  getParentRoute: () => AdminLupgRouteRoute,
+} as any)
+const AdminLupgReportsIndexRoute = AdminLupgReportsIndexRouteImport.update({
+  id: '/reports/',
+  path: '/reports/',
+  getParentRoute: () => AdminLupgRouteRoute,
+} as any)
+const AdminLupgRecapIndexRoute = AdminLupgRecapIndexRouteImport.update({
+  id: '/recap/',
+  path: '/recap/',
+  getParentRoute: () => AdminLupgRouteRoute,
+} as any)
+const AdminLupgMustinIndexRoute = AdminLupgMustinIndexRouteImport.update({
+  id: '/mustin/',
+  path: '/mustin/',
+  getParentRoute: () => AdminLupgRouteRoute,
+} as any)
+const AdminLupgConfigIndexRoute = AdminLupgConfigIndexRouteImport.update({
+  id: '/config/',
+  path: '/config/',
+  getParentRoute: () => AdminLupgRouteRoute,
+} as any)
+const AdminLupgReportsMonthlyReportIdRoute =
+  AdminLupgReportsMonthlyReportIdRouteImport.update({
+    id: '/reports/$monthlyReportId',
+    path: '/reports/$monthlyReportId',
+    getParentRoute: () => AdminLupgRouteRoute,
+  } as any)
+const AdminLupgRecapPresentRoute = AdminLupgRecapPresentRouteImport.update({
+  id: '/recap/present',
+  path: '/recap/present',
+  getParentRoute: () => AdminLupgRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/admin/lupg': typeof AdminLupgRouteRouteWithChildren
   '/admin/settings': typeof AdminSettingsRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
@@ -224,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/register/add-participant': typeof RegisterAddParticipantRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
   '/admin/forms/create': typeof AdminFormsCreateRoute
+  '/admin/lupg/dashboard': typeof AdminLupgDashboardRoute
   '/admin/settings/account': typeof AdminSettingsAccountRoute
   '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
@@ -237,10 +294,18 @@ export interface FileRoutesByFullPath {
   '/admin/participants': typeof AdminParticipantsIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tasks': typeof AdminTasksIndexRoute
+  '/admin/lupg/recap/present': typeof AdminLupgRecapPresentRoute
+  '/admin/lupg/reports/$monthlyReportId': typeof AdminLupgReportsMonthlyReportIdRoute
+  '/admin/lupg/config': typeof AdminLupgConfigIndexRoute
+  '/admin/lupg/mustin': typeof AdminLupgMustinIndexRoute
+  '/admin/lupg/recap': typeof AdminLupgRecapIndexRoute
+  '/admin/lupg/reports': typeof AdminLupgReportsIndexRoute
+  '/admin/lupg/sensus': typeof AdminLupgSensusIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/admin/lupg': typeof AdminLupgRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
   '/sign-in': typeof authSignInRoute
@@ -257,6 +322,7 @@ export interface FileRoutesByTo {
   '/register/add-participant': typeof RegisterAddParticipantRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
   '/admin/forms/create': typeof AdminFormsCreateRoute
+  '/admin/lupg/dashboard': typeof AdminLupgDashboardRoute
   '/admin/settings/account': typeof AdminSettingsAccountRoute
   '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
@@ -270,11 +336,19 @@ export interface FileRoutesByTo {
   '/admin/participants': typeof AdminParticipantsIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/tasks': typeof AdminTasksIndexRoute
+  '/admin/lupg/recap/present': typeof AdminLupgRecapPresentRoute
+  '/admin/lupg/reports/$monthlyReportId': typeof AdminLupgReportsMonthlyReportIdRoute
+  '/admin/lupg/config': typeof AdminLupgConfigIndexRoute
+  '/admin/lupg/mustin': typeof AdminLupgMustinIndexRoute
+  '/admin/lupg/recap': typeof AdminLupgRecapIndexRoute
+  '/admin/lupg/reports': typeof AdminLupgReportsIndexRoute
+  '/admin/lupg/sensus': typeof AdminLupgSensusIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/admin/lupg': typeof AdminLupgRouteRouteWithChildren
   '/admin/settings': typeof AdminSettingsRouteRouteWithChildren
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/otp': typeof authOtpRoute
@@ -292,6 +366,7 @@ export interface FileRoutesById {
   '/register/add-participant': typeof RegisterAddParticipantRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
   '/admin/forms/create': typeof AdminFormsCreateRoute
+  '/admin/lupg/dashboard': typeof AdminLupgDashboardRoute
   '/admin/settings/account': typeof AdminSettingsAccountRoute
   '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
@@ -305,12 +380,20 @@ export interface FileRoutesById {
   '/admin/participants/': typeof AdminParticipantsIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tasks/': typeof AdminTasksIndexRoute
+  '/admin/lupg/recap/present': typeof AdminLupgRecapPresentRoute
+  '/admin/lupg/reports/$monthlyReportId': typeof AdminLupgReportsMonthlyReportIdRoute
+  '/admin/lupg/config/': typeof AdminLupgConfigIndexRoute
+  '/admin/lupg/mustin/': typeof AdminLupgMustinIndexRoute
+  '/admin/lupg/recap/': typeof AdminLupgRecapIndexRoute
+  '/admin/lupg/reports/': typeof AdminLupgReportsIndexRoute
+  '/admin/lupg/sensus/': typeof AdminLupgSensusIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/admin/lupg'
     | '/admin/settings'
     | '/forgot-password'
     | '/otp'
@@ -328,6 +411,7 @@ export interface FileRouteTypes {
     | '/register/add-participant'
     | '/admin/errors/$error'
     | '/admin/forms/create'
+    | '/admin/lupg/dashboard'
     | '/admin/settings/account'
     | '/admin/settings/appearance'
     | '/admin/settings/notifications'
@@ -341,10 +425,18 @@ export interface FileRouteTypes {
     | '/admin/participants'
     | '/admin/settings/'
     | '/admin/tasks'
+    | '/admin/lupg/recap/present'
+    | '/admin/lupg/reports/$monthlyReportId'
+    | '/admin/lupg/config'
+    | '/admin/lupg/mustin'
+    | '/admin/lupg/recap'
+    | '/admin/lupg/reports'
+    | '/admin/lupg/sensus'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
+    | '/admin/lupg'
     | '/forgot-password'
     | '/otp'
     | '/sign-in'
@@ -361,6 +453,7 @@ export interface FileRouteTypes {
     | '/register/add-participant'
     | '/admin/errors/$error'
     | '/admin/forms/create'
+    | '/admin/lupg/dashboard'
     | '/admin/settings/account'
     | '/admin/settings/appearance'
     | '/admin/settings/notifications'
@@ -374,10 +467,18 @@ export interface FileRouteTypes {
     | '/admin/participants'
     | '/admin/settings'
     | '/admin/tasks'
+    | '/admin/lupg/recap/present'
+    | '/admin/lupg/reports/$monthlyReportId'
+    | '/admin/lupg/config'
+    | '/admin/lupg/mustin'
+    | '/admin/lupg/recap'
+    | '/admin/lupg/reports'
+    | '/admin/lupg/sensus'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/admin/lupg'
     | '/admin/settings'
     | '/(auth)/forgot-password'
     | '/(auth)/otp'
@@ -395,6 +496,7 @@ export interface FileRouteTypes {
     | '/register/add-participant'
     | '/admin/errors/$error'
     | '/admin/forms/create'
+    | '/admin/lupg/dashboard'
     | '/admin/settings/account'
     | '/admin/settings/appearance'
     | '/admin/settings/notifications'
@@ -408,6 +510,13 @@ export interface FileRouteTypes {
     | '/admin/participants/'
     | '/admin/settings/'
     | '/admin/tasks/'
+    | '/admin/lupg/recap/present'
+    | '/admin/lupg/reports/$monthlyReportId'
+    | '/admin/lupg/config/'
+    | '/admin/lupg/mustin/'
+    | '/admin/lupg/recap/'
+    | '/admin/lupg/reports/'
+    | '/admin/lupg/sensus/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -548,6 +657,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/lupg': {
+      id: '/admin/lupg'
+      path: '/lupg'
+      fullPath: '/admin/lupg'
+      preLoaderRoute: typeof AdminLupgRouteRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/tasks/': {
       id: '/admin/tasks/'
       path: '/tasks'
@@ -639,6 +755,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsAccountRouteImport
       parentRoute: typeof AdminSettingsRouteRoute
     }
+    '/admin/lupg/dashboard': {
+      id: '/admin/lupg/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/lupg/dashboard'
+      preLoaderRoute: typeof AdminLupgDashboardRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
     '/admin/forms/create': {
       id: '/admin/forms/create'
       path: '/forms/create'
@@ -653,8 +776,83 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminErrorsErrorRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/lupg/sensus/': {
+      id: '/admin/lupg/sensus/'
+      path: '/sensus'
+      fullPath: '/admin/lupg/sensus'
+      preLoaderRoute: typeof AdminLupgSensusIndexRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
+    '/admin/lupg/reports/': {
+      id: '/admin/lupg/reports/'
+      path: '/reports'
+      fullPath: '/admin/lupg/reports'
+      preLoaderRoute: typeof AdminLupgReportsIndexRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
+    '/admin/lupg/recap/': {
+      id: '/admin/lupg/recap/'
+      path: '/recap'
+      fullPath: '/admin/lupg/recap'
+      preLoaderRoute: typeof AdminLupgRecapIndexRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
+    '/admin/lupg/mustin/': {
+      id: '/admin/lupg/mustin/'
+      path: '/mustin'
+      fullPath: '/admin/lupg/mustin'
+      preLoaderRoute: typeof AdminLupgMustinIndexRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
+    '/admin/lupg/config/': {
+      id: '/admin/lupg/config/'
+      path: '/config'
+      fullPath: '/admin/lupg/config'
+      preLoaderRoute: typeof AdminLupgConfigIndexRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
+    '/admin/lupg/reports/$monthlyReportId': {
+      id: '/admin/lupg/reports/$monthlyReportId'
+      path: '/reports/$monthlyReportId'
+      fullPath: '/admin/lupg/reports/$monthlyReportId'
+      preLoaderRoute: typeof AdminLupgReportsMonthlyReportIdRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
+    '/admin/lupg/recap/present': {
+      id: '/admin/lupg/recap/present'
+      path: '/recap/present'
+      fullPath: '/admin/lupg/recap/present'
+      preLoaderRoute: typeof AdminLupgRecapPresentRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
   }
 }
+
+interface AdminLupgRouteRouteChildren {
+  AdminLupgDashboardRoute: typeof AdminLupgDashboardRoute
+  AdminLupgRecapPresentRoute: typeof AdminLupgRecapPresentRoute
+  AdminLupgReportsMonthlyReportIdRoute: typeof AdminLupgReportsMonthlyReportIdRoute
+  AdminLupgConfigIndexRoute: typeof AdminLupgConfigIndexRoute
+  AdminLupgMustinIndexRoute: typeof AdminLupgMustinIndexRoute
+  AdminLupgRecapIndexRoute: typeof AdminLupgRecapIndexRoute
+  AdminLupgReportsIndexRoute: typeof AdminLupgReportsIndexRoute
+  AdminLupgSensusIndexRoute: typeof AdminLupgSensusIndexRoute
+}
+
+const AdminLupgRouteRouteChildren: AdminLupgRouteRouteChildren = {
+  AdminLupgDashboardRoute: AdminLupgDashboardRoute,
+  AdminLupgRecapPresentRoute: AdminLupgRecapPresentRoute,
+  AdminLupgReportsMonthlyReportIdRoute: AdminLupgReportsMonthlyReportIdRoute,
+  AdminLupgConfigIndexRoute: AdminLupgConfigIndexRoute,
+  AdminLupgMustinIndexRoute: AdminLupgMustinIndexRoute,
+  AdminLupgRecapIndexRoute: AdminLupgRecapIndexRoute,
+  AdminLupgReportsIndexRoute: AdminLupgReportsIndexRoute,
+  AdminLupgSensusIndexRoute: AdminLupgSensusIndexRoute,
+}
+
+const AdminLupgRouteRouteWithChildren = AdminLupgRouteRoute._addFileChildren(
+  AdminLupgRouteRouteChildren,
+)
 
 interface AdminSettingsRouteRouteChildren {
   AdminSettingsAccountRoute: typeof AdminSettingsAccountRoute
@@ -674,6 +872,7 @@ const AdminSettingsRouteRouteWithChildren =
   AdminSettingsRouteRoute._addFileChildren(AdminSettingsRouteRouteChildren)
 
 interface AdminRouteRouteChildren {
+  AdminLupgRouteRoute: typeof AdminLupgRouteRouteWithChildren
   AdminSettingsRouteRoute: typeof AdminSettingsRouteRouteWithChildren
   Admin403Route: typeof Admin403Route
   AdminDashboardRoute: typeof AdminDashboardRoute
@@ -691,6 +890,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminLupgRouteRoute: AdminLupgRouteRouteWithChildren,
   AdminSettingsRouteRoute: AdminSettingsRouteRouteWithChildren,
   Admin403Route: Admin403Route,
   AdminDashboardRoute: AdminDashboardRoute,
