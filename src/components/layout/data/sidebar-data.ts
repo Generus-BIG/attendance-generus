@@ -1,20 +1,10 @@
-import {
-  LayoutDashboard,
-  Bell,
-  Palette,
-  Settings,
-  Wrench,
-  UserCog,
-  Users,
-  CalendarCheck,
-  UserCheck,
-  Command,
-  GalleryVerticalEnd,
-  FileSpreadsheet,
-  ShieldCheck,
-} from 'lucide-react'
-import { type SidebarData, type NavItem } from '../types'
+import { Command, GalleryVerticalEnd } from 'lucide-react'
+import { type LinkProps } from '@tanstack/react-router'
 import { type Role } from '@/lib/rbac'
+import { type Workspace } from '@/stores/workspace-store'
+import { type SidebarData, type WorkspaceTeam } from '../types'
+import { getAbsensiNavGroups } from './sidebar-data-absensi'
+import { getLupgNavGroups } from './sidebar-data-lupg'
 
 interface SidebarUserInfo {
   name: string
@@ -23,108 +13,40 @@ interface SidebarUserInfo {
   role: string
 }
 
+export const WORKSPACE_TEAMS: WorkspaceTeam[] = [
+  {
+    key: 'absensi',
+    name: 'Absensi MuMiBig',
+    logo: Command,
+    plan: 'Dashboard Absensi',
+  },
+  {
+    key: 'lupg',
+    name: 'LUPG',
+    logo: GalleryVerticalEnd,
+    plan: 'Laporan Bulanan',
+  },
+]
+
+export const WORKSPACE_DEFAULT_PATH: Record<Workspace, LinkProps['to']> = {
+  absensi: '/admin/dashboard',
+  lupg: '/admin/lupg/dashboard',
+}
+
 export function getSidebarData(
   role: Role,
   _kelompok: string | null,
-  user: SidebarUserInfo
+  user: SidebarUserInfo,
+  workspace: Workspace
 ): SidebarData {
-  const generalItems: NavItem[] = [
-    {
-      title: 'Dashboard',
-      url: '/admin/dashboard',
-      icon: LayoutDashboard,
-    },
-    {
-      title: 'Peserta',
-      url: '/admin/participants',
-      icon: Users,
-    },
-    {
-      title: 'Absensi',
-      url: '/admin/attendance',
-      icon: CalendarCheck,
-    },
-  ]
-
-  // Approval: hidden for team_manager
-  if (role !== 'team_manager') {
-    generalItems.push({
-      title: 'Approval',
-      url: '/admin/approvals',
-      icon: UserCheck,
-    })
-  }
-
-  generalItems.push({
-    title: 'Forms',
-    url: '/admin/forms',
-    icon: FileSpreadsheet,
-  })
-
-  if (role === 'super_admin') {
-    generalItems.push({
-      title: 'Manage Role',
-      url: '/admin/manage-role',
-      icon: ShieldCheck,
-    })
-  } else if (role === 'admin') {
-    generalItems.push({
-      title: 'Manage Role (view only)',
-      url: '/admin/manage-role',
-      icon: ShieldCheck,
-    })
-  }
+  const navGroups =
+    workspace === 'lupg'
+      ? getLupgNavGroups(role)
+      : getAbsensiNavGroups(role)
 
   return {
     user,
-    teams: [
-      {
-        name: 'Absensi MuMiBig',
-        logo: Command,
-        plan: 'Dashboard Absensi',
-      },
-      {
-        name: 'GPN',
-        logo: GalleryVerticalEnd,
-        plan: 'Generus Pra Nikah',
-      },
-    ],
-    navGroups: [
-      {
-        title: 'General',
-        items: generalItems,
-      },
-      {
-        title: 'Other',
-        items: [
-          {
-            title: 'Settings',
-            icon: Settings,
-            items: [
-              {
-                title: 'Profile',
-                url: '/admin/settings',
-                icon: UserCog,
-              },
-              {
-                title: 'Account',
-                url: '/admin/settings/account',
-                icon: Wrench,
-              },
-              {
-                title: 'Appearance',
-                url: '/admin/settings/appearance',
-                icon: Palette,
-              },
-              {
-                title: 'Notifications',
-                url: '/admin/settings/notifications',
-                icon: Bell,
-              },
-            ],
-          },
-        ],
-      },
-    ],
+    teams: WORKSPACE_TEAMS,
+    navGroups,
   }
 }

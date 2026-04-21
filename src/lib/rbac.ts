@@ -92,6 +92,7 @@ export interface Permissions {
 export const ROUTE_ACCESS: Record<string, Role[]> = {
   '/admin/manage-role': ['super_admin', 'admin'],
   '/admin/forms/create': ['super_admin', 'admin'],
+  '/admin/lupg/config': ['super_admin', 'admin'],
 }
 
 // === Role Display ===

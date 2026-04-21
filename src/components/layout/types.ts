@@ -1,16 +1,11 @@
 import { type LinkProps } from '@tanstack/react-router'
+import { type Workspace } from '@/stores/workspace-store'
 
 type User = {
   name: string
   email: string
   avatar: string
   role: string
-}
-
-type Team = {
-  name: string
-  logo: React.ElementType
-  plan: string
 }
 
 type BaseNavItem = {
@@ -36,9 +31,16 @@ type NavGroup = {
   items: NavItem[]
 }
 
+export type WorkspaceTeam = {
+  key: Workspace
+  name: string
+  logo: React.ElementType
+  plan: string
+}
+
 type SidebarData = {
   user: User
-  teams: Team[]
+  teams: WorkspaceTeam[]
   navGroups: NavGroup[]
 }
 
