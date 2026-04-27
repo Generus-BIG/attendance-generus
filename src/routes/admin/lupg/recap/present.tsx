@@ -8,6 +8,7 @@ const presentSearchSchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}$/)
     .optional(),
+  kelompok: z.string().uuid().optional(),
 })
 
 export const Route = createFileRoute('/admin/lupg/recap/present')({
@@ -17,5 +18,10 @@ export const Route = createFileRoute('/admin/lupg/recap/present')({
 
 function PresentRoute() {
   const search = Route.useSearch()
-  return <Presentation monthKey={search.month ?? currentMonthKey()} />
+  return (
+    <Presentation
+      monthKey={search.month ?? currentMonthKey()}
+      kelompokFilter={search.kelompok}
+    />
+  )
 }

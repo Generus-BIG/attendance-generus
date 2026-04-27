@@ -46,6 +46,8 @@ import { Route as AdminErrorsErrorRouteImport } from './routes/admin/errors/$err
 import { Route as AdminLupgSensusIndexRouteImport } from './routes/admin/lupg/sensus/index'
 import { Route as AdminLupgReportsIndexRouteImport } from './routes/admin/lupg/reports/index'
 import { Route as AdminLupgRecapIndexRouteImport } from './routes/admin/lupg/recap/index'
+import { Route as AdminLupgProgramsIndexRouteImport } from './routes/admin/lupg/programs/index'
+import { Route as AdminLupgPresentationIndexRouteImport } from './routes/admin/lupg/presentation/index'
 import { Route as AdminLupgMustinIndexRouteImport } from './routes/admin/lupg/mustin/index'
 import { Route as AdminLupgConfigIndexRouteImport } from './routes/admin/lupg/config/index'
 import { Route as AdminLupgReportsMonthlyReportIdRouteImport } from './routes/admin/lupg/reports/$monthlyReportId'
@@ -237,6 +239,17 @@ const AdminLupgRecapIndexRoute = AdminLupgRecapIndexRouteImport.update({
   path: '/recap/',
   getParentRoute: () => AdminLupgRouteRoute,
 } as any)
+const AdminLupgProgramsIndexRoute = AdminLupgProgramsIndexRouteImport.update({
+  id: '/programs/',
+  path: '/programs/',
+  getParentRoute: () => AdminLupgRouteRoute,
+} as any)
+const AdminLupgPresentationIndexRoute =
+  AdminLupgPresentationIndexRouteImport.update({
+    id: '/presentation/',
+    path: '/presentation/',
+    getParentRoute: () => AdminLupgRouteRoute,
+  } as any)
 const AdminLupgMustinIndexRoute = AdminLupgMustinIndexRouteImport.update({
   id: '/mustin/',
   path: '/mustin/',
@@ -298,6 +311,8 @@ export interface FileRoutesByFullPath {
   '/admin/lupg/reports/$monthlyReportId': typeof AdminLupgReportsMonthlyReportIdRoute
   '/admin/lupg/config': typeof AdminLupgConfigIndexRoute
   '/admin/lupg/mustin': typeof AdminLupgMustinIndexRoute
+  '/admin/lupg/presentation': typeof AdminLupgPresentationIndexRoute
+  '/admin/lupg/programs': typeof AdminLupgProgramsIndexRoute
   '/admin/lupg/recap': typeof AdminLupgRecapIndexRoute
   '/admin/lupg/reports': typeof AdminLupgReportsIndexRoute
   '/admin/lupg/sensus': typeof AdminLupgSensusIndexRoute
@@ -340,6 +355,8 @@ export interface FileRoutesByTo {
   '/admin/lupg/reports/$monthlyReportId': typeof AdminLupgReportsMonthlyReportIdRoute
   '/admin/lupg/config': typeof AdminLupgConfigIndexRoute
   '/admin/lupg/mustin': typeof AdminLupgMustinIndexRoute
+  '/admin/lupg/presentation': typeof AdminLupgPresentationIndexRoute
+  '/admin/lupg/programs': typeof AdminLupgProgramsIndexRoute
   '/admin/lupg/recap': typeof AdminLupgRecapIndexRoute
   '/admin/lupg/reports': typeof AdminLupgReportsIndexRoute
   '/admin/lupg/sensus': typeof AdminLupgSensusIndexRoute
@@ -384,6 +401,8 @@ export interface FileRoutesById {
   '/admin/lupg/reports/$monthlyReportId': typeof AdminLupgReportsMonthlyReportIdRoute
   '/admin/lupg/config/': typeof AdminLupgConfigIndexRoute
   '/admin/lupg/mustin/': typeof AdminLupgMustinIndexRoute
+  '/admin/lupg/presentation/': typeof AdminLupgPresentationIndexRoute
+  '/admin/lupg/programs/': typeof AdminLupgProgramsIndexRoute
   '/admin/lupg/recap/': typeof AdminLupgRecapIndexRoute
   '/admin/lupg/reports/': typeof AdminLupgReportsIndexRoute
   '/admin/lupg/sensus/': typeof AdminLupgSensusIndexRoute
@@ -429,6 +448,8 @@ export interface FileRouteTypes {
     | '/admin/lupg/reports/$monthlyReportId'
     | '/admin/lupg/config'
     | '/admin/lupg/mustin'
+    | '/admin/lupg/presentation'
+    | '/admin/lupg/programs'
     | '/admin/lupg/recap'
     | '/admin/lupg/reports'
     | '/admin/lupg/sensus'
@@ -471,6 +492,8 @@ export interface FileRouteTypes {
     | '/admin/lupg/reports/$monthlyReportId'
     | '/admin/lupg/config'
     | '/admin/lupg/mustin'
+    | '/admin/lupg/presentation'
+    | '/admin/lupg/programs'
     | '/admin/lupg/recap'
     | '/admin/lupg/reports'
     | '/admin/lupg/sensus'
@@ -514,6 +537,8 @@ export interface FileRouteTypes {
     | '/admin/lupg/reports/$monthlyReportId'
     | '/admin/lupg/config/'
     | '/admin/lupg/mustin/'
+    | '/admin/lupg/presentation/'
+    | '/admin/lupg/programs/'
     | '/admin/lupg/recap/'
     | '/admin/lupg/reports/'
     | '/admin/lupg/sensus/'
@@ -797,6 +822,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLupgRecapIndexRouteImport
       parentRoute: typeof AdminLupgRouteRoute
     }
+    '/admin/lupg/programs/': {
+      id: '/admin/lupg/programs/'
+      path: '/programs'
+      fullPath: '/admin/lupg/programs'
+      preLoaderRoute: typeof AdminLupgProgramsIndexRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
+    '/admin/lupg/presentation/': {
+      id: '/admin/lupg/presentation/'
+      path: '/presentation'
+      fullPath: '/admin/lupg/presentation'
+      preLoaderRoute: typeof AdminLupgPresentationIndexRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
     '/admin/lupg/mustin/': {
       id: '/admin/lupg/mustin/'
       path: '/mustin'
@@ -834,6 +873,8 @@ interface AdminLupgRouteRouteChildren {
   AdminLupgReportsMonthlyReportIdRoute: typeof AdminLupgReportsMonthlyReportIdRoute
   AdminLupgConfigIndexRoute: typeof AdminLupgConfigIndexRoute
   AdminLupgMustinIndexRoute: typeof AdminLupgMustinIndexRoute
+  AdminLupgPresentationIndexRoute: typeof AdminLupgPresentationIndexRoute
+  AdminLupgProgramsIndexRoute: typeof AdminLupgProgramsIndexRoute
   AdminLupgRecapIndexRoute: typeof AdminLupgRecapIndexRoute
   AdminLupgReportsIndexRoute: typeof AdminLupgReportsIndexRoute
   AdminLupgSensusIndexRoute: typeof AdminLupgSensusIndexRoute
@@ -845,6 +886,8 @@ const AdminLupgRouteRouteChildren: AdminLupgRouteRouteChildren = {
   AdminLupgReportsMonthlyReportIdRoute: AdminLupgReportsMonthlyReportIdRoute,
   AdminLupgConfigIndexRoute: AdminLupgConfigIndexRoute,
   AdminLupgMustinIndexRoute: AdminLupgMustinIndexRoute,
+  AdminLupgPresentationIndexRoute: AdminLupgPresentationIndexRoute,
+  AdminLupgProgramsIndexRoute: AdminLupgProgramsIndexRoute,
   AdminLupgRecapIndexRoute: AdminLupgRecapIndexRoute,
   AdminLupgReportsIndexRoute: AdminLupgReportsIndexRoute,
   AdminLupgSensusIndexRoute: AdminLupgSensusIndexRoute,
