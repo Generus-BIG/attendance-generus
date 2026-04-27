@@ -8,16 +8,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { toast } from 'sonner'
 import {
   useMustinNotes,
@@ -25,12 +17,7 @@ import {
   useUpdateMustinNote,
   useDeleteMustinNote,
 } from '../../hooks/use-lupg-queries'
-import {
-  type MonthlyReportRow,
-  type MustinNoteRow,
-  type MustinStatus,
-} from '../../types'
-import { MUSTIN_STATUS_LABELS } from '../../constants'
+import { type MonthlyReportRow, type MustinNoteRow } from '../../types'
 
 interface Props {
   report: MonthlyReportRow
@@ -115,13 +102,8 @@ function MustinRow({ note, monthlyReportId, readOnly }: RowProps) {
 
   const [pokokMasalah, setPokokMasalah] = useState(note.pokok_masalah)
   const [keputusan, setKeputusan] = useState(note.keputusan_rencana)
-  const [pic, setPic] = useState(note.pic ?? '')
-  const [deadline, setDeadline] = useState(note.deadline ?? '')
-  const [status, setStatus] = useState<MustinStatus>(
-    note.status as MustinStatus
-  )
 
-  const save = (override?: Partial<{ status: MustinStatus }>) => {
+  const save = () => {
     update.mutate(
       {
         id: note.id,
@@ -129,9 +111,6 @@ function MustinRow({ note, monthlyReportId, readOnly }: RowProps) {
         patch: {
           pokok_masalah: pokokMasalah,
           keputusan_rencana: keputusan,
-          pic: pic || null,
-          deadline: deadline || null,
-          status: override?.status ?? status,
         },
       },
       {
@@ -175,50 +154,6 @@ function MustinRow({ note, monthlyReportId, readOnly }: RowProps) {
             disabled={readOnly}
             rows={3}
           />
-        </div>
-        <div className='flex flex-col gap-1'>
-          <Label>PIC</Label>
-          <Input
-            value={pic}
-            onChange={(e) => setPic(e.target.value)}
-            onBlur={() => save()}
-            disabled={readOnly}
-          />
-        </div>
-        <div className='flex flex-col gap-1'>
-          <Label>Deadline</Label>
-          <Input
-            type='date'
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
-            onBlur={() => save()}
-            disabled={readOnly}
-          />
-        </div>
-        <div className='flex flex-col gap-1'>
-          <Label>Status</Label>
-          <Select
-            value={status}
-            onValueChange={(v) => {
-              const next = v as MustinStatus
-              setStatus(next)
-              save({ status: next })
-            }}
-            disabled={readOnly}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {(Object.keys(MUSTIN_STATUS_LABELS) as MustinStatus[]).map(
-                (s) => (
-                  <SelectItem key={s} value={s}>
-                    {MUSTIN_STATUS_LABELS[s]}
-                  </SelectItem>
-                )
-              )}
-            </SelectContent>
-          </Select>
         </div>
         {!readOnly && (
           <div className='flex items-end justify-end'>

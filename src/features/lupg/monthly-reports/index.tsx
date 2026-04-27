@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { FileText, Plus, Loader2 } from 'lucide-react'
+import { Plus, Loader2 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -12,11 +12,13 @@ import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
 import {
-  useMonthlyReports,
+  useMonthlyReportsWithSubmitter,
   useEnsureMonthlyReport,
 } from '../hooks/use-lupg-queries'
 import {
@@ -53,7 +55,13 @@ export function MonthlyReportsList() {
     ? kelompokOptions.find((o) => o.value === kelompok)?.id
     : adminKelompokId
 
-  const { data: reports = [], isLoading } = useMonthlyReports({
+  const kelompokById = useMemo(() => {
+    const m = new Map<string, string>()
+    for (const k of kelompokOptions) m.set(k.id, k.value)
+    return m
+  }, [kelompokOptions])
+
+  const { data: reports = [], isLoading } = useMonthlyReportsWithSubmitter({
     kelompokId: resolvedKelompokId,
   })
 
@@ -135,30 +143,57 @@ export function MonthlyReportsList() {
         ) : (
           <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
             {reports.map((r) => (
-              <Link
-                key={r.id}
-                to='/admin/lupg/reports/$monthlyReportId'
-                params={{ monthlyReportId: r.id }}
-                className='transition hover:opacity-90'
-              >
-                <Card className='cursor-pointer'>
-                  <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                    <CardTitle className='flex items-center gap-2 text-base'>
-                      <FileText className='h-4 w-4 text-muted-foreground' />
-                      {formatMonthLabel(monthKeyFromDate(r.month))}
+              <Card key={r.id} className='flex flex-col'>
+                <CardHeader className='flex flex-row items-start justify-between gap-2 space-y-0'>
+                  <div className='min-w-0'>
+                    <CardTitle className='truncate text-xl'>
+                      {kelompokById.get(r.kelompok_id) ??
+                        'Kelompok tidak dikenali'}
                     </CardTitle>
-                    <ReportStatusBadge
-                      status={r.status as 'draft' | 'submitted'}
-                      locked={r.locked}
-                    />
-                  </CardHeader>
-                  <CardContent className='text-sm text-muted-foreground'>
-                    {r.submitted_at
-                      ? `Disubmit ${new Date(r.submitted_at).toLocaleDateString('id-ID')}`
-                      : `Terakhir diupdate ${new Date(r.updated_at).toLocaleDateString('id-ID')}`}
-                  </CardContent>
-                </Card>
-              </Link>
+                    <CardDescription>
+                      {formatMonthLabel(monthKeyFromDate(r.month))}
+                    </CardDescription>
+                  </div>
+                  <ReportStatusBadge
+                    status={r.status as 'draft' | 'submitted'}
+                    locked={r.locked}
+                  />
+                </CardHeader>
+                <CardContent className='flex flex-1 flex-col gap-1 text-sm'>
+                  {r.status === 'submitted' ? (
+                    <>
+                      <div>
+                        <span className='text-muted-foreground'>Oleh: </span>
+                        {r.submitter_display_name ?? '-'}
+                      </div>
+                      <div>
+                        <span className='text-muted-foreground'>
+                          Disubmit:{' '}
+                        </span>
+                        {r.submitted_at
+                          ? new Date(r.submitted_at).toLocaleDateString(
+                              'id-ID'
+                            )
+                          : '-'}
+                      </div>
+                    </>
+                  ) : (
+                    <div className='text-muted-foreground'>
+                      Belum disubmit
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter>
+                  <Link
+                    to='/admin/lupg/reports/$monthlyReportId'
+                    params={{ monthlyReportId: r.id }}
+                  >
+                    <Button variant='outline' size='sm'>
+                      Buka Laporan
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
             ))}
           </div>
         )}

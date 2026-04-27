@@ -14,8 +14,8 @@ import {
 } from '../../utils/month-utils'
 import { SubmitCard } from '../components/submit-card'
 import { SensusPreviewSection } from '../sections/sensus-preview-section'
-import { ProgramSection } from '../sections/program-section'
-import { MetricSection } from '../sections/metric-section'
+import { AttendanceMatrixSection } from '../sections/attendance-matrix-section'
+import { ProgramTrackerSection } from '../sections/program-tracker-section'
 import { SarprasSection } from '../sections/sarpras-section'
 import { ShodaqohSection } from '../sections/shodaqoh-section'
 import { MustinSection } from '../sections/mustin-section'
@@ -103,8 +103,8 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
 
         <div className='flex flex-col gap-4'>
           <SensusPreviewSection report={report} />
-          <ProgramSection report={report} readOnly={readOnly} />
-          <MetricSection report={report} readOnly={readOnly} />
+          <AttendanceMatrixSection report={report} readOnly={readOnly} />
+          <ProgramTrackerSection report={report} readOnly={readOnly} />
           <SarprasSection report={report} readOnly={readOnly} />
           <ShodaqohSection report={report} readOnly={readOnly} />
           <MustinSection report={report} readOnly={readOnly} />
