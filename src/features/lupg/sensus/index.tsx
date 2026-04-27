@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { Header } from '@/components/layout/header'
@@ -7,6 +7,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { ConfigDrawer } from '@/components/config-drawer'
+import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
@@ -28,6 +29,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { KelompokSelector } from '../components/kelompok-selector'
 import {
+  useDerivedGpnSensus,
   useSensus,
   useUpsertSensusCell,
 } from '../hooks/use-lupg-queries'
@@ -36,7 +38,7 @@ import {
   CATEGORY_LABELS,
   type CategoryCode,
 } from '../constants'
-import { type SensusGender } from '../types'
+import { type DerivedGpnSensusRow, type SensusGender } from '../types'
 
 export function SensusMaster() {
   const { role, kelompok } = useAuthStore((s) => s.auth)
@@ -61,9 +63,18 @@ export function SensusMaster() {
     : adminKelompokId
 
   const { data: rows = [], isLoading } = useSensus(resolvedKelompokId)
+  const { data: derivedRaw = [] } = useDerivedGpnSensus(resolvedKelompokId)
 
   const byCell: Record<string, number> = {}
   for (const r of rows) byCell[`${r.category_code}_${r.gender}`] = r.count
+
+  const derivedByKey = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const d of derivedRaw as DerivedGpnSensusRow[]) {
+      m.set(`${d.category_code}__${d.gender}`, d.count)
+    }
+    return m
+  }, [derivedRaw])
 
   return (
     <>
@@ -123,28 +134,41 @@ export function SensusMaster() {
                 </TableHeader>
                 <TableBody>
                   {CATEGORY_CODES.map((code) => {
-                    const l = byCell[`${code}_L`] ?? 0
-                    const p = byCell[`${code}_P`] ?? 0
+                    const isDerived = code === 'GPN_A' || code === 'GPN_B'
+                    const l = isDerived
+                      ? (derivedByKey.get(`${code}__L`) ?? 0)
+                      : (byCell[`${code}_L`] ?? 0)
+                    const p = isDerived
+                      ? (derivedByKey.get(`${code}__P`) ?? 0)
+                      : (byCell[`${code}_P`] ?? 0)
                     return (
                       <TableRow key={code}>
                         <TableCell className='font-medium'>
                           {CATEGORY_LABELS[code]}
                         </TableCell>
                         <TableCell className='text-right'>
-                          <SensusCell
-                            kelompokId={resolvedKelompokId}
-                            categoryCode={code}
-                            gender='L'
-                            initial={l}
-                          />
+                          {isDerived ? (
+                            <DerivedCell count={l} />
+                          ) : (
+                            <SensusCell
+                              kelompokId={resolvedKelompokId}
+                              categoryCode={code}
+                              gender='L'
+                              initial={l}
+                            />
+                          )}
                         </TableCell>
                         <TableCell className='text-right'>
-                          <SensusCell
-                            kelompokId={resolvedKelompokId}
-                            categoryCode={code}
-                            gender='P'
-                            initial={p}
-                          />
+                          {isDerived ? (
+                            <DerivedCell count={p} />
+                          ) : (
+                            <SensusCell
+                              kelompokId={resolvedKelompokId}
+                              categoryCode={code}
+                              gender='P'
+                              initial={p}
+                            />
+                          )}
                         </TableCell>
                         <TableCell className='text-right font-semibold tabular-nums'>
                           {l + p}
@@ -169,6 +193,17 @@ interface CellProps {
   initial: number
 }
 
+function DerivedCell({ count }: { count: number }) {
+  return (
+    <div className='flex flex-col items-end gap-1'>
+      <div className='text-base font-semibold tabular-nums'>{count}</div>
+      <Badge variant='secondary' className='text-[10px]'>
+        Auto dari Absensi
+      </Badge>
+    </div>
+  )
+}
+
 function SensusCell({ kelompokId, categoryCode, gender, initial }: CellProps) {
   const [value, setValue] = useState(initial.toString())
   const upsert = useUpsertSensusCell()
@@ -178,6 +213,7 @@ function SensusCell({ kelompokId, categoryCode, gender, initial }: CellProps) {
   }, [initial])
 
   const save = () => {
+    if (categoryCode === 'GPN_A' || categoryCode === 'GPN_B') return
     const n = parseInt(value, 10)
     if (isNaN(n) || n < 0) {
       setValue(initial.toString())
