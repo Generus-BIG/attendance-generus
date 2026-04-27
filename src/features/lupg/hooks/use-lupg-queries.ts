@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase'
 import * as monthlyReportSvc from '../services/monthly-report.service'
 import * as sensusSvc from '../services/sensus.service'
 import * as defsSvc from '../services/definitions.service'
@@ -7,6 +8,12 @@ import * as metricSvc from '../services/metric-report.service'
 import * as sarprasSvc from '../services/sarpras-report.service'
 import * as shodaqohSvc from '../services/shodaqoh-report.service'
 import * as mustinSvc from '../services/mustin-notes.service'
+import * as programsSvc from '../programs/services'
+import * as matrixSvc from '../matrix/services'
+import {
+  type DerivedGpnSensusRow,
+  type MonthlyReportWithSubmitterRow,
+} from '../types'
 
 const KEYS = {
   monthlyReports: (params: {
@@ -447,5 +454,131 @@ export function useDeleteSarprasItem() {
   return useMutation({
     mutationFn: defsSvc.deleteSarprasItem,
     onSuccess: () => invalidateDefs(qc, 'sarpras'),
+  })
+}
+
+// ============== Programs — Yearly (R1) ==============
+
+const PROGRAM_YEARLY_KEY = (kelompokId: string, year: number) =>
+  ['lupg', 'programs-yearly', kelompokId, year] as const
+
+export function useYearlyProgramData(
+  kelompokId: string | undefined,
+  year: number
+) {
+  return useQuery({
+    queryKey: kelompokId
+      ? PROGRAM_YEARLY_KEY(kelompokId, year)
+      : ['lupg', 'programs-yearly', 'none'],
+    queryFn: () =>
+      kelompokId
+        ? programsSvc.listYearlyProgramData(kelompokId, year)
+        : Promise.resolve({ monthlyReports: [], programReports: [] }),
+    enabled: !!kelompokId,
+  })
+}
+
+export function useYearlyProgramDataDesa(year: number) {
+  return useQuery({
+    queryKey: ['lupg', 'programs-yearly-desa', year] as const,
+    queryFn: () => programsSvc.listYearlyProgramData(undefined, year),
+  })
+}
+
+export function useUpsertProgramMonth() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: programsSvc.upsertProgramMonth,
+    onSuccess: (_row, vars) => {
+      const year = parseInt(vars.month.slice(0, 4), 10)
+      qc.invalidateQueries({ queryKey: PROGRAM_YEARLY_KEY(vars.kelompok_id, year) })
+      qc.invalidateQueries({ queryKey: ['lupg', 'monthly-reports'] })
+    },
+  })
+}
+
+// ============== Matrix (R2) ==============
+
+const MATRIX_YEARLY_KEY = (kelompokId: string, year: number) =>
+  ['lupg', 'matrix-yearly', kelompokId, year] as const
+
+export function useYearlyMatrixData(
+  kelompokId: string | undefined,
+  year: number
+) {
+  return useQuery({
+    queryKey: kelompokId
+      ? MATRIX_YEARLY_KEY(kelompokId, year)
+      : ['lupg', 'matrix-yearly', 'none'],
+    queryFn: () =>
+      kelompokId
+        ? matrixSvc.listYearlyMatrixData(kelompokId, year)
+        : Promise.resolve({ monthlyReports: [], metricReports: [] }),
+    enabled: !!kelompokId,
+  })
+}
+
+export function useUpsertMetricMonth() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: matrixSvc.upsertMetricMonth,
+    onSuccess: (_row, vars) => {
+      const year = parseInt(vars.month.slice(0, 4), 10)
+      qc.invalidateQueries({ queryKey: MATRIX_YEARLY_KEY(vars.kelompok_id, year) })
+      qc.invalidateQueries({ queryKey: ['lupg', 'monthly-reports'] })
+    },
+  })
+}
+
+// ============== Derived GPN Sensus (R2) ==============
+
+export function useDerivedGpnSensus(kelompokId: string | undefined) {
+  return useQuery({
+    queryKey: ['lupg', 'sensus-gpn-derived', kelompokId ?? 'none'],
+    queryFn: async () => {
+      if (!kelompokId) return [] as DerivedGpnSensusRow[]
+      const { data, error } = await supabase
+        .from('lupg_sensus_gpn_derived')
+        .select('*')
+        .eq('kelompok_id', kelompokId)
+      if (error) throw error
+      return (data ?? []) as DerivedGpnSensusRow[]
+    },
+    enabled: !!kelompokId,
+  })
+}
+
+// ============== Monthly Reports With Submitter (R2, RPC fallback path) ==============
+
+export function useMonthlyReportsWithSubmitter(params?: {
+  fromMonth?: string
+  toMonth?: string
+  kelompokId?: string
+}) {
+  const reportsQ = useMonthlyReports(params ?? {})
+  return useQuery({
+    queryKey: [
+      'lupg',
+      'monthly-reports-with-submitter',
+      params ?? {},
+      reportsQ.data?.length ?? 0,
+    ],
+    queryFn: async () => {
+      const reports = reportsQ.data ?? []
+      const withNames: MonthlyReportWithSubmitterRow[] = await Promise.all(
+        reports.map(async (r) => {
+          if (!r.submitted_by) return { ...r, submitter_display_name: null }
+          const { data } = await supabase.rpc('lupg_get_submitter_display', {
+            p_user_id: r.submitted_by,
+          })
+          return {
+            ...r,
+            submitter_display_name: (data as string | null) ?? null,
+          }
+        })
+      )
+      return withNames
+    },
+    enabled: !reportsQ.isLoading,
   })
 }

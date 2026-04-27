@@ -352,6 +352,7 @@ export type Database = {
           id: string
           is_cumulative: boolean
           name: string
+          reporting_style: string
           sort_order: number
           updated_at: string
         }
@@ -364,6 +365,7 @@ export type Database = {
           id?: string
           is_cumulative?: boolean
           name: string
+          reporting_style?: string
           sort_order?: number
           updated_at?: string
         }
@@ -376,6 +378,7 @@ export type Database = {
           id?: string
           is_cumulative?: boolean
           name?: string
+          reporting_style?: string
           sort_order?: number
           updated_at?: string
         }
@@ -717,11 +720,35 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      lupg_sensus_gpn_derived: {
+        Row: {
+          category_code: string | null
+          count: number | null
+          gender: string | null
+          kelompok_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_group_id_fkey"
+            columns: ["kelompok_id"]
+            isOneToOne: false
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      lupg_get_submitter_display: {
+        Args: { p_user_id: string }
+        Returns: string
+      }
       lupg_mr_readable: { Args: { p_mr_id: string }; Returns: boolean }
       lupg_mr_writable: { Args: { p_mr_id: string }; Returns: boolean }
+      lupg_sync_derived_sensus: {
+        Args: { p_kelompok_id: string }
+        Returns: undefined
+      }
       user_kelompok: { Args: never; Returns: string }
       user_kelompok_id: { Args: never; Returns: string }
       user_role: { Args: never; Returns: string }

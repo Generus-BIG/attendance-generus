@@ -27,3 +27,29 @@ export type MustinStatus = 'open' | 'in_progress' | 'done'
 export type MetricValueFormat = 'percent' | 'number' | 'currency'
 export type MetricScope = 'kelompok' | 'desa'
 export type SensusGender = 'L' | 'P'
+export type ReportingStyle = 'monthly_series' | 'quarterly'
+
+// ============== R2 additions ==============
+
+export interface DerivedGpnSensusRow {
+  kelompok_id: string
+  category_code: 'GPN_A' | 'GPN_B'
+  gender: 'L' | 'P'
+  count: number
+}
+
+export interface MonthlyReportWithSubmitterRow extends MonthlyReportRow {
+  submitter_display_name: string | null
+}
+
+export interface YearlyMatrixData {
+  monthlyReports: MonthlyReportRow[]
+  metricReports: MetricReportRow[]
+}
+
+export interface UpsertMetricMonthInput {
+  kelompok_id: string
+  month: string // 'YYYY-MM'
+  metric_code: string
+  current_value: number
+}
