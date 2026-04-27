@@ -15,6 +15,8 @@ import {
   useActivePrograms,
   useActiveSarprasItems,
   useMonthlyReports,
+  useYearlyProgramData,
+  useYearlyProgramDataDesa,
 } from '../../hooks/use-lupg-queries'
 import {
   type MetricReportRow,
@@ -29,9 +31,10 @@ import { buildSlides, type Kelompok } from './slides'
 
 interface Props {
   monthKey: string
+  kelompokFilter?: string
 }
 
-export function Presentation({ monthKey }: Props) {
+export function Presentation({ monthKey, kelompokFilter }: Props) {
   const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
   const [slideIndex, setSlideIndex] = useState(0)
@@ -144,6 +147,21 @@ export function Presentation({ monthKey }: Props) {
       ],
     })
 
+  const year = parseInt(monthKey.slice(0, 4), 10)
+
+  // Yearly data for program slide charts (R3):
+  // - Single-kelompok mode (kelompokFilter set): fetch 12 months for that kelompok
+  // - Desa mode (no filter): fetch 12 months across all kelompoks (aggregated in slides)
+  const yearlyKelompokQ = useYearlyProgramData(kelompokFilter, year)
+  const yearlyDesaQ = useYearlyProgramDataDesa(year)
+
+  const yearlyMonthlyReports = kelompokFilter
+    ? (yearlyKelompokQ.data?.monthlyReports ?? [])
+    : (yearlyDesaQ.data?.monthlyReports ?? [])
+  const yearlyProgramReports = kelompokFilter
+    ? (yearlyKelompokQ.data?.programReports ?? [])
+    : (yearlyDesaQ.data?.programReports ?? [])
+
   const { data: programs = [] } = useActivePrograms()
   const { data: metrics = [] } = useActiveMetrics()
   const { data: sarprasItems = [] } = useActiveSarprasItems()
@@ -171,6 +189,9 @@ export function Presentation({ monthKey }: Props) {
         sarprasReports: sarprasQ.data ?? [],
         shodaqohRows: shodaqohQ.data ?? [],
         mustinRows: mustinQ.data ?? [],
+        kelompokFilter,
+        yearlyMonthlyReports,
+        yearlyProgramReports,
       }),
     [
       monthKey,
@@ -185,6 +206,9 @@ export function Presentation({ monthKey }: Props) {
       sarprasQ.data,
       shodaqohQ.data,
       mustinQ.data,
+      kelompokFilter,
+      yearlyMonthlyReports,
+      yearlyProgramReports,
     ]
   )
 
