@@ -132,16 +132,22 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
           </div>
         ) : (
           <div className='overflow-x-auto'>
-            <table className='w-full min-w-[960px] text-sm'>
+            <table className='w-full min-w-[960px] table-fixed text-sm'>
+              <colgroup>
+                <col className='w-28' />
+                {monthKeys.map((mk) => (
+                  <col key={mk} />
+                ))}
+              </colgroup>
               <thead>
                 <tr className='border-b'>
-                  <th className='bg-background sticky left-0 z-10 p-2 text-left font-medium'>
+                  <th className='bg-background sticky left-0 z-10 px-2 py-2 text-left font-medium'>
                     Kategori
                   </th>
                   {monthKeys.map((mk) => (
                     <th
                       key={mk}
-                      className={`p-2 text-center font-medium ${mk === current ? 'bg-primary/10 border-primary border-b-2' : ''}`}
+                      className='text-muted-foreground px-1 py-2 text-center text-xs font-medium'
                     >
                       {monthNameFromKey(mk).slice(0, 3)}
                     </th>
@@ -200,7 +206,7 @@ function MatrixRow({
 }: MatrixRowProps) {
   return (
     <tr className='border-b'>
-      <td className='bg-background sticky left-0 z-10 p-2 font-medium'>
+      <td className='bg-background sticky left-0 z-10 px-2 py-1.5 font-medium'>
         {category.label}
       </td>
       {monthKeys.map((mk) => {
@@ -220,9 +226,8 @@ function MatrixRow({
           userOwnsKelompok
         )
         const disabled = readOnly || !editability.editable
-        const isCurrent = mk === currentMonthKeyValue
         return (
-          <td key={mk} className={`p-1 ${isCurrent ? 'bg-primary/5' : ''}`}>
+          <td key={mk} className='px-1 py-1.5 align-middle'>
             <MatrixCell
               kelompokId={kelompokId}
               monthKey={mk}
@@ -286,8 +291,11 @@ function MatrixCell({
 
   if (disabled) {
     return (
-      <div className='text-muted-foreground flex items-center justify-center gap-1 px-1 py-0.5 text-xs tabular-nums'>
-        {val ? `${val}%` : '-'}
+      <div
+        className='text-muted-foreground flex h-7 items-center justify-center gap-1 text-xs tabular-nums'
+        title={reason}
+      >
+        <span>{val ? `${val}%` : '-'}</span>
         {showLock && <Lock className='h-3 w-3' aria-label={reason} />}
       </div>
     )
@@ -302,7 +310,7 @@ function MatrixCell({
       value={val}
       onChange={(e) => setVal(e.target.value)}
       onBlur={save}
-      className='h-7 w-16 text-center text-xs tabular-nums'
+      className='mx-auto block h-7 w-full max-w-18 text-center text-xs tabular-nums'
       inputMode='decimal'
     />
   )
