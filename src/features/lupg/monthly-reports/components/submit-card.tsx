@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { Loader2, Send, Unlock } from 'lucide-react'
+import { CheckCircle2, Loader2, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
-import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -26,37 +25,35 @@ interface Props {
 }
 
 export function SubmitCard({ report }: Props) {
-  const { role } = useAuthStore((s) => s.auth)
-  const isAdmin = role === 'super_admin' || role === 'admin'
-  const [confirmSubmit, setConfirmSubmit] = useState(false)
-  const [confirmUnlock, setConfirmUnlock] = useState(false)
+  const [confirmDone, setConfirmDone] = useState(false)
+  const [confirmRevert, setConfirmRevert] = useState(false)
 
-  const submit = useSubmitMonthlyReport()
-  const unlock = useUnlockMonthlyReport()
+  const markDone = useSubmitMonthlyReport()
+  const revert = useUnlockMonthlyReport()
 
-  const isSubmitted = report.status === 'submitted'
+  const isDone = report.status === 'submitted'
 
-  const handleSubmit = () => {
-    submit.mutate(report.id, {
+  const handleMarkDone = () => {
+    markDone.mutate(report.id, {
       onSuccess: () => {
-        toast.success('Laporan berhasil disubmit dan dikunci.')
-        setConfirmSubmit(false)
+        toast.success('Laporan ditandai Selesai. Masih bisa diedit kapan saja.')
+        setConfirmDone(false)
       },
       onError: (e: unknown) => {
-        const msg = e instanceof Error ? e.message : 'Gagal submit'
+        const msg = e instanceof Error ? e.message : 'Gagal menandai selesai'
         toast.error(msg)
       },
     })
   }
 
-  const handleUnlock = () => {
-    unlock.mutate(report.id, {
+  const handleRevert = () => {
+    revert.mutate(report.id, {
       onSuccess: () => {
-        toast.success('Laporan di-unlock. Status kembali ke Draft.')
-        setConfirmUnlock(false)
+        toast.success('Laporan dikembalikan ke status Belum Selesai.')
+        setConfirmRevert(false)
       },
       onError: (e: unknown) => {
-        const msg = e instanceof Error ? e.message : 'Gagal unlock'
+        const msg = e instanceof Error ? e.message : 'Gagal mengembalikan status'
         toast.error(msg)
       },
     })
@@ -66,82 +63,89 @@ export function SubmitCard({ report }: Props) {
     <>
       <Card>
         <CardContent className='flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between'>
-          <div className='flex items-center gap-2'>
-            <ReportStatusBadge
-              status={report.status as 'draft' | 'submitted'}
-              locked={report.locked}
-            />
-            {report.submitted_at && (
-              <span className='text-xs text-muted-foreground'>
-                Disubmit{' '}
-                {new Date(report.submitted_at).toLocaleString('id-ID')}
-              </span>
-            )}
+          <div className='flex flex-col gap-1'>
+            <div className='flex flex-wrap items-center gap-2'>
+              <ReportStatusBadge
+                status={report.status as 'draft' | 'submitted'}
+                locked={report.locked}
+              />
+              {report.submitted_at && (
+                <span className='text-muted-foreground text-xs'>
+                  Ditandai selesai{' '}
+                  {new Date(report.submitted_at).toLocaleString('id-ID')}
+                </span>
+              )}
+            </div>
+            <p className='text-muted-foreground text-xs'>
+              {isDone
+                ? 'Laporan ditandai selesai. Anda masih bisa mengedit bagian-bagian di atas jika ada revisi.'
+                : 'Tandai laporan sebagai selesai jika seluruh bagian sudah diisi. Anda tetap bisa mengedit setelahnya.'}
+            </p>
           </div>
-          <div className='flex items-center gap-2'>
-            {!isSubmitted && (
+          <div className='flex shrink-0 items-center gap-2'>
+            {!isDone && (
               <Button
-                onClick={() => setConfirmSubmit(true)}
-                disabled={submit.isPending}
+                onClick={() => setConfirmDone(true)}
+                disabled={markDone.isPending}
               >
-                {submit.isPending ? (
+                {markDone.isPending ? (
                   <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                 ) : (
-                  <Send className='mr-2 h-4 w-4' />
+                  <CheckCircle2 className='mr-2 h-4 w-4' />
                 )}
-                Submit Laporan
+                Tandai Selesai
               </Button>
             )}
-            {isSubmitted && isAdmin && (
+            {isDone && (
               <Button
                 variant='outline'
-                onClick={() => setConfirmUnlock(true)}
-                disabled={unlock.isPending}
+                onClick={() => setConfirmRevert(true)}
+                disabled={revert.isPending}
               >
-                {unlock.isPending ? (
+                {revert.isPending ? (
                   <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                 ) : (
-                  <Unlock className='mr-2 h-4 w-4' />
+                  <RotateCcw className='mr-2 h-4 w-4' />
                 )}
-                Unlock
+                Buka Kembali
               </Button>
             )}
           </div>
         </CardContent>
       </Card>
 
-      <AlertDialog open={confirmSubmit} onOpenChange={setConfirmSubmit}>
+      <AlertDialog open={confirmDone} onOpenChange={setConfirmDone}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Submit laporan bulan ini?</AlertDialogTitle>
+            <AlertDialogTitle>Tandai laporan sebagai selesai?</AlertDialogTitle>
             <AlertDialogDescription>
-              Setelah submit, laporan akan <strong>terkunci</strong> dan
-              data sensus saat ini akan disimpan sebagai snapshot. Hanya
-              admin yang bisa unlock laporan untuk revisi.
+              Status laporan akan berubah menjadi <strong>Selesai</strong> dan
+              snapshot sensus akan disimpan. Anda tetap bisa mengedit laporan
+              setelah ditandai selesai.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleSubmit}>
-              Ya, Submit
+            <AlertDialogAction onClick={handleMarkDone}>
+              Ya, Tandai Selesai
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={confirmUnlock} onOpenChange={setConfirmUnlock}>
+      <AlertDialog open={confirmRevert} onOpenChange={setConfirmRevert}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Unlock laporan?</AlertDialogTitle>
+            <AlertDialogTitle>Kembalikan ke Belum Selesai?</AlertDialogTitle>
             <AlertDialogDescription>
-              Kelompok akan bisa mengedit laporan ini lagi. Snapshot sensus
-              yang sudah terbuat tetap tersimpan.
+              Status laporan akan dikembalikan ke <strong>Belum Selesai</strong>.
+              Snapshot sensus yang sudah tersimpan tetap ada.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleUnlock}>
-              Ya, Unlock
+            <AlertDialogAction onClick={handleRevert}>
+              Ya, Kembalikan
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

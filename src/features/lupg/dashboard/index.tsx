@@ -98,9 +98,9 @@ export function LupgDashboard() {
                   <CardContent className='flex items-center justify-between'>
                     <div className='text-sm text-muted-foreground'>
                       {r?.submitted_at
-                        ? `Disubmit ${new Date(r.submitted_at).toLocaleDateString('id-ID')}`
+                        ? `Selesai ${new Date(r.submitted_at).toLocaleDateString('id-ID')}`
                         : r
-                          ? 'Draft'
+                          ? 'Belum selesai'
                           : '-'}
                     </div>
                     {r && (

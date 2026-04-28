@@ -168,7 +168,7 @@ export function MonthlyReportsList() {
                       </div>
                       <div>
                         <span className='text-muted-foreground'>
-                          Disubmit:{' '}
+                          Ditandai selesai:{' '}
                         </span>
                         {r.submitted_at
                           ? new Date(r.submitted_at).toLocaleDateString(

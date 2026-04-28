@@ -276,16 +276,16 @@ export function buildSlides(data: PresentationData): Slide[] {
 
   slides.push({
     key: 'status',
-    title: 'Status Submit',
+    title: 'Status Laporan',
     render: () => (
       <div className='flex h-full flex-col gap-6'>
-        <h2 className='text-4xl font-bold'>Status Submit</h2>
+        <h2 className='text-4xl font-bold'>Status Laporan</h2>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className='text-xl'>Kelompok</TableHead>
               <TableHead className='text-xl'>Status</TableHead>
-              <TableHead className='text-xl'>Submitted At</TableHead>
+              <TableHead className='text-xl'>Ditandai Selesai</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -299,8 +299,8 @@ export function buildSlides(data: PresentationData): Slide[] {
                   <TableCell className='text-2xl'>
                     {r
                       ? r.status === 'submitted'
-                        ? '✓ Submitted'
-                        : '⏳ Draft'
+                        ? '✓ Selesai'
+                        : '⏳ Belum Selesai'
                       : '— Belum dibuka'}
                   </TableCell>
                   <TableCell className='text-muted-foreground text-xl'>
@@ -460,7 +460,13 @@ export function buildSlides(data: PresentationData): Slide[] {
               </div>
               <div className='flex items-center justify-center'>
                 <div className='w-full'>
-                  <HighlightedBar data={chartData} height={400} />
+                  <HighlightedBar
+                    data={chartData}
+                    height={400}
+                    showValueLabel
+                    xAxisLabel='Bulan'
+                    yAxisLabel='Jumlah Generus'
+                  />
                 </div>
               </div>
             </div>

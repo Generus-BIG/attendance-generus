@@ -12,6 +12,7 @@ import {
   formatMonthLabel,
   monthKeyFromDate,
 } from '../../utils/month-utils'
+import { ReportStatusBadge } from '../../components/report-status-badge'
 import { SubmitCard } from '../components/submit-card'
 import { SensusPreviewSection } from '../sections/sensus-preview-section'
 import { AttendanceMatrixSection } from '../sections/attendance-matrix-section'
@@ -68,6 +69,8 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
     )
   }
 
+  // Locked is now only true for legacy rows that were auto-locked before the
+  // 'Tandai Selesai' flow was introduced; new reports stay editable after Done.
   const readOnly = report.locked
 
   return (
@@ -92,14 +95,16 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
               <h2 className='text-2xl font-bold tracking-tight'>
                 Laporan {formatMonthLabel(monthKeyFromDate(report.month))}
               </h2>
-              <p className='text-sm text-muted-foreground'>
-                Isi setiap section, lalu submit di akhir.
+              <p className='text-muted-foreground text-sm'>
+                Isi setiap bagian. Tandai selesai di bawah saat sudah lengkap.
               </p>
             </div>
           </div>
+          <ReportStatusBadge
+            status={report.status as 'draft' | 'submitted'}
+            locked={report.locked}
+          />
         </div>
-
-        <SubmitCard report={report} />
 
         <div className='flex flex-col gap-4'>
           <SensusPreviewSection report={report} />
@@ -109,6 +114,8 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
           <ShodaqohSection report={report} readOnly={readOnly} />
           <MustinSection report={report} readOnly={readOnly} />
         </div>
+
+        <SubmitCard report={report} />
       </Main>
     </>
   )

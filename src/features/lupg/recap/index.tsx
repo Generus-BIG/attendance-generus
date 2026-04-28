@@ -388,7 +388,7 @@ function StatusGridCard({
   return (
     <Card className='print:break-inside-avoid print:shadow-none'>
       <CardHeader>
-        <CardTitle>Status Submit</CardTitle>
+        <CardTitle>Status Laporan</CardTitle>
         <CardDescription>
           Status laporan {monthLabel} per kelompok.
         </CardDescription>
@@ -399,7 +399,7 @@ function StatusGridCard({
             <TableRow>
               <TableHead>Kelompok</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Submitted At</TableHead>
+              <TableHead>Ditandai Selesai</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
