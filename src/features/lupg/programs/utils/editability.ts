@@ -69,8 +69,10 @@ export function getQuarterStartMonthKey(
 }
 
 /**
- * Quarter is editable iff currentMonth >= quarter start month,
- * AND the end-month's monthly_report not locked (for non-admin).
+ * Quarter is editable iff currentMonth >= quarter start month AND the report
+ * is not locked (for non-admin). We check editability against the quarter's
+ * START month (not end), so e.g. Q2 becomes fillable in April — users should
+ * not have to wait until the final month of the quarter to enter data.
  */
 export function isQuarterEditable(
   quarter: Quarter,
@@ -84,9 +86,8 @@ export function isQuarterEditable(
   if (currentMonthKey < startKey) {
     return { editable: false, reason: `Q${quarter} belum mulai` }
   }
-  const endKey = getQuarterEndMonthKey(quarter, year)
   return isMonthEditable(
-    endKey,
+    startKey,
     currentMonthKey,
     endMonthReport,
     userRole,
