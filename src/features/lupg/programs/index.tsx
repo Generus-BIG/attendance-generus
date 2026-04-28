@@ -13,8 +13,10 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { KelompokSelector } from '../components/kelompok-selector'
 import {
   useActivePrograms,
+  useYearlyMatrixData,
   useYearlyProgramData,
 } from '../hooks/use-lupg-queries'
+import { AttendanceCharts } from '../monthly-reports/sections/attendance-charts'
 import { currentMonthKey } from '../utils/month-utils'
 import { ProgramAnalyticsCard } from './components/program-analytics-card'
 import { YearPicker } from './components/year-picker'
@@ -61,6 +63,7 @@ export function YearlyProgramTracker({
     : kelompokId
 
   const { data, isLoading } = useYearlyProgramData(resolvedKelompokId, year)
+  const { data: matrixData } = useYearlyMatrixData(resolvedKelompokId, year)
   const { data: programs = [] } = useActivePrograms()
   const current = currentMonthKey()
 
@@ -107,17 +110,25 @@ export function YearlyProgramTracker({
             Belum ada program aktif.
           </div>
         ) : (
-          <div className='grid gap-4 xl:grid-cols-2'>
-            {programs.map((p) => (
-              <ProgramAnalyticsCard
-                key={p.code}
-                program={p}
-                year={year}
-                currentMonthKey={current}
-                monthlyReports={data?.monthlyReports ?? []}
-                programReports={data?.programReports ?? []}
-              />
-            ))}
+          <div className='flex flex-col gap-4'>
+            <AttendanceCharts
+              year={year}
+              currentMonthKey={current}
+              monthlyReports={matrixData?.monthlyReports ?? []}
+              metricReports={matrixData?.metricReports ?? []}
+            />
+            <div className='grid gap-4 xl:grid-cols-2'>
+              {programs.map((p) => (
+                <ProgramAnalyticsCard
+                  key={p.code}
+                  program={p}
+                  year={year}
+                  currentMonthKey={current}
+                  monthlyReports={data?.monthlyReports ?? []}
+                  programReports={data?.programReports ?? []}
+                />
+              ))}
+            </div>
           </div>
         )}
       </Main>

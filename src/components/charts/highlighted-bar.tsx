@@ -1,5 +1,5 @@
 import React from 'react'
-import { Bar, BarChart, Cell, LabelList, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, Cell, Label, LabelList, XAxis, YAxis } from 'recharts'
 import {
   type ChartConfig,
   ChartContainer,
@@ -25,6 +25,16 @@ interface Props {
   showValueLabel?: boolean
   /** Width reserved for the category axis when orientation='horizontal'. */
   categoryWidth?: number
+  /** Label under the X axis (e.g. 'Bulan'). */
+  xAxisLabel?: string
+  /** Label rotated along the Y axis (e.g. 'Persentase (%)'). */
+  yAxisLabel?: string
+  /** Custom formatter for value labels + tooltip (overrides valueUnit formatting). */
+  valueFormatter?: (value: number) => string
+  /** Custom formatter for value axis ticks. */
+  tickFormatter?: (value: number) => string
+  /** Width reserved for the value axis. Default: 30 for vertical, 40 with yAxisLabel. */
+  valueAxisWidth?: number
 }
 
 const chartConfig = {
@@ -63,6 +73,11 @@ export function HighlightedBar({
   valueUnit,
   showValueLabel = false,
   categoryWidth = 100,
+  xAxisLabel,
+  yAxisLabel,
+  valueFormatter,
+  tickFormatter,
+  valueAxisWidth,
 }: Props) {
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null)
   const isHorizontal = orientation === 'horizontal'
@@ -75,14 +90,24 @@ export function HighlightedBar({
     tick: { fontSize: 11 },
   } as const
 
+  const resolvedValueAxisWidth =
+    valueAxisWidth ?? (yAxisLabel && !isHorizontal ? 48 : 30)
+
   const valueAxisProps = {
     tick: { fontSize: 11 },
     axisLine: false,
     tickLine: false,
     allowDecimals: false,
     ...(valueDomain ? { domain: valueDomain } : {}),
-    ...(valueUnit ? { unit: valueUnit } : {}),
+    ...(valueUnit && !tickFormatter ? { unit: valueUnit } : {}),
+    ...(tickFormatter ? { tickFormatter } : {}),
   } as const
+
+  const labelFormatter = (value: unknown) => {
+    const num = typeof value === 'number' ? value : Number(value)
+    if (valueFormatter) return valueFormatter(num)
+    return valueUnit ? `${value}${valueUnit}` : String(value)
+  }
 
   return (
     <ChartContainer
@@ -98,8 +123,8 @@ export function HighlightedBar({
         margin={{
           top: 20,
           right: isHorizontal ? 32 : 8,
-          left: 0,
-          bottom: 4,
+          left: yAxisLabel && !isHorizontal ? 8 : 0,
+          bottom: xAxisLabel ? 20 : 4,
         }}
       >
         <rect
@@ -114,22 +139,65 @@ export function HighlightedBar({
         </defs>
         {isHorizontal ? (
           <>
-            <XAxis type='number' width={30} {...valueAxisProps} />
+            <XAxis type='number' width={resolvedValueAxisWidth} {...valueAxisProps}>
+              {yAxisLabel ? (
+                <Label
+                  value={yAxisLabel}
+                  position='insideBottom'
+                  offset={-4}
+                  className='fill-muted-foreground text-[11px]'
+                />
+              ) : null}
+            </XAxis>
             <YAxis
               type='category'
               width={categoryWidth}
               {...categoryAxisProps}
-            />
+            >
+              {xAxisLabel ? (
+                <Label
+                  value={xAxisLabel}
+                  angle={-90}
+                  position='insideLeft'
+                  className='fill-muted-foreground text-[11px]'
+                />
+              ) : null}
+            </YAxis>
           </>
         ) : (
           <>
-            <XAxis type='category' {...categoryAxisProps} />
-            <YAxis type='number' width={30} {...valueAxisProps} />
+            <XAxis type='category' {...categoryAxisProps}>
+              {xAxisLabel ? (
+                <Label
+                  value={xAxisLabel}
+                  position='insideBottom'
+                  offset={-6}
+                  className='fill-muted-foreground text-[11px]'
+                />
+              ) : null}
+            </XAxis>
+            <YAxis type='number' width={resolvedValueAxisWidth} {...valueAxisProps}>
+              {yAxisLabel ? (
+                <Label
+                  value={yAxisLabel}
+                  angle={-90}
+                  position='insideLeft'
+                  offset={10}
+                  className='fill-muted-foreground text-[11px]'
+                  style={{ textAnchor: 'middle' }}
+                />
+              ) : null}
+            </YAxis>
           </>
         )}
         <ChartTooltip
           cursor={false}
-          content={<ChartTooltipContent hideLabel />}
+          content={
+            <ChartTooltipContent
+              hideLabel
+              formatter={(value) => labelFormatter(value)}
+            />
+          }
         />
         <Bar
           dataKey='value'
@@ -168,9 +236,7 @@ export function HighlightedBar({
               position={isHorizontal ? 'right' : 'top'}
               fontSize={11}
               className='fill-foreground'
-              formatter={(value: unknown) =>
-                valueUnit ? `${value}${valueUnit}` : String(value)
-              }
+              formatter={labelFormatter}
             />
           ) : null}
         </Bar>

@@ -27,6 +27,7 @@ import {
   type Quarter,
 } from '../utils/editability'
 import { HighlightedBar, type BarDatum } from '@/components/charts/highlighted-bar'
+import { formatChartValue } from '../../utils/format-chart-value'
 import { ProgramEditableRow } from './program-editable-row'
 
 interface Props {
@@ -137,7 +138,13 @@ export function ProgramQuarterlyCard({
           </Table>
         </div>
         <div className='lg:col-span-2'>
-          <HighlightedBar data={chartData} />
+          <HighlightedBar
+            data={chartData}
+            showValueLabel
+            xAxisLabel='Quarter'
+            yAxisLabel='Jumlah Generus'
+            valueFormatter={(v) => formatChartValue(v, 'number')}
+          />
         </div>
       </CardContent>
     </Card>

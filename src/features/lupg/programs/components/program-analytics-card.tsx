@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Card,
   CardContent,
@@ -22,6 +22,8 @@ import {
   monthNameFromKey,
   type Quarter,
 } from '../utils/editability'
+import { MonthSelectionChips } from '../../components/month-selection-chips'
+import { formatChartValue } from '../../utils/format-chart-value'
 
 interface Props {
   program: ProgramDefinitionRow
@@ -56,6 +58,9 @@ export function ProgramAnalyticsCard({
 
   const isQuarterly = program.reporting_style === 'quarterly'
 
+  const allMonths = useMemo(() => allMonthKeysForYear(year), [year])
+  const [selectedMonths, setSelectedMonths] = useState<string[]>(allMonths)
+
   const chartData: BarDatum[] = useMemo(() => {
     if (isQuarterly) {
       return QUARTERS.map((q) => {
@@ -71,7 +76,12 @@ export function ProgramAnalyticsCard({
         }
       })
     }
-    return allMonthKeysForYear(year).map((mk) => {
+    const selectedSet = new Set(selectedMonths)
+    const filtered =
+      selectedSet.size > 0
+        ? allMonths.filter((mk) => selectedSet.has(mk))
+        : allMonths
+    return filtered.map((mk) => {
       const report = reportByMonthKey.get(mk)
       const row = report ? programRowByReportId.get(report.id) : undefined
       const isFuture = mk > currentMonthKey
@@ -84,6 +94,8 @@ export function ProgramAnalyticsCard({
   }, [
     isQuarterly,
     year,
+    allMonths,
+    selectedMonths,
     reportByMonthKey,
     programRowByReportId,
     currentMonthKey,
@@ -125,7 +137,21 @@ export function ProgramAnalyticsCard({
             }
           />
         </div>
-        <HighlightedBar data={chartData} height={240} />
+        {!isQuarterly && (
+          <MonthSelectionChips
+            months={allMonths}
+            selectedMonths={selectedMonths}
+            onChange={setSelectedMonths}
+          />
+        )}
+        <HighlightedBar
+          data={chartData}
+          height={260}
+          showValueLabel
+          xAxisLabel={isQuarterly ? 'Quarter' : 'Bulan'}
+          yAxisLabel='Jumlah Generus'
+          valueFormatter={(v) => formatChartValue(v, 'number')}
+        />
       </CardContent>
     </Card>
   )
