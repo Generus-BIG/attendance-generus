@@ -24,32 +24,14 @@ export function SignIn() {
             className='text-2xl font-bold tracking-tight'
             style={{ fontFamily: 'Manrope, sans-serif' }}
           >
-            Welcome back
+            Welcome back 👋
           </h1>
           <p className='text-sm text-muted-foreground'>
-            Sign in to your account to continue
+            Please enter your email and password to continue.
           </p>
         </div>
 
         <UserAuthForm redirectTo={redirect} />
-
-        <p className='text-center text-xs text-muted-foreground'>
-          By signing in, you agree to our{' '}
-          <a
-            href='/terms'
-            className='underline underline-offset-4 transition-colors hover:text-foreground'
-          >
-            Terms
-          </a>{' '}
-          and{' '}
-          <a
-            href='/privacy'
-            className='underline underline-offset-4 transition-colors hover:text-foreground'
-          >
-            Privacy Policy
-          </a>
-          .
-        </p>
       </div>
     </AuthLayout>
   )
