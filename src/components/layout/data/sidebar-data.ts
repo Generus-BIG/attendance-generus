@@ -30,7 +30,7 @@ export const WORKSPACE_TEAMS: WorkspaceTeam[] = [
 
 export const WORKSPACE_DEFAULT_PATH: Record<Workspace, LinkProps['to']> = {
   absensi: '/admin/dashboard',
-  lupg: '/admin/lupg/dashboard',
+  lupg: '/admin/lupg/reports',
 }
 
 export function getSidebarData(
