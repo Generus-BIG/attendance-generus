@@ -148,13 +148,14 @@ export function AttendanceCharts({
             </CardDescription>
           </div>
         </div>
-        <div className='mt-2'>
+        <div className='mt-2 flex justify-center'>
           <MonthSelectionChips
             months={allMonths}
             selectedMonths={selected}
             onChange={setSelected}
             maxMonthKey={currentMonthKey}
             labelStyle='full'
+            maxVisibleMonths={6}
           />
         </div>
       </CardHeader>

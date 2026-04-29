@@ -59,7 +59,12 @@ export function ProgramAnalyticsCard({
   const isQuarterly = program.reporting_style === 'quarterly'
 
   const allMonths = useMemo(() => allMonthKeysForYear(year), [year])
-  const [selectedMonths, setSelectedMonths] = useState<string[]>(allMonths)
+  // Default: show from January up to the current month. Future months stay
+  // unselected and fade in automatically as real time advances (on next mount
+  // the initializer re-reads `currentMonthKey`).
+  const [selectedMonths, setSelectedMonths] = useState<string[]>(() =>
+    allMonths.filter((mk) => mk <= currentMonthKey)
+  )
 
   const chartData: BarDatum[] = useMemo(() => {
     if (isQuarterly) {
@@ -138,11 +143,14 @@ export function ProgramAnalyticsCard({
           />
         </div>
         {!isQuarterly && (
-          <MonthSelectionChips
-            months={allMonths}
-            selectedMonths={selectedMonths}
-            onChange={setSelectedMonths}
-          />
+          <div className='flex justify-center'>
+            <MonthSelectionChips
+              months={allMonths}
+              selectedMonths={selectedMonths}
+              onChange={setSelectedMonths}
+              maxVisibleMonths={6}
+            />
+          </div>
         )}
         <HighlightedBar
           data={chartData}
