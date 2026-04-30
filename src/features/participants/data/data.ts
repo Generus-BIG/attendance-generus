@@ -18,6 +18,7 @@ export const kategoriOptions = [
   { label: 'GPN A', value: 'A' },
   { label: 'GPN B', value: 'B' },
   { label: 'AR', value: 'AR' },
+  { label: 'APR', value: 'APR' },
 ] as const
 
 export const genderOptions = [
