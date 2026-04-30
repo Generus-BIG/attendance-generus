@@ -23,7 +23,7 @@ const OPTIONS: {
   {
     value: 'kelompok',
     label: 'Kelompok',
-    description: 'Meeting rutin per kelompok',
+    description: 'Pengajian rutin per kelompok',
     Icon: Users,
   },
 ]
