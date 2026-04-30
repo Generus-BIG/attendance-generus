@@ -1,3 +1,4 @@
+import { format } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import type { PendingParticipant, Participant } from '@/lib/schema'
 
@@ -153,7 +154,9 @@ export const approvalService = {
                 gender: pending.suggestedGender,
                 group_id: groupId,
                 category_id: categoryId,
-                status_active: true
+                status_active: true,
+                birth_date: pending.birthDate ? format(pending.birthDate, 'yyyy-MM-dd') : null,
+                birth_place: pending.birthPlace ?? null,
             })
             .select()
             .single()
