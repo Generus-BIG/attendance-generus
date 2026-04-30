@@ -1,9 +1,16 @@
 import { createContext, useContext, type ReactNode } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { format } from 'date-fns'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { supabase } from '@/lib/supabase'
 import { participantListSchema, type Participant, type KATEGORI } from '@/lib/schema'
+
+// birth_date is a DATE column. Format in local time (not UTC) so a TM in UTC+7
+// picking "2000-01-15" doesn't get stored as "2000-01-14".
+function toDateOnly(d: Date): string {
+  return format(d, 'yyyy-MM-dd')
+}
 
 // Lookup value mappings (value -> UUID)
 // These are fetched from DB and cached
@@ -42,17 +49,18 @@ async function fetchLookupMaps(): Promise<{ groups: LookupMap; categories: Looku
   return { groups, categories }
 }
 
-// Map app kategori ('A', 'B', 'AR') to DB value ('GPN A', 'GPN B', 'AR')
+// Map app kategori ('A', 'B', 'AR', 'APR') to DB value ('GPN A', 'GPN B', 'AR', 'APR')
 function mapKategoriToDb(kategori: string): string {
   if (kategori === 'A') return 'GPN A'
   if (kategori === 'B') return 'GPN B'
-  return kategori // 'AR' stays as 'AR'
+  return kategori // 'AR' and 'APR' stay as-is
 }
 
 // Map DB category value to app kategori
 function mapKategoriFromDb(dbValue: string): typeof KATEGORI[number] {
   if (dbValue === 'GPN A') return 'A'
   if (dbValue === 'GPN B') return 'B'
+  if (dbValue === 'APR') return 'APR'
   return 'AR'
 }
 
@@ -82,6 +90,8 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
           gender,
           status_active,
           created_at,
+          birth_date,
+          birth_place,
           group:group_id(value),
           category:category_id(value)
         `)
@@ -117,6 +127,8 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
         kelompok: item.group?.value || 'BIG 1',
         kategori: mapKategoriFromDb(item.category?.value || 'GPN A'),
         status: item.status_active ? 'active' : 'inactive',
+        birthDate: item.birth_date ? new Date(item.birth_date) : null,
+        birthPlace: item.birth_place ?? null,
         createdAt: new Date(item.created_at),
         updatedAt: new Date(item.created_at), // DB doesn't have updated_at
       }))
@@ -137,19 +149,34 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
       if (!groupId) throw new Error(`Unknown group: ${newParticipant.kelompok}`)
       if (!categoryId) throw new Error(`Unknown category: ${dbKategori}`)
 
-      const { error } = await supabase.from('participants').insert({
-        name: newParticipant.name,
-        gender: newParticipant.gender,
-        group_id: groupId,
-        category_id: categoryId,
-        status_active: newParticipant.status === 'active',
-      })
+      const { data, error } = await supabase
+        .from('participants')
+        .insert({
+          name: newParticipant.name,
+          gender: newParticipant.gender,
+          group_id: groupId,
+          category_id: categoryId,
+          status_active: newParticipant.status === 'active',
+          birth_date: newParticipant.birthDate
+            ? toDateOnly(newParticipant.birthDate)
+            : null,
+          birth_place: newParticipant.birthPlace?.trim() || null,
+        })
+        .select('category_id')
+        .single()
 
       if (error) throw error
+
+      const submittedWasGpnA = newParticipant.kategori === 'A'
+      const returnedIsGpnB = data?.category_id === lookups.categories['GPN B']
+      return { autoPromoted: submittedWasGpnA && returnedIsGpnB }
     },
-    onSuccess: () => {
+    onSuccess: ({ autoPromoted }) => {
       queryClient.invalidateQueries({ queryKey: ['participants'] })
       toast.success('Peserta berhasil ditambahkan')
+      if (autoPromoted) {
+        toast.info('Kategori otomatis diubah ke GPN B karena usia ≥ 23 tahun')
+      }
     },
     onError: (error: Error) => {
       toast.error(`Gagal menambah peserta: ${error.message}`)
@@ -160,6 +187,20 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>> }) => {
       if (!lookups) throw new Error('Lookup values not loaded')
+
+      // Pre-read current category when birth_date is being changed but kategori isn't —
+      // this lets us detect GPN A → GPN B promote that the trigger may fire.
+      let preUpdateKategori: typeof KATEGORI[number] | undefined = data.kategori
+      if (preUpdateKategori === undefined && data.birthDate !== undefined) {
+        const { data: existing } = await supabase
+          .from('participants')
+          .select('category:category_id(value)')
+          .eq('id', id)
+          .single()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const dbVal = (existing as any)?.category?.value as string | undefined
+        preUpdateKategori = dbVal ? mapKategoriFromDb(dbVal) : undefined
+      }
 
       const payload: Record<string, string | boolean | null> = {}
 
@@ -180,16 +221,33 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
         payload.category_id = categoryId
       }
 
-      const { error } = await supabase
+      if (data.birthDate !== undefined) {
+        payload.birth_date = data.birthDate ? toDateOnly(data.birthDate) : null
+      }
+
+      if (data.birthPlace !== undefined) {
+        payload.birth_place = data.birthPlace?.trim() || null
+      }
+
+      const { data: returned, error } = await supabase
         .from('participants')
         .update(payload)
         .eq('id', id)
+        .select('category_id')
+        .single()
 
       if (error) throw error
+
+      const wasGpnA = preUpdateKategori === 'A'
+      const returnedIsGpnB = returned?.category_id === lookups.categories['GPN B']
+      return { autoPromoted: wasGpnA && returnedIsGpnB }
     },
-    onSuccess: () => {
+    onSuccess: ({ autoPromoted }) => {
       queryClient.invalidateQueries({ queryKey: ['participants'] })
       toast.success('Peserta berhasil diperbarui')
+      if (autoPromoted) {
+        toast.info('Kategori otomatis diubah ke GPN B karena usia ≥ 23 tahun')
+      }
     },
     onError: (error: Error) => {
       toast.error(`Gagal memperbarui peserta: ${error.message}`)
@@ -239,8 +297,12 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
       value={{
         participants,
         isLoading,
-        createParticipant: (data) => createMutation.mutateAsync(data),
-        updateParticipant: (id, data) => updateMutation.mutateAsync({ id, data }),
+        createParticipant: async (data) => {
+          await createMutation.mutateAsync(data)
+        },
+        updateParticipant: async (id, data) => {
+          await updateMutation.mutateAsync({ id, data })
+        },
         deleteParticipant: (id) => deleteMutation.mutateAsync(id),
         deleteParticipants: (ids) => deleteMultipleMutation.mutateAsync(ids),
       }}
