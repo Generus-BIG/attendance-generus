@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 // === Enums & Constants ===
 export const KELOMPOK = ['BIG 1', 'BIG 2', 'Cakra', 'Limo', 'Meruyung'] as const
-export const KATEGORI = ['A', 'B', 'AR'] as const
+export const KATEGORI = ['A', 'B', 'AR', 'APR'] as const
 export const GENDER = ['L', 'P'] as const
 export const ATTENDANCE_STATUS = ['hadir', 'izin'] as const
 export const PARTICIPANT_STATUS = ['active', 'inactive'] as const
@@ -34,6 +34,8 @@ export const participantSchema = z.object({
   kelompok: kelompokSchema,
   kategori: kategoriSchema,
   status: participantStatusSchema.default('active'),
+  birthDate: z.coerce.date().nullable().optional(),
+  birthPlace: z.string().trim().max(100).nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
