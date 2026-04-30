@@ -43,7 +43,7 @@ export const participantsColumns: ColumnDef<Participant>[] = [
       <DataTableColumnHeader column={column} title='Nama' />
     ),
     cell: ({ row }) => (
-      <span className='block max-w-[22ch] font-medium whitespace-normal break-words @4xl/content:max-w-none'>
+      <span className='block max-w-[22ch] font-medium whitespace-normal wrap-break-word @4xl/content:max-w-none'>
         {row.getValue('name')}
       </span>
     ),
@@ -124,7 +124,7 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     cell: ({ row }) => {
       const birthDate = row.original.birthDate
       return (
-        <span className='block max-w-[14ch] whitespace-normal break-words text-muted-foreground'>
+        <span className='block max-w-[14ch] whitespace-normal wrap-break-word text-muted-foreground'>
           {birthDate
             ? format(birthDate, 'dd MMM yyyy', { locale: idLocale })
             : '—'}
@@ -146,7 +146,7 @@ export const participantsColumns: ColumnDef<Participant>[] = [
       if (!birthDate) return <span className='text-muted-foreground'>—</span>
       const age = differenceInYears(new Date(), birthDate)
       return (
-        <span className='block max-w-[8ch] whitespace-normal break-words tabular-nums'>
+        <span className='block max-w-[8ch] whitespace-normal wrap-break-word tabular-nums'>
           {age} th
         </span>
       )
