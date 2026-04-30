@@ -114,8 +114,9 @@ export const approvalService = {
         if (dbCategory === 'GPN A') return 'A'
         if (dbCategory === 'GPN B') return 'B'
         if (dbCategory === 'AR') return 'AR'
-        // Fallback: if already internal (A/B/AR)
-        if (dbCategory === 'A' || dbCategory === 'B' || dbCategory === 'AR') return dbCategory
+        if (dbCategory === 'APR') return 'APR'
+        // Fallback: if already internal (A/B/AR/APR)
+        if (dbCategory === 'A' || dbCategory === 'B' || dbCategory === 'AR' || dbCategory === 'APR') return dbCategory
         // If unknown, default to AR (should not happen, but avoids runtime crash)
         return 'AR'
       }
