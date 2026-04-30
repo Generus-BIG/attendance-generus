@@ -306,6 +306,7 @@ export type Database = {
           pokok_masalah: string
           sort_order: number
           status: string
+          template_code: string | null
           updated_at: string
         }
         Insert: {
@@ -318,6 +319,7 @@ export type Database = {
           pokok_masalah: string
           sort_order?: number
           status?: string
+          template_code?: string | null
           updated_at?: string
         }
         Update: {
@@ -330,6 +332,7 @@ export type Database = {
           pokok_masalah?: string
           sort_order?: number
           status?: string
+          template_code?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -340,7 +343,50 @@ export type Database = {
             referencedRelation: "lupg_monthly_reports"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "lupg_mustin_notes_template_code_fkey"
+            columns: ["template_code"]
+            isOneToOne: false
+            referencedRelation: "lupg_mustin_templates"
+            referencedColumns: ["code"]
+          },
         ]
+      }
+      lupg_mustin_templates: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+          label: string
+          placeholder: string | null
+          sort_order: number
+          sub_items: Json | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          label: string
+          placeholder?: string | null
+          sort_order?: number
+          sub_items?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          label?: string
+          placeholder?: string | null
+          sort_order?: number
+          sub_items?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       lupg_program_definitions: {
         Row: {

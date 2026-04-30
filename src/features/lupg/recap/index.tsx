@@ -34,6 +34,7 @@ import {
 } from '../constants'
 import {
   useActiveMetrics,
+  useActiveMustinTemplates,
   useActivePrograms,
   useActiveSarprasItems,
   useMonthlyReports,
@@ -43,6 +44,7 @@ import {
   type MonthlyReportRow,
   type MustinNoteRow,
   type MustinStatus,
+  type MustinTemplateRow,
   type ProgramReportRow,
   type SarprasReportRow,
   type SensusSnapshotRow,
@@ -202,6 +204,7 @@ export function RekapDesa() {
   const { data: programs = [] } = useActivePrograms()
   const { data: metrics = [] } = useActiveMetrics()
   const { data: sarprasItems = [] } = useActiveSarprasItems()
+  const { data: mustinTemplates = [] } = useActiveMustinTemplates()
 
   const sensusSnapshots = sensusQ.data ?? []
   const programReports = programsBatchQ.data ?? []
@@ -359,6 +362,7 @@ export function RekapDesa() {
                   kelompokList={kelompokList}
                   reports={monthReports}
                   rows={mustinRows}
+                  templates={mustinTemplates}
                 />
               </>
             )}
@@ -868,11 +872,26 @@ function MustinRecapCard({
   kelompokList,
   reports,
   rows,
+  templates,
 }: SectionProps & {
   rows: MustinNoteRow[]
+  templates: MustinTemplateRow[]
 }) {
   const reportByKelompok = new Map<string, MonthlyReportRow>()
   for (const r of reports) reportByKelompok.set(r.kelompok_id, r)
+
+  const templateByCode = new Map<string, MustinTemplateRow>()
+  for (const t of templates) templateByCode.set(t.code, t)
+
+  const sortNotes = (notes: MustinNoteRow[]): MustinNoteRow[] => {
+    return [...notes].sort((a, b) => {
+      const ta = a.template_code ? templateByCode.get(a.template_code) : undefined
+      const tb = b.template_code ? templateByCode.get(b.template_code) : undefined
+      const aOrder = ta ? ta.sort_order : 1_000_000 + a.sort_order
+      const bOrder = tb ? tb.sort_order : 1_000_000 + b.sort_order
+      return aOrder - bOrder
+    })
+  }
 
   return (
     <Card className='print:break-inside-avoid print:shadow-none'>
@@ -885,7 +904,7 @@ function MustinRecapCard({
           {kelompokList.map((k) => {
             const report = reportByKelompok.get(k.id)
             const kkRows = report
-              ? rows.filter((r) => r.monthly_report_id === report.id)
+              ? sortNotes(rows.filter((r) => r.monthly_report_id === report.id))
               : []
             return (
               <div key={k.id} className='flex flex-col gap-2'>
@@ -901,53 +920,81 @@ function MustinRecapCard({
                   </div>
                 ) : (
                   <div className='flex flex-col gap-2'>
-                    {kkRows.map((n) => (
-                      <div
-                        key={n.id}
-                        className='rounded-md border p-3 text-sm'
-                      >
-                        <div className='mb-2 flex flex-wrap items-center gap-2'>
-                          <span className='bg-muted inline-flex items-center rounded-full px-2 py-0.5 text-xs'>
-                            {
-                              MUSTIN_STATUS_LABELS[
-                                n.status as MustinStatus
-                              ]
-                            }
-                          </span>
-                          {n.deadline && (
-                            <span className='text-muted-foreground text-xs'>
-                              Deadline:{' '}
-                              {new Date(n.deadline).toLocaleDateString(
-                                'id-ID'
+                    {kkRows.map((n) => {
+                      const tmpl = n.template_code
+                        ? templateByCode.get(n.template_code)
+                        : undefined
+                      const subs =
+                        tmpl && Array.isArray(tmpl.sub_items)
+                          ? (tmpl.sub_items.filter(
+                              (v): v is string => typeof v === 'string'
+                            ) as string[])
+                          : []
+                      const showStatusBadge =
+                        !tmpl || n.status !== 'open'
+                      return (
+                        <div
+                          key={n.id}
+                          className='rounded-md border p-3 text-sm'
+                        >
+                          {(showStatusBadge || n.deadline || n.pic) && (
+                            <div className='mb-2 flex flex-wrap items-center gap-2'>
+                              {showStatusBadge && (
+                                <span className='bg-muted inline-flex items-center rounded-full px-2 py-0.5 text-xs'>
+                                  {
+                                    MUSTIN_STATUS_LABELS[
+                                      n.status as MustinStatus
+                                    ]
+                                  }
+                                </span>
                               )}
-                            </span>
-                          )}
-                          {n.pic && (
-                            <span className='text-muted-foreground text-xs'>
-                              PIC: {n.pic}
-                            </span>
-                          )}
-                        </div>
-                        <div className='grid gap-2 sm:grid-cols-2'>
-                          <div>
-                            <div className='text-muted-foreground text-xs font-medium'>
-                              Pokok Masalah
+                              {n.deadline && (
+                                <span className='text-muted-foreground text-xs'>
+                                  Deadline:{' '}
+                                  {new Date(n.deadline).toLocaleDateString(
+                                    'id-ID'
+                                  )}
+                                </span>
+                              )}
+                              {n.pic && (
+                                <span className='text-muted-foreground text-xs'>
+                                  PIC: {n.pic}
+                                </span>
+                              )}
                             </div>
-                            <div className='whitespace-pre-wrap'>
-                              {n.pokok_masalah}
+                          )}
+                          <div className='grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]'>
+                            <div>
+                              <div className='text-muted-foreground text-xs font-medium uppercase tracking-wide'>
+                                Pokok Masalah
+                              </div>
+                              <div className='mt-1 whitespace-pre-wrap font-medium'>
+                                {n.pokok_masalah}
+                              </div>
+                              {subs.length > 0 && (
+                                <ol className='text-muted-foreground mt-1 list-[lower-alpha] pl-5 text-xs'>
+                                  {subs.map((s, i) => (
+                                    <li key={i}>{s}</li>
+                                  ))}
+                                </ol>
+                              )}
+                            </div>
+                            <div>
+                              <div className='text-muted-foreground text-xs font-medium uppercase tracking-wide'>
+                                Keputusan / Rencana
+                              </div>
+                              <div className='mt-1 whitespace-pre-wrap'>
+                                {n.keputusan_rencana || (
+                                  <span className='text-muted-foreground italic'>
+                                    (kosong)
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                          <div>
-                            <div className='text-muted-foreground text-xs font-medium'>
-                              Keputusan / Rencana
-                            </div>
-                            <div className='whitespace-pre-wrap'>
-                              {n.keputusan_rencana}
-                            </div>
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>

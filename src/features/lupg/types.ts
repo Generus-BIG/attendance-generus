@@ -21,6 +21,7 @@ export type SarprasReportRow = Tables['lupg_sarpras_reports']['Row']
 export type ShodaqohRow = Tables['lupg_shodaqoh']['Row']
 
 export type MustinNoteRow = Tables['lupg_mustin_notes']['Row']
+export type MustinTemplateRow = Tables['lupg_mustin_templates']['Row']
 
 export type MonthlyReportStatus = 'draft' | 'submitted'
 export type MustinStatus = 'open' | 'in_progress' | 'done'

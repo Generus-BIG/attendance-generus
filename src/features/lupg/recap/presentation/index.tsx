@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
   useActiveMetrics,
+  useActiveMustinTemplates,
   useActivePrograms,
   useActiveSarprasItems,
   useMonthlyReports,
@@ -165,6 +166,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
   const { data: programs = [] } = useActivePrograms()
   const { data: metrics = [] } = useActiveMetrics()
   const { data: sarprasItems = [] } = useActiveSarprasItems()
+  const { data: mustinTemplates = [] } = useActiveMustinTemplates()
 
   const isLoading =
     sensusQ.isLoading ||
@@ -189,6 +191,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
         sarprasReports: sarprasQ.data ?? [],
         shodaqohRows: shodaqohQ.data ?? [],
         mustinRows: mustinQ.data ?? [],
+        mustinTemplates,
         kelompokFilter,
         yearlyMonthlyReports,
         yearlyProgramReports,
@@ -206,6 +209,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
       sarprasQ.data,
       shodaqohQ.data,
       mustinQ.data,
+      mustinTemplates,
       kelompokFilter,
       yearlyMonthlyReports,
       yearlyProgramReports,
