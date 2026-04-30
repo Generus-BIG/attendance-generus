@@ -679,6 +679,8 @@ export type Database = {
       }
       participants: {
         Row: {
+          birth_date: string | null
+          birth_place: string | null
           category_id: string | null
           created_at: string | null
           gender: string | null
@@ -688,6 +690,8 @@ export type Database = {
           status_active: boolean | null
         }
         Insert: {
+          birth_date?: string | null
+          birth_place?: string | null
           category_id?: string | null
           created_at?: string | null
           gender?: string | null
@@ -697,6 +701,8 @@ export type Database = {
           status_active?: boolean | null
         }
         Update: {
+          birth_date?: string | null
+          birth_place?: string | null
           category_id?: string | null
           created_at?: string | null
           gender?: string | null
@@ -785,6 +791,7 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_age: { Args: { birth: string }; Returns: number }
       lupg_get_submitter_display: {
         Args: { p_user_id: string }
         Returns: string
