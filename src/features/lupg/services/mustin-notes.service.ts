@@ -21,6 +21,7 @@ export async function createMustinNote(input: {
   pic?: string | null
   deadline?: string | null
   status?: MustinStatus
+  template_code?: string | null
 }): Promise<MustinNoteRow> {
   const { data, error } = await supabase
     .from('lupg_mustin_notes')
@@ -32,11 +33,30 @@ export async function createMustinNote(input: {
       pic: input.pic ?? null,
       deadline: input.deadline ?? null,
       status: input.status ?? 'open',
+      template_code: input.template_code ?? null,
     })
     .select()
     .single()
   if (error) throw error
   return data as MustinNoteRow
+}
+
+export async function batchInsertMustinNotes(
+  rows: Array<{
+    monthly_report_id: string
+    sort_order: number
+    pokok_masalah: string
+    keputusan_rencana: string
+    template_code: string
+  }>
+): Promise<MustinNoteRow[]> {
+  if (rows.length === 0) return []
+  const { data, error } = await supabase
+    .from('lupg_mustin_notes')
+    .insert(rows)
+    .select()
+  if (error) throw error
+  return (data ?? []) as MustinNoteRow[]
 }
 
 export async function updateMustinNote(
