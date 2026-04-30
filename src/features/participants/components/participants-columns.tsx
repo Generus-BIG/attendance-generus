@@ -1,4 +1,6 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { format, differenceInYears } from 'date-fns'
+import { id as idLocale } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -41,7 +43,9 @@ export const participantsColumns: ColumnDef<Participant>[] = [
       <DataTableColumnHeader column={column} title='Nama' />
     ),
     cell: ({ row }) => (
-      <span className='font-medium'>{row.getValue('name')}</span>
+      <span className='block max-w-[22ch] font-medium whitespace-normal break-words @4xl/content:max-w-none'>
+        {row.getValue('name')}
+      </span>
     ),
     meta: {
       className: cn(
@@ -68,11 +72,9 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     ),
     cell: ({ row }) => {
       const kategori = row.getValue('kategori') as string
-      return (
-        <Badge variant='outline'>
-          {kategori === 'AR' ? 'AR' : `GPN ${kategori}`}
-        </Badge>
-      )
+      const label =
+        kategori === 'AR' || kategori === 'APR' ? kategori : `GPN ${kategori}`
+      return <Badge variant='outline'>{label}</Badge>
     },
     filterFn: (row, id, value) => {
       return Array.isArray(value) && value.includes(row.getValue(id))
@@ -89,6 +91,9 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     },
     filterFn: (row, id, value) => {
       return Array.isArray(value) && value.includes(row.getValue(id))
+    },
+    meta: {
+      className: cn('hidden @xl/content:table-cell'),
     },
   },
   {
@@ -110,6 +115,46 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     filterFn: (row, id, value) => {
       return Array.isArray(value) && value.includes(row.getValue(id))
     },
+  },
+  {
+    accessorKey: 'birthDate',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Tgl Lahir' />
+    ),
+    cell: ({ row }) => {
+      const birthDate = row.original.birthDate
+      return (
+        <span className='block max-w-[14ch] whitespace-normal break-words text-muted-foreground'>
+          {birthDate
+            ? format(birthDate, 'dd MMM yyyy', { locale: idLocale })
+            : '—'}
+        </span>
+      )
+    },
+    meta: {
+      className: cn('hidden @3xl/content:table-cell'),
+    },
+    enableSorting: true,
+  },
+  {
+    id: 'age',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Usia' />
+    ),
+    cell: ({ row }) => {
+      const birthDate = row.original.birthDate
+      if (!birthDate) return <span className='text-muted-foreground'>—</span>
+      const age = differenceInYears(new Date(), birthDate)
+      return (
+        <span className='block max-w-[8ch] whitespace-normal break-words tabular-nums'>
+          {age} th
+        </span>
+      )
+    },
+    meta: {
+      className: cn('hidden @2xl/content:table-cell'),
+    },
+    enableSorting: false,
   },
   {
     id: 'actions',
