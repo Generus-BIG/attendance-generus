@@ -21,6 +21,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/date-picker'
 import { SelectDropdown } from '@/components/select-dropdown'
 import { type Participant, KELOMPOK, KATEGORI, GENDER, PARTICIPANT_STATUS } from '@/lib/schema'
 import { useParticipantsCRUD } from '../context/participants-context'
@@ -31,6 +32,12 @@ const formSchema = z.object({
   kategori: z.enum(KATEGORI, { message: 'Kategori wajib dipilih.' }),
   gender: z.enum(GENDER, { message: 'Jenis kelamin wajib dipilih.' }),
   status: z.enum(PARTICIPANT_STATUS),
+  birthPlace: z.string().trim().max(100, 'Maksimal 100 karakter').optional().nullable(),
+  birthDate: z
+    .date()
+    .max(new Date(), 'Tanggal lahir tidak boleh di masa depan')
+    .optional()
+    .nullable(),
 })
 
 type ParticipantForm = z.infer<typeof formSchema>
@@ -57,6 +64,8 @@ export function ParticipantActionDialog({
       kategori: currentRow?.kategori ?? 'A',
       gender: currentRow?.gender ?? 'L',
       status: currentRow?.status ?? 'active',
+      birthPlace: currentRow?.birthPlace ?? '',
+      birthDate: currentRow?.birthDate ?? null,
     },
   })
 
@@ -143,7 +152,10 @@ export function ParticipantActionDialog({
                     onValueChange={field.onChange}
                     placeholder='Pilih kategori'
                     className='col-span-4'
-                    items={KATEGORI.map((k) => ({ label: `GPN ${k}`, value: k }))}
+                    items={KATEGORI.map((k) => ({
+                      label: k === 'AR' || k === 'APR' ? k : `GPN ${k}`,
+                      value: k,
+                    }))}
                   />
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>
@@ -165,6 +177,42 @@ export function ParticipantActionDialog({
                       { label: 'Perempuan', value: 'P' },
                     ]}
                   />
+                  <FormMessage className='col-span-4 col-start-3' />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='birthPlace'
+              render={({ field }) => (
+                <FormItem className='grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0'>
+                  <FormLabel className='col-span-2 text-right'>Tempat Lahir</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder='Masukkan tempat lahir (opsional)'
+                      className='col-span-4'
+                      {...field}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                  <FormMessage className='col-span-4 col-start-3' />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='birthDate'
+              render={({ field }) => (
+                <FormItem className='grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0'>
+                  <FormLabel className='col-span-2 text-right'>Tanggal Lahir</FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      selected={field.value ?? undefined}
+                      onSelect={(d) => field.onChange(d ?? null)}
+                      placeholder='Pilih tanggal lahir (opsional)'
+                      className='col-span-4 w-full'
+                    />
+                  </FormControl>
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>
               )}

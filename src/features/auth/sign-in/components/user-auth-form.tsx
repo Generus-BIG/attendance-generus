@@ -137,7 +137,7 @@ export function UserAuthForm({
             <Loader2 className='h-4 w-4 animate-spin' />
           ) : (
             <>
-              Continue
+              Sign In
               <ArrowRight className='ml-1.5 h-4 w-4' />
             </>
           )}

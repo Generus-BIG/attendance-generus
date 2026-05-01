@@ -37,11 +37,10 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           >
             Manage Desa BIG
             <br />
-            attendance with clarity.
+            attendance & internal reports.
           </h2>
           <p className='mt-5 text-base leading-relaxed text-[oklch(0.7_0.015_265)]'>
-            Track attendance, oversee participants, and run your organization
-            from a single, streamlined workspace.
+            Track attendance, oversee participants, and manage your monthly organizational reports from a single, streamlined workspace.
           </p>
         </div>
 

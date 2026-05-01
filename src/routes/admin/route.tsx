@@ -1,7 +1,9 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/auth-store'
+import { useWorkspaceStore } from '@/stores/workspace-store'
 import { ROUTE_ACCESS, type Role } from '@/lib/rbac'
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout'
+import { WORKSPACE_DEFAULT_PATH } from '@/components/layout/data/sidebar-data'
 
 export const Route = createFileRoute('/admin')({
   beforeLoad: async ({ location }) => {
@@ -17,7 +19,7 @@ export const Route = createFileRoute('/admin')({
       })
     }
 
-    // Role-based route protection using ROUTE_ACCESS map
+    // Role-based route protection
     const role: Role = auth.role
     for (const [path, allowedRoles] of Object.entries(ROUTE_ACCESS)) {
       if (
@@ -28,12 +30,11 @@ export const Route = createFileRoute('/admin')({
       }
     }
 
-    // Redirect /admin to /admin/dashboard
+    // Redirect /admin (no child) to active workspace's default page
     if (location.pathname === '/admin' || location.pathname === '/admin/') {
-      throw redirect({
-        to: '/admin/dashboard',
-        search: { tab: 'desa', month: new Date().toLocaleDateString('sv').slice(0, 7) },
-      })
+      const { activeWorkspace } = useWorkspaceStore.getState()
+      const target = WORKSPACE_DEFAULT_PATH[activeWorkspace]
+      throw redirect({ to: target })
     }
   },
   component: AuthenticatedLayout,

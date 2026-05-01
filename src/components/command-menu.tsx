@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/command'
 import { getSidebarData } from './layout/data/sidebar-data'
 import { useAuthStore } from '@/stores/auth-store'
+import { useActiveWorkspace } from '@/hooks/use-active-workspace'
 import { ScrollArea } from './ui/scroll-area'
 
 export function CommandMenu() {
@@ -21,14 +22,20 @@ export function CommandMenu() {
   const { setTheme } = useTheme()
   const { open, setOpen } = useSearch()
   const { user, role, kelompok } = useAuthStore((state) => state.auth)
+  const { activeWorkspace } = useActiveWorkspace()
 
-  const sidebarData = getSidebarData(role, kelompok, {
-    name:
-      (user?.user_metadata?.full_name as string) || user?.email || 'User',
-    email: user?.email || '',
-    avatar: '/avatars/shadcn.jpg',
+  const sidebarData = getSidebarData(
     role,
-  })
+    kelompok,
+    {
+      name:
+        (user?.user_metadata?.full_name as string) || user?.email || 'User',
+      email: user?.email || '',
+      avatar: '/avatars/shadcn.jpg',
+      role,
+    },
+    activeWorkspace
+  )
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {

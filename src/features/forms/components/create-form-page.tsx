@@ -53,6 +53,7 @@ const CATEGORIES = [
   { id: 'A', label: 'GPN A' },
   { id: 'B', label: 'GPN B' },
   { id: 'AR', label: 'AR' },
+  { id: 'APR', label: 'APR' },
 ]
 
 export function CreateFormPage() {

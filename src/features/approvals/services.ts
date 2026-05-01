@@ -1,3 +1,4 @@
+import { format } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import type { PendingParticipant, Participant } from '@/lib/schema'
 
@@ -113,8 +114,9 @@ export const approvalService = {
         if (dbCategory === 'GPN A') return 'A'
         if (dbCategory === 'GPN B') return 'B'
         if (dbCategory === 'AR') return 'AR'
-        // Fallback: if already internal (A/B/AR)
-        if (dbCategory === 'A' || dbCategory === 'B' || dbCategory === 'AR') return dbCategory
+        if (dbCategory === 'APR') return 'APR'
+        // Fallback: if already internal (A/B/AR/APR)
+        if (dbCategory === 'A' || dbCategory === 'B' || dbCategory === 'AR' || dbCategory === 'APR') return dbCategory
         // If unknown, default to AR (should not happen, but avoids runtime crash)
         return 'AR'
       }
@@ -153,7 +155,9 @@ export const approvalService = {
                 gender: pending.suggestedGender,
                 group_id: groupId,
                 category_id: categoryId,
-                status_active: true
+                status_active: true,
+                birth_date: pending.birthDate ? format(pending.birthDate, 'yyyy-MM-dd') : null,
+                birth_place: pending.birthPlace ?? null,
             })
             .select()
             .single()

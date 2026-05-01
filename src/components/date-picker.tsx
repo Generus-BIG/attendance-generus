@@ -1,4 +1,5 @@
 import { format } from 'date-fns'
+import { id as idLocale } from 'date-fns/locale'
 import { Calendar as CalendarIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -31,7 +32,7 @@ export function DatePicker({
           className={cn('w-60 justify-start text-start font-normal data-[empty=true]:text-muted-foreground', className)}
         >
           {selected ? (
-            format(selected, 'MMM d, yyyy')
+            format(selected, 'dd MMM yyyy', { locale: idLocale })
           ) : (
             <span>{placeholder}</span>
           )}

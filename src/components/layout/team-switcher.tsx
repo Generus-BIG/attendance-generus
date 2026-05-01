@@ -1,11 +1,10 @@
-import * as React from 'react'
-import { ChevronsUpDown, Plus } from 'lucide-react'
+import { ChevronsUpDown } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -15,18 +14,28 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { WORKSPACE_DEFAULT_PATH } from './data/sidebar-data'
+import { type WorkspaceTeam } from './types'
+import { useActiveWorkspace } from '@/hooks/use-active-workspace'
 
 type TeamSwitcherProps = {
-  teams: {
-    name: string
-    logo: React.ElementType
-    plan: string
-  }[]
+  teams: WorkspaceTeam[]
 }
 
 export function TeamSwitcher({ teams }: TeamSwitcherProps) {
   const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
+  const navigate = useNavigate()
+  const { activeWorkspace, setActiveWorkspace } = useActiveWorkspace()
+
+  const activeTeam =
+    teams.find((t) => t.key === activeWorkspace) ?? teams[0]
+
+  const handleSelectTeam = (team: WorkspaceTeam) => {
+    if (team.key === activeWorkspace) return
+    setActiveWorkspace(team.key)
+    const target = WORKSPACE_DEFAULT_PATH[team.key]
+    navigate({ to: target })
+  }
 
   return (
     <SidebarMenu>
@@ -56,12 +65,12 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
             sideOffset={4}
           >
             <DropdownMenuLabel className='text-xs text-muted-foreground'>
-              Teams
+              Workspaces
             </DropdownMenuLabel>
             {teams.map((team, index) => (
               <DropdownMenuItem
-                key={team.name}
-                onClick={() => setActiveTeam(team)}
+                key={team.key}
+                onClick={() => handleSelectTeam(team)}
                 className='gap-2 p-2'
               >
                 <div className='flex size-6 items-center justify-center rounded-sm border'>
@@ -71,13 +80,6 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
                 <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
               </DropdownMenuItem>
             ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className='gap-2 p-2'>
-              <div className='flex size-6 items-center justify-center rounded-md border bg-background'>
-                <Plus className='size-4' />
-              </div>
-              <div className='font-medium text-muted-foreground'>Add team</div>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
