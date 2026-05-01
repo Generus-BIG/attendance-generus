@@ -1,15 +1,21 @@
 import { createContext, useContext, type ReactNode } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { format } from 'date-fns'
+import { format, parse } from 'date-fns'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { supabase } from '@/lib/supabase'
 import { participantListSchema, type Participant, type KATEGORI } from '@/lib/schema'
 
-// birth_date is a DATE column. Format in local time (not UTC) so a TM in UTC+7
+// birth_date is a DATE column. Serialize in local time (not UTC) so a TM in UTC+7
 // picking "2000-01-15" doesn't get stored as "2000-01-14".
 function toDateOnly(d: Date): string {
   return format(d, 'yyyy-MM-dd')
+}
+
+// Deserialize DATE strings as LOCAL dates. `new Date('2000-01-15')` treats the
+// string as UTC midnight, which shifts the displayed day for non-UTC+ users.
+function fromDateOnly(iso: string): Date {
+  return parse(iso, 'yyyy-MM-dd', new Date())
 }
 
 // Lookup value mappings (value -> UUID)
@@ -127,7 +133,7 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
         kelompok: item.group?.value || 'BIG 1',
         kategori: mapKategoriFromDb(item.category?.value || 'GPN A'),
         status: item.status_active ? 'active' : 'inactive',
-        birthDate: item.birth_date ? new Date(item.birth_date) : null,
+        birthDate: item.birth_date ? fromDateOnly(item.birth_date) : null,
         birthPlace: item.birth_place ?? null,
         createdAt: new Date(item.created_at),
         updatedAt: new Date(item.created_at), // DB doesn't have updated_at
@@ -192,11 +198,12 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
       // this lets us detect GPN A → GPN B promote that the trigger may fire.
       let preUpdateKategori: typeof KATEGORI[number] | undefined = data.kategori
       if (preUpdateKategori === undefined && data.birthDate !== undefined) {
-        const { data: existing } = await supabase
+        const { data: existing, error: preReadError } = await supabase
           .from('participants')
           .select('category:category_id(value)')
           .eq('id', id)
           .single()
+        if (preReadError) throw preReadError
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const dbVal = (existing as any)?.category?.value as string | undefined
         preUpdateKategori = dbVal ? mapKategoriFromDb(dbVal) : undefined

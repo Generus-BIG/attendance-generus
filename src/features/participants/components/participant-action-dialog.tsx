@@ -35,7 +35,9 @@ const formSchema = z.object({
   birthPlace: z.string().trim().max(100, 'Maksimal 100 karakter').optional().nullable(),
   birthDate: z
     .date()
-    .max(new Date(), 'Tanggal lahir tidak boleh di masa depan')
+    .refine((d) => d <= new Date(), {
+      message: 'Tanggal lahir tidak boleh di masa depan',
+    })
     .optional()
     .nullable(),
 })
