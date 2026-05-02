@@ -100,9 +100,6 @@ export const ROUTE_ACCESS: Record<string, Role[]> = {
   '/admin/lupg/recap': ['super_admin', 'admin'],
   '/admin/lupg/mustin': ['super_admin', 'admin'],
   '/admin/lupg/config': ['super_admin', 'admin'],
-  '/admin/lupg/dashboard': ['super_admin', 'admin'],
-  '/admin/lupg/recap': ['super_admin', 'admin'],
-  '/admin/lupg/mustin': ['super_admin', 'admin'],
 }
 
 // === Role Display ===
