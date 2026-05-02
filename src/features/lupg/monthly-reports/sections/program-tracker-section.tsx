@@ -17,6 +17,7 @@ import {
   useYearlyProgramData,
 } from '../../hooks/use-lupg-queries'
 import { currentMonthKey } from '../../utils/month-utils'
+import { ProgramClusterCard } from '../../programs/components/program-cluster-card'
 import { ProgramMonthlyCard } from '../../programs/components/program-monthly-card'
 import { ProgramQuarterlyCard } from '../../programs/components/program-quarterly-card'
 
@@ -77,33 +78,25 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
             Belum ada program aktif.
           </div>
         ) : (
-          programs.map((p) =>
-            p.reporting_style === 'quarterly' ? (
-              <ProgramQuarterlyCard
-                key={p.code}
-                program={p}
-                kelompokId={report.kelompok_id}
-                year={year}
-                currentMonthKey={current}
-                monthlyReports={data?.monthlyReports ?? []}
-                programReports={data?.programReports ?? []}
-                userRole={typedRole}
-                userOwnsKelompok={userOwnsKelompok && !readOnly}
-              />
-            ) : (
-              <ProgramMonthlyCard
-                key={p.code}
-                program={p}
-                kelompokId={report.kelompok_id}
-                year={year}
-                currentMonthKey={current}
-                monthlyReports={data?.monthlyReports ?? []}
-                programReports={data?.programReports ?? []}
-                userRole={typedRole}
-                userOwnsKelompok={userOwnsKelompok && !readOnly}
-              />
-            )
-          )
+          programs.map((p) => {
+            const commonProps = {
+              program: p,
+              kelompokId: report.kelompok_id,
+              year,
+              currentMonthKey: current,
+              monthlyReports: data?.monthlyReports ?? [],
+              programReports: data?.programReports ?? [],
+              userRole: typedRole,
+              userOwnsKelompok: userOwnsKelompok && !readOnly,
+            }
+            if (p.code === 'NIKAH_JM') {
+              return <ProgramClusterCard key={p.code} {...commonProps} />
+            }
+            if (p.reporting_style === 'quarterly') {
+              return <ProgramQuarterlyCard key={p.code} {...commonProps} />
+            }
+            return <ProgramMonthlyCard key={p.code} {...commonProps} />
+          })
         )}
       </CardContent>
     </Card>
