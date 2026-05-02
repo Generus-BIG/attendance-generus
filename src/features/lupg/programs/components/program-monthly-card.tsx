@@ -31,6 +31,11 @@ import { HighlightedBar, type BarDatum } from '@/components/charts/highlighted-b
 import { formatChartValue } from '../../utils/format-chart-value'
 import { ProgramEditableRow } from './program-editable-row'
 
+function notesHeaderLabel(programCode: string): string {
+  if (programCode === 'SHOLAT_ACR') return 'Keterangan'
+  return 'Hasil Temuan'
+}
+
 interface Props {
   program: ProgramDefinitionRow
   kelompokId: string
@@ -118,6 +123,7 @@ export function ProgramMonthlyCard({
                 <TableHead>Sensus</TableHead>
                 <TableHead>Jumlah</TableHead>
                 <TableHead className='text-right'>%</TableHead>
+                <TableHead>{notesHeaderLabel(program.code)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -148,7 +154,7 @@ export function ProgramMonthlyCard({
 
               {future.length > 0 && (
                 <TableRow className='hover:bg-transparent'>
-                  <TableCell colSpan={4} className='p-0'>
+                  <TableCell colSpan={5} className='p-0'>
                     <button
                       type='button'
                       onClick={() => setShowFuture((v) => !v)}
