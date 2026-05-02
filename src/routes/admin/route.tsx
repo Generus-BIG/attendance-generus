@@ -19,15 +19,20 @@ export const Route = createFileRoute('/admin')({
       })
     }
 
-    // Role-based route protection
+    // Role-based route protection — longest (most specific) prefix wins so that
+    // a narrow entry can grant access even when a broader parent would deny it.
     const role: Role = auth.role
-    for (const [path, allowedRoles] of Object.entries(ROUTE_ACCESS)) {
+    let bestPath: string | null = null
+    for (const path of Object.keys(ROUTE_ACCESS)) {
       if (
         location.pathname.startsWith(path) &&
-        !allowedRoles.includes(role)
+        (bestPath === null || path.length > bestPath.length)
       ) {
-        throw redirect({ to: '/admin/403' })
+        bestPath = path
       }
+    }
+    if (bestPath !== null && !ROUTE_ACCESS[bestPath].includes(role)) {
+      throw redirect({ to: '/admin/403' })
     }
 
     // Redirect /admin (no child) to active workspace's default page
