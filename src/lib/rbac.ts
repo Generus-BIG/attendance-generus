@@ -97,6 +97,9 @@ export const ROUTE_ACCESS: Record<string, Role[]> = {
   '/admin/manage-role': ['super_admin', 'admin'],
   '/admin/forms/create': ['super_admin', 'admin'],
   '/admin/lupg/dashboard': ['super_admin', 'admin'],
+  // More specific entry must come before /admin/lupg/recap so longest-prefix
+  // matching in route.tsx allows team_manager to reach the presentation viewer.
+  '/admin/lupg/recap/present': ['super_admin', 'admin', 'team_manager'],
   '/admin/lupg/recap': ['super_admin', 'admin'],
   '/admin/lupg/mustin': ['super_admin', 'admin'],
   '/admin/lupg/config': ['super_admin', 'admin'],
