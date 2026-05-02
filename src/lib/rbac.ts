@@ -89,6 +89,10 @@ export interface Permissions {
 }
 
 // === Route Access ===
+// Uses prefix match via String.startsWith in src/routes/admin/route.tsx.
+// Sub-routes inherit the parent's access rule (e.g., /admin/lupg/recap/present
+// inherits from /admin/lupg/recap). Keep in sync with sidebar-data-lupg.ts
+// visibility gating.
 export const ROUTE_ACCESS: Record<string, Role[]> = {
   '/admin/manage-role': ['super_admin', 'admin'],
   '/admin/forms/create': ['super_admin', 'admin'],

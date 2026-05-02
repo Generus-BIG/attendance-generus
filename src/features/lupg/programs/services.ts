@@ -55,6 +55,10 @@ export interface UpsertProgramMonthInput {
   program_code: string
   denominator: number
   count_this_month: number
+  /** Optional free-text "Hasil Temuan" / "Keterangan". Persisted to lupg_program_reports.notes. */
+  notes?: string | null
+  /** Optional program-specific extras jsonb. NIKAH_JM uses {not_ready, ready, married}. */
+  extras?: Record<string, number>
 }
 
 /**
@@ -67,18 +71,25 @@ export async function upsertProgramMonth(
 ): Promise<ProgramReportRow> {
   const report = await ensureMonthlyReport(input.kelompok_id, input.month)
 
+  // Only include notes / extras in the payload when the caller provided them,
+  // so we don't overwrite existing values with undefined.
+  const payload: Record<string, unknown> = {
+    monthly_report_id: report.id,
+    program_code: input.program_code,
+    denominator: input.denominator,
+    count_this_month: input.count_this_month,
+    count_prev_month: null,
+  }
+  if (input.notes !== undefined) {
+    payload.notes = input.notes?.trim() ? input.notes.trim() : null
+  }
+  if (input.extras !== undefined) {
+    payload.extras = input.extras
+  }
+
   const { data, error } = await supabase
     .from('lupg_program_reports')
-    .upsert(
-      {
-        monthly_report_id: report.id,
-        program_code: input.program_code,
-        denominator: input.denominator,
-        count_this_month: input.count_this_month,
-        count_prev_month: null,
-      },
-      { onConflict: 'monthly_report_id,program_code' }
-    )
+    .upsert(payload, { onConflict: 'monthly_report_id,program_code' })
     .select()
     .single()
   if (error) throw error

@@ -29,12 +29,7 @@ import {
 } from '../utils/editability'
 import { HighlightedBar, type BarDatum } from '@/components/charts/highlighted-bar'
 import { formatChartValue } from '../../utils/format-chart-value'
-import { ProgramEditableRow } from './program-editable-row'
-
-function notesHeaderLabel(programCode: string): string {
-  if (programCode === 'SHOLAT_ACR') return 'Keterangan'
-  return 'Hasil Temuan'
-}
+import { ProgramClusterEditableRow } from './program-cluster-editable-row'
 
 interface Props {
   program: ProgramDefinitionRow
@@ -47,7 +42,7 @@ interface Props {
   userOwnsKelompok: boolean
 }
 
-export function ProgramMonthlyCard({
+export function ProgramClusterCard({
   program,
   kelompokId,
   year,
@@ -59,19 +54,27 @@ export function ProgramMonthlyCard({
 }: Props) {
   const monthKeys = useMemo(() => allMonthKeysForYear(year), [year])
 
-  const { pastAndCurrent, future } = useMemo(() => {
-    const past: string[] = []
-    const fut: string[] = []
+  const { past, current, future } = useMemo(() => {
+    const p: string[] = []
+    const f: string[] = []
+    let c: string | null = null
     for (const mk of monthKeys) {
-      if (mk <= currentMonthKey) past.push(mk)
-      else fut.push(mk)
+      if (mk < currentMonthKey) p.push(mk)
+      else if (mk === currentMonthKey) c = mk
+      else f.push(mk)
     }
-    return { pastAndCurrent: past, future: fut }
+    // If current year is future-only or current month isn't in this year
+    // (e.g. viewing previous year), treat latest available as "current".
+    if (!c && p.length === 0 && f.length > 0) {
+      c = f.shift() ?? null
+    } else if (!c && p.length > 0) {
+      c = p.pop() ?? null
+    }
+    return { past: p, current: c, future: f }
   }, [monthKeys, currentMonthKey])
 
-  const [showFuture, setShowFuture] = useState(
-    () => !monthKeys.some((mk) => mk <= currentMonthKey)
-  )
+  const [showPast, setShowPast] = useState(false)
+  const [showFuture, setShowFuture] = useState(false)
 
   const reportByMonthKey = useMemo(() => {
     const m = new Map<string, MonthlyReportRow>()
@@ -106,12 +109,35 @@ export function ProgramMonthlyCard({
     [monthKeys, reportByMonthKey, programRowByReportId, currentMonthKey]
   )
 
+  const renderRow = (mk: string) => {
+    const report = reportByMonthKey.get(mk)
+    const row = report ? programRowByReportId.get(report.id) : undefined
+    const editability = isMonthEditable(
+      mk,
+      currentMonthKey,
+      report,
+      userRole,
+      userOwnsKelompok
+    )
+    return (
+      <ProgramClusterEditableRow
+        key={mk}
+        rowLabel={monthNameFromKey(mk)}
+        kelompokId={kelompokId}
+        monthKey={mk}
+        programCode={program.code}
+        existing={row}
+        editability={editability}
+      />
+    )
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>{program.name}</CardTitle>
         <CardDescription>
-          {program.denominator_label} → {program.count_label}
+          {program.denominator_label} → {program.count_label} (3 cluster)
         </CardDescription>
       </CardHeader>
       <CardContent className='grid gap-4 lg:grid-cols-5'>
@@ -119,47 +145,63 @@ export function ProgramMonthlyCard({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Bulan</TableHead>
-                <TableHead>Sensus</TableHead>
+                <TableHead rowSpan={2}>Bulan</TableHead>
+                <TableHead rowSpan={2}>Sensus</TableHead>
+                <TableHead colSpan={2} className='text-center'>
+                  Belum Siap Menikah
+                </TableHead>
+                <TableHead colSpan={2} className='text-center'>
+                  Siap Menikah
+                </TableHead>
+                <TableHead colSpan={2} className='text-center'>
+                  Menikah
+                </TableHead>
+                <TableHead rowSpan={2}>Hasil Temuan</TableHead>
+              </TableRow>
+              <TableRow>
                 <TableHead>Jumlah</TableHead>
                 <TableHead className='text-right'>%</TableHead>
-                <TableHead>{notesHeaderLabel(program.code)}</TableHead>
+                <TableHead>Jumlah</TableHead>
+                <TableHead className='text-right'>%</TableHead>
+                <TableHead>Jumlah</TableHead>
+                <TableHead className='text-right'>%</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pastAndCurrent.map((mk) => {
-                const report = reportByMonthKey.get(mk)
-                const row = report
-                  ? programRowByReportId.get(report.id)
-                  : undefined
-                const editability = isMonthEditable(
-                  mk,
-                  currentMonthKey,
-                  report,
-                  userRole,
-                  userOwnsKelompok
-                )
-                return (
-                  <ProgramEditableRow
-                    key={mk}
-                    rowLabel={monthNameFromKey(mk)}
-                    kelompokId={kelompokId}
-                    monthKey={mk}
-                    programCode={program.code}
-                    existing={row}
-                    editability={editability}
-                  />
-                )
-              })}
+              {past.length > 0 && (
+                <TableRow className='hover:bg-transparent'>
+                  <TableCell colSpan={9} className='p-0'>
+                    <button
+                      type='button'
+                      onClick={() => setShowPast((v) => !v)}
+                      aria-expanded={showPast}
+                      className='text-muted-foreground hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center justify-center gap-2 py-2 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none'
+                    >
+                      <ChevronRight
+                        className={cn(
+                          'h-3 w-3 transition-transform motion-reduce:transition-none',
+                          showPast && 'rotate-90'
+                        )}
+                      />
+                      {showPast
+                        ? `Sembunyikan ${past.length} bulan lalu`
+                        : `Tampilkan ${past.length} bulan lalu`}
+                    </button>
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {showPast && past.map(renderRow)}
+
+              {current && renderRow(current)}
 
               {future.length > 0 && (
                 <TableRow className='hover:bg-transparent'>
-                  <TableCell colSpan={5} className='p-0'>
+                  <TableCell colSpan={9} className='p-0'>
                     <button
                       type='button'
                       onClick={() => setShowFuture((v) => !v)}
                       aria-expanded={showFuture}
-                      aria-controls={`future-rows-${program.code}`}
                       className='text-muted-foreground hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center justify-center gap-2 py-2 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none'
                     >
                       <ChevronRight
@@ -176,31 +218,7 @@ export function ProgramMonthlyCard({
                 </TableRow>
               )}
 
-              {showFuture &&
-                future.map((mk) => {
-                  const report = reportByMonthKey.get(mk)
-                  const row = report
-                    ? programRowByReportId.get(report.id)
-                    : undefined
-                  const editability = isMonthEditable(
-                    mk,
-                    currentMonthKey,
-                    report,
-                    userRole,
-                    userOwnsKelompok
-                  )
-                  return (
-                    <ProgramEditableRow
-                      key={mk}
-                      rowLabel={monthNameFromKey(mk)}
-                      kelompokId={kelompokId}
-                      monthKey={mk}
-                      programCode={program.code}
-                      existing={row}
-                      editability={editability}
-                    />
-                  )
-                })}
+              {showFuture && future.map(renderRow)}
             </TableBody>
           </Table>
         </div>
@@ -209,7 +227,7 @@ export function ProgramMonthlyCard({
             data={chartData}
             showValueLabel
             xAxisLabel='Bulan'
-            yAxisLabel='Jumlah Generus'
+            yAxisLabel='Menikah / bulan'
             valueFormatter={(v) => formatChartValue(v, 'number')}
           />
         </div>

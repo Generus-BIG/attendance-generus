@@ -391,6 +391,7 @@ function MustinTemplateRowView({
   readOnly,
 }: TemplateRowProps) {
   const update = useUpdateMustinNote()
+  const del = useDeleteMustinNote()
   const [keputusan, setKeputusan] = useState(note.keputusan_rencana)
   const subs = subItemsArray(template.sub_items)
 
@@ -405,6 +406,17 @@ function MustinTemplateRowView({
       {
         onError: (e: unknown) => {
           toast.error(e instanceof Error ? e.message : 'Gagal menyimpan')
+        },
+      }
+    )
+  }
+
+  const handleDelete = () => {
+    del.mutate(
+      { id: note.id, monthlyReportId },
+      {
+        onError: (e: unknown) => {
+          toast.error(e instanceof Error ? e.message : 'Gagal menghapus')
         },
       }
     )
@@ -425,7 +437,21 @@ function MustinTemplateRowView({
         )}
       </div>
       <div className='flex flex-col gap-1'>
-        <Label className='sr-only'>Keputusan / Rencana</Label>
+        <div className='flex items-center justify-between'>
+          <Label className='sr-only'>Keputusan / Rencana</Label>
+          {!readOnly && (
+            <Button
+              variant='ghost'
+              size='sm'
+              className='ms-auto h-6 px-2 text-xs'
+              onClick={handleDelete}
+              disabled={del.isPending}
+            >
+              <Trash2 className='mr-1 h-3 w-3' />
+              Hapus
+            </Button>
+          )}
+        </div>
         <Textarea
           value={keputusan}
           onChange={(e) => setKeputusan(e.target.value)}
