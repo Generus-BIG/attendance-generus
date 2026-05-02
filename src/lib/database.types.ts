@@ -436,6 +436,7 @@ export type Database = {
           count_this_month: number
           created_at: string
           denominator: number
+          extras: Json
           id: string
           monthly_report_id: string
           notes: string | null
@@ -447,6 +448,7 @@ export type Database = {
           count_this_month?: number
           created_at?: string
           denominator?: number
+          extras?: Json
           id?: string
           monthly_report_id: string
           notes?: string | null
@@ -458,6 +460,7 @@ export type Database = {
           count_this_month?: number
           created_at?: string
           denominator?: number
+          extras?: Json
           id?: string
           monthly_report_id?: string
           notes?: string | null
