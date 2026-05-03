@@ -1,3 +1,5 @@
+import { differenceInYears, format } from 'date-fns'
+import { id as idLocale } from 'date-fns/locale'
 import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -109,6 +111,52 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     },
     filterFn: (row, id, value) => {
       return Array.isArray(value) && value.includes(row.getValue(id))
+    },
+  },
+  {
+    accessorKey: 'birthDate',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Tgl Lahir' />
+    ),
+    cell: ({ row }) => {
+      const birthDate = row.original.birthDate
+      const birthPlace = row.original.birthPlace?.trim()
+
+      if (!birthDate && !birthPlace) return <span>-</span>
+
+      const formattedDate = birthDate
+        ? format(birthDate, 'dd MMM yyyy', { locale: idLocale })
+        : null
+
+      return (
+        <span>
+          {[birthPlace, formattedDate].filter(Boolean).join(', ')}
+        </span>
+      )
+    },
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.birthDate?.getTime() ?? 0
+      const b = rowB.original.birthDate?.getTime() ?? 0
+      return a - b
+    },
+  },
+  {
+    id: 'age',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Usia' />
+    ),
+    cell: ({ row }) => {
+      const birthDate = row.original.birthDate
+      return <span>{birthDate ? `${differenceInYears(new Date(), birthDate)} tahun` : '-'}</span>
+    },
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.birthDate
+        ? differenceInYears(new Date(), rowA.original.birthDate)
+        : -1
+      const b = rowB.original.birthDate
+        ? differenceInYears(new Date(), rowB.original.birthDate)
+        : -1
+      return a - b
     },
   },
   {
