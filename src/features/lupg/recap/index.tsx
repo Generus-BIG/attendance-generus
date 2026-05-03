@@ -54,7 +54,13 @@ import {
   currentMonthKey,
   firstDayOfMonth,
   formatMonthLabel,
+  shiftMonth,
 } from '../utils/month-utils'
+import {
+  ProgramCompositeCard,
+  type ProgramCompositeCardData,
+} from './components/program-composite-card'
+import { type HeatmapRow } from './components/program-heatmap-table'
 
 // ---------- Batch fetchers (one query per section across all reports) ----------
 
@@ -152,18 +158,37 @@ export function RekapDesa() {
     queryFn: fetchKelompokList,
   })
 
+  // 5-month rolling window (oldest → current). Used ONLY for the program composite cards.
+  const windowMonthKeys = useMemo(
+    () => [
+      shiftMonth(monthKey, -4),
+      shiftMonth(monthKey, -3),
+      shiftMonth(monthKey, -2),
+      shiftMonth(monthKey, -1),
+      monthKey,
+    ],
+    [monthKey]
+  )
+  const fromWindowMonth = windowMonthKeys[0]
+
   const { data: reportsRaw = [], isLoading: reportsLoading } = useMonthlyReports(
     {
-      fromMonth: monthKey,
+      fromMonth: fromWindowMonth,
       toMonth: monthKey,
     }
   )
   const monthStart = firstDayOfMonth(monthKey)
+  // Current month only — used by every card except program composites.
   const monthReports = reportsRaw.filter((r) =>
     r.month.startsWith(monthStart.slice(0, 7))
   )
   const reportIds = monthReports.map((r) => r.id)
   const reportIdsKey = reportIds.join(',')
+
+  // All reports in the 5-month window — used by program composites.
+  const windowReports = reportsRaw
+  const windowReportIds = windowReports.map((r) => r.id)
+  const windowReportIdsKey = windowReportIds.join(',')
 
   const [sensusQ, programsBatchQ, metricsBatchQ, sarprasBatchQ, shodaqohQ, mustinQ] =
     useQueries({
@@ -174,9 +199,9 @@ export function RekapDesa() {
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'recap', 'programs', monthKey, reportIdsKey],
-          queryFn: () => fetchProgramReportsBatch(reportIds),
-          enabled: reportIds.length > 0,
+          queryKey: ['lupg', 'recap', 'programs', monthKey, windowReportIdsKey],
+          queryFn: () => fetchProgramReportsBatch(windowReportIds),
+          enabled: windowReportIds.length > 0,
         },
         {
           queryKey: ['lupg', 'recap', 'metrics', monthKey, reportIdsKey],
@@ -212,6 +237,74 @@ export function RekapDesa() {
   const sarprasReports = sarprasBatchQ.data ?? []
   const shodaqohRows = shodaqohQ.data ?? []
   const mustinRows = mustinQ.data ?? []
+
+  const compositeDataByProgram = useMemo(() => {
+    // Index monthly reports by (kelompok, monthKey).
+    const reportByKelompokMonth = new Map<string, MonthlyReportRow>()
+    for (const r of windowReports) {
+      const mk = r.month.slice(0, 7)
+      reportByKelompokMonth.set(`${r.kelompok_id}__${mk}`, r)
+    }
+
+    const out = new Map<string, ProgramCompositeCardData>()
+
+    for (const p of programs) {
+      // Index program_reports by monthly_report_id for this program only.
+      const progByReport = new Map<string, (typeof programReports)[number]>()
+      for (const pr of programReports) {
+        if (pr.program_code === p.code) {
+          progByReport.set(pr.monthly_report_id, pr)
+        }
+      }
+
+      const rows: HeatmapRow[] = kelompokList.map((k) => {
+        const cells = windowMonthKeys.map((mk) => {
+          const report = reportByKelompokMonth.get(`${k.id}__${mk}`)
+          const pr = report ? progByReport.get(report.id) : undefined
+          const denom = pr?.denominator ?? 0
+          const count = pr?.count_this_month ?? 0
+          const value = denom > 0 ? Math.round((count / denom) * 100) : null
+          return { value, count, denom }
+        })
+        return {
+          kelompokId: k.id,
+          kelompokName: k.value,
+          cells,
+        }
+      })
+
+      // For drawer: current-month program report + monthly_report_id.
+      const currentRowByKelompok = new Map<
+        string,
+        (typeof programReports)[number]
+      >()
+      const monthlyReportIdByKelompok = new Map<string, string>()
+      for (const k of kelompokList) {
+        const report = reportByKelompokMonth.get(`${k.id}__${monthKey}`)
+        if (report) {
+          monthlyReportIdByKelompok.set(k.id, report.id)
+          const pr = progByReport.get(report.id)
+          if (pr) currentRowByKelompok.set(k.id, pr)
+        }
+      }
+
+      out.set(p.code, {
+        monthKeys: windowMonthKeys,
+        currentMonthKey: monthKey,
+        rows,
+        monthlyReportIdByKelompok,
+        currentRowByKelompok,
+      })
+    }
+    return out
+  }, [
+    programs,
+    programReports,
+    windowReports,
+    kelompokList,
+    windowMonthKeys,
+    monthKey,
+  ])
 
   const sectionsLoading =
     reportIds.length > 0 &&
@@ -326,17 +419,17 @@ export function RekapDesa() {
                   snapshots={sensusSnapshots}
                 />
 
-                {programs.map((p) => (
-                  <ProgramRecapCard
-                    key={p.code}
-                    kelompokList={kelompokList}
-                    reports={monthReports}
-                    program={p}
-                    rows={programReports.filter(
-                      (r) => r.program_code === p.code
-                    )}
-                  />
-                ))}
+                {programs.map((p) => {
+                  const compositeData = compositeDataByProgram.get(p.code)
+                  if (!compositeData) return null
+                  return (
+                    <ProgramCompositeCard
+                      key={`${p.code}__${monthKey}`}
+                      program={p}
+                      data={compositeData}
+                    />
+                  )
+                })}
 
                 <MetricsRecapCard
                   kelompokList={kelompokList}
@@ -528,104 +621,6 @@ function SensusRecapCard({
                 </TableRow>
               ))
             )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  )
-}
-
-interface ProgramDefLite {
-  code: string
-  name: string
-  denominator_label: string
-  count_label: string
-}
-
-function ProgramRecapCard({
-  kelompokList,
-  reports,
-  program,
-  rows,
-}: SectionProps & {
-  program: ProgramDefLite
-  rows: ProgramReportRow[]
-}) {
-  const byReport = new Map<string, ProgramReportRow>()
-  for (const r of rows) byReport.set(r.monthly_report_id, r)
-  const reportByKelompok = new Map<string, MonthlyReportRow>()
-  for (const r of reports) reportByKelompok.set(r.kelompok_id, r)
-
-  const perKK = kelompokList.map((k) => {
-    const report = reportByKelompok.get(k.id)
-    const row = report ? byReport.get(report.id) : undefined
-    const denom = row?.denominator ?? 0
-    const now = row?.count_this_month ?? 0
-    const prev = row?.count_prev_month ?? null
-    const pct = denom > 0 ? Math.round((now / denom) * 100) : null
-    return { k, row, denom, now, prev, pct }
-  })
-
-  const totalDenom = perKK.reduce((a, b) => a + b.denom, 0)
-  const totalNow = perKK.reduce((a, b) => a + b.now, 0)
-  const avgPct =
-    totalDenom > 0 ? Math.round((totalNow / totalDenom) * 100) : null
-
-  return (
-    <Card className='print:break-inside-avoid print:shadow-none'>
-      <CardHeader>
-        <CardTitle>{program.name}</CardTitle>
-        <CardDescription>
-          {program.denominator_label} → {program.count_label}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className='overflow-x-auto'>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Kelompok</TableHead>
-              <TableHead className='text-right'>Sensus</TableHead>
-              <TableHead className='text-right'>Bulan Lalu</TableHead>
-              <TableHead className='text-right'>Bulan Ini</TableHead>
-              <TableHead className='text-right'>%</TableHead>
-              <TableHead>Catatan</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {perKK.map((e) => (
-              <TableRow key={e.k.id}>
-                <TableCell className='font-medium'>{e.k.value}</TableCell>
-                <TableCell className='text-right tabular-nums'>
-                  {e.denom}
-                </TableCell>
-                <TableCell className='text-muted-foreground text-right tabular-nums'>
-                  {e.prev ?? '-'}
-                </TableCell>
-                <TableCell className='text-right tabular-nums'>
-                  {e.now}
-                </TableCell>
-                <TableCell className='text-right tabular-nums'>
-                  {e.pct != null ? `${e.pct}%` : '-'}
-                </TableCell>
-                <TableCell className='text-muted-foreground text-sm'>
-                  {e.row?.notes ?? '-'}
-                </TableCell>
-              </TableRow>
-            ))}
-            <TableRow className='border-t-2 font-semibold'>
-              <TableCell>Total / Rata2</TableCell>
-              <TableCell className='text-right tabular-nums'>
-                {totalDenom}
-              </TableCell>
-              <TableCell className='text-right tabular-nums'>-</TableCell>
-              <TableCell className='text-right tabular-nums'>
-                {totalNow}
-              </TableCell>
-              <TableCell className='text-right tabular-nums'>
-                {avgPct != null ? `${avgPct}%` : '-'}
-              </TableCell>
-              <TableCell></TableCell>
-            </TableRow>
           </TableBody>
         </Table>
       </CardContent>
