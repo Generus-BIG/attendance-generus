@@ -1,4 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react'
+import { format, parse } from 'date-fns'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
@@ -8,6 +9,14 @@ import { participantListSchema, type Participant, type KATEGORI } from '@/lib/sc
 // Lookup value mappings (value -> UUID)
 // These are fetched from DB and cached
 type LookupMap = Record<string, string>
+
+function toDateOnly(date: Date | null | undefined): string | null {
+  return date ? format(date, 'yyyy-MM-dd') : null
+}
+
+function fromDateOnly(value: string | null | undefined): Date | null {
+  return value ? parse(value, 'yyyy-MM-dd', new Date()) : null
+}
 
 interface ParticipantsCRUDContextType {
   participants: Participant[]
@@ -80,6 +89,8 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
           id,
           name,
           gender,
+          birth_date,
+          birth_place,
           status_active,
           created_at,
           group:group_id(value),
@@ -116,6 +127,8 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
         gender: item.gender || 'L',
         kelompok: item.group?.value || 'BIG 1',
         kategori: mapKategoriFromDb(item.category?.value || 'GPN A'),
+        birthPlace: item.birth_place || null,
+        birthDate: fromDateOnly(item.birth_date),
         status: item.status_active ? 'active' : 'inactive',
         createdAt: new Date(item.created_at),
         updatedAt: new Date(item.created_at), // DB doesn't have updated_at
@@ -142,6 +155,8 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
         gender: newParticipant.gender,
         group_id: groupId,
         category_id: categoryId,
+        birth_place: newParticipant.birthPlace?.trim() || null,
+        birth_date: toDateOnly(newParticipant.birthDate),
         status_active: newParticipant.status === 'active',
       })
 
@@ -165,6 +180,8 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
 
       if (data.name !== undefined) payload.name = data.name
       if (data.gender !== undefined) payload.gender = data.gender
+      if (data.birthPlace !== undefined) payload.birth_place = data.birthPlace?.trim() || null
+      if (data.birthDate !== undefined) payload.birth_date = toDateOnly(data.birthDate)
       if (data.status !== undefined) payload.status_active = data.status === 'active'
 
       if (data.kelompok !== undefined) {
