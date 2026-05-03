@@ -1,4 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -49,7 +51,16 @@ export function ProgramMonthlyCard({
   userRole,
   userOwnsKelompok,
 }: Props) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
   const monthKeys = useMemo(() => allMonthKeysForYear(year), [year])
+
+  const visibleMonthKeys = useMemo(() => {
+    if (isExpanded) return monthKeys
+    return monthKeys.filter((mk) => mk <= currentMonthKey)
+  }, [monthKeys, isExpanded, currentMonthKey])
+
+  const hasHiddenMonths = monthKeys.length > visibleMonthKeys.length
 
   const reportByMonthKey = useMemo(() => {
     const m = new Map<string, MonthlyReportRow>()
@@ -104,7 +115,7 @@ export function ProgramMonthlyCard({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {monthKeys.map((mk) => {
+              {visibleMonthKeys.map((mk) => {
                 const report = reportByMonthKey.get(mk)
                 const row = report
                   ? programRowByReportId.get(report.id)
@@ -130,6 +141,27 @@ export function ProgramMonthlyCard({
               })}
             </TableBody>
           </Table>
+          
+          {(hasHiddenMonths || isExpanded) && (
+            <Button
+              variant='ghost'
+              size='sm'
+              className='mt-2 w-full text-xs text-muted-foreground'
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className='mr-1.5 h-3.5 w-3.5' />
+                  Sembunyikan
+                </>
+              ) : (
+                <>
+                  <ChevronDown className='mr-1.5 h-3.5 w-3.5' />
+                  Tampilkan Semua Bulan
+                </>
+              )}
+            </Button>
+          )}
         </div>
         <div className='lg:col-span-2'>
           <HighlightedBar
