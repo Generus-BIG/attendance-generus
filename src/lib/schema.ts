@@ -33,6 +33,8 @@ export const participantSchema = z.object({
   gender: genderSchema,
   kelompok: kelompokSchema,
   kategori: kategoriSchema,
+  birthPlace: z.string().optional().nullable(),
+  birthDate: z.coerce.date().optional().nullable(),
   status: participantStatusSchema.default('active'),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
