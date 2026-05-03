@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -24,6 +25,7 @@ import { Input } from '@/components/ui/input'
 import { DatePicker } from '@/components/date-picker'
 import { SelectDropdown } from '@/components/select-dropdown'
 import { type Participant, KELOMPOK, KATEGORI, GENDER, PARTICIPANT_STATUS } from '@/lib/schema'
+import { useAuthStore } from '@/stores/auth-store'
 import { useParticipantsCRUD } from '../context/participants-context'
 
 const formSchema = z.object({
@@ -57,12 +59,22 @@ export function ParticipantActionDialog({
 }: ParticipantActionDialogProps) {
   const isEdit = !!currentRow
   const { createParticipant, updateParticipant } = useParticipantsCRUD()
+  const role = useAuthStore((s) => s.auth.role)
+  const userKelompok = useAuthStore((s) => s.auth.kelompok)
+  const isTeamManager = role === 'team_manager'
+  const scopedKelompok = KELOMPOK.find((kelompok) => kelompok === userKelompok)
+  const kelompokOptions = isTeamManager
+    ? scopedKelompok
+      ? [scopedKelompok]
+      : []
+    : KELOMPOK
+  const defaultKelompok = currentRow?.kelompok ?? scopedKelompok ?? 'BIG 1'
 
   const form = useForm<ParticipantForm>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: currentRow?.name ?? '',
-      kelompok: currentRow?.kelompok ?? 'BIG 1',
+      kelompok: defaultKelompok,
       kategori: currentRow?.kategori ?? 'A',
       gender: currentRow?.gender ?? 'L',
       status: currentRow?.status ?? 'active',
@@ -71,12 +83,43 @@ export function ParticipantActionDialog({
     },
   })
 
+  useEffect(() => {
+    if (!open) return
+
+    form.reset({
+      name: currentRow?.name ?? '',
+      kelompok: defaultKelompok,
+      kategori: currentRow?.kategori ?? 'A',
+      gender: currentRow?.gender ?? 'L',
+      status: currentRow?.status ?? 'active',
+      birthPlace: currentRow?.birthPlace ?? '',
+      birthDate: currentRow?.birthDate ?? null,
+    })
+  }, [
+    open,
+    form,
+    currentRow?.name,
+    currentRow?.kategori,
+    currentRow?.gender,
+    currentRow?.status,
+    currentRow?.birthPlace,
+    currentRow?.birthDate,
+    defaultKelompok,
+  ])
+
   const onSubmit = async (values: ParticipantForm) => {
+    let submittedValues: ParticipantForm = values
+
+    if (isTeamManager) {
+      if (!scopedKelompok) return
+      submittedValues = { ...values, kelompok: scopedKelompok }
+    }
+
     try {
       if (isEdit) {
-        await updateParticipant(currentRow.id, values)
+        await updateParticipant(currentRow.id, submittedValues)
       } else {
-        await createParticipant(values)
+        await createParticipant(submittedValues)
       }
       form.reset()
       onOpenChange(false)
@@ -133,11 +176,13 @@ export function ParticipantActionDialog({
                 <FormItem className='grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0'>
                   <FormLabel className='col-span-2 text-right'>Kelompok</FormLabel>
                   <SelectDropdown
-                    defaultValue={field.value}
+                    isControlled
+                    value={field.value}
                     onValueChange={field.onChange}
                     placeholder='Pilih kelompok'
                     className='col-span-4'
-                    items={KELOMPOK.map((k) => ({ label: k, value: k }))}
+                    items={kelompokOptions.map((k) => ({ label: k, value: k }))}
+                    disabled={isTeamManager && !scopedKelompok}
                   />
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>
@@ -211,7 +256,7 @@ export function ParticipantActionDialog({
                     <DatePicker
                       selected={field.value ?? undefined}
                       onSelect={(d) => field.onChange(d ?? null)}
-                      placeholder='Pilih tanggal lahir (opsional)'
+                      placeholder='Pilih tanggal lahir'
                       className='col-span-4 w-full'
                     />
                   </FormControl>
@@ -244,7 +289,7 @@ export function ParticipantActionDialog({
           </form>
         </Form>
         <DialogFooter>
-          <Button type='submit' form='participant-form'>
+          <Button type='submit' form='participant-form' disabled={isTeamManager && !scopedKelompok}>
             Simpan
           </Button>
         </DialogFooter>

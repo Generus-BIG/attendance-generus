@@ -1,26 +1,26 @@
 import { createContext, useContext, type ReactNode } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format, parse } from 'date-fns'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { supabase } from '@/lib/supabase'
 import { participantListSchema, type Participant, type KATEGORI } from '@/lib/schema'
 
+// Lookup value mappings (value -> UUID)
+// These are fetched from DB and cached
+type LookupMap = Record<string, string>
+
 // birth_date is a DATE column. Serialize in local time (not UTC) so a TM in UTC+7
 // picking "2000-01-15" doesn't get stored as "2000-01-14".
-function toDateOnly(d: Date): string {
-  return format(d, 'yyyy-MM-dd')
+function toDateOnly(date: Date | null | undefined): string | null {
+  return date ? format(date, 'yyyy-MM-dd') : null
 }
 
 // Deserialize DATE strings as LOCAL dates. `new Date('2000-01-15')` treats the
 // string as UTC midnight, which shifts the displayed day for non-UTC+ users.
-function fromDateOnly(iso: string): Date {
-  return parse(iso, 'yyyy-MM-dd', new Date())
+function fromDateOnly(value: string | null | undefined): Date | null {
+  return value ? parse(value, 'yyyy-MM-dd', new Date()) : null
 }
-
-// Lookup value mappings (value -> UUID)
-// These are fetched from DB and cached
-type LookupMap = Record<string, string>
 
 interface ParticipantsCRUDContextType {
   participants: Participant[]
@@ -94,10 +94,10 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
           id,
           name,
           gender,
-          status_active,
-          created_at,
           birth_date,
           birth_place,
+          status_active,
+          created_at,
           group:group_id(value),
           category:category_id(value)
         `)
@@ -132,9 +132,9 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
         gender: item.gender || 'L',
         kelompok: item.group?.value || 'BIG 1',
         kategori: mapKategoriFromDb(item.category?.value || 'GPN A'),
-        status: item.status_active ? 'active' : 'inactive',
-        birthDate: item.birth_date ? fromDateOnly(item.birth_date) : null,
+        birthDate: fromDateOnly(item.birth_date),
         birthPlace: item.birth_place ?? null,
+        status: item.status_active ? 'active' : 'inactive',
         createdAt: new Date(item.created_at),
         updatedAt: new Date(item.created_at), // DB doesn't have updated_at
       }))
@@ -163,9 +163,7 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
           group_id: groupId,
           category_id: categoryId,
           status_active: newParticipant.status === 'active',
-          birth_date: newParticipant.birthDate
-            ? toDateOnly(newParticipant.birthDate)
-            : null,
+          birth_date: toDateOnly(newParticipant.birthDate),
           birth_place: newParticipant.birthPlace?.trim() || null,
         })
         .select('category_id')
@@ -214,6 +212,8 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
       if (data.name !== undefined) payload.name = data.name
       if (data.gender !== undefined) payload.gender = data.gender
       if (data.status !== undefined) payload.status_active = data.status === 'active'
+      if (data.birthDate !== undefined) payload.birth_date = toDateOnly(data.birthDate)
+      if (data.birthPlace !== undefined) payload.birth_place = data.birthPlace?.trim() || null
 
       if (data.kelompok !== undefined) {
         const groupId = lookups.groups[data.kelompok]
@@ -226,14 +226,6 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
         const categoryId = lookups.categories[dbKategori]
         if (!categoryId) throw new Error(`Unknown category: ${dbKategori}`)
         payload.category_id = categoryId
-      }
-
-      if (data.birthDate !== undefined) {
-        payload.birth_date = data.birthDate ? toDateOnly(data.birthDate) : null
-      }
-
-      if (data.birthPlace !== undefined) {
-        payload.birth_place = data.birthPlace?.trim() || null
       }
 
       const { data: returned, error } = await supabase

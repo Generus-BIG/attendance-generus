@@ -17,18 +17,18 @@ import {
 } from '@/components/ui/table'
 import { type Role } from '@/lib/rbac'
 import { cn } from '@/lib/utils'
+import { HighlightedBar, type BarDatum } from '@/components/charts/highlighted-bar'
 import {
   type MonthlyReportRow,
   type ProgramDefinitionRow,
   type ProgramReportRow,
 } from '../../types'
+import { formatChartValue } from '../../utils/format-chart-value'
 import {
   allMonthKeysForYear,
   isMonthEditable,
   monthNameFromKey,
 } from '../utils/editability'
-import { HighlightedBar, type BarDatum } from '@/components/charts/highlighted-bar'
-import { formatChartValue } from '../../utils/format-chart-value'
 import { ProgramEditableRow } from './program-editable-row'
 
 function notesHeaderLabel(programCode: string): string {

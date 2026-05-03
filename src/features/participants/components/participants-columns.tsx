@@ -1,6 +1,6 @@
-import { type ColumnDef } from '@tanstack/react-table'
-import { format, differenceInYears } from 'date-fns'
+import { differenceInYears, format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
+import { type ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -123,18 +123,30 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     ),
     cell: ({ row }) => {
       const birthDate = row.original.birthDate
+      const birthPlace = row.original.birthPlace?.trim()
+
+      if (!birthDate && !birthPlace) {
+        return <span className='text-muted-foreground'>-</span>
+      }
+
+      const formattedDate = birthDate
+        ? format(birthDate, 'dd MMM yyyy', { locale: idLocale })
+        : null
+
       return (
-        <span className='block max-w-[14ch] whitespace-normal wrap-break-word text-muted-foreground'>
-          {birthDate
-            ? format(birthDate, 'dd MMM yyyy', { locale: idLocale })
-            : '—'}
+        <span className='block max-w-[20ch] whitespace-normal wrap-break-word'>
+          {[birthPlace, formattedDate].filter(Boolean).join(', ')}
         </span>
       )
+    },
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.birthDate?.getTime() ?? 0
+      const b = rowB.original.birthDate?.getTime() ?? 0
+      return a - b
     },
     meta: {
       className: cn('hidden @3xl/content:table-cell'),
     },
-    enableSorting: true,
   },
   {
     id: 'age',
@@ -143,18 +155,26 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     ),
     cell: ({ row }) => {
       const birthDate = row.original.birthDate
-      if (!birthDate) return <span className='text-muted-foreground'>—</span>
-      const age = differenceInYears(new Date(), birthDate)
+      if (!birthDate) return <span className='text-muted-foreground'>-</span>
+
       return (
         <span className='block max-w-[8ch] whitespace-normal wrap-break-word tabular-nums'>
-          {age} th
+          {differenceInYears(new Date(), birthDate)} tahun
         </span>
       )
+    },
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.original.birthDate
+        ? differenceInYears(new Date(), rowA.original.birthDate)
+        : -1
+      const b = rowB.original.birthDate
+        ? differenceInYears(new Date(), rowB.original.birthDate)
+        : -1
+      return a - b
     },
     meta: {
       className: cn('hidden @2xl/content:table-cell'),
     },
-    enableSorting: false,
   },
   {
     id: 'actions',
