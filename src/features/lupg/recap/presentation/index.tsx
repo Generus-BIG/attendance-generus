@@ -9,9 +9,11 @@ import {
   X,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import {
   useActiveMetrics,
+  useActiveMustinTemplates,
   useActivePrograms,
   useActiveSarprasItems,
   useMonthlyReports,
@@ -36,6 +38,8 @@ interface Props {
 
 export function Presentation({ monthKey, kelompokFilter }: Props) {
   const navigate = useNavigate()
+  const role = useAuthStore((s) => s.auth.role)
+  const isTeamManager = role === 'team_manager'
   const containerRef = useRef<HTMLDivElement>(null)
   const [slideIndex, setSlideIndex] = useState(0)
 
@@ -165,6 +169,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
   const { data: programs = [] } = useActivePrograms()
   const { data: metrics = [] } = useActiveMetrics()
   const { data: sarprasItems = [] } = useActiveSarprasItems()
+  const { data: mustinTemplates = [] } = useActiveMustinTemplates()
 
   const isLoading =
     sensusQ.isLoading ||
@@ -189,6 +194,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
         sarprasReports: sarprasQ.data ?? [],
         shodaqohRows: shodaqohQ.data ?? [],
         mustinRows: mustinQ.data ?? [],
+        mustinTemplates,
         kelompokFilter,
         yearlyMonthlyReports,
         yearlyProgramReports,
@@ -206,6 +212,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
       sarprasQ.data,
       shodaqohQ.data,
       mustinQ.data,
+      mustinTemplates,
       kelompokFilter,
       yearlyMonthlyReports,
       yearlyProgramReports,
@@ -219,10 +226,11 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {})
     }
-    navigate({
-      to: '/admin/lupg/recap',
-      search: { month: monthKey },
-    })
+    if (isTeamManager) {
+      navigate({ to: '/admin/lupg/presentation' })
+    } else {
+      navigate({ to: '/admin/lupg/recap', search: { month: monthKey } })
+    }
   }
 
   useEffect(() => {

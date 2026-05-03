@@ -153,7 +153,7 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                     date: datetime,
                     slug: values.slug,
                     isActive: values.isActive,
-                    allowedCategories: values.allowedCategories as ('A' | 'B' | 'AR')[],
+                    allowedCategories: values.allowedCategories as ('A' | 'B' | 'AR' | 'APR')[],
                     formType: values.formType,
                     kelompokId: values.formType === 'kelompok' ? values.kelompokId : null,
                 })
@@ -165,7 +165,7 @@ export function FormDialogs({ open, setOpen, formToEdit }: FormDialogsProps) {
                     date: datetime,
                     slug: values.slug,
                     isActive: values.isActive,
-                    allowedCategories: values.allowedCategories as ('A' | 'B' | 'AR')[],
+                    allowedCategories: values.allowedCategories as ('A' | 'B' | 'AR' | 'APR')[],
                     formType: values.formType,
                     kelompokId: values.formType === 'kelompok' ? values.kelompokId : null,
                 })

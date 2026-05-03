@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Lock } from 'lucide-react'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { useUpsertProgramMonth } from '../../hooks/use-lupg-queries'
 import { type ProgramReportRow } from '../../types'
@@ -31,13 +32,15 @@ export function ProgramEditableRow({
   const [count, setCount] = useState(
     existing?.count_this_month?.toString() ?? ''
   )
+  const [notes, setNotes] = useState(existing?.notes ?? '')
 
   useEffect(() => {
     setDenominator(existing?.denominator?.toString() ?? '')
     setCount(existing?.count_this_month?.toString() ?? '')
+    setNotes(existing?.notes ?? '')
   }, [existing?.id, existing?.updated_at])
 
-  const save = () => {
+  const saveNumeric = () => {
     if (!editability.editable) return
     const denomVal = parseInt(denominator, 10) || 0
     const countVal = parseInt(count, 10) || 0
@@ -48,6 +51,28 @@ export function ProgramEditableRow({
         program_code: programCode,
         denominator: denomVal,
         count_this_month: countVal,
+      },
+      {
+        onError: (e: unknown) => {
+          toast.error(e instanceof Error ? e.message : 'Gagal menyimpan')
+        },
+      }
+    )
+  }
+
+  const saveNotes = () => {
+    if (!editability.editable) return
+    if ((notes ?? '') === (existing?.notes ?? '')) return
+    const denomVal = parseInt(denominator, 10) || 0
+    const countVal = parseInt(count, 10) || 0
+    upsert.mutate(
+      {
+        kelompok_id: kelompokId,
+        month: monthKey,
+        program_code: programCode,
+        denominator: denomVal,
+        count_this_month: countVal,
+        notes: notes,
       },
       {
         onError: (e: unknown) => {
@@ -87,7 +112,7 @@ export function ProgramEditableRow({
           min={0}
           value={denominator}
           onChange={(e) => setDenominator(e.target.value)}
-          onBlur={save}
+          onBlur={saveNumeric}
           disabled={disabled}
           className='w-24'
           inputMode='numeric'
@@ -99,7 +124,7 @@ export function ProgramEditableRow({
           min={0}
           value={count}
           onChange={(e) => setCount(e.target.value)}
-          onBlur={save}
+          onBlur={saveNumeric}
           disabled={disabled}
           className='w-24'
           inputMode='numeric'
@@ -107,6 +132,17 @@ export function ProgramEditableRow({
       </TableCell>
       <TableCell className='text-right tabular-nums text-muted-foreground'>
         {pct != null ? `${pct}%` : '-'}
+      </TableCell>
+      <TableCell>
+        <Textarea
+          value={notes ?? ''}
+          onChange={(e) => setNotes(e.target.value)}
+          onBlur={saveNotes}
+          disabled={disabled}
+          rows={2}
+          placeholder='Tulis temuan / keterangan (opsional)'
+          className='min-w-40 resize-y'
+        />
       </TableCell>
     </TableRow>
   )

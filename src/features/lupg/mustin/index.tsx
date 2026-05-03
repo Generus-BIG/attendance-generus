@@ -112,7 +112,7 @@ export function MustinCrossReport() {
               value={statusFilter}
               onValueChange={(v) => setStatusFilter(v as StatusFilter)}
             >
-              <SelectTrigger className='w-[140px]'>
+              <SelectTrigger className='w-35'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

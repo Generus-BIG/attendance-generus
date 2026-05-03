@@ -10,10 +10,14 @@ import { participantListSchema, type Participant, type KATEGORI } from '@/lib/sc
 // These are fetched from DB and cached
 type LookupMap = Record<string, string>
 
+// birth_date is a DATE column. Serialize in local time (not UTC) so a TM in UTC+7
+// picking "2000-01-15" doesn't get stored as "2000-01-14".
 function toDateOnly(date: Date | null | undefined): string | null {
   return date ? format(date, 'yyyy-MM-dd') : null
 }
 
+// Deserialize DATE strings as LOCAL dates. `new Date('2000-01-15')` treats the
+// string as UTC midnight, which shifts the displayed day for non-UTC+ users.
 function fromDateOnly(value: string | null | undefined): Date | null {
   return value ? parse(value, 'yyyy-MM-dd', new Date()) : null
 }
@@ -51,17 +55,18 @@ async function fetchLookupMaps(): Promise<{ groups: LookupMap; categories: Looku
   return { groups, categories }
 }
 
-// Map app kategori ('A', 'B', 'AR') to DB value ('GPN A', 'GPN B', 'AR')
+// Map app kategori ('A', 'B', 'AR', 'APR') to DB value ('GPN A', 'GPN B', 'AR', 'APR')
 function mapKategoriToDb(kategori: string): string {
   if (kategori === 'A') return 'GPN A'
   if (kategori === 'B') return 'GPN B'
-  return kategori // 'AR' stays as 'AR'
+  return kategori // 'AR' and 'APR' stay as-is
 }
 
 // Map DB category value to app kategori
 function mapKategoriFromDb(dbValue: string): typeof KATEGORI[number] {
   if (dbValue === 'GPN A') return 'A'
   if (dbValue === 'GPN B') return 'B'
+  if (dbValue === 'APR') return 'APR'
   return 'AR'
 }
 
@@ -127,8 +132,8 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
         gender: item.gender || 'L',
         kelompok: item.group?.value || 'BIG 1',
         kategori: mapKategoriFromDb(item.category?.value || 'GPN A'),
-        birthPlace: item.birth_place || null,
         birthDate: fromDateOnly(item.birth_date),
+        birthPlace: item.birth_place ?? null,
         status: item.status_active ? 'active' : 'inactive',
         createdAt: new Date(item.created_at),
         updatedAt: new Date(item.created_at), // DB doesn't have updated_at
@@ -150,21 +155,32 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
       if (!groupId) throw new Error(`Unknown group: ${newParticipant.kelompok}`)
       if (!categoryId) throw new Error(`Unknown category: ${dbKategori}`)
 
-      const { error } = await supabase.from('participants').insert({
-        name: newParticipant.name,
-        gender: newParticipant.gender,
-        group_id: groupId,
-        category_id: categoryId,
-        birth_place: newParticipant.birthPlace?.trim() || null,
-        birth_date: toDateOnly(newParticipant.birthDate),
-        status_active: newParticipant.status === 'active',
-      })
+      const { data, error } = await supabase
+        .from('participants')
+        .insert({
+          name: newParticipant.name,
+          gender: newParticipant.gender,
+          group_id: groupId,
+          category_id: categoryId,
+          status_active: newParticipant.status === 'active',
+          birth_date: toDateOnly(newParticipant.birthDate),
+          birth_place: newParticipant.birthPlace?.trim() || null,
+        })
+        .select('category_id')
+        .single()
 
       if (error) throw error
+
+      const submittedWasGpnA = newParticipant.kategori === 'A'
+      const returnedIsGpnB = data?.category_id === lookups.categories['GPN B']
+      return { autoPromoted: submittedWasGpnA && returnedIsGpnB }
     },
-    onSuccess: () => {
+    onSuccess: ({ autoPromoted }) => {
       queryClient.invalidateQueries({ queryKey: ['participants'] })
       toast.success('Peserta berhasil ditambahkan')
+      if (autoPromoted) {
+        toast.info('Kategori otomatis diubah ke GPN B karena usia ≥ 23 tahun')
+      }
     },
     onError: (error: Error) => {
       toast.error(`Gagal menambah peserta: ${error.message}`)
@@ -176,13 +192,28 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
     mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>> }) => {
       if (!lookups) throw new Error('Lookup values not loaded')
 
+      // Pre-read current category when birth_date is being changed but kategori isn't —
+      // this lets us detect GPN A → GPN B promote that the trigger may fire.
+      let preUpdateKategori: typeof KATEGORI[number] | undefined = data.kategori
+      if (preUpdateKategori === undefined && data.birthDate !== undefined) {
+        const { data: existing, error: preReadError } = await supabase
+          .from('participants')
+          .select('category:category_id(value)')
+          .eq('id', id)
+          .single()
+        if (preReadError) throw preReadError
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const dbVal = (existing as any)?.category?.value as string | undefined
+        preUpdateKategori = dbVal ? mapKategoriFromDb(dbVal) : undefined
+      }
+
       const payload: Record<string, string | boolean | null> = {}
 
       if (data.name !== undefined) payload.name = data.name
       if (data.gender !== undefined) payload.gender = data.gender
-      if (data.birthPlace !== undefined) payload.birth_place = data.birthPlace?.trim() || null
-      if (data.birthDate !== undefined) payload.birth_date = toDateOnly(data.birthDate)
       if (data.status !== undefined) payload.status_active = data.status === 'active'
+      if (data.birthDate !== undefined) payload.birth_date = toDateOnly(data.birthDate)
+      if (data.birthPlace !== undefined) payload.birth_place = data.birthPlace?.trim() || null
 
       if (data.kelompok !== undefined) {
         const groupId = lookups.groups[data.kelompok]
@@ -197,16 +228,25 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
         payload.category_id = categoryId
       }
 
-      const { error } = await supabase
+      const { data: returned, error } = await supabase
         .from('participants')
         .update(payload)
         .eq('id', id)
+        .select('category_id')
+        .single()
 
       if (error) throw error
+
+      const wasGpnA = preUpdateKategori === 'A'
+      const returnedIsGpnB = returned?.category_id === lookups.categories['GPN B']
+      return { autoPromoted: wasGpnA && returnedIsGpnB }
     },
-    onSuccess: () => {
+    onSuccess: ({ autoPromoted }) => {
       queryClient.invalidateQueries({ queryKey: ['participants'] })
       toast.success('Peserta berhasil diperbarui')
+      if (autoPromoted) {
+        toast.info('Kategori otomatis diubah ke GPN B karena usia ≥ 23 tahun')
+      }
     },
     onError: (error: Error) => {
       toast.error(`Gagal memperbarui peserta: ${error.message}`)
@@ -256,8 +296,12 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
       value={{
         participants,
         isLoading,
-        createParticipant: (data) => createMutation.mutateAsync(data),
-        updateParticipant: (id, data) => updateMutation.mutateAsync({ id, data }),
+        createParticipant: async (data) => {
+          await createMutation.mutateAsync(data)
+        },
+        updateParticipant: async (id, data) => {
+          await updateMutation.mutateAsync({ id, data })
+        },
         deleteParticipant: (id) => deleteMutation.mutateAsync(id),
         deleteParticipants: (ids) => deleteMultipleMutation.mutateAsync(ids),
       }}

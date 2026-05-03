@@ -43,7 +43,9 @@ export const participantsColumns: ColumnDef<Participant>[] = [
       <DataTableColumnHeader column={column} title='Nama' />
     ),
     cell: ({ row }) => (
-      <span className='font-medium'>{row.getValue('name')}</span>
+      <span className='block max-w-[22ch] font-medium whitespace-normal wrap-break-word @4xl/content:max-w-none'>
+        {row.getValue('name')}
+      </span>
     ),
     meta: {
       className: cn(
@@ -70,11 +72,9 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     ),
     cell: ({ row }) => {
       const kategori = row.getValue('kategori') as string
-      return (
-        <Badge variant='outline'>
-          {kategori === 'AR' ? 'AR' : `GPN ${kategori}`}
-        </Badge>
-      )
+      const label =
+        kategori === 'AR' || kategori === 'APR' ? kategori : `GPN ${kategori}`
+      return <Badge variant='outline'>{label}</Badge>
     },
     filterFn: (row, id, value) => {
       return Array.isArray(value) && value.includes(row.getValue(id))
@@ -91,6 +91,9 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     },
     filterFn: (row, id, value) => {
       return Array.isArray(value) && value.includes(row.getValue(id))
+    },
+    meta: {
+      className: cn('hidden @xl/content:table-cell'),
     },
   },
   {
@@ -122,14 +125,16 @@ export const participantsColumns: ColumnDef<Participant>[] = [
       const birthDate = row.original.birthDate
       const birthPlace = row.original.birthPlace?.trim()
 
-      if (!birthDate && !birthPlace) return <span>-</span>
+      if (!birthDate && !birthPlace) {
+        return <span className='text-muted-foreground'>-</span>
+      }
 
       const formattedDate = birthDate
         ? format(birthDate, 'dd MMM yyyy', { locale: idLocale })
         : null
 
       return (
-        <span>
+        <span className='block max-w-[20ch] whitespace-normal wrap-break-word'>
           {[birthPlace, formattedDate].filter(Boolean).join(', ')}
         </span>
       )
@@ -139,6 +144,9 @@ export const participantsColumns: ColumnDef<Participant>[] = [
       const b = rowB.original.birthDate?.getTime() ?? 0
       return a - b
     },
+    meta: {
+      className: cn('hidden @3xl/content:table-cell'),
+    },
   },
   {
     id: 'age',
@@ -147,7 +155,13 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     ),
     cell: ({ row }) => {
       const birthDate = row.original.birthDate
-      return <span>{birthDate ? `${differenceInYears(new Date(), birthDate)} tahun` : '-'}</span>
+      if (!birthDate) return <span className='text-muted-foreground'>-</span>
+
+      return (
+        <span className='block max-w-[8ch] whitespace-normal wrap-break-word tabular-nums'>
+          {differenceInYears(new Date(), birthDate)} tahun
+        </span>
+      )
     },
     sortingFn: (rowA, rowB) => {
       const a = rowA.original.birthDate
@@ -157,6 +171,9 @@ export const participantsColumns: ColumnDef<Participant>[] = [
         ? differenceInYears(new Date(), rowB.original.birthDate)
         : -1
       return a - b
+    },
+    meta: {
+      className: cn('hidden @2xl/content:table-cell'),
     },
   },
   {

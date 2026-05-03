@@ -26,6 +26,7 @@ import {
   type MonthlyReportRow,
   type MustinNoteRow,
   type MustinStatus,
+  type MustinTemplateRow,
   type ProgramDefinitionRow,
   type ProgramReportRow,
   type SarprasItemRow,
@@ -53,6 +54,7 @@ export interface PresentationData {
   sarprasReports: SarprasReportRow[]
   shodaqohRows: ShodaqohRow[]
   mustinRows: MustinNoteRow[]
+  mustinTemplates?: MustinTemplateRow[]
   // R3 additions:
   kelompokFilter?: string
   yearlyMonthlyReports?: MonthlyReportRow[]
@@ -243,6 +245,7 @@ export function buildSlides(data: PresentationData): Slide[] {
     sarprasReports,
     shodaqohRows,
     mustinRows,
+    mustinTemplates = [],
     kelompokFilter,
     yearlyMonthlyReports = [],
     yearlyProgramReports = [],
@@ -639,6 +642,22 @@ export function buildSlides(data: PresentationData): Slide[] {
     },
   })
 
+  const mustinTemplateByCode = new Map<string, MustinTemplateRow>()
+  for (const t of mustinTemplates) mustinTemplateByCode.set(t.code, t)
+  const sortMustinNotes = (notes: MustinNoteRow[]): MustinNoteRow[] => {
+    return [...notes].sort((a, b) => {
+      const ta = a.template_code
+        ? mustinTemplateByCode.get(a.template_code)
+        : undefined
+      const tb = b.template_code
+        ? mustinTemplateByCode.get(b.template_code)
+        : undefined
+      const aOrder = ta ? ta.sort_order : 1_000_000 + a.sort_order
+      const bOrder = tb ? tb.sort_order : 1_000_000 + b.sort_order
+      return aOrder - bOrder
+    })
+  }
+
   slides.push({
     key: 'mustin',
     title: 'Resume Mustin',
@@ -649,7 +668,9 @@ export function buildSlides(data: PresentationData): Slide[] {
           {effectiveKelompokList.map((k) => {
             const report = reportByKelompok.get(k.id)
             const kkRows = report
-              ? mustinRows.filter((r) => r.monthly_report_id === report.id)
+              ? sortMustinNotes(
+                  mustinRows.filter((r) => r.monthly_report_id === report.id)
+                )
               : []
             return (
               <div key={k.id} className='rounded-md border p-4'>
@@ -660,20 +681,31 @@ export function buildSlides(data: PresentationData): Slide[] {
                   </div>
                 ) : (
                   <div className='flex flex-col gap-2'>
-                    {kkRows.map((n) => (
-                      <div
-                        key={n.id}
-                        className='border-primary/50 rounded border-l-4 pl-3 text-lg'
-                      >
-                        <div className='text-muted-foreground text-xs'>
-                          {MUSTIN_STATUS_LABELS[n.status as MustinStatus]}
+                    {kkRows.map((n) => {
+                      const tmpl = n.template_code
+                        ? mustinTemplateByCode.get(n.template_code)
+                        : undefined
+                      return (
+                        <div
+                          key={n.id}
+                          className='border-primary/50 rounded border-l-4 pl-3 text-lg'
+                        >
+                          {!tmpl && (
+                            <div className='text-muted-foreground text-xs'>
+                              {MUSTIN_STATUS_LABELS[n.status as MustinStatus]}
+                            </div>
+                          )}
+                          <div className='font-medium'>{n.pokok_masalah}</div>
+                          <div className='text-muted-foreground text-sm'>
+                            {n.keputusan_rencana ? (
+                              <>→ {n.keputusan_rencana}</>
+                            ) : (
+                              <span className='italic'>(kosong)</span>
+                            )}
+                          </div>
                         </div>
-                        <div className='font-medium'>{n.pokok_masalah}</div>
-                        <div className='text-muted-foreground text-sm'>
-                          → {n.keputusan_rencana}
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>

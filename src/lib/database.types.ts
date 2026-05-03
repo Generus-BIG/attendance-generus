@@ -306,6 +306,7 @@ export type Database = {
           pokok_masalah: string
           sort_order: number
           status: string
+          template_code: string | null
           updated_at: string
         }
         Insert: {
@@ -318,6 +319,7 @@ export type Database = {
           pokok_masalah: string
           sort_order?: number
           status?: string
+          template_code?: string | null
           updated_at?: string
         }
         Update: {
@@ -330,6 +332,7 @@ export type Database = {
           pokok_masalah?: string
           sort_order?: number
           status?: string
+          template_code?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -340,7 +343,50 @@ export type Database = {
             referencedRelation: "lupg_monthly_reports"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "lupg_mustin_notes_template_code_fkey"
+            columns: ["template_code"]
+            isOneToOne: false
+            referencedRelation: "lupg_mustin_templates"
+            referencedColumns: ["code"]
+          },
         ]
+      }
+      lupg_mustin_templates: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+          label: string
+          placeholder: string | null
+          sort_order: number
+          sub_items: Json | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          label: string
+          placeholder?: string | null
+          sort_order?: number
+          sub_items?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          label?: string
+          placeholder?: string | null
+          sort_order?: number
+          sub_items?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       lupg_program_definitions: {
         Row: {
@@ -390,6 +436,7 @@ export type Database = {
           count_this_month: number
           created_at: string
           denominator: number
+          extras: Json
           id: string
           monthly_report_id: string
           notes: string | null
@@ -401,6 +448,7 @@ export type Database = {
           count_this_month?: number
           created_at?: string
           denominator?: number
+          extras?: Json
           id?: string
           monthly_report_id: string
           notes?: string | null
@@ -412,6 +460,7 @@ export type Database = {
           count_this_month?: number
           created_at?: string
           denominator?: number
+          extras?: Json
           id?: string
           monthly_report_id?: string
           notes?: string | null
@@ -633,6 +682,8 @@ export type Database = {
       }
       participants: {
         Row: {
+          birth_date: string | null
+          birth_place: string | null
           category_id: string | null
           created_at: string | null
           gender: string | null
@@ -642,6 +693,8 @@ export type Database = {
           status_active: boolean | null
         }
         Insert: {
+          birth_date?: string | null
+          birth_place?: string | null
           category_id?: string | null
           created_at?: string | null
           gender?: string | null
@@ -651,6 +704,8 @@ export type Database = {
           status_active?: boolean | null
         }
         Update: {
+          birth_date?: string | null
+          birth_place?: string | null
           category_id?: string | null
           created_at?: string | null
           gender?: string | null
@@ -739,6 +794,7 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_age: { Args: { birth: string }; Returns: number }
       lupg_get_submitter_display: {
         Args: { p_user_id: string }
         Returns: string

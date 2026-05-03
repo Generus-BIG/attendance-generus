@@ -33,9 +33,15 @@ const formSchema = z.object({
   kelompok: z.enum(KELOMPOK, { message: 'Kelompok wajib dipilih.' }),
   kategori: z.enum(KATEGORI, { message: 'Kategori wajib dipilih.' }),
   gender: z.enum(GENDER, { message: 'Jenis kelamin wajib dipilih.' }),
-  birthPlace: z.string().optional().nullable(),
-  birthDate: z.date().optional().nullable(),
   status: z.enum(PARTICIPANT_STATUS),
+  birthPlace: z.string().trim().max(100, 'Maksimal 100 karakter').optional().nullable(),
+  birthDate: z
+    .date()
+    .refine((d) => d <= new Date(), {
+      message: 'Tanggal lahir tidak boleh di masa depan',
+    })
+    .optional()
+    .nullable(),
 })
 
 type ParticipantForm = z.infer<typeof formSchema>
@@ -71,9 +77,9 @@ export function ParticipantActionDialog({
       kelompok: defaultKelompok,
       kategori: currentRow?.kategori ?? 'A',
       gender: currentRow?.gender ?? 'L',
+      status: currentRow?.status ?? 'active',
       birthPlace: currentRow?.birthPlace ?? '',
       birthDate: currentRow?.birthDate ?? null,
-      status: currentRow?.status ?? 'active',
     },
   })
 
@@ -85,9 +91,9 @@ export function ParticipantActionDialog({
       kelompok: defaultKelompok,
       kategori: currentRow?.kategori ?? 'A',
       gender: currentRow?.gender ?? 'L',
+      status: currentRow?.status ?? 'active',
       birthPlace: currentRow?.birthPlace ?? '',
       birthDate: currentRow?.birthDate ?? null,
-      status: currentRow?.status ?? 'active',
     })
   }, [
     open,
@@ -95,9 +101,9 @@ export function ParticipantActionDialog({
     currentRow?.name,
     currentRow?.kategori,
     currentRow?.gender,
+    currentRow?.status,
     currentRow?.birthPlace,
     currentRow?.birthDate,
-    currentRow?.status,
     defaultKelompok,
   ])
 
@@ -193,7 +199,10 @@ export function ParticipantActionDialog({
                     onValueChange={field.onChange}
                     placeholder='Pilih kategori'
                     className='col-span-4'
-                    items={KATEGORI.map((k) => ({ label: `GPN ${k}`, value: k }))}
+                    items={KATEGORI.map((k) => ({
+                      label: k === 'AR' || k === 'APR' ? k : `GPN ${k}`,
+                      value: k,
+                    }))}
                   />
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>
@@ -243,12 +252,14 @@ export function ParticipantActionDialog({
               render={({ field }) => (
                 <FormItem className='grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0'>
                   <FormLabel className='col-span-2 text-right'>Tanggal Lahir</FormLabel>
-                  <DatePicker
-                    selected={field.value ?? undefined}
-                    onSelect={field.onChange}
-                    placeholder='Pilih tanggal lahir'
-                    className='col-span-4 w-full'
-                  />
+                  <FormControl>
+                    <DatePicker
+                      selected={field.value ?? undefined}
+                      onSelect={(d) => field.onChange(d ?? null)}
+                      placeholder='Pilih tanggal lahir'
+                      className='col-span-4 w-full'
+                    />
+                  </FormControl>
                   <FormMessage className='col-span-4 col-start-3' />
                 </FormItem>
               )}

@@ -271,7 +271,7 @@ export function RegisterParticipantForm({ formConfig }: RegisterParticipantFormP
                                                         <RadioGroupItem value={k} className="h-4.5 w-4.5 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm" />
                                                     </FormControl>
                                                     <FormLabel className='text-[15px] font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors'>
-                                                        {k === 'AR' ? 'AR' : `GPN ${k}`}
+                                                        {k === 'AR' || k === 'APR' ? k : `GPN ${k}`}
                                                     </FormLabel>
                                                 </FormItem>
                                             ))}

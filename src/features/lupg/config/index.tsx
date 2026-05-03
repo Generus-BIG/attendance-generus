@@ -11,6 +11,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { MetricsConfigTab } from './metrics-tab'
+import { MustinTemplatesConfigTab } from './mustin-templates-tab'
 import { ProgramsConfigTab } from './programs-tab'
 import { SarprasConfigTab } from './sarpras-tab'
 
@@ -31,8 +32,9 @@ export function LupgConfig() {
             Konfigurasi LUPG
           </h2>
           <p className='text-muted-foreground'>
-            Kelola definisi program, metric, dan item sarpras. Perubahan di
-            sini langsung muncul di form laporan bulanan.
+            Kelola definisi program, metric, item sarpras, dan template
+            resume mustin. Perubahan di sini langsung muncul di form laporan
+            bulanan.
           </p>
         </div>
 
@@ -41,6 +43,7 @@ export function LupgConfig() {
             <TabsTrigger value='programs'>Programs</TabsTrigger>
             <TabsTrigger value='metrics'>Metrics</TabsTrigger>
             <TabsTrigger value='sarpras'>Sarpras Items</TabsTrigger>
+            <TabsTrigger value='mustin'>Template Mustin</TabsTrigger>
           </TabsList>
 
           <TabsContent value='programs' className='mt-4'>
@@ -53,6 +56,10 @@ export function LupgConfig() {
 
           <TabsContent value='sarpras' className='mt-4'>
             <SarprasConfigTab />
+          </TabsContent>
+
+          <TabsContent value='mustin' className='mt-4'>
+            <MustinTemplatesConfigTab />
           </TabsContent>
         </Tabs>
       </Main>

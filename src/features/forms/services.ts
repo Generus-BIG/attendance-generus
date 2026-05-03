@@ -132,6 +132,7 @@ function mapInternalToDbCategories(allowedCategories: string[]): string[] {
         dbCategories.push('Anak Remaja')
         dbCategories.push('AR')
     }
+    if (allowedCategories.includes('APR')) dbCategories.push('APR')
     return dbCategories
 }
 

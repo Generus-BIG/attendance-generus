@@ -8,6 +8,7 @@ import * as metricSvc from '../services/metric-report.service'
 import * as sarprasSvc from '../services/sarpras-report.service'
 import * as shodaqohSvc from '../services/shodaqoh-report.service'
 import * as mustinSvc from '../services/mustin-notes.service'
+import * as mustinTmplSvc from '../services/mustin-templates.service'
 import * as programsSvc from '../programs/services'
 import * as matrixSvc from '../matrix/services'
 import {
@@ -30,6 +31,7 @@ const KEYS = {
   programs: ['lupg', 'program-defs'] as const,
   metrics: ['lupg', 'metric-defs'] as const,
   sarprasItems: ['lupg', 'sarpras-items'] as const,
+  mustinTemplates: ['lupg', 'mustin-templates'] as const,
   programReports: (mrId: string) =>
     ['lupg', 'program-reports', mrId] as const,
   metricReports: (mrId: string) =>
@@ -143,6 +145,14 @@ export function useActiveSarprasItems() {
   return useQuery({
     queryKey: KEYS.sarprasItems,
     queryFn: defsSvc.listActiveSarprasItems,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useActiveMustinTemplates() {
+  return useQuery({
+    queryKey: KEYS.mustinTemplates,
+    queryFn: mustinTmplSvc.listActiveMustinTemplates,
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -337,12 +347,39 @@ export function useDeleteMustinNote() {
   })
 }
 
+export function useSeedMustinFromTemplates() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (vars: {
+      monthlyReportId: string
+      templates: Array<{
+        code: string
+        label: string
+        sort_order: number
+      }>
+    }) => {
+      const rows = vars.templates.map((t) => ({
+        monthly_report_id: vars.monthlyReportId,
+        sort_order: t.sort_order,
+        pokok_masalah: t.label,
+        keputusan_rencana: '',
+        template_code: t.code,
+      }))
+      return mustinSvc.batchInsertMustinNotes(rows)
+    },
+    onSuccess: (_rows, vars) => {
+      qc.invalidateQueries({ queryKey: KEYS.mustin(vars.monthlyReportId) })
+    },
+  })
+}
+
 // ============== Definitions — Admin (all, with CRUD) ==============
 
 const ADMIN_KEYS = {
   allPrograms: ['lupg', 'all-program-defs'] as const,
   allMetrics: ['lupg', 'all-metric-defs'] as const,
   allSarprasItems: ['lupg', 'all-sarpras-items'] as const,
+  allMustinTemplates: ['lupg', 'all-mustin-templates'] as const,
 }
 
 export function useAllPrograms() {
@@ -366,9 +403,16 @@ export function useAllSarprasItems() {
   })
 }
 
+export function useAllMustinTemplates() {
+  return useQuery({
+    queryKey: ADMIN_KEYS.allMustinTemplates,
+    queryFn: mustinTmplSvc.listAllMustinTemplates,
+  })
+}
+
 function invalidateDefs(
   qc: ReturnType<typeof useQueryClient>,
-  target: 'programs' | 'metrics' | 'sarpras'
+  target: 'programs' | 'metrics' | 'sarpras' | 'mustin-templates'
 ) {
   if (target === 'programs') {
     qc.invalidateQueries({ queryKey: ADMIN_KEYS.allPrograms })
@@ -376,9 +420,12 @@ function invalidateDefs(
   } else if (target === 'metrics') {
     qc.invalidateQueries({ queryKey: ADMIN_KEYS.allMetrics })
     qc.invalidateQueries({ queryKey: ['lupg', 'metric-defs'] })
-  } else {
+  } else if (target === 'sarpras') {
     qc.invalidateQueries({ queryKey: ADMIN_KEYS.allSarprasItems })
     qc.invalidateQueries({ queryKey: ['lupg', 'sarpras-items'] })
+  } else {
+    qc.invalidateQueries({ queryKey: ADMIN_KEYS.allMustinTemplates })
+    qc.invalidateQueries({ queryKey: ['lupg', 'mustin-templates'] })
   }
 }
 
@@ -454,6 +501,33 @@ export function useDeleteSarprasItem() {
   return useMutation({
     mutationFn: defsSvc.deleteSarprasItem,
     onSuccess: () => invalidateDefs(qc, 'sarpras'),
+  })
+}
+
+export function useCreateMustinTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: mustinTmplSvc.createMustinTemplate,
+    onSuccess: () => invalidateDefs(qc, 'mustin-templates'),
+  })
+}
+
+export function useUpdateMustinTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (v: {
+      id: string
+      patch: Parameters<typeof mustinTmplSvc.updateMustinTemplate>[1]
+    }) => mustinTmplSvc.updateMustinTemplate(v.id, v.patch),
+    onSuccess: () => invalidateDefs(qc, 'mustin-templates'),
+  })
+}
+
+export function useDeleteMustinTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: mustinTmplSvc.deleteMustinTemplate,
+    onSuccess: () => invalidateDefs(qc, 'mustin-templates'),
   })
 }
 
