@@ -36,6 +36,7 @@ export function useDashboardState() {
 
   const prevMonth = () => setMonth(subMonths(monthDate, 1))
   const nextMonth = () => setMonth(addMonths(monthDate, 1))
+  const jumpToCurrentMonth = () => setMonth(startOfMonth(new Date()))
 
   const setKelompokId = (id: string) => {
     navigate({
@@ -59,6 +60,7 @@ export function useDashboardState() {
     setMonth,
     prevMonth,
     nextMonth,
+    jumpToCurrentMonth,
     setKelompokId,
     setFormId,
   }
