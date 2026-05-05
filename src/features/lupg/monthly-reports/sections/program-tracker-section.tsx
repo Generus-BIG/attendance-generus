@@ -1,14 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { type Role } from '@/lib/rbac'
 import { useAuthStore } from '@/stores/auth-store'
 import { type MonthlyReportRow } from '../../types'
@@ -17,9 +10,11 @@ import {
   useYearlyProgramData,
 } from '../../hooks/use-lupg-queries'
 import { currentMonthKey } from '../../utils/month-utils'
-import { ProgramClusterCard } from '../../programs/components/program-cluster-card'
-import { ProgramMonthlyCard } from '../../programs/components/program-monthly-card'
-import { ProgramQuarterlyCard } from '../../programs/components/program-quarterly-card'
+import { ProgramClusterBody } from '../../programs/components/program-cluster-card'
+import { ProgramMonthlyBody } from '../../programs/components/program-monthly-card'
+import { ProgramQuarterlyBody } from '../../programs/components/program-quarterly-card'
+import { ProgramAccordionItem } from '../components/program-accordion-item'
+import { SectionHeading } from '../components/section-heading'
 
 interface Props {
   report: MonthlyReportRow
@@ -58,27 +53,30 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
     )
   }, [isTeamManager, kelompok, kelompokOptions, report.kelompok_id])
 
+  const reportMonthKey = report.month.slice(0, 7)
+  const [openCode, setOpenCode] = useState<string | null>(
+    () => programs[0]?.code ?? null
+  )
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Program Tracker</CardTitle>
-        <CardDescription>
-          Update progress program per bulan / quarter. Data tersinkron ke
-          laporan bulanan terkait.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className='flex flex-col gap-4'>
-        {isLoading ? (
-          <div className='text-muted-foreground flex items-center justify-center py-8'>
-            <Loader2 className='mr-2 h-5 w-5 animate-spin' />
-            Memuat...
-          </div>
-        ) : programs.length === 0 ? (
-          <div className='text-muted-foreground py-8 text-center'>
-            Belum ada program aktif.
-          </div>
-        ) : (
-          programs.map((p) => {
+    <section id='section-program-tracker' className='scroll-mt-24 flex flex-col gap-4'>
+      <SectionHeading
+        kicker='Program Tracker'
+        description='Update progress program per bulan / quarter. Data tersinkron ke laporan bulanan terkait.'
+      />
+
+      {isLoading ? (
+        <div className='text-muted-foreground flex items-center justify-center py-8'>
+          <Loader2 className='mr-2 h-5 w-5 animate-spin' />
+          Memuat...
+        </div>
+      ) : programs.length === 0 ? (
+        <div className='text-muted-foreground py-8 text-center text-sm'>
+          Belum ada program aktif.
+        </div>
+      ) : (
+        <div className='flex flex-col gap-2'>
+          {programs.map((p) => {
             const commonProps = {
               program: p,
               kelompokId: report.kelompok_id,
@@ -89,16 +87,31 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
               userRole: typedRole,
               userOwnsKelompok: userOwnsKelompok && !readOnly,
             }
-            if (p.code === 'NIKAH_JM') {
-              return <ProgramClusterCard key={p.code} {...commonProps} />
-            }
-            if (p.reporting_style === 'quarterly') {
-              return <ProgramQuarterlyCard key={p.code} {...commonProps} />
-            }
-            return <ProgramMonthlyCard key={p.code} {...commonProps} />
-          })
-        )}
-      </CardContent>
-    </Card>
+            const open = openCode === p.code
+            const body =
+              p.code === 'NIKAH_JM' ? (
+                <ProgramClusterBody {...commonProps} />
+              ) : p.reporting_style === 'quarterly' ? (
+                <ProgramQuarterlyBody {...commonProps} />
+              ) : (
+                <ProgramMonthlyBody {...commonProps} />
+              )
+            return (
+              <ProgramAccordionItem
+                key={p.code}
+                program={p}
+                currentMonthKey={reportMonthKey}
+                monthlyReports={data?.monthlyReports ?? []}
+                programReports={data?.programReports ?? []}
+                open={open}
+                onToggle={() => setOpenCode(open ? null : p.code)}
+              >
+                {body}
+              </ProgramAccordionItem>
+            )
+          })}
+        </div>
+      )}
+    </section>
   )
 }
