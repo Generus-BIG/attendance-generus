@@ -1,0 +1,51 @@
+import { cn } from '@/lib/utils'
+
+interface Props {
+  kicker: string
+  title?: string
+  description?: string
+  status?: 'empty' | 'partial' | 'complete'
+  action?: React.ReactNode
+}
+
+export function SectionHeading({ kicker, title, description, status, action }: Props) {
+  return (
+    <div className='flex items-start justify-between gap-3'>
+      <div className='flex min-w-0 flex-col gap-1'>
+        <div className='flex items-center gap-2'>
+          <span className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+            {kicker}
+          </span>
+          {status && <StatusDot status={status} />}
+        </div>
+        <h3 className='text-lg font-semibold tracking-tight'>{title ?? kicker}</h3>
+        {description && (
+          <p className='text-muted-foreground max-w-prose text-sm'>{description}</p>
+        )}
+      </div>
+      {action && <div className='shrink-0'>{action}</div>}
+    </div>
+  )
+}
+
+function StatusDot({ status }: { status: 'empty' | 'partial' | 'complete' }) {
+  const label =
+    status === 'complete'
+      ? 'Selesai'
+      : status === 'partial'
+        ? 'Sebagian terisi'
+        : 'Belum diisi'
+  return (
+    <span
+      className={cn(
+        'h-1.5 w-1.5 rounded-full',
+        status === 'complete' && 'bg-emerald-500',
+        status === 'partial' && 'bg-amber-400',
+        status === 'empty' && 'bg-muted-foreground/40'
+      )}
+      role='status'
+      aria-label={label}
+      title={label}
+    />
+  )
+}
