@@ -1,11 +1,4 @@
 import { useEffect, useState } from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,6 +10,7 @@ import {
 import { type MonthlyReportRow } from '../../types'
 import { getPrevMonthShodaqoh } from '../../services/shodaqoh-report.service'
 import { monthKeyFromDate } from '../../utils/month-utils'
+import { SectionHeading } from '../components/section-heading'
 
 interface Props {
   report: MonthlyReportRow
@@ -30,6 +24,14 @@ export function ShodaqohSection({ report, readOnly }: Props) {
   const [nominal, setNominal] = useState<string>('')
   const [jumlahKK, setJumlahKK] = useState<string>('')
   const [notes, setNotes] = useState<string>('')
+
+  // Formats raw digits as "1.000.000" (id-ID thousand separators).
+  // Non-digit input is stripped; empty string stays empty (no "0" placeholder).
+  const formatNominalInput = (raw: string): string => {
+    const digits = raw.replace(/\D/g, '')
+    if (!digits) return ''
+    return parseInt(digits, 10).toLocaleString('id-ID')
+  }
 
   useEffect(() => {
     if (!existing) {
@@ -59,7 +61,8 @@ export function ShodaqohSection({ report, readOnly }: Props) {
   }, [existing?.id, existing?.updated_at, report.kelompok_id, report.month, readOnly])
 
   const save = () => {
-    const nomVal = parseInt(nominal, 10) || 0
+    // `nominal` stores raw digits only (see onChange handler); formatting is display-only.
+    const nomVal = parseInt(nominal.replace(/\D/g, ''), 10) || 0
     const kkVal = parseInt(jumlahKK, 10) || 0
     upsert.mutate(
       {
@@ -76,30 +79,28 @@ export function ShodaqohSection({ report, readOnly }: Props) {
     )
   }
 
-  const nomNum = parseInt(nominal, 10) || 0
+  const nomNum = parseInt(nominal.replace(/\D/g, ''), 10) || 0
   const kkNum = parseInt(jumlahKK, 10) || 0
   const rataPerKk = kkNum > 0 ? Math.round(nomNum / kkNum) : 0
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Shodaqoh PPG</CardTitle>
-        <CardDescription>
-          Total nominal shodaqoh bulan ini dan jumlah KK penyumbang.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className='grid gap-4 sm:grid-cols-3'>
+    <section id='section-shodaqoh' className='scroll-mt-24 flex flex-col gap-4'>
+      <SectionHeading
+        kicker='Shodaqoh PPG'
+        description='Total nominal shodaqoh bulan ini dan jumlah KK penyumbang.'
+      />
+      <div className='grid gap-4 sm:grid-cols-3'>
         <div className='flex flex-col gap-2'>
           <Label htmlFor='shodaqoh-nominal'>Nominal (Rp)</Label>
           <Input
             id='shodaqoh-nominal'
-            type='number'
-            min={0}
-            value={nominal}
-            onChange={(e) => setNominal(e.target.value)}
+            type='text'
+            value={formatNominalInput(nominal)}
+            onChange={(e) => setNominal(e.target.value.replace(/\D/g, ''))}
             onBlur={save}
             disabled={readOnly}
             inputMode='numeric'
+            placeholder='0'
           />
         </div>
         <div className='flex flex-col gap-2'>
@@ -134,7 +135,7 @@ export function ShodaqohSection({ report, readOnly }: Props) {
             rows={2}
           />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
 }
