@@ -1,13 +1,6 @@
 import { useMemo, useState, type KeyboardEvent } from 'react'
 import { Plus, Trash2, Loader2, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -25,6 +18,7 @@ import {
   type MustinNoteRow,
   type MustinTemplateRow,
 } from '../../types'
+import { SectionHeading } from '../components/section-heading'
 
 interface Props {
   report: MonthlyReportRow
@@ -252,16 +246,12 @@ export function MustinSection({ report, readOnly }: Props) {
   const canSeed = !readOnly && templates.length > 0 && notes.length === 0
 
   return (
-    <Card>
-      <CardHeader>
-        <div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between'>
-          <div>
-            <CardTitle>Resume Mustin</CardTitle>
-            <CardDescription>
-              Findings dan keputusan musyawarah bulan ini.
-            </CardDescription>
-          </div>
-          {!readOnly && notes.length > 0 && (
+    <section id='section-mustin' className='scroll-mt-24 flex flex-col gap-4'>
+      <SectionHeading
+        kicker='Resume Mustin'
+        description='Findings dan keputusan musyawarah bulan ini.'
+        action={
+          !readOnly && notes.length > 0 ? (
             <Button
               onClick={handleAddFree}
               size='sm'
@@ -275,10 +265,10 @@ export function MustinSection({ report, readOnly }: Props) {
               )}
               Catatan lain
             </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className='flex flex-col gap-3'>
+          ) : undefined
+        }
+      />
+      <div className='flex flex-col gap-3'>
         {isLoading ? (
           <div className='text-muted-foreground flex items-center justify-center py-8'>
             <Loader2 className='mr-2 h-5 w-5 animate-spin' />
@@ -372,8 +362,8 @@ export function MustinSection({ report, readOnly }: Props) {
             )}
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
 }
 
