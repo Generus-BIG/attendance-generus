@@ -27,8 +27,6 @@ import {
   isMonthEditable,
   monthNameFromKey,
 } from '../utils/editability'
-import { HighlightedBar, type BarDatum } from '@/components/charts/highlighted-bar'
-import { formatChartValue } from '../../utils/format-chart-value'
 import { ProgramClusterEditableRow } from './program-cluster-editable-row'
 
 interface Props {
@@ -42,7 +40,7 @@ interface Props {
   userOwnsKelompok: boolean
 }
 
-export function ProgramClusterCard({
+export function ProgramClusterBody({
   program,
   kelompokId,
   year,
@@ -94,21 +92,6 @@ export function ProgramClusterCard({
     return m
   }, [programReports, program.code])
 
-  const chartData: BarDatum[] = useMemo(
-    () =>
-      monthKeys.map((mk) => {
-        const report = reportByMonthKey.get(mk)
-        const row = report ? programRowByReportId.get(report.id) : undefined
-        const isFuture = mk > currentMonthKey
-        return {
-          label: monthNameFromKey(mk).slice(0, 3),
-          value: row?.count_this_month ?? 0,
-          isPlaceholder: isFuture,
-        }
-      }),
-    [monthKeys, reportByMonthKey, programRowByReportId, currentMonthKey]
-  )
-
   const renderRow = (mk: string) => {
     const report = reportByMonthKey.get(mk)
     const row = report ? programRowByReportId.get(report.id) : undefined
@@ -133,104 +116,104 @@ export function ProgramClusterCard({
   }
 
   return (
+    <div className='flex flex-col gap-3'>
+      <div className='overflow-x-auto'>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead rowSpan={2}>Bulan</TableHead>
+              <TableHead rowSpan={2}>Sensus</TableHead>
+              <TableHead colSpan={2} className='text-center'>
+                Belum Siap Menikah
+              </TableHead>
+              <TableHead colSpan={2} className='text-center'>
+                Siap Menikah
+              </TableHead>
+              <TableHead colSpan={2} className='text-center'>
+                Menikah
+              </TableHead>
+              <TableHead rowSpan={2}>Hasil Temuan</TableHead>
+            </TableRow>
+            <TableRow>
+              <TableHead>Jumlah</TableHead>
+              <TableHead className='text-right'>%</TableHead>
+              <TableHead>Jumlah</TableHead>
+              <TableHead className='text-right'>%</TableHead>
+              <TableHead>Jumlah</TableHead>
+              <TableHead className='text-right'>%</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {past.length > 0 && (
+              <TableRow className='hover:bg-transparent'>
+                <TableCell colSpan={9} className='p-0'>
+                  <button
+                    type='button'
+                    onClick={() => setShowPast((v) => !v)}
+                    aria-expanded={showPast}
+                    className='text-muted-foreground hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center justify-center gap-2 py-2 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none'
+                  >
+                    <ChevronRight
+                      className={cn(
+                        'h-3 w-3 transition-transform motion-reduce:transition-none',
+                        showPast && 'rotate-90'
+                      )}
+                    />
+                    {showPast
+                      ? `Sembunyikan ${past.length} bulan lalu`
+                      : `Tampilkan ${past.length} bulan lalu`}
+                  </button>
+                </TableCell>
+              </TableRow>
+            )}
+
+            {showPast && past.map(renderRow)}
+
+            {current && renderRow(current)}
+
+            {future.length > 0 && (
+              <TableRow className='hover:bg-transparent'>
+                <TableCell colSpan={9} className='p-0'>
+                  <button
+                    type='button'
+                    onClick={() => setShowFuture((v) => !v)}
+                    aria-expanded={showFuture}
+                    className='text-muted-foreground hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center justify-center gap-2 py-2 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none'
+                  >
+                    <ChevronRight
+                      className={cn(
+                        'h-3 w-3 transition-transform motion-reduce:transition-none',
+                        showFuture && 'rotate-90'
+                      )}
+                    />
+                    {showFuture
+                      ? `Sembunyikan ${future.length} bulan mendatang`
+                      : `Tampilkan ${future.length} bulan mendatang`}
+                  </button>
+                </TableCell>
+              </TableRow>
+            )}
+
+            {showFuture && future.map(renderRow)}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  )
+}
+
+/** Thin wrapper that retains the old Card shell for any legacy caller. */
+export function ProgramClusterCard(props: Props) {
+  return (
     <Card>
       <CardHeader>
-        <CardTitle>{program.name}</CardTitle>
+        <CardTitle>{props.program.name}</CardTitle>
         <CardDescription>
-          {program.denominator_label} → {program.count_label} (3 cluster)
+          {props.program.denominator_label} → {props.program.count_label} (3 cluster)
         </CardDescription>
       </CardHeader>
-      <CardContent className='grid gap-4 lg:grid-cols-5'>
-        <div className='overflow-x-auto lg:col-span-3'>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead rowSpan={2}>Bulan</TableHead>
-                <TableHead rowSpan={2}>Sensus</TableHead>
-                <TableHead colSpan={2} className='text-center'>
-                  Belum Siap Menikah
-                </TableHead>
-                <TableHead colSpan={2} className='text-center'>
-                  Siap Menikah
-                </TableHead>
-                <TableHead colSpan={2} className='text-center'>
-                  Menikah
-                </TableHead>
-                <TableHead rowSpan={2}>Hasil Temuan</TableHead>
-              </TableRow>
-              <TableRow>
-                <TableHead>Jumlah</TableHead>
-                <TableHead className='text-right'>%</TableHead>
-                <TableHead>Jumlah</TableHead>
-                <TableHead className='text-right'>%</TableHead>
-                <TableHead>Jumlah</TableHead>
-                <TableHead className='text-right'>%</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {past.length > 0 && (
-                <TableRow className='hover:bg-transparent'>
-                  <TableCell colSpan={9} className='p-0'>
-                    <button
-                      type='button'
-                      onClick={() => setShowPast((v) => !v)}
-                      aria-expanded={showPast}
-                      className='text-muted-foreground hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center justify-center gap-2 py-2 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none'
-                    >
-                      <ChevronRight
-                        className={cn(
-                          'h-3 w-3 transition-transform motion-reduce:transition-none',
-                          showPast && 'rotate-90'
-                        )}
-                      />
-                      {showPast
-                        ? `Sembunyikan ${past.length} bulan lalu`
-                        : `Tampilkan ${past.length} bulan lalu`}
-                    </button>
-                  </TableCell>
-                </TableRow>
-              )}
-
-              {showPast && past.map(renderRow)}
-
-              {current && renderRow(current)}
-
-              {future.length > 0 && (
-                <TableRow className='hover:bg-transparent'>
-                  <TableCell colSpan={9} className='p-0'>
-                    <button
-                      type='button'
-                      onClick={() => setShowFuture((v) => !v)}
-                      aria-expanded={showFuture}
-                      className='text-muted-foreground hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center justify-center gap-2 py-2 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none'
-                    >
-                      <ChevronRight
-                        className={cn(
-                          'h-3 w-3 transition-transform motion-reduce:transition-none',
-                          showFuture && 'rotate-90'
-                        )}
-                      />
-                      {showFuture
-                        ? `Sembunyikan ${future.length} bulan mendatang`
-                        : `Tampilkan ${future.length} bulan mendatang`}
-                    </button>
-                  </TableCell>
-                </TableRow>
-              )}
-
-              {showFuture && future.map(renderRow)}
-            </TableBody>
-          </Table>
-        </div>
-        <div className='lg:col-span-2'>
-          <HighlightedBar
-            data={chartData}
-            showValueLabel
-            xAxisLabel='Bulan'
-            yAxisLabel='Menikah / bulan'
-            valueFormatter={(v) => formatChartValue(v, 'number')}
-          />
-        </div>
+      <CardContent>
+        <ProgramClusterBody {...props} />
       </CardContent>
     </Card>
   )
