@@ -4,13 +4,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import {
@@ -20,6 +13,7 @@ import {
   useUpsertSarprasReport,
 } from '../../hooks/use-lupg-queries'
 import { type MonthlyReportRow, type SarprasReportRow } from '../../types'
+import { SectionHeading } from '../components/section-heading'
 
 async function batchUpsertSarpras(
   monthlyReportId: string,
@@ -78,15 +72,11 @@ export function SarprasSection({ report, readOnly }: Props) {
   const bulkDisabled = readOnly || bulkPending !== null
 
   return (
-    <Card>
-      <CardHeader>
-        <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-          <div>
-            <CardTitle>Sarpras</CardTitle>
-            <CardDescription>
-              Checklist kelengkapan sarana dan prasarana.
-            </CardDescription>
-          </div>
+    <section id='section-sarpras' className='scroll-mt-24 flex flex-col gap-4'>
+      <SectionHeading
+        kicker='Sarpras'
+        description='Checklist kelengkapan sarana dan prasarana.'
+        action={
           <div className='flex flex-col gap-3 sm:flex-row sm:items-center'>
             <div className='flex gap-2'>
               <Button
@@ -125,9 +115,9 @@ export function SarprasSection({ report, readOnly }: Props) {
               </div>
             </div>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent className='grid gap-2 sm:grid-cols-2'>
+        }
+      />
+      <div className='grid gap-2 sm:grid-cols-2'>
         {items.map((item) => {
           const existing = reports.find((r) => r.item_id === item.id)
           return (
@@ -140,8 +130,8 @@ export function SarprasSection({ report, readOnly }: Props) {
             />
           )
         })}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
 }
 
