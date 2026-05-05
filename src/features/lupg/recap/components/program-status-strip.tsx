@@ -1,6 +1,5 @@
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { getStatus, statusRailClass } from '../utils/heatmap-buckets'
 
 export interface StatusStripEntry {
   kelompokId: string
@@ -40,15 +39,14 @@ export function ProgramStatusStrip({ entries }: Props) {
             ? e.currentPct - e.prevPct
             : null
         const { label: deltaLabel, kind } = formatDelta(delta)
-        const status = getStatus(e.currentPct)
         const Arrow =
           kind === 'up' ? ArrowUp : kind === 'down' ? ArrowDown : Minus
-        const deltaColor =
+        const deltaTone =
           kind === 'up'
-            ? 'text-emerald-600 dark:text-emerald-400'
+            ? 'text-emerald-700 bg-emerald-500/10 dark:text-emerald-300 dark:bg-emerald-400/10'
             : kind === 'down'
-              ? 'text-red-600 dark:text-red-400'
-              : 'text-muted-foreground'
+              ? 'text-red-700 bg-red-500/10 dark:text-red-300 dark:bg-red-400/10'
+              : 'text-muted-foreground bg-muted/60'
 
         return (
           <button
@@ -56,29 +54,37 @@ export function ProgramStatusStrip({ entries }: Props) {
             type='button'
             onClick={e.onClick}
             className={cn(
-              'bg-card rounded-md border p-3 text-left transition-colors',
-              statusRailClass(status),
-              e.onClick && 'hover:bg-muted/50 cursor-pointer',
-              e.isActive && 'ring-ring ring-2 ring-offset-2'
+              'group border-border/70 bg-background relative flex flex-col rounded-md border p-3 text-left transition-[border-color,background-color,box-shadow] duration-200',
+              'hover:border-border hover:bg-muted/30',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0',
+              e.isActive &&
+                'border-foreground/80 bg-muted/40 shadow-[0_0_0_1px_var(--foreground)]'
             )}
             aria-pressed={e.onClick ? !!e.isActive : undefined}
           >
-            <div className='text-muted-foreground text-xs font-medium uppercase tracking-wide'>
+            <div className='text-muted-foreground truncate text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
               {e.kelompokName}
             </div>
-            <div className='mt-1 flex items-baseline gap-2'>
-              <span className='font-mono text-2xl font-semibold tabular-nums'>
-                {e.currentPct != null ? `${e.currentPct}%` : '—'}
+            <div className='mt-1.5 flex items-baseline gap-2'>
+              <span className='text-[1.75rem] font-semibold leading-none tabular-nums'>
+                {e.currentPct != null ? e.currentPct : '—'}
               </span>
-            </div>
-            <div
-              className={cn(
-                'mt-0.5 inline-flex items-center gap-1 text-xs',
-                deltaColor
+              {e.currentPct != null && (
+                <span className='text-muted-foreground text-sm font-medium'>
+                  %
+                </span>
               )}
-            >
-              <Arrow className='h-3 w-3' />
-              <span className='tabular-nums'>{deltaLabel}</span>
+            </div>
+            <div className='mt-2 flex items-center gap-2 text-xs'>
+              <span
+                className={cn(
+                  'inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium tabular-nums',
+                  deltaTone
+                )}
+              >
+                <Arrow className='h-3 w-3' strokeWidth={2.5} />
+                {deltaLabel}
+              </span>
               {kind !== 'none' && kind !== 'flat' && (
                 <span className='text-muted-foreground'>vs bulan lalu</span>
               )}
