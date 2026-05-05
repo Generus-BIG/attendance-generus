@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { type Role } from '@/lib/rbac'
@@ -11,6 +12,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { KelompokSelector } from '../components/kelompok-selector'
+import { MonthPicker } from '../components/month-picker'
 import {
   useActivePrograms,
   useYearlyMatrixData,
@@ -18,17 +20,20 @@ import {
 } from '../hooks/use-lupg-queries'
 import { AttendanceCharts } from '../monthly-reports/sections/attendance-charts'
 import { currentMonthKey } from '../utils/month-utils'
+import { DesaOverviewTab } from './components/desa-overview-tab'
 import { ProgramAnalyticsCard } from './components/program-analytics-card'
 import { YearPicker } from './components/year-picker'
 
 interface Props {
   initialYear: number
   initialKelompokId?: string
+  initialTab?: 'desa' | 'kelompok'
 }
 
 export function YearlyProgramTracker({
   initialYear,
   initialKelompokId,
+  initialTab,
 }: Props) {
   const [year, setYear] = useState(initialYear)
   const [kelompokId, setKelompokId] = useState<string | undefined>(
@@ -39,6 +44,31 @@ export function YearlyProgramTracker({
   const kelompokName = useAuthStore((s) => s.auth.kelompok)
   const typedRole = role as Role
   const isTeamManager = typedRole === 'team_manager'
+
+  // Admin default = 'desa'; TM forced to 'kelompok' (Desa Overview hidden).
+  const defaultTab: 'desa' | 'kelompok' = initialTab ?? 'desa'
+  const [tab, setTabState] = useState<'desa' | 'kelompok'>(defaultTab)
+  const [monthKey, setMonthKey] = useState<string>(currentMonthKey())
+
+  // Sync tab to URL so admins can bookmark either view.
+  const navigate = useNavigate()
+  const setTab = (next: 'desa' | 'kelompok') => {
+    setTabState(next)
+    navigate({
+      to: '/admin/lupg/programs',
+      search: {
+        tab: next,
+        year: String(year),
+        ...(kelompokId ? { kelompok: kelompokId } : {}),
+      },
+    })
+  }
+
+  // If user changes year, snap monthKey to Dec of that year (derived — no effect needed).
+  const effectiveMonthKey = monthKey.startsWith(`${year}-`)
+    ? monthKey
+    : `${year}-12`
+  const effectiveTab: 'desa' | 'kelompok' = isTeamManager ? 'kelompok' : tab
 
   const { data: kelompokOptions = [] } = useQuery({
     queryKey: ['lookup_values', 'GROUP'],
@@ -78,7 +108,7 @@ export function YearlyProgramTracker({
         </div>
       </Header>
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
-        <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+        <div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between'>
           <div>
             <h2 className='text-2xl font-bold tracking-tight'>
               Program Analytics {year}
@@ -89,14 +119,46 @@ export function YearlyProgramTracker({
             </p>
           </div>
           <div className='flex flex-wrap items-center gap-2'>
-            {!isTeamManager && (
+            {effectiveTab === 'desa' ? (
+              <MonthPicker monthKey={effectiveMonthKey} onChange={setMonthKey} />
+            ) : !isTeamManager ? (
               <KelompokSelector value={kelompokId} onChange={setKelompokId} />
-            )}
+            ) : null}
             <YearPicker year={year} onChange={setYear} />
           </div>
         </div>
+        {!isTeamManager && (
+          <div className='flex border-b'>
+            <button
+              type='button'
+              onClick={() => setTab('desa')}
+              className={
+                effectiveTab === 'desa'
+                  ? 'border-primary border-b-2 px-4 py-2 text-sm font-medium'
+                  : 'text-muted-foreground hover:text-foreground border-b-2 border-transparent px-4 py-2 text-sm'
+              }
+              aria-pressed={effectiveTab === 'desa'}
+            >
+              Desa Overview
+            </button>
+            <button
+              type='button'
+              onClick={() => setTab('kelompok')}
+              className={
+                effectiveTab === 'kelompok'
+                  ? 'border-primary border-b-2 px-4 py-2 text-sm font-medium'
+                  : 'text-muted-foreground hover:text-foreground border-b-2 border-transparent px-4 py-2 text-sm'
+              }
+              aria-pressed={effectiveTab === 'kelompok'}
+            >
+              Per Kelompok
+            </button>
+          </div>
+        )}
 
-        {!resolvedKelompokId ? (
+        {effectiveTab === 'desa' ? (
+          <DesaOverviewTab year={year} monthKey={effectiveMonthKey} />
+        ) : !resolvedKelompokId ? (
           <div className='text-muted-foreground rounded-lg border border-dashed p-10 text-center'>
             {isTeamManager ? 'Memuat kelompok...' : 'Pilih kelompok untuk mulai.'}
           </div>
