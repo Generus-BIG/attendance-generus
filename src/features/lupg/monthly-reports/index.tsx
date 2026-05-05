@@ -31,6 +31,8 @@ import { KelompokSelector } from '../components/kelompok-selector'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
+import { format, parseISO } from 'date-fns'
+import { id as idLocale } from 'date-fns/locale'
 
 export function MonthlyReportsList() {
   const { role, kelompok } = useAuthStore((s) => s.auth)
@@ -98,11 +100,14 @@ export function MonthlyReportsList() {
       </Header>
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
-          <div>
-            <h2 className='text-2xl font-bold tracking-tight'>
+          <div className='flex flex-col gap-1'>
+            <span className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.14em]'>
+              LUPG
+            </span>
+            <h2 className='text-3xl font-semibold tracking-tight text-foreground sm:text-[2rem]'>
               Laporan Bulanan
             </h2>
-            <p className='text-muted-foreground'>
+            <p className='text-muted-foreground text-sm'>
               {isTeamManager
                 ? 'Laporan bulanan untuk kelompok Anda.'
                 : 'Semua laporan bulanan per kelompok.'}
@@ -171,10 +176,10 @@ export function MonthlyReportsList() {
                           Ditandai selesai:{' '}
                         </span>
                         {r.submitted_at
-                          ? new Date(r.submitted_at).toLocaleDateString(
-                              'id-ID'
-                            )
-                          : '-'}
+                          ? format(parseISO(r.submitted_at), 'dd MMM yyyy', {
+                              locale: idLocale,
+                            })
+                          : '—'}
                       </div>
                     </>
                   ) : (
