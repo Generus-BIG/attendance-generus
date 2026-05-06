@@ -23,12 +23,15 @@ import { PasswordInput } from '@/components/password-input'
 
 const formSchema = z.object({
   email: z.email({
-    error: (iss) => (iss.input === '' ? 'Please enter your email' : undefined),
+    error: (iss) =>
+      iss.input === ''
+        ? 'Silakan masukkan email Anda'
+        : 'Format email tidak valid',
   }),
   password: z
     .string()
-    .min(1, 'Please enter your password')
-    .min(7, 'Password must be at least 7 characters'),
+    .min(1, 'Silakan masukkan kata sandi Anda')
+    .min(7, 'Kata sandi minimal 7 karakter'),
 })
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLFormElement> {
@@ -68,7 +71,7 @@ export function UserAuthForm({
       }
 
       analytics.signIn(data.email, true)
-      toast.success('Signed in successfully')
+      toast.success('Berhasil masuk')
 
       const targetPath = redirectTo || '/admin/dashboard'
       navigate({ to: targetPath, replace: true })
@@ -76,7 +79,7 @@ export function UserAuthForm({
       const errorMessage =
         err instanceof Error ? err.message : 'Unknown error'
       analytics.signInFailed(data.email, errorMessage)
-      toast.error('Something went wrong')
+      toast.error('Terjadi kesalahan')
       setIsLoading(false)
     }
   }
@@ -96,7 +99,7 @@ export function UserAuthForm({
               <FormLabel className='text-sm font-medium'>Email</FormLabel>
               <FormControl>
                 <Input
-                  placeholder='you@example.com'
+                  placeholder='anda@contoh.com'
                   type='email'
                   autoComplete='email'
                   autoFocus
@@ -113,17 +116,19 @@ export function UserAuthForm({
           render={({ field }) => (
             <FormItem>
               <div className='flex items-center justify-between'>
-                <FormLabel className='text-sm font-medium'>Password</FormLabel>
+                <FormLabel className='text-sm font-medium'>
+                  Kata Sandi
+                </FormLabel>
                 <Link
                   to='/forgot-password'
                   className='text-xs font-medium text-muted-foreground transition-colors hover:text-foreground'
                 >
-                  Forgot password?
+                  Lupa kata sandi?
                 </Link>
               </div>
               <FormControl>
                 <PasswordInput
-                  placeholder='Enter your password'
+                  placeholder='Masukkan kata sandi Anda'
                   autoComplete='current-password'
                   {...field}
                 />
@@ -137,7 +142,7 @@ export function UserAuthForm({
             <Loader2 className='h-4 w-4 animate-spin' />
           ) : (
             <>
-              Sign In
+              Masuk
               <ArrowRight className='ml-1.5 h-4 w-4' />
             </>
           )}

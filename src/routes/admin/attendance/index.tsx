@@ -17,6 +17,9 @@ const attendanceSearchSchema = z.object({
     .catch([]),
   // Per-column text filter
   name: z.string().optional().catch(''),
+  // Date range (yyyy-MM-dd, inclusive)
+  from: z.string().optional().catch(undefined),
+  to: z.string().optional().catch(undefined),
 })
 
 export const Route = createFileRoute('/admin/attendance/')({

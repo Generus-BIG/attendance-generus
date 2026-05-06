@@ -1,10 +1,17 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
+import {
+  getPermissions,
+  ROLE_LABELS,
+  type PermissionKey,
+  type Role,
+} from '@/lib/rbac'
 import { KELOMPOK } from '@/lib/schema'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -27,6 +34,53 @@ import { useManageRoleCRUD } from '../context/manage-role-context'
 import { type ManagedUser } from '../types'
 
 const ASSIGNABLE_ROLES = ['admin', 'team_manager', 'member'] as const
+
+const PERMISSION_KEYS: PermissionKey[] = [
+  'manageUsers',
+  'viewUsers',
+  'createParticipant',
+  'editParticipant',
+  'deleteParticipant',
+  'createForm',
+  'editForm',
+  'deleteForm',
+  'approveParticipant',
+  'createAttendance',
+  'editAttendance',
+  'deleteAttendance',
+]
+
+const PERMISSION_LABELS: Record<PermissionKey, string> = {
+  manageUsers: 'Kelola user & role',
+  viewUsers: 'Lihat daftar user',
+  createParticipant: 'Tambah peserta',
+  editParticipant: 'Edit peserta',
+  deleteParticipant: 'Hapus peserta',
+  createForm: 'Buat form absensi',
+  editForm: 'Edit form absensi',
+  deleteForm: 'Hapus form absensi',
+  approveParticipant: 'Setujui pendaftaran peserta',
+  createAttendance: 'Input absensi',
+  editAttendance: 'Edit absensi',
+  deleteAttendance: 'Hapus absensi',
+}
+
+function isEscalation(current: Role | undefined, next: Role): boolean {
+  if (!current || current === next) return false
+  const c = getPermissions(current)
+  const n = getPermissions(next)
+  return PERMISSION_KEYS.some((k) => !c[k] && n[k])
+}
+
+function grantedPermissions(
+  current: Role | undefined,
+  next: Role
+): PermissionKey[] {
+  if (!current) return []
+  const c = getPermissions(current)
+  const n = getPermissions(next)
+  return PERMISSION_KEYS.filter((k) => !c[k] && n[k])
+}
 
 function buildSchema(isEdit: boolean) {
   return z
@@ -68,6 +122,10 @@ type ManageRoleActionDialogProps = {
   onOpenChange: (open: boolean) => void
 }
 
+function StackedField({ children }: { children: React.ReactNode }) {
+  return <FormItem className='flex flex-col gap-1.5 space-y-0'>{children}</FormItem>
+}
+
 export function ManageRoleActionDialog({
   currentRow,
   open,
@@ -101,7 +159,12 @@ export function ManageRoleActionDialog({
     }
   }, [watchedRole, form])
 
-  const onSubmit = async (values: ManageRoleForm) => {
+  const [escalationConfirm, setEscalationConfirm] = useState<{
+    newRole: Role
+    granted: PermissionKey[]
+  } | null>(null)
+
+  const executeSubmit = async (values: ManageRoleForm) => {
     try {
       if (isEdit) {
         await updateUser(currentRow.id, {
@@ -128,6 +191,17 @@ export function ManageRoleActionDialog({
     }
   }
 
+  const onSubmit = form.handleSubmit((values) => {
+    if (isEdit && currentRow && isEscalation(currentRow.role, values.role)) {
+      setEscalationConfirm({
+        newRole: values.role,
+        granted: grantedPermissions(currentRow.role, values.role),
+      })
+      return
+    }
+    void executeSubmit(values)
+  })
+
   return (
     <Dialog
       open={open}
@@ -148,118 +222,127 @@ export function ManageRoleActionDialog({
         <Form {...form}>
           <form
             id='manage-role-form'
-            onSubmit={form.handleSubmit(onSubmit)}
-            className='space-y-4 p-0.5'
+            onSubmit={onSubmit}
+            className='p-0.5'
           >
-            <FormField
-              control={form.control}
-              name='full_name'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                  <FormLabel className='col-span-2 text-right'>Nama</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder='Masukkan nama lengkap'
-                      className='col-span-4'
-                      autoFocus
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
-              )}
-            />
-            {!isEdit && (
-              <FormField
-                control={form.control}
-                name='email'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>
-                      Email
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type='email'
-                        placeholder='email@example.com'
-                        className='col-span-4'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-            )}
-            <FormField
-              control={form.control}
-              name='password'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                  <FormLabel className='col-span-2 text-right'>
-                    Password
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type='password'
-                      placeholder={
-                        isEdit
-                          ? 'Kosongkan jika tidak diubah'
-                          : 'Min. 7 karakter'
-                      }
-                      className='col-span-4'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='role'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                  <FormLabel className='col-span-2 text-right'>Role</FormLabel>
-                  <SelectDropdown
-                    defaultValue={field.value}
-                    onValueChange={field.onChange}
-                    placeholder='Pilih role'
-                    className='col-span-4'
-                    items={[
-                      { label: 'Admin', value: 'admin' },
-                      { label: 'Team Manager', value: 'team_manager' },
-                      { label: 'Member', value: 'member' },
-                    ]}
+            <div className='flex flex-col gap-5'>
+              <section className='flex flex-col gap-3'>
+                <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                  Identitas
+                </div>
+                <FormField
+                  control={form.control}
+                  name='full_name'
+                  render={({ field }) => (
+                    <StackedField>
+                      <FormLabel>Nama</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder='Masukkan nama lengkap'
+                          autoFocus
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </StackedField>
+                  )}
+                />
+                {!isEdit && (
+                  <FormField
+                    control={form.control}
+                    name='email'
+                    render={({ field }) => (
+                      <StackedField>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='email'
+                            placeholder='email@example.com'
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </StackedField>
+                    )}
                   />
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
-              )}
-            />
-            {watchedRole === 'team_manager' && (
-              <FormField
-                control={form.control}
-                name='kelompok'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>
-                      Kelompok
-                    </FormLabel>
-                    <SelectDropdown
-                      defaultValue={field.value ?? ''}
-                      onValueChange={field.onChange}
-                      placeholder='Pilih kelompok'
-                      className='col-span-4'
-                      items={KELOMPOK.map((k) => ({ label: k, value: k }))}
-                    />
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
                 )}
-              />
-            )}
+                <FormField
+                  control={form.control}
+                  name='password'
+                  render={({ field }) => (
+                    <StackedField>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='password'
+                          placeholder={
+                            isEdit
+                              ? 'Kosongkan jika tidak diubah'
+                              : 'Min. 7 karakter'
+                          }
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </StackedField>
+                  )}
+                />
+              </section>
+
+              <section className='flex flex-col gap-3'>
+                <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                  Akses
+                </div>
+                <FormField
+                  control={form.control}
+                  name='role'
+                  render={({ field }) => (
+                    <StackedField>
+                      <FormLabel>Role</FormLabel>
+                      <SelectDropdown
+                        defaultValue={field.value}
+                        onValueChange={field.onChange}
+                        placeholder='Pilih role'
+                        items={[
+                          { label: 'Admin', value: 'admin' },
+                          { label: 'Team Manager', value: 'team_manager' },
+                          { label: 'Member', value: 'member' },
+                        ]}
+                      />
+                      <FormMessage />
+                    </StackedField>
+                  )}
+                />
+                {watchedRole === 'team_manager' && (
+                  <FormField
+                    control={form.control}
+                    name='kelompok'
+                    render={({ field }) => (
+                      <StackedField>
+                        <FormLabel>Kelompok</FormLabel>
+                        <SelectDropdown
+                          defaultValue={field.value ?? ''}
+                          onValueChange={field.onChange}
+                          placeholder='Pilih kelompok'
+                          items={KELOMPOK.map((k) => ({ label: k, value: k }))}
+                        />
+                        <FormMessage />
+                      </StackedField>
+                    )}
+                  />
+                )}
+              </section>
+            </div>
           </form>
         </Form>
         <DialogFooter>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={() => onOpenChange(false)}
+          >
+            Batal
+          </Button>
           <Button
             type='submit'
             form='manage-role-form'
@@ -273,6 +356,44 @@ export function ManageRoleActionDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+      <ConfirmDialog
+        open={!!escalationConfirm}
+        onOpenChange={(isOpen) => !isOpen && setEscalationConfirm(null)}
+        title='Eskalasi role: tindakan berdampak'
+        desc={
+          escalationConfirm && currentRow ? (
+            <div className='flex flex-col gap-3'>
+              <p>
+                Role <strong>{ROLE_LABELS[currentRow.role]}</strong> akan diubah
+                ke <strong>{ROLE_LABELS[escalationConfirm.newRole]}</strong>.
+                User akan mendapat {escalationConfirm.granted.length} izin
+                baru:
+              </p>
+              <ul className='bg-muted/40 rounded-md p-3 text-sm'>
+                {escalationConfirm.granted.map((k) => (
+                  <li key={k} className='flex items-center gap-2 py-0.5'>
+                    <span className='text-foreground'>+</span>
+                    <span>{PERMISSION_LABELS[k]}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className='text-muted-foreground text-xs'>
+                Pastikan user memang berhak menerima izin ini.
+              </p>
+            </div>
+          ) : (
+            ''
+          )
+        }
+        confirmText='Ya, eskalasi role'
+        cancelBtnText='Batal'
+        handleConfirm={() => {
+          if (escalationConfirm) {
+            void executeSubmit(form.getValues())
+            setEscalationConfirm(null)
+          }
+        }}
+      />
     </Dialog>
   )
 }

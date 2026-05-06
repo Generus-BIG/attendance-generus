@@ -12,9 +12,11 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { format, parseISO } from 'date-fns'
 import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
 import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -24,6 +26,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
+import { TableSkeleton } from '@/components/data-table/table-skeleton'
+import { DatePicker } from '@/components/date-picker'
 import { kelompokOptions } from '@/features/participants/data/data'
 import { attendanceStatusOptions } from '../data/data'
 import { getAttendanceList } from '../services'
@@ -65,13 +69,20 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
   // For TM: wait until kelompok UUID is resolved before fetching attendance
   const isTmReady = role !== 'team_manager' || !!tmGroupId
 
+  // Date-range filters from URL search state
+  const fromDate =
+    typeof search.from === 'string' && search.from ? search.from : undefined
+  const toDate =
+    typeof search.to === 'string' && search.to ? search.to : undefined
+
   const {
     data: rawData = [],
     refetch,
-    isLoading: _isLoading,
+    isLoading,
   } = useQuery<AttendanceWithParticipant[]>({
-    queryKey: ['attendance_list', tmGroupId],
-    queryFn: () => getAttendanceList(tmGroupId),
+    queryKey: ['attendance_list', tmGroupId, fromDate, toDate],
+    queryFn: () =>
+      getAttendanceList(tmGroupId, { from: fromDate, to: toDate }),
     enabled: isTmReady,
   })
 
@@ -165,6 +176,56 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
         'flex flex-1 flex-col gap-4'
       )}
     >
+      <div className='flex flex-wrap items-center gap-1.5'>
+        <span className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+          Periode
+        </span>
+        <DatePicker
+          selected={fromDate ? parseISO(fromDate) : undefined}
+          onSelect={(d) =>
+            navigate({
+              search: (prev) => ({
+                ...prev,
+                from: d ? format(d, 'yyyy-MM-dd') : undefined,
+              }),
+            })
+          }
+          placeholder='Dari'
+          className='w-44'
+        />
+        <span className='text-muted-foreground text-xs'>—</span>
+        <DatePicker
+          selected={toDate ? parseISO(toDate) : undefined}
+          onSelect={(d) =>
+            navigate({
+              search: (prev) => ({
+                ...prev,
+                to: d ? format(d, 'yyyy-MM-dd') : undefined,
+              }),
+            })
+          }
+          placeholder='Sampai'
+          className='w-44'
+        />
+        {(fromDate || toDate) && (
+          <Button
+            type='button'
+            variant='ghost'
+            size='sm'
+            onClick={() =>
+              navigate({
+                search: (prev) => ({
+                  ...prev,
+                  from: undefined,
+                  to: undefined,
+                }),
+              })
+            }
+          >
+            Reset
+          </Button>
+        )}
+      </div>
       <DataTableToolbar
         table={table}
         searchPlaceholder='Cari nama peserta...'
@@ -229,42 +290,56 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className='group/row'
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className={cn(
-                        'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
-                        cell.column.columnDef.meta?.className,
-                        cell.column.columnDef.meta?.tdClassName
-                      )}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+          {isLoading ? (
+            <TableSkeleton columns={table.getAllColumns().length} />
+          ) : (
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    className='group/row'
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className={cn(
+                          'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+                          cell.column.columnDef.meta?.className,
+                          cell.column.columnDef.meta?.tdClassName
+                        )}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className='h-24 text-center text-muted-foreground'
+                  >
+                    {fromDate || toDate ? (
+                      <>
+                        Tidak ada absensi pada periode yang dipilih. Coba reset
+                        filter periode.
+                      </>
+                    ) : (
+                      <>
+                        Belum ada data absensi. Catat kehadiran baru lewat{' '}
+                        <strong>Input Absensi</strong>.
+                      </>
+                    )}
+                  </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  Belum ada data absensi.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+              )}
+            </TableBody>
+          )}
         </Table>
       </div>
       <DataTablePagination table={table} className='mt-auto' />

@@ -1,0 +1,9 @@
+Photo ID: lSXpV8bDeMA
+Source: https://unsplash.com/photos/lSXpV8bDeMA
+Photographer: Guillaume Briard
+Profile: https://unsplash.com/@itsgiyom
+License: Unsplash License (free to use for commercial and non-commercial
+purposes without permission; attribution appreciated but not required).
+See https://unsplash.com/license for full terms.
+
+Used in: src/features/auth/auth-layout.tsx (sign-in hero panel).

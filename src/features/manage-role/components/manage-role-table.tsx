@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
+import { TableSkeleton } from '@/components/data-table/table-skeleton'
 import { useManageRoleCRUD } from '../context/manage-role-context'
 import { allRoleOptions, kelompokOptions } from '../data/data'
 import { useManageRoleColumns } from './manage-role-columns'
@@ -32,7 +33,7 @@ type DataTableProps = {
 }
 
 export function ManageRoleTable({ search, navigate }: DataTableProps) {
-  const { users: data, isLoading: _isLoading } = useManageRoleCRUD()
+  const { users: data, isLoading } = useManageRoleCRUD()
   const columns = useManageRoleColumns()
 
   const [rowSelection, setRowSelection] = useState({})
@@ -151,50 +152,55 @@ export function ManageRoleTable({ search, navigate }: DataTableProps) {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className='group/row'
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className={cn(
-                        'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
-                        (
-                          cell.column.columnDef.meta as
-                            | Record<string, string>
-                            | undefined
-                        )?.className,
-                        (
-                          cell.column.columnDef.meta as
-                            | Record<string, string>
-                            | undefined
-                        )?.tdClassName
-                      )}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+          {isLoading ? (
+            <TableSkeleton columns={table.getAllColumns().length} />
+          ) : (
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    className='group/row'
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className={cn(
+                          'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+                          (
+                            cell.column.columnDef.meta as
+                              | Record<string, string>
+                              | undefined
+                          )?.className,
+                          (
+                            cell.column.columnDef.meta as
+                              | Record<string, string>
+                              | undefined
+                          )?.tdClassName
+                        )}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className='h-24 text-center text-muted-foreground'
+                  >
+                    Belum ada user selain Anda. Klik{' '}
+                    <strong>Buat User Baru</strong> untuk menambah.
+                  </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  Tidak ada data user.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+              )}
+            </TableBody>
+          )}
         </Table>
       </div>
       <DataTablePagination table={table} className='mt-auto' />

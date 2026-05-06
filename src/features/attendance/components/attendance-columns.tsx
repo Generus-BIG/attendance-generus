@@ -50,7 +50,7 @@ export const attendanceColumns: ColumnDef<AttendanceWithParticipant>[] = [
     cell: ({ row }) => {
       const date = new Date(row.getValue('date'))
       return (
-        <span className='whitespace-nowrap'>
+        <span className='whitespace-nowrap tabular-nums'>
           {format(date, 'dd MMM yyyy', { locale: idLocale })}
         </span>
       )
@@ -60,17 +60,25 @@ export const attendanceColumns: ColumnDef<AttendanceWithParticipant>[] = [
     id: 'timestamp',
     accessorFn: (row) => row.timestamp || row.date,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Waktu' />
+      <DataTableColumnHeader
+        column={column}
+        title='Waktu'
+        className='justify-end text-right'
+      />
     ),
     cell: ({ row }) => {
       const timestamp = row.original.timestamp || row.original.date
-      if (!timestamp) return <span>-</span>
+      if (!timestamp)
+        return <span className='text-muted-foreground block text-right'>-</span>
       const date = new Date(timestamp)
       return (
-        <span className='whitespace-nowrap text-muted-foreground'>
+        <span className='whitespace-nowrap text-muted-foreground tabular-nums block text-right'>
           {format(date, 'HH:mm', { locale: idLocale })}
         </span>
       )
+    },
+    meta: {
+      className: cn('text-right'),
     },
   },
   {

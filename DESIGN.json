@@ -1,0 +1,236 @@
+{
+  "version": "1",
+  "northStar": "The Plain Register",
+  "northStarDescription": "A competent, quiet tool. No committed chromatic identity — personality through clarity, typographic hierarchy, and responsive structure. Shadcn-admin new-york baseline, used as-is.",
+  "personality": ["neutral", "workmanlike", "reliable"],
+  "moodWords": ["quiet", "considered", "legible", "consistent"],
+  "aspirationalReference": "Linear / Notion (neutral operator tools)",
+  "source": "shadcn-admin new-york baseline (first commit)",
+  "antiReferences": [
+    "bootstrap admin templates with coloured accent stripes",
+    "crypto/AI dashboards (neon, gradients, glassmorphism)",
+    "over-branded SaaS chrome",
+    "warm editorial aesthetics (Anthropic/Claude-style cream + terracotta)",
+    "navy or other committed brand-hue identities"
+  ],
+  "theme": "both (light default, dark follows shadcn convention)",
+  "viewports": ["admin-desktop", "team-manager-mobile", "projector-presentation"],
+  "colors": {
+    "background": {
+      "name": "Canvas",
+      "token": "--background",
+      "light": "oklch(1 0 0)",
+      "dark": "oklch(0.12 0 0)",
+      "role": "Pure white page"
+    },
+    "foreground": {
+      "name": "Ink",
+      "token": "--foreground",
+      "light": "oklch(0.129 0.042 264.695)",
+      "dark": "oklch(0.98 0 0)",
+      "role": "Body text — near-black with hair of slate tint (reads as neutral)"
+    },
+    "primary": {
+      "token": "--primary",
+      "light": "oklch(0.208 0.042 265.755)",
+      "dark": "oklch(0.98 0 0)",
+      "role": "Dark slate near-black (inverted in dark). CTAs, active states"
+    },
+    "primaryForeground": {
+      "token": "--primary-foreground",
+      "light": "oklch(0.984 0.003 247.858)",
+      "dark": "oklch(0.1 0 0)"
+    },
+    "card": {
+      "token": "--card",
+      "light": "oklch(1 0 0)",
+      "dark": "oklch(0.0 0 0)"
+    },
+    "secondary": {
+      "token": "--secondary",
+      "light": "oklch(0.968 0.007 247.896)",
+      "dark": "oklch(0.15 0 0)"
+    },
+    "muted": {
+      "token": "--muted",
+      "light": "oklch(0.968 0.007 247.896)",
+      "dark": "oklch(0.15 0 0)"
+    },
+    "mutedForeground": {
+      "token": "--muted-foreground",
+      "light": "oklch(0.554 0.046 257.417)",
+      "dark": "oklch(0.65 0 0)"
+    },
+    "accent": {
+      "token": "--accent",
+      "light": "oklch(0.968 0.007 247.896)",
+      "dark": "oklch(0.15 0 0)"
+    },
+    "border": {
+      "token": "--border",
+      "light": "oklch(0.929 0.013 255.508)",
+      "dark": "oklch(0.2 0 0)"
+    },
+    "input": {
+      "token": "--input",
+      "light": "oklch(0.929 0.013 255.508)",
+      "dark": "oklch(0.2 0 0)"
+    },
+    "ring": {
+      "token": "--ring",
+      "light": "oklch(0.704 0.04 256.788)",
+      "dark": "oklch(0.5 0 0)",
+      "role": "Focus indicator — mid slate"
+    },
+    "destructive": {
+      "token": "--destructive",
+      "light": "oklch(0.577 0.245 27.325)",
+      "dark": "oklch(0.6 0.2 25)",
+      "role": "Red — delete, error, alpa. Reserved for genuinely destructive/error states only."
+    },
+    "success": {
+      "token": "--success",
+      "light": "oklch(0.55 0.14 150)",
+      "dark": "oklch(0.66 0.15 150)",
+      "role": "Semantic success green"
+    },
+    "brandAccent": {
+      "token": "--brand-accent",
+      "light": "resolves to --primary",
+      "dark": "resolves to --primary",
+      "role": "Historically declared. Resolves to primary (dark slate) so Submit CTAs stay neutral. Used by PublicAttendanceForm submit button."
+    },
+    "chartSeries": [
+      { "token": "--chart-1", "light": "oklch(0.646 0.222 41.116)",   "dark": "oklch(0.7 0.15 200)",  "hint": "orange (light) / blue (dark)" },
+      { "token": "--chart-2", "light": "oklch(0.6 0.118 184.704)",    "dark": "oklch(0.65 0.15 150)", "hint": "teal / green" },
+      { "token": "--chart-3", "light": "oklch(0.398 0.07 227.392)",   "dark": "oklch(0.75 0.15 80)",  "hint": "dark blue / yellow" },
+      { "token": "--chart-4", "light": "oklch(0.828 0.189 84.429)",   "dark": "oklch(0.6 0.2 280)",   "hint": "yellow / purple" },
+      { "token": "--chart-5", "light": "oklch(0.769 0.188 70.08)",    "dark": "oklch(0.65 0.2 30)",   "hint": "amber / red-orange" }
+    ],
+    "heatmapRamp": {
+      "description": "Neutral grayscale, 5-tier. No brand hue — density readable as pure lightness gradient.",
+      "light": [
+        { "token": "--heatmap-0", "value": "oklch(0.97 0 0)", "label": "no meeting" },
+        { "token": "--heatmap-1", "value": "oklch(0.88 0 0)", "label": "<25%" },
+        { "token": "--heatmap-2", "value": "oklch(0.72 0 0)", "label": "25–49%" },
+        { "token": "--heatmap-3", "value": "oklch(0.50 0 0)", "label": "50–74%" },
+        { "token": "--heatmap-4", "value": "oklch(0.25 0 0)", "label": "≥75%" }
+      ],
+      "dark": [
+        { "token": "--heatmap-0", "value": "oklch(0.20 0 0)", "label": "no meeting" },
+        { "token": "--heatmap-1", "value": "oklch(0.32 0 0)", "label": "<25%" },
+        { "token": "--heatmap-2", "value": "oklch(0.46 0 0)", "label": "25–49%" },
+        { "token": "--heatmap-3", "value": "oklch(0.62 0 0)", "label": "50–74%" },
+        { "token": "--heatmap-4", "value": "oklch(0.82 0 0)", "label": "≥75%" }
+      ]
+    }
+  },
+  "typography": {
+    "sans": { "family": "Geist", "weights": "100–900 variable", "source": "Google Fonts", "use": "primary UI, body, all text" },
+    "mono": { "family": "Geist Mono", "weights": "100–900 variable", "source": "Google Fonts", "use": "tabular numerals, code, timestamps" },
+    "serif": "not in default stack; system ui-serif available as exception only",
+    "display": "not in default stack — scale + weight does hierarchy work",
+    "legacyAliases": {
+      "--font-inter": "resolves to --font-sans",
+      "--font-manrope": "resolves to --font-sans",
+      "--font-geist": "resolves to --font-sans",
+      "--font-geist-mono": "resolves to --font-mono"
+    },
+    "scale": [
+      { "step": "display",  "size": "36–48px",          "weight": 700, "tracking": "-0.02em",  "lineHeight": 1.1,  "use": "Presentation hero numbers, major openers" },
+      { "step": "h1",       "size": "24–28px",          "weight": 700, "tracking": "-0.015em", "lineHeight": 1.25, "use": "Page titles" },
+      { "step": "h2",       "size": "18–20px",          "weight": 600, "tracking": "-0.01em",  "lineHeight": 1.35, "use": "Section headings, dialog titles" },
+      { "step": "h3",       "size": "16px",             "weight": 600, "tracking": "0",        "lineHeight": 1.4,  "use": "Sub-sections, card titles" },
+      { "step": "body",     "size": "14–15px",          "weight": 400, "tracking": "0",        "lineHeight": 1.55, "use": "All prose and UI" },
+      { "step": "bodySm",   "size": "13px",             "weight": 400, "tracking": "0",        "lineHeight": 1.5,  "use": "Secondary copy, captions" },
+      { "step": "label",    "size": "12px",             "weight": 500, "tracking": "+0.04em",  "lineHeight": null, "use": "Uppercase eyebrow labels, column headers" },
+      { "step": "mono",     "size": "13px",             "weight": 400, "tracking": "tabular",  "lineHeight": 1.5,  "use": "Numbers in columns, dates, codes" }
+    ],
+    "rules": {
+      "tabularNums": "always on numbers in columns",
+      "bodyMin": "14px",
+      "bodyPreferred": "15px",
+      "prosLineLength": "65–75ch max",
+      "scaleRatioMin": 1.25,
+      "sansEverywhere": "no serif or display fonts in default stack",
+      "weightOverSize": "prefer weight changes over size jumps when space is tight"
+    }
+  },
+  "radius": {
+    "base": "0.625rem",
+    "sm": "calc(0.625rem - 4px)",
+    "md": "calc(0.625rem - 2px)",
+    "lg": "0.625rem",
+    "xl": "calc(0.625rem + 4px)",
+    "philosophy": "shadcn-admin default — medium-rounded, neither sharp nor pill"
+  },
+  "elevation": {
+    "philosophy": "Flat-leaning. Depth from hairline borders and surface variants, not from stacked shadows. Shadow appears conservatively via shadcn primitives — never decoratively.",
+    "surfaceHierarchy": [
+      "background (canvas white) — page floor",
+      "card (white) — lifted surface, marked by border rather than shadow",
+      "muted / accent / secondary (very light cool gray) — grouped section, inactive region",
+      "border (cool-gray hairline) — division between all of the above"
+    ],
+    "levels": {
+      "none":      { "value": "none",                                                                            "use": "default for all surfaces" },
+      "shadow-xs": { "value": "0 1px 2px rgb(0 0 0 / 0.05)",                                                    "use": "buttons — very subtle depth marker" },
+      "shadow-sm": { "value": "0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",                 "use": "cards when used, popovers, dropdowns" }
+    }
+  },
+  "components": {
+    "button": {
+      "variants": ["primary", "secondary", "outline", "ghost", "destructive", "link"],
+      "radius": "rounded-md",
+      "shadow": "shadow-xs",
+      "fontSize": "13px",
+      "fontWeight": 500,
+      "note": "shadcn defaults — do not introduce new variants for brand accent purposes"
+    },
+    "card": {
+      "classes": "shadow-sm border bg-card rounded-xl",
+      "rules": ["use sparingly — many groupings better as heading + border-bottom + content block", "never nest cards inside cards"]
+    },
+    "badge": {
+      "variants": [
+        { "name": "default",     "semantic": "Hadir / primary" },
+        { "name": "secondary",   "semantic": "Neutral status / Izin" },
+        { "name": "outline",     "semantic": "Tertiary tags" },
+        { "name": "destructive", "semantic": "Alpa / rejected / error" }
+      ],
+      "radius": "rounded-md",
+      "fontSize": "11px"
+    },
+    "input": {
+      "classes": "border-input bg-background rounded-md shadow-xs",
+      "focus": "2px slate outline-ring/50 at 2px offset",
+      "mobileRule": "font-size: 16px minimum (iOS zoom prevention)"
+    },
+    "dialog": {
+      "use": "focused single actions, confirmations",
+      "rule": "always wrap destructive actions in ConfirmDialog (AlertDialog)"
+    },
+    "sheet": { "use": "contextual side panels (record detail, filter drawer)" },
+    "popover": { "use": "inline secondary content attached to trigger" }
+  },
+  "absoluteBans": [
+    "coloured brand accent in UI chrome — this baseline is deliberately neutral",
+    "chart colours used as decorative accents outside actual charts",
+    "border-left or border-right > 1px as coloured accent stripe",
+    "gradient text (background-clip: text + gradient)",
+    "glassmorphism (blur + semi-transparent decoration)",
+    "neon-on-dark or AI gradient palettes (cyan/purple/pink)",
+    "shadow-md or heavier in UI chrome",
+    "transform: scale() or translateY() on hover (no lift)",
+    "new Date(dateString) or .toISOString().slice(0,10) for dates",
+    "accordion shadcn primitive (not installed)",
+    "cards nested inside cards",
+    "emojis in UI chrome",
+    "pure black (#000) or pure white (#fff) in text — use slate-tinted tokens",
+    "serif fonts for body or UI (system serif available only as exception)",
+    "all-caps body text (reserve uppercase for short labels)"
+  ],
+  "knownGaps": [
+    "brand-accent currently resolves to primary — if a single accent moment becomes desirable (e.g. LUPG workspace distinction), introduce as explicit exception rather than as baseline change"
+  ]
+}

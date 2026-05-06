@@ -149,11 +149,7 @@ export function UnmatchedAttendanceTab() {
                   <TableCell>
                     <Badge
                       variant='outline'
-                      className={cn(
-                        attendance.status === 'hadir'
-                          ? 'border-teal-200 bg-teal-100/30 text-teal-900 dark:text-teal-200'
-                          : 'border-amber-200 bg-amber-100/30 text-amber-900 dark:text-amber-200'
-                      )}
+                      className='text-[0.6875rem] tracking-[0.08em] uppercase'
                     >
                       {attendance.status === 'hadir' ? 'Hadir' : 'Izin'}
                     </Badge>
@@ -162,20 +158,22 @@ export function UnmatchedAttendanceTab() {
                     <div className='flex justify-end gap-1'>
                       <PermissionGate allowed={can.approveParticipant}>
                         <Button
-                          size='sm'
+                          size='icon'
                           variant='ghost'
-                          className='text-blue-600 hover:text-blue-700'
+                          className='h-11 w-11'
                           onClick={() => openLinkDialog(attendance)}
                           title='Hubungkan ke peserta'
+                          aria-label='Hubungkan ke peserta'
                         >
                           <Link2 className='h-4 w-4' />
                         </Button>
                         <Button
-                          size='sm'
+                          size='icon'
                           variant='ghost'
-                          className='text-red-600 hover:text-red-700'
+                          className='h-11 w-11 text-destructive hover:text-destructive'
                           onClick={() => handleDelete(attendance)}
                           title='Hapus absensi'
+                          aria-label='Hapus absensi'
                         >
                           <X className='h-4 w-4' />
                         </Button>

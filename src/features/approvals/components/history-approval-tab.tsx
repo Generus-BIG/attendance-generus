@@ -131,7 +131,8 @@ export function HistoryApprovalTab() {
                   <Button
                     variant='ghost'
                     size='icon'
-                    className='h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive'
+                    className='h-11 w-11 text-destructive hover:bg-destructive/10 hover:text-destructive'
+                    aria-label='Hapus riwayat persetujuan'
                     onClick={() => setDeleteId(item.id)}
                   >
                     <Trash2 className='h-4 w-4' />
