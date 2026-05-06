@@ -1,36 +1,53 @@
 :root {
-  --radius: 0.5rem;
+  /* shadcn-admin new-york baseline — neutral operator palette, no committed chromatic identity */
+  --radius: 0.625rem;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
+
   --primary: oklch(0.208 0.042 265.755);
   --primary-foreground: oklch(0.984 0.003 247.858);
+
   --secondary: oklch(0.968 0.007 247.896);
   --secondary-foreground: oklch(0.208 0.042 265.755);
+
   --muted: oklch(0.968 0.007 247.896);
   --muted-foreground: oklch(0.554 0.046 257.417);
+
   --accent: oklch(0.968 0.007 247.896);
   --accent-foreground: oklch(0.208 0.042 265.755);
+
   --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+
   --border: oklch(0.929 0.013 255.508);
   --input: oklch(0.929 0.013 255.508);
   --ring: oklch(0.704 0.04 256.788);
-  /* Navy-anchored palette; see .impeccable.md Design Context */
-  --chart-1: oklch(0.68 0.14 55);    /* warm amber — Izin / warning / counterpoint */
-  --chart-2: oklch(0.42 0.10 258);   /* deep navy — Hadir / primary identity */
-  --chart-3: oklch(0.58 0.08 258);   /* mid navy-gray — tertiary series */
-  --chart-4: oklch(0.78 0.09 258);   /* pale navy — quaternary */
-  --chart-5: oklch(0.55 0.09 40);    /* muted terracotta — quinary, warmth family */
 
-  /* Heatmap ramp — 5-tier navy; see .impeccable.md Design Context */
-  --heatmap-0: oklch(0.95 0.005 258);   /* no meeting — near-muted */
-  --heatmap-1: oklch(0.88 0.04 258);    /* <25% */
-  --heatmap-2: oklch(0.74 0.08 258);    /* 25–49% */
-  --heatmap-3: oklch(0.55 0.12 258);    /* 50–74% */
-  --heatmap-4: oklch(0.35 0.14 258);    /* ≥75% */
+  /* Brand-accent resolves to primary — used by PublicAttendanceForm submit CTA. Neutral by default. */
+  --brand-accent: var(--primary);
+  --brand-accent-foreground: var(--primary-foreground);
+
+  /* Semantic success — simple muted green */
+  --success: oklch(0.55 0.14 150);
+
+  /* Shadcn default chart palette — vibrant rainbow for series differentiation in charts only */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  /* Heatmap ramp — neutral grayscale, 5-tier. Light → dark indicates density. */
+  --heatmap-0: oklch(0.97 0 0);   /* no meeting */
+  --heatmap-1: oklch(0.88 0 0);   /* <25% */
+  --heatmap-2: oklch(0.72 0 0);   /* 25–49% */
+  --heatmap-3: oklch(0.50 0 0);   /* 50–74% */
+  --heatmap-4: oklch(0.25 0 0);   /* ≥75% */
 
   --sidebar: var(--background);
   --sidebar-foreground: var(--foreground);
@@ -43,15 +60,13 @@
 }
 
 .dark {
-  /* Area Pendukung (Background) - Dark Gray (#252525) */
-  --background: oklch(0.16 0 0);
+  --background: oklch(0.12 0 0);
   --foreground: oklch(0.98 0 0);
 
-  /* Area Utama (Card) - Hitam Solid / Lebih Pekat (#0D0D0D) */
-  --card: oklch(0.052 0 0);
+  --card: oklch(0.0 0 0);
   --card-foreground: oklch(0.98 0 0);
 
-  --popover: oklch(0.052 0 0);
+  --popover: oklch(0.0 0 0);
   --popover-foreground: oklch(0.98 0 0);
 
   --primary: oklch(0.98 0 0);
@@ -67,27 +82,31 @@
   --accent-foreground: oklch(0.98 0 0);
 
   --destructive: oklch(0.6 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
 
-  /* Depth - Border halus untuk pemisah */
   --border: oklch(0.2 0 0);
   --input: oklch(0.2 0 0);
   --ring: oklch(0.5 0 0);
 
-  /* Dark-mode navy palette: lighter lightness, matching hues; see .impeccable.md */
-  --chart-1: oklch(0.76 0.12 55);    /* warm amber — Izin */
-  --chart-2: oklch(0.76 0.12 258);   /* soft navy — Hadir */
-  --chart-3: oklch(0.58 0.04 258);   /* mid navy-gray (desaturated for distinction) */
-  --chart-4: oklch(0.40 0.10 258);   /* deeper navy */
-  --chart-5: oklch(0.70 0.09 40);    /* muted terracotta */
+  --brand-accent: var(--primary);
+  --brand-accent-foreground: var(--primary-foreground);
 
-  /* Heatmap ramp — dark mode, inverted lightness to remain readable on dark surfaces */
-  --heatmap-0: oklch(0.22 0.01 258);    /* no meeting — near-muted */
-  --heatmap-1: oklch(0.30 0.04 258);    /* <25% */
-  --heatmap-2: oklch(0.46 0.10 258);    /* 25–49% — shifted from 0.42/0.08 to resolve chart-4 dark collision */
-  --heatmap-3: oklch(0.58 0.11 258);    /* 50–74% */
-  --heatmap-4: oklch(0.80 0.14 258);    /* ≥75% */
+  --success: oklch(0.66 0.15 150);
 
-  --sidebar-background: oklch(0.16 0 0);
+  --chart-1: oklch(0.7 0.15 200);
+  --chart-2: oklch(0.65 0.15 150);
+  --chart-3: oklch(0.75 0.15 80);
+  --chart-4: oklch(0.6 0.2 280);
+  --chart-5: oklch(0.65 0.2 30);
+
+  /* Dark-mode heatmap — inverted grayscale, lighter = denser */
+  --heatmap-0: oklch(0.20 0 0);
+  --heatmap-1: oklch(0.32 0 0);
+  --heatmap-2: oklch(0.46 0 0);
+  --heatmap-3: oklch(0.62 0 0);
+  --heatmap-4: oklch(0.82 0 0);
+
+  --sidebar: oklch(0.12 0 0);
   --sidebar-foreground: oklch(0.96 0 0);
   --sidebar-primary: oklch(0.98 0 0);
   --sidebar-primary-foreground: oklch(0.1 0 0);
@@ -98,16 +117,20 @@
 }
 
 @theme inline {
-  --font-inter: 'Inter', 'sans-serif';
-  --font-manrope: 'Manrope', 'sans-serif';
-  --font-geist: 'Geist', 'Inter', system-ui, sans-serif;
-  --font-geist-mono: 'Geist Mono', ui-monospace, 'SF Mono', Consolas, Menlo, monospace;
+  /* Fonts — baseline Geist stack. Legacy aliases resolve to same stack for backward compatibility. */
+  --font-sans: 'Geist', 'Inter', system-ui, sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Consolas, Menlo, monospace;
+
+  --font-inter: var(--font-sans);
+  --font-manrope: var(--font-sans);
+  --font-geist: var(--font-sans);
+  --font-geist-mono: var(--font-mono);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -123,6 +146,7 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -139,4 +163,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-foreground: var(--brand-accent-foreground);
+  --color-success: var(--success);
 }

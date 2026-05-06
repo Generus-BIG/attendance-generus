@@ -99,13 +99,13 @@ function PublicFormPage() {
   }
 
   return (
-    <div className='min-h-dvh w-full bg-background sm:bg-zinc-50/50 dark:sm:bg-zinc-950/50 p-0 sm:p-8 md:p-12 flex flex-col'>
-      <div className='mx-auto max-w-2xl w-full flex-1 flex flex-col justify-center sm:block'>
+    <div className='min-h-dvh w-full bg-background p-0 sm:bg-muted/40 sm:p-8 md:p-12'>
+      <div className='mx-auto w-full max-w-2xl'>
         <PublicAttendanceForm formConfig={formConfig} />
 
-        <div className='mt-8 pb-8 sm:pb-0 text-center'>
-          <p className='text-[13px] font-medium text-zinc-400 dark:text-zinc-500'>
-            &copy; {new Date().getFullYear()} Developed with 💌
+        <div className='mt-8 pb-8 text-center sm:pb-4'>
+          <p className='text-[13px] font-medium text-muted-foreground'>
+            &copy; {new Date().getFullYear()} Absensi MuMiBig
           </p>
         </div>
       </div>
