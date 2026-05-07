@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { id as idLocale } from 'date-fns/locale'
-import { Check, Loader2, ChevronsUpDown } from 'lucide-react'
+import { CheckCircle2, Loader2, ChevronsUpDown } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   KELOMPOK,
@@ -23,8 +23,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 import {
   Command,
   CommandEmpty,
@@ -216,43 +216,47 @@ export function PublicAttendanceForm({
 
     return (
       <Card className='mx-auto w-full max-w-lg border-0 bg-background shadow-none sm:rounded-lg sm:border sm:border-border/40 sm:shadow-xl'>
-        <CardContent className='flex flex-col gap-8 px-6 pt-12 pb-8 sm:px-10 sm:pt-14'>
-          <div className='flex items-center gap-3'>
-            <Check
-              className='h-5 w-5 shrink-0 animate-in text-brand-accent duration-300 ease-out zoom-in motion-reduce:animate-none'
-              strokeWidth={3}
+        <CardContent className='flex flex-col items-center gap-6 px-6 pt-10 pb-8 text-center sm:px-10 sm:pt-12'>
+          <div className='flex h-16 w-16 items-center justify-center rounded-full bg-green-50'>
+            <CheckCircle2
+              className='h-10 w-10 animate-in text-green-500 duration-300 ease-out zoom-in motion-reduce:animate-none'
+              strokeWidth={1.75}
             />
-            <span className='font-mono text-[13px] tracking-wider text-muted-foreground uppercase tabular-nums'>
-              Absensi tersimpan &middot;{' '}
-              {format(new Date(), 'dd MMM yyyy', { locale: idLocale })}
-            </span>
           </div>
 
-          <div className='space-y-3'>
-            <h1 className='font-display text-[1.75rem] leading-[1.1] font-semibold tracking-tight text-foreground'>
+          <span className='font-mono text-[12px] tracking-widest text-muted-foreground uppercase tabular-nums'>
+            Absensi tersimpan &middot;{' '}
+            {format(new Date(), 'dd MMM yyyy', { locale: idLocale })}
+          </span>
+
+          <div className='space-y-2'>
+            <h1 className='font-display text-[1.75rem] leading-[1.15] font-bold tracking-tight text-foreground'>
               Alhamdulillah, {honorific} {submittedName || 'peserta'}.
             </h1>
             <p className='text-[15px] leading-relaxed text-muted-foreground'>
               Absensi untuk{' '}
-              <span className='font-medium text-foreground'>
+              <span className='font-semibold text-foreground'>
                 {formConfig.title}
               </span>{' '}
               sudah tercatat.
             </p>
           </div>
 
-          <p className='text-[14px] leading-relaxed text-muted-foreground italic'>
+          <p className='max-w-sm text-[14px] leading-relaxed text-muted-foreground italic'>
             Alhamdulillahi Jazakumullahu Khoiro. Jika ada teman yang belum
             absen, mohon amsol diingatkan.
           </p>
-        </CardContent>
-        <CardFooter className='flex items-center justify-between gap-4 border-t border-border/60 px-6 pt-6 pb-10 sm:px-10'>
-          <span className='text-[13px] text-muted-foreground'>
+
+          <Separator className='my-1' />
+
+          <p className='text-[13px] text-muted-foreground'>
             Kamu bisa menutup halaman ini.
-          </span>
-          <button
+          </p>
+
+          <Button
             type='button'
-            className='text-[13px] font-semibold text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-foreground'
+            variant='outline'
+            className='h-11 min-w-40 rounded-lg px-6 text-[14px] font-semibold'
             onClick={() => {
               setIsSubmitted(false)
               setSubmittedName('')
@@ -271,9 +275,9 @@ export function PublicAttendanceForm({
               setDebouncedQuery('')
             }}
           >
-            Kirim absensi lain →
-          </button>
-        </CardFooter>
+            Kirim absensi lain
+          </Button>
+        </CardContent>
       </Card>
     )
   }
@@ -637,21 +641,36 @@ export function PublicAttendanceForm({
               )}
             </div>
 
-            <div className='pt-2 sm:flex sm:justify-end sm:pt-4'>
-              <Button
-                type='submit'
-                className='h-14 w-full rounded-lg bg-brand-accent text-[15px] font-semibold text-brand-accent-foreground shadow-sm transition-[filter,background-color] hover:brightness-95 disabled:pointer-events-none disabled:opacity-50 sm:h-12 sm:w-48'
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <span className='flex items-center gap-2'>
-                    <Loader2 className='h-4 w-4 animate-spin' />
-                    <span>Menyimpan</span>
-                  </span>
-                ) : (
-                  'Submit'
-                )}
-              </Button>
+            <div className='space-y-6 pt-4 sm:pt-6'>
+              <div className='flex justify-end'>
+                <Button
+                  type='submit'
+                  className='h-11 px-8 rounded-xl bg-foreground text-[14px] font-semibold text-background shadow-md transition-[filter,background-color] hover:brightness-110 disabled:pointer-events-none disabled:opacity-50'
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <span className='flex items-center gap-2'>
+                      <Loader2 className='h-4 w-4 animate-spin' />
+                      <span>Menyimpan</span>
+                    </span>
+                  ) : (
+                    'Submit'
+                  )}
+                </Button>
+              </div>
+
+              <div className='flex flex-col items-center gap-2 text-center'>
+                <p className='text-[14px] text-muted-foreground'>
+                  Belum nemu namamu?
+                </p>
+                <Link
+                  to='/register/add-participant'
+                  search={{ slug: formConfig.slug }}
+                  className='text-[15px] font-semibold text-foreground underline decoration-foreground underline-offset-3 transition-opacity hover:opacity-75'
+                >
+                  Yuk isi data kamu disini
+                </Link>
+              </div>
             </div>
           </form>
         </Form>

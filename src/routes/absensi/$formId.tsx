@@ -104,8 +104,9 @@ function PublicFormPage() {
         <PublicAttendanceForm formConfig={formConfig} />
 
         <div className='mt-8 pb-8 text-center sm:pb-4'>
-          <p className='text-[13px] font-medium text-muted-foreground'>
-            &copy; {new Date().getFullYear()} Absensi MuMiBig
+          <p className='text-[13px] font-medium text-muted-foreground opacity-75'>
+            &copy; {new Date().getFullYear()} Developed with{' '}
+            <span aria-hidden='true'>💌</span>
           </p>
         </div>
       </div>

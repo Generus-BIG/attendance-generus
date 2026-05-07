@@ -29,11 +29,15 @@ export function getLupgNavGroups(role: Role): NavGroup[] {
     })
   }
 
-  generalItems.push({
-    title: 'Laporan Bulanan',
-    url: '/admin/lupg/reports',
-    icon: FileText,
-  })
+  if (!isAdmin) {
+    // Admin/super_admin see the Dashboard instead; the reports list is a
+    // team-manager surface.
+    generalItems.push({
+      title: 'Laporan Bulanan',
+      url: '/admin/lupg/reports',
+      icon: FileText,
+    })
+  }
 
   if (isAdmin) {
     generalItems.push({

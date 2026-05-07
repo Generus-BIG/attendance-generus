@@ -97,6 +97,10 @@ export const ROUTE_ACCESS: Record<string, Role[]> = {
   '/admin/manage-role': ['super_admin', 'admin'],
   '/admin/forms/create': ['super_admin', 'admin'],
   '/admin/lupg/dashboard': ['super_admin', 'admin'],
+  // Note: /admin/lupg/reports (the list) redirects admin/super_admin to the dashboard
+  // at the route-component level (see routes/admin/lupg/reports/index.tsx beforeLoad).
+  // The $monthlyReportId detail page stays accessible to all three roles so admins
+  // can click through to individual reports from the dashboard.
   // More specific entry must come before /admin/lupg/recap so longest-prefix
   // matching in route.tsx allows team_manager to reach the presentation viewer.
   '/admin/lupg/recap/present': ['super_admin', 'admin', 'team_manager'],
