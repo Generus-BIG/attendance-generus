@@ -50,6 +50,9 @@ export function getOrigin(req: IncomingMessage): string {
 
 export async function fetchBaseHtml(origin: string): Promise<string> {
   const res = await fetch(`${origin}/index.html`)
+  if (!res.ok) {
+    throw new Error(`fetchBaseHtml ${res.status}`)
+  }
   return res.text()
 }
 
