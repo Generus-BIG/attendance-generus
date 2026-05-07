@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
+import { getDefaultTheme } from '@/lib/app-settings.service'
 
 type Theme = 'dark' | 'light' | 'system'
 type ResolvedTheme = Exclude<Theme, 'system'>
 
 const DEFAULT_THEME = 'light'
 const THEME_COOKIE_NAME = 'vite-ui-theme'
+const THEME_SYNC_COOKIE_NAME = 'vite-ui-theme-sync'
 const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year
 
 type ThemeProviderProps = {
@@ -74,6 +76,38 @@ export function ThemeProvider({
 
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [theme, resolvedTheme])
+
+  // Sync with server-side default on mount.
+  // If the server's default_theme updated_at is newer than the local sync cookie,
+  // force-adopt the server's theme (same pattern as PaletteProvider).
+  useEffect(() => {
+    let cancelled = false
+
+    const syncWithServer = async () => {
+      try {
+        const serverDefault = await getDefaultTheme()
+        if (cancelled || !serverDefault) return
+
+        const lastSynced = getCookie(THEME_SYNC_COOKIE_NAME)
+        if (lastSynced === serverDefault.updated_at) return
+
+        _setTheme(serverDefault.theme)
+        setCookie(storageKey, serverDefault.theme, THEME_COOKIE_MAX_AGE)
+        setCookie(
+          THEME_SYNC_COOKIE_NAME,
+          serverDefault.updated_at,
+          THEME_COOKIE_MAX_AGE
+        )
+      } catch {
+        // Silent — unauthenticated users (public routes) will hit RLS / network errors.
+      }
+    }
+
+    void syncWithServer()
+    return () => {
+      cancelled = true
+    }
+  }, [storageKey])
 
   const setTheme = (theme: Theme) => {
     setCookie(storageKey, theme, THEME_COOKIE_MAX_AGE)
