@@ -134,7 +134,7 @@ export const participantsColumns: ColumnDef<Participant>[] = [
         : null
 
       return (
-        <span className='block max-w-[20ch] whitespace-normal wrap-break-word'>
+        <span className='block max-w-[20ch] whitespace-normal wrap-break-word tabular-nums'>
           {[birthPlace, formattedDate].filter(Boolean).join(', ')}
         </span>
       )
@@ -151,14 +151,21 @@ export const participantsColumns: ColumnDef<Participant>[] = [
   {
     id: 'age',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Usia' />
+      <DataTableColumnHeader
+        column={column}
+        title='Usia'
+        className='justify-end text-right'
+      />
     ),
     cell: ({ row }) => {
       const birthDate = row.original.birthDate
-      if (!birthDate) return <span className='text-muted-foreground'>-</span>
+      if (!birthDate)
+        return (
+          <span className='text-muted-foreground block text-right'>-</span>
+        )
 
       return (
-        <span className='block max-w-[8ch] whitespace-normal wrap-break-word tabular-nums'>
+        <span className='block max-w-[8ch] whitespace-normal wrap-break-word tabular-nums text-right'>
           {differenceInYears(new Date(), birthDate)} tahun
         </span>
       )
@@ -173,7 +180,7 @@ export const participantsColumns: ColumnDef<Participant>[] = [
       return a - b
     },
     meta: {
-      className: cn('hidden @2xl/content:table-cell'),
+      className: cn('hidden @2xl/content:table-cell text-right'),
     },
   },
   {

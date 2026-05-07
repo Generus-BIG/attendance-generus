@@ -1,8 +1,11 @@
 import { useMemo } from 'react'
 import { Link, useSearch, useNavigate } from '@tanstack/react-router'
 import { useQueries, useQuery } from '@tanstack/react-query'
-import { Loader2, Presentation, Printer } from 'lucide-react'
+import { format, parseISO } from 'date-fns'
+import { id as idLocale } from 'date-fns/locale'
+import { FileDown, Inbox, Loader2, Presentation } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -353,27 +356,33 @@ export function RekapDesa() {
           <ProfileDropdown />
         </div>
       </Header>
-      <Main className='flex flex-1 flex-col gap-4 print:gap-2 sm:gap-6'>
-        <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
-          <div>
-            <h2 className='text-2xl font-bold tracking-tight'>Rekap Desa</h2>
-            <p className='text-muted-foreground'>
+      <Main className='flex flex-1 flex-col gap-5 print:gap-2 sm:gap-7'>
+        <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
+          <div className='flex flex-col gap-1'>
+            <span className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.14em]'>
+              Rekap Desa
+            </span>
+            <h2 className='text-3xl font-semibold tracking-tight text-foreground sm:text-[2rem]'>
+              {formatMonthLabel(monthKey)}
+            </h2>
+            <p className='text-muted-foreground text-sm'>
               Konsolidasi laporan bulanan seluruh kelompok.
             </p>
           </div>
           <div className='flex flex-wrap items-center gap-2 print:hidden'>
             <MonthPicker monthKey={monthKey} onChange={setMonth} />
+            <span aria-hidden='true' className='bg-border hidden h-6 w-px sm:inline-block' />
             <Link
               to='/admin/lupg/recap/present'
               search={{ month: monthKey }}
             >
-              <Button variant='outline'>
+              <Button variant='outline' size='sm'>
                 <Presentation className='mr-2 h-4 w-4' />
                 Presentation
               </Button>
             </Link>
-            <Button variant='outline' onClick={() => window.print()}>
-              <Printer className='mr-2 h-4 w-4' />
+            <Button variant='outline' size='sm' onClick={() => window.print()}>
+              <FileDown className='mr-2 h-4 w-4' />
               Export PDF
             </Button>
           </div>
@@ -393,8 +402,14 @@ export function RekapDesa() {
               reportByKelompok={reportByKelompok}
               monthLabel={formatMonthLabel(monthKey)}
             />
-            <div className='text-muted-foreground rounded-lg border border-dashed p-10 text-center'>
-              Belum ada laporan untuk {formatMonthLabel(monthKey)}.
+            <div className='border-border/60 flex flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-12 text-center'>
+              <Inbox className='text-muted-foreground/70 h-8 w-8' aria-hidden='true' />
+              <p className='font-medium text-sm'>
+                Belum ada laporan untuk {formatMonthLabel(monthKey)}.
+              </p>
+              <p className='text-muted-foreground max-w-sm text-xs'>
+                Rekap akan muncul setelah kelompok mulai mengisi laporan bulanan.
+              </p>
             </div>
           </>
         ) : (
@@ -527,10 +542,12 @@ function StatusGridCard({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className='text-muted-foreground text-sm'>
+                    <TableCell className='text-muted-foreground text-sm tabular-nums'>
                       {r?.submitted_at
-                        ? new Date(r.submitted_at).toLocaleString('id-ID')
-                        : '-'}
+                        ? format(parseISO(r.submitted_at), 'dd MMM yyyy, HH:mm', {
+                            locale: idLocale,
+                          })
+                        : '—'}
                     </TableCell>
                   </TableRow>
                 )
@@ -610,9 +627,12 @@ function SensusRecapCard({
                   {row.perKK.map((n, i) => (
                     <TableCell
                       key={kelompokIds[i]}
-                      className='text-right tabular-nums'
+                      className={cn(
+                        'text-right tabular-nums',
+                        n === 0 && 'text-muted-foreground/60'
+                      )}
                     >
-                      {n || '-'}
+                      {n || '—'}
                     </TableCell>
                   ))}
                   <TableCell className='text-right font-semibold tabular-nums'>
@@ -699,9 +719,12 @@ function MetricsRecapCard({
                           return (
                             <TableCell
                               key={k.id}
-                              className='text-right tabular-nums'
+                              className={cn(
+                                'text-right tabular-nums',
+                                val == null && 'text-muted-foreground/60'
+                              )}
                             >
-                              {val != null ? `${val}${suffix}` : '-'}
+                              {val != null ? `${val}${suffix}` : '—'}
                             </TableCell>
                           )
                         })}
@@ -770,9 +793,16 @@ function SarprasRecapCard({
                   {e.pct}%
                 </TableCell>
                 <TableCell className='min-w-40'>
-                  <div className='bg-muted h-2 w-full rounded'>
+                  <div
+                    className='bg-muted/70 h-1.5 w-full overflow-hidden rounded-full'
+                    role='progressbar'
+                    aria-valuenow={e.pct}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`${e.k.value}: ${e.pct}% pengadaan`}
+                  >
                     <div
-                      className='bg-primary h-2 rounded'
+                      className='bg-foreground/85 h-full rounded-full transition-[width] duration-500 ease-out'
                       style={{ width: `${e.pct}%` }}
                     />
                   </div>
@@ -844,8 +874,10 @@ function ShodaqohRecapCard({
                 </TableCell>
               </TableRow>
             ))}
-            <TableRow className='border-t-2 font-semibold'>
-              <TableCell>Total</TableCell>
+            <TableRow className='bg-muted/40 font-semibold hover:bg-muted/40'>
+              <TableCell className='text-[0.6875rem] uppercase tracking-[0.12em]'>
+                Total
+              </TableCell>
               <TableCell className='text-right tabular-nums'>
                 Rp {totalNominal.toLocaleString('id-ID')}
               </TableCell>
@@ -895,24 +927,24 @@ function MustinRecapCard({
         <CardDescription>Catatan bulanan per kelompok.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className='flex flex-col gap-5'>
+        <div className='flex flex-col gap-7'>
           {kelompokList.map((k) => {
             const report = reportByKelompok.get(k.id)
             const kkRows = report
               ? sortNotes(rows.filter((r) => r.monthly_report_id === report.id))
               : []
             return (
-              <div key={k.id} className='flex flex-col gap-2'>
-                <div className='flex items-center justify-between border-b pb-1'>
-                  <span className='font-semibold'>{k.value}</span>
-                  <span className='text-muted-foreground text-xs'>
+              <div key={k.id} className='flex flex-col gap-3'>
+                <div className='flex items-baseline justify-between gap-3'>
+                  <h3 className='font-semibold tracking-tight'>{k.value}</h3>
+                  <span className='text-muted-foreground text-xs tabular-nums'>
                     {kkRows.length} item
                   </span>
                 </div>
                 {kkRows.length === 0 ? (
-                  <div className='text-muted-foreground text-sm'>
+                  <p className='text-muted-foreground text-sm'>
                     Tidak ada catatan.
-                  </div>
+                  </p>
                 ) : (
                   <div className='flex flex-col gap-2'>
                     {kkRows.map((n) => {
@@ -930,12 +962,12 @@ function MustinRecapCard({
                       return (
                         <div
                           key={n.id}
-                          className='rounded-md border p-3 text-sm'
+                          className='border-border/60 bg-muted/20 rounded-md border p-3.5 text-sm'
                         >
                           {(showStatusBadge || n.deadline || n.pic) && (
-                            <div className='mb-2 flex flex-wrap items-center gap-2'>
+                            <div className='mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-1'>
                               {showStatusBadge && (
-                                <span className='bg-muted inline-flex items-center rounded-full px-2 py-0.5 text-xs'>
+                                <span className='bg-background border-border/70 inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium'>
                                   {
                                     MUSTIN_STATUS_LABELS[
                                       n.status as MustinStatus
@@ -944,30 +976,30 @@ function MustinRecapCard({
                                 </span>
                               )}
                               {n.deadline && (
-                                <span className='text-muted-foreground text-xs'>
-                                  Deadline:{' '}
-                                  {new Date(n.deadline).toLocaleDateString(
-                                    'id-ID'
-                                  )}
+                                <span className='text-muted-foreground text-xs tabular-nums'>
+                                  Deadline{' '}
+                                  {format(parseISO(n.deadline), 'dd MMM yyyy', {
+                                    locale: idLocale,
+                                  })}
                                 </span>
                               )}
                               {n.pic && (
                                 <span className='text-muted-foreground text-xs'>
-                                  PIC: {n.pic}
+                                  PIC {n.pic}
                                 </span>
                               )}
                             </div>
                           )}
-                          <div className='grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]'>
+                          <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]'>
                             <div>
-                              <div className='text-muted-foreground text-xs font-medium uppercase tracking-wide'>
+                              <div className='text-muted-foreground/90 text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
                                 Pokok Masalah
                               </div>
                               <div className='mt-1 whitespace-pre-wrap font-medium'>
                                 {n.pokok_masalah}
                               </div>
                               {subs.length > 0 && (
-                                <ol className='text-muted-foreground mt-1 list-[lower-alpha] pl-5 text-xs'>
+                                <ol className='text-muted-foreground mt-1.5 list-[lower-alpha] pl-5 text-xs leading-relaxed'>
                                   {subs.map((s, i) => (
                                     <li key={i}>{s}</li>
                                   ))}
@@ -975,10 +1007,10 @@ function MustinRecapCard({
                               )}
                             </div>
                             <div>
-                              <div className='text-muted-foreground text-xs font-medium uppercase tracking-wide'>
+                              <div className='text-muted-foreground/90 text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
                                 Keputusan / Rencana
                               </div>
-                              <div className='mt-1 whitespace-pre-wrap'>
+                              <div className='mt-1 whitespace-pre-wrap leading-relaxed'>
                                 {n.keputusan_rencana || (
                                   <span className='text-muted-foreground italic'>
                                     (kosong)

@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { format, parseISO } from 'date-fns'
+import { id as idLocale } from 'date-fns/locale'
 import { Loader2 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { Header } from '@/components/layout/header'
@@ -7,14 +9,7 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { ConfigDrawer } from '@/components/config-drawer'
-import { Badge } from '@/components/ui/badge'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { PageHeader } from '@/components/page-header'
 import { Input } from '@/components/ui/input'
 import {
   Table,
@@ -24,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
@@ -39,6 +35,7 @@ import {
   type CategoryCode,
 } from '../constants'
 import { type DerivedGpnSensusRow, type SensusGender } from '../types'
+import { SensusCardList } from './components/sensus-card-list'
 
 export function SensusMaster() {
   const { role, kelompok } = useAuthStore((s) => s.auth)
@@ -65,6 +62,16 @@ export function SensusMaster() {
   const { data: rows = [], isLoading } = useSensus(resolvedKelompokId)
   const { data: derivedRaw = [] } = useDerivedGpnSensus(resolvedKelompokId)
 
+  const latestUpdatedAt = useMemo(() => {
+    if (rows.length === 0) return null
+    const timestamps = rows
+      .map((r) => r.last_updated_at)
+      .filter((t): t is string => typeof t === 'string')
+    if (timestamps.length === 0) return null
+    const sorted = timestamps.sort()
+    return sorted[sorted.length - 1] ?? null
+  }, [rows])
+
   const byCell: Record<string, number> = {}
   for (const r of rows) byCell[`${r.category_code}_${r.gender}`] = r.count
 
@@ -87,23 +94,19 @@ export function SensusMaster() {
         </div>
       </Header>
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
-        <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
-          <div>
-            <h2 className='text-2xl font-bold tracking-tight'>
-              Sensus Generus
-            </h2>
-            <p className='text-muted-foreground'>
-              Data master peserta per kategori × gender. Update saat ada
-              perubahan.
-            </p>
-          </div>
-          {!isTeamManager && (
-            <KelompokSelector
-              value={adminKelompokId}
-              onChange={setAdminKelompokId}
-            />
-          )}
-        </div>
+        <PageHeader
+          kicker='LUPG · Sensus'
+          title='Sensus Generus'
+          description='Data master peserta per kategori × gender. Update saat ada perubahan.'
+          actions={
+            !isTeamManager ? (
+              <KelompokSelector
+                value={adminKelompokId}
+                onChange={setAdminKelompokId}
+              />
+            ) : null
+          }
+        />
 
         {!resolvedKelompokId ? (
           <div className='rounded-lg border border-dashed p-10 text-center text-muted-foreground'>
@@ -115,71 +118,112 @@ export function SensusMaster() {
             Memuat sensus...
           </div>
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Sensus Per Kategori</CardTitle>
-              <CardDescription>
-                Klik sel angka untuk edit. Auto-save saat blur.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className='overflow-x-auto'>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Kategori</TableHead>
-                    <TableHead className='text-right'>L</TableHead>
-                    <TableHead className='text-right'>P</TableHead>
-                    <TableHead className='text-right'>Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {CATEGORY_CODES.map((code) => {
-                    const isDerived = code === 'GPN_A' || code === 'GPN_B'
-                    const l = isDerived
-                      ? (derivedByKey.get(`${code}__L`) ?? 0)
-                      : (byCell[`${code}_L`] ?? 0)
-                    const p = isDerived
-                      ? (derivedByKey.get(`${code}__P`) ?? 0)
-                      : (byCell[`${code}_P`] ?? 0)
-                    return (
-                      <TableRow key={code}>
-                        <TableCell className='font-medium'>
-                          {CATEGORY_LABELS[code]}
-                        </TableCell>
-                        <TableCell className='text-right'>
-                          {isDerived ? (
-                            <DerivedCell count={l} />
-                          ) : (
-                            <SensusCell
-                              kelompokId={resolvedKelompokId}
-                              categoryCode={code}
-                              gender='L'
-                              initial={l}
-                            />
+          <>
+            <div className='flex flex-wrap items-baseline gap-x-4 gap-y-1 border-border/60 border-b pb-3'>
+              <div className='flex items-baseline gap-1.5'>
+                <span className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                  Periode
+                </span>
+                <span className='text-sm font-semibold'>
+                  {format(new Date(), 'MMMM yyyy', { locale: idLocale })}
+                </span>
+                <span className='text-muted-foreground text-xs'>(berjalan)</span>
+              </div>
+              <div className='flex items-baseline gap-1.5'>
+                <span className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                  Diperbarui
+                </span>
+                <span className='text-sm tabular-nums'>
+                  {latestUpdatedAt
+                    ? format(parseISO(latestUpdatedAt), 'dd MMM yyyy, HH:mm', {
+                        locale: idLocale,
+                      })
+                    : 'Belum ada'}
+                </span>
+              </div>
+              <div className='text-muted-foreground ms-auto max-w-[48ch] text-xs'>
+                Sensus adalah data master yang selalu mencerminkan keadaan saat ini.
+                Snapshot per bulan otomatis dibuat saat laporan bulanan dikirim.
+              </div>
+            </div>
+            <div className='hidden md:block'>
+              <div className='rounded-md border'>
+                <Table>
+                  <TableHeader>
+                    <TableRow className='hover:bg-transparent'>
+                      <TableHead>Kategori</TableHead>
+                      <TableHead className='text-right'>L</TableHead>
+                      <TableHead className='text-right'>P</TableHead>
+                      <TableHead className='text-right'>Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {CATEGORY_CODES.map((code) => {
+                      const isDerived = code === 'GPN_A' || code === 'GPN_B'
+                      const l = isDerived
+                        ? (derivedByKey.get(`${code}__L`) ?? 0)
+                        : (byCell[`${code}_L`] ?? 0)
+                      const p = isDerived
+                        ? (derivedByKey.get(`${code}__P`) ?? 0)
+                        : (byCell[`${code}_P`] ?? 0)
+                      return (
+                        <TableRow
+                          key={code}
+                          className={cn(
+                            isDerived && 'bg-muted/40 hover:bg-muted/40'
                           )}
-                        </TableCell>
-                        <TableCell className='text-right'>
-                          {isDerived ? (
-                            <DerivedCell count={p} />
-                          ) : (
-                            <SensusCell
-                              kelompokId={resolvedKelompokId}
-                              categoryCode={code}
-                              gender='P'
-                              initial={p}
-                            />
-                          )}
-                        </TableCell>
-                        <TableCell className='text-right font-semibold tabular-nums'>
-                          {l + p}
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                        >
+                          <TableCell className='font-medium'>
+                            {CATEGORY_LABELS[code]}
+                            {isDerived && (
+                              <span className='text-muted-foreground ms-2 text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                                Otomatis
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className='text-right'>
+                            {isDerived ? (
+                              <DerivedCell count={l} />
+                            ) : (
+                              <SensusCell
+                                kelompokId={resolvedKelompokId}
+                                categoryCode={code}
+                                gender='L'
+                                initial={l}
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell className='text-right'>
+                            {isDerived ? (
+                              <DerivedCell count={p} />
+                            ) : (
+                              <SensusCell
+                                kelompokId={resolvedKelompokId}
+                                categoryCode={code}
+                                gender='P'
+                                initial={p}
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell className='text-right font-semibold tabular-nums'>
+                            {l + p}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            <div className='md:hidden'>
+              <SensusCardList
+                kelompokId={resolvedKelompokId}
+                byCell={byCell}
+                derivedByKey={derivedByKey}
+              />
+            </div>
+          </>
         )}
       </Main>
     </>
@@ -195,11 +239,8 @@ interface CellProps {
 
 function DerivedCell({ count }: { count: number }) {
   return (
-    <div className='flex flex-col items-end gap-1'>
+    <div className='flex flex-col items-end gap-0.5'>
       <div className='text-base font-semibold tabular-nums'>{count}</div>
-      <Badge variant='secondary' className='text-[10px]'>
-        Auto dari Absensi
-      </Badge>
     </div>
   )
 }

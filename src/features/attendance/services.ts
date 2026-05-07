@@ -1,7 +1,10 @@
 
 import { supabase } from '@/lib/supabase'
 
-export async function getAttendanceList(kelompokGroupId?: string) {
+export async function getAttendanceList(
+    kelompokGroupId?: string,
+    options?: { from?: string; to?: string }
+) {
     let query = supabase
         .from('attendance')
         .select(`
@@ -22,6 +25,15 @@ export async function getAttendanceList(kelompokGroupId?: string) {
     // Team Manager: filter to attendance from own kelompok only
     if (kelompokGroupId) {
         query = query.eq('participant.group_id', kelompokGroupId)
+    }
+
+    // Date-range filter on attendance timestamp (yyyy-MM-dd strings).
+    // `from` is inclusive from start-of-day; `to` is inclusive through end-of-day.
+    if (options?.from) {
+        query = query.gte('timestamp', `${options.from}T00:00:00`)
+    }
+    if (options?.to) {
+        query = query.lte('timestamp', `${options.to}T23:59:59.999`)
     }
 
     const { data, error } = await query

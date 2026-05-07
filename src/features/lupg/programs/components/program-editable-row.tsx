@@ -15,6 +15,7 @@ interface Props {
   programCode: string
   existing: ProgramReportRow | undefined
   editability: EditabilityResult
+  layout?: 'row' | 'card'
 }
 
 export function ProgramEditableRow({
@@ -24,6 +25,7 @@ export function ProgramEditableRow({
   programCode,
   existing,
   editability,
+  layout = 'row',
 }: Props) {
   const upsert = useUpsertProgramMonth()
   const [denominator, setDenominator] = useState(
@@ -87,6 +89,83 @@ export function ProgramEditableRow({
   const pct = denomNum > 0 ? Math.round((countNum / denomNum) * 100) : null
 
   const disabled = !editability.editable
+  const notesLabel =
+    programCode === 'SHOLAT_ACR' ? 'Keterangan' : 'Hasil Temuan'
+
+  const sensusInput = (
+    <Input
+      type='number'
+      min={0}
+      value={denominator}
+      onChange={(e) => setDenominator(e.target.value)}
+      onBlur={saveNumeric}
+      disabled={disabled}
+      className='w-24'
+      inputMode='numeric'
+    />
+  )
+
+  const countInput = (
+    <Input
+      type='number'
+      min={0}
+      value={count}
+      onChange={(e) => setCount(e.target.value)}
+      onBlur={saveNumeric}
+      disabled={disabled}
+      className='w-24'
+      inputMode='numeric'
+    />
+  )
+
+  const notesInput = (
+    <Textarea
+      value={notes ?? ''}
+      onChange={(e) => setNotes(e.target.value)}
+      onBlur={saveNotes}
+      disabled={disabled}
+      rows={2}
+      placeholder='Tulis temuan / keterangan (opsional)'
+      className='min-w-40 resize-y'
+    />
+  )
+
+  const pctDisplay = pct != null ? `${pct}%` : '-'
+
+  if (layout === 'card') {
+    return (
+      <div className='border-border/70 bg-background flex flex-col gap-2 rounded-md border p-3'>
+        <div className='flex items-center justify-between gap-2'>
+          <div className='text-muted-foreground flex items-center gap-2 text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+            <span>{rowLabel}</span>
+            {disabled && (
+              <Lock className='h-3 w-3' aria-label={editability.reason} />
+            )}
+          </div>
+          <div className='text-sm font-semibold tabular-nums'>{pctDisplay}</div>
+        </div>
+        {disabled && editability.reason && (
+          <div className='text-muted-foreground text-xs'>
+            {editability.reason}
+          </div>
+        )}
+        <div className='grid grid-cols-2 gap-2 text-sm'>
+          <label className='flex flex-col gap-1'>
+            <span className='text-muted-foreground text-xs'>Sensus</span>
+            {sensusInput}
+          </label>
+          <label className='flex flex-col gap-1'>
+            <span className='text-muted-foreground text-xs'>Jumlah</span>
+            {countInput}
+          </label>
+        </div>
+        <label className='flex flex-col gap-1'>
+          <span className='text-muted-foreground text-xs'>{notesLabel}</span>
+          {notesInput}
+        </label>
+      </div>
+    )
+  }
 
   return (
     <TableRow>
@@ -95,55 +174,23 @@ export function ProgramEditableRow({
           {rowLabel}
           {disabled && (
             <Lock
-              className='h-3 w-3 text-muted-foreground'
+              className='text-muted-foreground h-3 w-3'
               aria-label={editability.reason}
             />
           )}
         </div>
         {disabled && editability.reason && (
-          <div className='text-xs text-muted-foreground'>
+          <div className='text-muted-foreground text-xs'>
             {editability.reason}
           </div>
         )}
       </TableCell>
-      <TableCell>
-        <Input
-          type='number'
-          min={0}
-          value={denominator}
-          onChange={(e) => setDenominator(e.target.value)}
-          onBlur={saveNumeric}
-          disabled={disabled}
-          className='w-24'
-          inputMode='numeric'
-        />
+      <TableCell>{sensusInput}</TableCell>
+      <TableCell>{countInput}</TableCell>
+      <TableCell className='text-muted-foreground text-right tabular-nums'>
+        {pctDisplay}
       </TableCell>
-      <TableCell>
-        <Input
-          type='number'
-          min={0}
-          value={count}
-          onChange={(e) => setCount(e.target.value)}
-          onBlur={saveNumeric}
-          disabled={disabled}
-          className='w-24'
-          inputMode='numeric'
-        />
-      </TableCell>
-      <TableCell className='text-right tabular-nums text-muted-foreground'>
-        {pct != null ? `${pct}%` : '-'}
-      </TableCell>
-      <TableCell>
-        <Textarea
-          value={notes ?? ''}
-          onChange={(e) => setNotes(e.target.value)}
-          onBlur={saveNotes}
-          disabled={disabled}
-          rows={2}
-          placeholder='Tulis temuan / keterangan (opsional)'
-          className='min-w-40 resize-y'
-        />
-      </TableCell>
+      <TableCell>{notesInput}</TableCell>
     </TableRow>
   )
 }

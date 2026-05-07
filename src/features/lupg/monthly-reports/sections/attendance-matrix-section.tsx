@@ -3,13 +3,6 @@ import { Lock } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { type Role } from '@/lib/rbac'
@@ -28,6 +21,7 @@ import {
   isMonthEditable,
   monthNameFromKey,
 } from '../../programs/utils/editability'
+import { SectionHeading } from '../components/section-heading'
 
 const CATEGORIES = [
   { code: 'ACR', label: 'ACR' },
@@ -98,15 +92,12 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
   }, [data])
 
   return (
-    <Card>
-      <CardHeader>
-        <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-          <div>
-            <CardTitle>Attendance Matrix</CardTitle>
-            <CardDescription>
-              Kehadiran dan Piket LUPG per bulan. Toggle view di atas tabel.
-            </CardDescription>
-          </div>
+    <section id='section-attendance' className='scroll-mt-24 flex flex-col gap-4'>
+      <SectionHeading
+        kicker='Kehadiran'
+        title='Attendance Matrix'
+        description='Kehadiran dan Piket LUPG per bulan. Toggle view di atas tabel.'
+        action={
           <div className='flex gap-2'>
             <Button
               variant={view === 'kehadiran' ? 'default' : 'outline'}
@@ -123,9 +114,9 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
               Piket LUPG
             </Button>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
+        }
+      />
+      <div>
         {isLoading ? (
           <div className='text-muted-foreground py-8 text-center'>
             Memuat...
@@ -174,8 +165,8 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
             </table>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
 }
 

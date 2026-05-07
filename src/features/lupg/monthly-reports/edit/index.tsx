@@ -1,5 +1,7 @@
-import { Loader2, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -7,6 +9,7 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useMonthlyReport } from '../../hooks/use-lupg-queries'
 import {
   formatMonthLabel,
@@ -20,13 +23,41 @@ import { ProgramTrackerSection } from '../sections/program-tracker-section'
 import { SarprasSection } from '../sections/sarpras-section'
 import { ShodaqohSection } from '../sections/shodaqoh-section'
 import { MustinSection } from '../sections/mustin-section'
+import { SectionNav, type SectionItem } from '../components/section-nav'
+import { RevealOnScroll } from '../components/reveal-on-scroll'
 
 interface Props {
   monthlyReportId: string
 }
 
+const SECTIONS: SectionItem[] = [
+  { id: 'section-sensus', label: 'Sensus' },
+  { id: 'section-attendance', label: 'Kehadiran' },
+  { id: 'section-program-tracker', label: 'Program Tracker' },
+  { id: 'section-sarpras', label: 'Sarpras' },
+  { id: 'section-shodaqoh', label: 'Shodaqoh' },
+  { id: 'section-mustin', label: 'Resume Mustin' },
+]
+
 export function MonthlyReportEdit({ monthlyReportId }: Props) {
   const { data: report, isLoading, error } = useMonthlyReport(monthlyReportId)
+
+  const { data: kelompokOptions = [] } = useQuery({
+    queryKey: ['lookup_values', 'GROUP'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lookup_values')
+        .select('id, value')
+        .eq('type', 'GROUP')
+        .order('value')
+      if (error) throw error
+      return data as { id: string; value: string }[]
+    },
+  })
+
+  const kelompokName = report
+    ? (kelompokOptions.find((k) => k.id === report.kelompok_id)?.value ?? '—')
+    : '—'
 
   if (isLoading) {
     return (
@@ -39,8 +70,31 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
             <ProfileDropdown />
           </div>
         </Header>
-        <Main className='flex flex-1 items-center justify-center'>
-          <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+        <Main className='flex flex-1 flex-col gap-6'>
+          <div className='flex items-start gap-2'>
+            <Skeleton className='h-11 w-11 rounded-md' />
+            <div className='flex flex-col gap-2'>
+              <Skeleton className='h-3 w-24' />
+              <Skeleton className='h-8 w-64' />
+              <Skeleton className='h-4 w-48' />
+            </div>
+          </div>
+          <div className='grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]'>
+            <div className='hidden flex-col gap-2 lg:flex'>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className='h-9 w-full' />
+              ))}
+            </div>
+            <div className='flex flex-col gap-8'>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className='flex flex-col gap-3'>
+                  <Skeleton className='h-3 w-32' />
+                  <Skeleton className='h-6 w-48' />
+                  <Skeleton className='h-32 w-full' />
+                </div>
+              ))}
+            </div>
+          </div>
         </Main>
       </>
     )
@@ -84,16 +138,22 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
         </div>
       </Header>
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
-        <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
-          <div className='flex items-center gap-2'>
-            <Link to='/admin/lupg/reports'>
-              <Button variant='ghost' size='icon' className='h-8 w-8'>
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between'>
+          <div className='flex items-start gap-2'>
+            <Link
+              to='/admin/lupg/reports'
+              aria-label='Kembali ke daftar laporan'
+            >
+              <Button variant='ghost' size='icon' className='h-11 w-11'>
                 <ArrowLeft className='h-4 w-4' />
               </Button>
             </Link>
-            <div>
-              <h2 className='text-2xl font-bold tracking-tight'>
-                Laporan {formatMonthLabel(monthKeyFromDate(report.month))}
+            <div className='flex flex-col gap-1 pt-1'>
+              <span className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.14em]'>
+                Laporan Bulanan
+              </span>
+              <h2 className='text-3xl font-semibold tracking-tight text-foreground sm:text-[2rem]'>
+                {kelompokName} · {formatMonthLabel(monthKeyFromDate(report.month))}
               </h2>
               <p className='text-muted-foreground text-sm'>
                 Isi setiap bagian. Tandai selesai di bawah saat sudah lengkap.
@@ -106,13 +166,29 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
           />
         </div>
 
-        <div className='flex flex-col gap-4'>
-          <SensusPreviewSection report={report} />
-          <AttendanceMatrixSection report={report} readOnly={readOnly} />
-          <ProgramTrackerSection report={report} readOnly={readOnly} />
-          <SarprasSection report={report} readOnly={readOnly} />
-          <ShodaqohSection report={report} readOnly={readOnly} />
-          <MustinSection report={report} readOnly={readOnly} />
+        <div className='grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]'>
+          <SectionNav sections={SECTIONS} />
+
+          <div className='flex flex-col gap-8 lg:gap-10'>
+            <RevealOnScroll>
+              <SensusPreviewSection report={report} />
+            </RevealOnScroll>
+            <RevealOnScroll delayMs={50}>
+              <AttendanceMatrixSection report={report} readOnly={readOnly} />
+            </RevealOnScroll>
+            <RevealOnScroll delayMs={100}>
+              <ProgramTrackerSection report={report} readOnly={readOnly} />
+            </RevealOnScroll>
+            <RevealOnScroll delayMs={150}>
+              <SarprasSection report={report} readOnly={readOnly} />
+            </RevealOnScroll>
+            <RevealOnScroll delayMs={200}>
+              <ShodaqohSection report={report} readOnly={readOnly} />
+            </RevealOnScroll>
+            <RevealOnScroll delayMs={250}>
+              <MustinSection report={report} readOnly={readOnly} />
+            </RevealOnScroll>
+          </div>
         </div>
 
         <SubmitCard report={report} />

@@ -52,6 +52,10 @@ type ParticipantActionDialogProps = {
   onOpenChange: (open: boolean) => void
 }
 
+function StackedField({ children }: { children: React.ReactNode }) {
+  return <FormItem className='flex flex-col gap-1.5 space-y-0'>{children}</FormItem>
+}
+
 export function ParticipantActionDialog({
   currentRow,
   open,
@@ -149,146 +153,166 @@ export function ParticipantActionDialog({
           <form
             id='participant-form'
             onSubmit={form.handleSubmit(onSubmit)}
-            className='space-y-4 p-0.5'
+            className='p-0.5'
           >
-            <FormField
-              control={form.control}
-              name='name'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0'>
-                  <FormLabel className='col-span-2 text-right'>Nama</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder='Masukkan nama peserta'
-                      className='col-span-4'
-                      autoFocus
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='kelompok'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0'>
-                  <FormLabel className='col-span-2 text-right'>Kelompok</FormLabel>
-                  <SelectDropdown
-                    isControlled
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    placeholder='Pilih kelompok'
-                    className='col-span-4'
-                    items={kelompokOptions.map((k) => ({ label: k, value: k }))}
-                    disabled={isTeamManager && !scopedKelompok}
+            <div className='flex flex-col gap-5'>
+              <section className='flex flex-col gap-3'>
+                <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                  Identitas
+                </div>
+                <FormField
+                  control={form.control}
+                  name='name'
+                  render={({ field }) => (
+                    <StackedField>
+                      <FormLabel>Nama</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder='Masukkan nama peserta'
+                          autoFocus
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </StackedField>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name='gender'
+                  render={({ field }) => (
+                    <StackedField>
+                      <FormLabel>Jenis Kelamin</FormLabel>
+                      <SelectDropdown
+                        defaultValue={field.value}
+                        onValueChange={field.onChange}
+                        placeholder='Pilih jenis kelamin'
+                        items={[
+                          { label: 'Laki-laki', value: 'L' },
+                          { label: 'Perempuan', value: 'P' },
+                        ]}
+                      />
+                      <FormMessage />
+                    </StackedField>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name='birthPlace'
+                  render={({ field }) => (
+                    <StackedField>
+                      <FormLabel>Tempat Lahir</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder='Masukkan tempat lahir (opsional)'
+                          {...field}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </StackedField>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name='birthDate'
+                  render={({ field }) => (
+                    <StackedField>
+                      <FormLabel>Tanggal Lahir</FormLabel>
+                      <FormControl>
+                        <DatePicker
+                          selected={field.value ?? undefined}
+                          onSelect={(d) => field.onChange(d ?? null)}
+                          placeholder='Pilih tanggal lahir'
+                          className='w-full'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </StackedField>
+                  )}
+                />
+              </section>
+
+              <section className='flex flex-col gap-3'>
+                <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                  Klasifikasi
+                </div>
+                <FormField
+                  control={form.control}
+                  name='kelompok'
+                  render={({ field }) => (
+                    <StackedField>
+                      <FormLabel>Kelompok</FormLabel>
+                      <SelectDropdown
+                        isControlled
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder='Pilih kelompok'
+                        items={kelompokOptions.map((k) => ({ label: k, value: k }))}
+                        disabled={isTeamManager && !scopedKelompok}
+                      />
+                      <FormMessage />
+                    </StackedField>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name='kategori'
+                  render={({ field }) => (
+                    <StackedField>
+                      <FormLabel>Kategori</FormLabel>
+                      <SelectDropdown
+                        defaultValue={field.value}
+                        onValueChange={field.onChange}
+                        placeholder='Pilih kategori'
+                        items={KATEGORI.map((k) => ({
+                          label: k === 'AR' || k === 'APR' ? k : `GPN ${k}`,
+                          value: k,
+                        }))}
+                      />
+                      <FormMessage />
+                    </StackedField>
+                  )}
+                />
+              </section>
+
+              {isEdit && (
+                <section className='flex flex-col gap-3'>
+                  <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                    Status
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name='status'
+                    render={({ field }) => (
+                      <StackedField>
+                        <FormLabel>Status</FormLabel>
+                        <SelectDropdown
+                          defaultValue={field.value}
+                          onValueChange={field.onChange}
+                          placeholder='Pilih status'
+                          items={[
+                            { label: 'Aktif', value: 'active' },
+                            { label: 'Nonaktif', value: 'inactive' },
+                          ]}
+                        />
+                        <FormMessage />
+                      </StackedField>
+                    )}
                   />
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
+                </section>
               )}
-            />
-            <FormField
-              control={form.control}
-              name='kategori'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0'>
-                  <FormLabel className='col-span-2 text-right'>Kategori</FormLabel>
-                  <SelectDropdown
-                    defaultValue={field.value}
-                    onValueChange={field.onChange}
-                    placeholder='Pilih kategori'
-                    className='col-span-4'
-                    items={KATEGORI.map((k) => ({
-                      label: k === 'AR' || k === 'APR' ? k : `GPN ${k}`,
-                      value: k,
-                    }))}
-                  />
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='gender'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0'>
-                  <FormLabel className='col-span-2 text-right'>Jenis Kelamin</FormLabel>
-                  <SelectDropdown
-                    defaultValue={field.value}
-                    onValueChange={field.onChange}
-                    placeholder='Pilih jenis kelamin'
-                    className='col-span-4'
-                    items={[
-                      { label: 'Laki-laki', value: 'L' },
-                      { label: 'Perempuan', value: 'P' },
-                    ]}
-                  />
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='birthPlace'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0'>
-                  <FormLabel className='col-span-2 text-right'>Tempat Lahir</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder='Masukkan tempat lahir (opsional)'
-                      className='col-span-4'
-                      {...field}
-                      value={field.value ?? ''}
-                    />
-                  </FormControl>
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='birthDate'
-              render={({ field }) => (
-                <FormItem className='grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0'>
-                  <FormLabel className='col-span-2 text-right'>Tanggal Lahir</FormLabel>
-                  <FormControl>
-                    <DatePicker
-                      selected={field.value ?? undefined}
-                      onSelect={(d) => field.onChange(d ?? null)}
-                      placeholder='Pilih tanggal lahir'
-                      className='col-span-4 w-full'
-                    />
-                  </FormControl>
-                  <FormMessage className='col-span-4 col-start-3' />
-                </FormItem>
-              )}
-            />
-            {isEdit && (
-              <FormField
-                control={form.control}
-                name='status'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0'>
-                    <FormLabel className='col-span-2 text-right'>Status</FormLabel>
-                    <SelectDropdown
-                      defaultValue={field.value}
-                      onValueChange={field.onChange}
-                      placeholder='Pilih status'
-                      className='col-span-4'
-                      items={[
-                        { label: 'Aktif', value: 'active' },
-                        { label: 'Nonaktif', value: 'inactive' },
-                      ]}
-                    />
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-            )}
+            </div>
           </form>
         </Form>
         <DialogFooter>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={() => onOpenChange(false)}
+          >
+            Batal
+          </Button>
           <Button type='submit' form='participant-form' disabled={isTeamManager && !scopedKelompok}>
             Simpan
           </Button>

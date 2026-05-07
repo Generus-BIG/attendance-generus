@@ -32,3 +32,6 @@ dist-ssr
 *.agents
 *skills-lock.json
 *reference-ppt
+*.impeccable.md
+*copilot-instructions.md
+*opencode.json

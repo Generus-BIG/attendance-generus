@@ -8,6 +8,7 @@ const programsSearchSchema = z.object({
     .regex(/^\d{4}$/)
     .optional(),
   kelompok: z.string().uuid().optional(),
+  tab: z.enum(['desa', 'kelompok']).optional(),
 })
 
 export const Route = createFileRoute('/admin/lupg/programs/')({
@@ -24,6 +25,7 @@ function ProgramsRoute() {
     <YearlyProgramTracker
       initialYear={initialYear}
       initialKelompokId={search.kelompok}
+      initialTab={search.tab}
     />
   )
 }

@@ -5,6 +5,14 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/absensi/:slug",
+      "destination": "/api/absensi/:slug"
+    },
+    {
+      "source": "/register/:path*",
+      "destination": "/api/register/add-participant"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

@@ -1,23 +1,36 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { id as idLocale } from 'date-fns/locale'
-import { Check, X, Merge, ChevronsUpDown } from 'lucide-react'
+import {
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ChevronsUpDown,
+  Merge,
+  X,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { type PendingParticipant, type Participant } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import { usePermissions } from '@/hooks/use-permissions'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Command,
   CommandEmpty,
@@ -47,9 +60,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  DataTableBulkActions,
+  DataTableColumnHeader,
+  DataTablePagination,
+  DataTableToolbar,
+} from '@/components/data-table'
+import { TableSkeleton } from '@/components/data-table/table-skeleton'
 import { PermissionGate } from '@/components/permission-gate'
 import { approvalService } from '../services'
 import { useApprovals } from './approvals-provider'
+import { PendingReviewDrawer } from './pending-review-drawer'
 
 export function PendingParticipantsTab() {
   const { setRefreshData } = useApprovals()
@@ -59,6 +80,25 @@ export function PendingParticipantsTab() {
     useState<PendingParticipant | null>(null)
   const [mergeTarget, setMergeTarget] = useState<string | null>(null)
   const [openCombobox, setOpenCombobox] = useState(false)
+  const [rejectConfirm, setRejectConfirm] = useState<PendingParticipant | null>(
+    null
+  )
+  const [approveConfirm, setApproveConfirm] =
+    useState<PendingParticipant | null>(null)
+  const [reviewTarget, setReviewTarget] = useState<PendingParticipant | null>(
+    null
+  )
+  const [expandedRow, setExpandedRow] = useState<string | null>(null)
+
+  const [rowSelection, setRowSelection] = useState({})
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [bulkApproveConfirm, setBulkApproveConfirm] = useState<
+    PendingParticipant[]
+  >([])
+  const [bulkRejectConfirm, setBulkRejectConfirm] = useState<
+    PendingParticipant[]
+  >([])
 
   const queryClient = useQueryClient()
   const pendingQuery = useQuery({
@@ -70,7 +110,10 @@ export function PendingParticipantsTab() {
     queryFn: approvalService.getActiveParticipants,
   })
 
-  const pendingList = (pendingQuery.data ?? []) as PendingParticipant[]
+  const pendingList = useMemo(
+    () => (pendingQuery.data ?? []) as PendingParticipant[],
+    [pendingQuery.data]
+  )
   const participants = (participantsQuery.data ?? []) as Participant[]
 
   useEffect(() => {
@@ -85,7 +128,7 @@ export function PendingParticipantsTab() {
     }
   }, [pendingQuery.error, participantsQuery.error])
 
-  const handleApproveNew = async (pending: PendingParticipant) => {
+  const executeApproveNew = async (pending: PendingParticipant) => {
     try {
       await approvalService.approve(pending, true)
       toast.success(`Peserta "${pending.name}" berhasil ditambahkan`)
@@ -93,6 +136,7 @@ export function PendingParticipantsTab() {
     } catch (_error) {
       toast.error('Gagal menyetujui peserta')
     }
+    setApproveConfirm(null)
   }
 
   const handleApproveMerge = async () => {
@@ -113,7 +157,7 @@ export function PendingParticipantsTab() {
     }
   }
 
-  const handleReject = async (pending: PendingParticipant) => {
+  const executeReject = async (pending: PendingParticipant) => {
     try {
       await approvalService.reject(pending.id)
       toast.success(`Pengajuan "${pending.name}" ditolak`)
@@ -121,6 +165,7 @@ export function PendingParticipantsTab() {
     } catch (_error) {
       toast.error('Gagal menolak pengajuan')
     }
+    setRejectConfirm(null)
   }
 
   const openMergeDialog = (pending: PendingParticipant) => {
@@ -128,106 +173,478 @@ export function PendingParticipantsTab() {
     setApproveDialogOpen(true)
   }
 
+  const executeBulkApprove = async (items: PendingParticipant[]) => {
+    let ok = 0
+    let fail = 0
+    for (const p of items) {
+      try {
+        await approvalService.approve(p, true)
+        ok++
+      } catch (_e) {
+        fail++
+      }
+    }
+    if (ok > 0) toast.success(`${ok} pengajuan disetujui`)
+    if (fail > 0) toast.error(`${fail} pengajuan gagal`)
+    void queryClient.invalidateQueries({ queryKey: ['approvals'] })
+    setBulkApproveConfirm([])
+    setRowSelection({})
+  }
+
+  const executeBulkReject = async (items: PendingParticipant[]) => {
+    let ok = 0
+    let fail = 0
+    for (const p of items) {
+      try {
+        await approvalService.reject(p.id)
+        ok++
+      } catch (_e) {
+        fail++
+      }
+    }
+    if (ok > 0) toast.success(`${ok} pengajuan ditolak`)
+    if (fail > 0) toast.error(`${fail} pengajuan gagal ditolak`)
+    void queryClient.invalidateQueries({ queryKey: ['approvals'] })
+    setBulkRejectConfirm([])
+    setRowSelection({})
+  }
+
+  const columns = useMemo<ColumnDef<PendingParticipant>[]>(
+    () => [
+      {
+        id: 'select',
+        header: ({ table }) => (
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && 'indeterminate')
+            }
+            onCheckedChange={(v) => table.toggleAllPageRowsSelected(!!v)}
+            aria-label='Pilih semua baris di halaman ini'
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(v) => row.toggleSelected(!!v)}
+            aria-label='Pilih baris'
+            onClick={(e) => e.stopPropagation()}
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      },
+      {
+        accessorKey: 'name',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Nama' />
+        ),
+        cell: ({ row }) => (
+          <span className='font-medium'>{row.original.name}</span>
+        ),
+      },
+      {
+        accessorKey: 'suggestedKelompok',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Kelompok' />
+        ),
+        filterFn: (row, id, value: string[]) =>
+          value.length === 0 ? true : value.includes(row.getValue<string>(id)),
+      },
+      {
+        accessorKey: 'suggestedKategori',
+        header: 'Kategori',
+        cell: ({ row }) => (
+          <Badge variant='outline'>
+            Kategori {row.original.suggestedKategori}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: 'suggestedGender',
+        header: 'Jenis Kelamin',
+        cell: ({ row }) =>
+          row.original.suggestedGender === 'L' ? 'Laki-laki' : 'Perempuan',
+      },
+      {
+        id: 'attendanceCount',
+        accessorFn: (r) => r.attendanceRefIds.length,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Absensi' />
+        ),
+        cell: ({ row }) => (
+          <span className='tabular-nums'>
+            {row.original.attendanceRefIds.length}
+          </span>
+        ),
+        sortingFn: (a, b) =>
+          a.original.attendanceRefIds.length -
+          b.original.attendanceRefIds.length,
+      },
+      {
+        accessorKey: 'createdAt',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title='Diajukan' />
+        ),
+        cell: ({ row }) => (
+          <span className='tabular-nums'>
+            {format(row.original.createdAt, 'dd MMM yyyy', {
+              locale: idLocale,
+            })}
+          </span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <div className='text-right'>Aksi</div>,
+        enableSorting: false,
+        cell: ({ row }) => (
+          <div className='text-right'>
+            <Button
+              type='button'
+              size='sm'
+              variant='outline'
+              onClick={(e) => {
+                e.stopPropagation()
+                setReviewTarget(row.original)
+              }}
+            >
+              Tinjau lengkap
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    []
+  )
+
+  const kelompokOptions = useMemo(() => {
+    const set = new Set<string>()
+    for (const p of pendingList) set.add(p.suggestedKelompok)
+    return Array.from(set)
+      .sort()
+      .map((v) => ({ label: v, value: v }))
+  }, [pendingList])
+
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const table = useReactTable({
+    data: pendingList,
+    columns,
+    state: { rowSelection, columnFilters, sorting },
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    onColumnFiltersChange: setColumnFilters,
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  })
+
+  if (pendingQuery.isLoading) {
+    return (
+      <div className='rounded-md border'>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className='w-8' />
+              <TableHead>Nama</TableHead>
+              <TableHead>Kelompok</TableHead>
+              <TableHead>Kategori</TableHead>
+              <TableHead>Jenis Kelamin</TableHead>
+              <TableHead>Absensi</TableHead>
+              <TableHead>Diajukan</TableHead>
+              <TableHead className='text-right'>Aksi</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableSkeleton columns={8} />
+        </Table>
+      </div>
+    )
+  }
+
   if (pendingList.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending Participants</CardTitle>
-          <CardDescription>
-            Peserta baru yang menunggu persetujuan
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className='flex h-32 items-center justify-center text-muted-foreground'>
-            Tidak ada pengajuan peserta baru
-          </div>
-        </CardContent>
-      </Card>
+      <div className='rounded-md border border-dashed p-10 text-center'>
+        <p className='text-muted-foreground text-sm'>
+          Tidak ada pengajuan peserta baru.
+        </p>
+      </div>
     )
   }
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending Participants</CardTitle>
-          <CardDescription>
-            {pendingList.length} peserta baru menunggu persetujuan
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className='space-y-4'>
+        <DataTableToolbar
+          table={table}
+          searchPlaceholder='Cari nama pengajuan...'
+          searchKey='name'
+          filters={[
+            {
+              columnId: 'suggestedKelompok',
+              title: 'Kelompok',
+              options: kelompokOptions,
+            },
+          ]}
+        />
+
+        <div className='rounded-md border'>
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Nama</TableHead>
-                <TableHead>Kelompok</TableHead>
-                <TableHead>Kategori</TableHead>
-                <TableHead>Jenis Kelamin</TableHead>
-                <TableHead>Jumlah Absensi</TableHead>
-                <TableHead>Diajukan</TableHead>
-                <TableHead className='text-right'>Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pendingList.map((pending) => (
-                <TableRow key={pending.id}>
-                  <TableCell className='font-medium'>{pending.name}</TableCell>
-                  <TableCell>{pending.suggestedKelompok}</TableCell>
-                  <TableCell>
-                    <Badge variant='outline'>
-                      Kategori {pending.suggestedKategori}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {pending.suggestedGender === 'L'
-                      ? 'Laki-laki'
-                      : 'Perempuan'}
-                  </TableCell>
-                  <TableCell>{pending.attendanceRefIds.length}</TableCell>
-                  <TableCell>
-                    {format(new Date(pending.createdAt), 'dd MMM yyyy', {
-                      locale: idLocale,
-                    })}
-                  </TableCell>
-                  <TableCell className='text-right'>
-                    <div className='flex justify-end gap-1'>
-                      <PermissionGate allowed={can.approveParticipant}>
-                        <Button
-                          size='sm'
-                          variant='ghost'
-                          className='text-green-600 hover:text-green-700'
-                          onClick={() => handleApproveNew(pending)}
-                          title='Setujui sebagai peserta baru'
-                        >
-                          <Check className='h-4 w-4' />
-                        </Button>
-                        <Button
-                          size='sm'
-                          variant='ghost'
-                          className='text-blue-600 hover:text-blue-700'
-                          onClick={() => openMergeDialog(pending)}
-                          title='Gabungkan ke peserta yang ada'
-                        >
-                          <Merge className='h-4 w-4' />
-                        </Button>
-                        <Button
-                          size='sm'
-                          variant='ghost'
-                          className='text-red-600 hover:text-red-700'
-                          onClick={() => handleReject(pending)}
-                          title='Tolak pengajuan'
-                        >
-                          <X className='h-4 w-4' />
-                        </Button>
-                      </PermissionGate>
-                    </div>
-                  </TableCell>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className='hover:bg-transparent'>
+                  <TableHead className='w-8' />
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} colSpan={header.colSpan}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
                 </TableRow>
               ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={table.getAllColumns().length + 1}
+                    className='text-muted-foreground h-24 text-center'
+                  >
+                    Tidak ada pengajuan yang cocok dengan filter.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                table.getRowModel().rows.map((row) => {
+                  const pending = row.original
+                  const isExpanded = expandedRow === pending.id
+                  return (
+                    <Fragment key={row.id}>
+                      <TableRow
+                        className='cursor-pointer'
+                        data-state={row.getIsSelected() ? 'selected' : undefined}
+                        onClick={() =>
+                          setExpandedRow(isExpanded ? null : pending.id)
+                        }
+                      >
+                        <TableCell className='w-8'>
+                          {isExpanded ? (
+                            <ChevronDown className='h-4 w-4' />
+                          ) : (
+                            <ChevronRight className='h-4 w-4' />
+                          )}
+                        </TableCell>
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                      {isExpanded && (
+                        <TableRow className='bg-muted/30 hover:bg-muted/30'>
+                          <TableCell />
+                          <TableCell
+                            colSpan={row.getVisibleCells().length}
+                            className='py-3'
+                          >
+                            <div className='grid grid-cols-2 gap-4 sm:grid-cols-4'>
+                              <DetailField
+                                label='Tgl lahir'
+                                value={
+                                  pending.birthDate
+                                    ? format(
+                                        pending.birthDate,
+                                        'dd MMM yyyy',
+                                        { locale: idLocale }
+                                      )
+                                    : '—'
+                                }
+                              />
+                              <DetailField
+                                label='Tempat lahir'
+                                value={pending.birthPlace ?? '—'}
+                              />
+                              <DetailField
+                                label='Jam diajukan'
+                                value={format(pending.createdAt, 'HH:mm', {
+                                  locale: idLocale,
+                                })}
+                              />
+                              <DetailField
+                                label='Absensi terhubung'
+                                value={`${pending.attendanceRefIds.length} entri`}
+                              />
+                            </div>
+                            <PermissionGate allowed={can.approveParticipant}>
+                              <div className='mt-3 flex flex-wrap gap-2'>
+                                <Button
+                                  type='button'
+                                  size='sm'
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setApproveConfirm(pending)
+                                  }}
+                                >
+                                  <Check className='mr-1.5 h-3.5 w-3.5' />{' '}
+                                  Setujui baru
+                                </Button>
+                                <Button
+                                  type='button'
+                                  size='sm'
+                                  variant='outline'
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    openMergeDialog(pending)
+                                  }}
+                                >
+                                  <Merge className='mr-1.5 h-3.5 w-3.5' />{' '}
+                                  Gabungkan
+                                </Button>
+                                <Button
+                                  type='button'
+                                  size='sm'
+                                  variant='ghost'
+                                  className='text-destructive hover:text-destructive'
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setRejectConfirm(pending)
+                                  }}
+                                >
+                                  <X className='mr-1.5 h-3.5 w-3.5' /> Tolak
+                                </Button>
+                              </div>
+                            </PermissionGate>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </Fragment>
+                  )
+                })
+              )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+
+        <DataTablePagination table={table} />
+      </div>
+
+      <DataTableBulkActions table={table} entityName='pengajuan'>
+        <PermissionGate allowed={can.approveParticipant}>
+          <Button
+            size='sm'
+            onClick={() =>
+              setBulkApproveConfirm(
+                table.getFilteredSelectedRowModel().rows.map((r) => r.original)
+              )
+            }
+          >
+            <Check className='mr-1 h-3.5 w-3.5' /> Setujui semua
+          </Button>
+          <Button
+            size='sm'
+            variant='ghost'
+            className='text-destructive hover:text-destructive'
+            onClick={() =>
+              setBulkRejectConfirm(
+                table.getFilteredSelectedRowModel().rows.map((r) => r.original)
+              )
+            }
+          >
+            <X className='mr-1 h-3.5 w-3.5' /> Tolak semua
+          </Button>
+        </PermissionGate>
+      </DataTableBulkActions>
+
+      <ConfirmDialog
+        open={!!rejectConfirm}
+        onOpenChange={(open) => !open && setRejectConfirm(null)}
+        title='Tolak pengajuan peserta?'
+        desc={
+          <>
+            Pengajuan <strong>{rejectConfirm?.name}</strong> akan ditolak dan
+            dihapus dari antrean. Tindakan ini tidak bisa dibatalkan.
+          </>
+        }
+        destructive
+        confirmText='Tolak pengajuan'
+        cancelBtnText='Batal'
+        handleConfirm={() =>
+          rejectConfirm && void executeReject(rejectConfirm)
+        }
+      />
+
+      <ConfirmDialog
+        open={!!approveConfirm}
+        onOpenChange={(open) => !open && setApproveConfirm(null)}
+        title='Setujui sebagai peserta baru?'
+        desc={
+          <>
+            <strong>{approveConfirm?.name}</strong> akan ditambahkan sebagai
+            peserta baru di kelompok {approveConfirm?.suggestedKelompok},
+            kategori {approveConfirm?.suggestedKategori}.
+          </>
+        }
+        confirmText='Ya, setujui'
+        cancelBtnText='Batal'
+        handleConfirm={() =>
+          approveConfirm && void executeApproveNew(approveConfirm)
+        }
+      />
+
+      <ConfirmDialog
+        open={bulkApproveConfirm.length > 0}
+        onOpenChange={(open) => !open && setBulkApproveConfirm([])}
+        title={`Setujui ${bulkApproveConfirm.length} pengajuan?`}
+        desc={
+          <>
+            {bulkApproveConfirm.length} pengajuan akan ditambahkan sebagai
+            peserta baru. Pastikan data-nya sesuai.
+          </>
+        }
+        confirmText='Ya, setujui semua'
+        cancelBtnText='Batal'
+        handleConfirm={() => void executeBulkApprove(bulkApproveConfirm)}
+      />
+
+      <ConfirmDialog
+        open={bulkRejectConfirm.length > 0}
+        onOpenChange={(open) => !open && setBulkRejectConfirm([])}
+        title={`Tolak ${bulkRejectConfirm.length} pengajuan?`}
+        desc={
+          <>
+            {bulkRejectConfirm.length} pengajuan akan ditolak dan dihapus dari
+            antrean. Tindakan ini tidak bisa dibatalkan.
+          </>
+        }
+        destructive
+        confirmText='Tolak semua'
+        cancelBtnText='Batal'
+        handleConfirm={() => void executeBulkReject(bulkRejectConfirm)}
+      />
+
+      <PendingReviewDrawer
+        pending={reviewTarget}
+        onClose={() => setReviewTarget(null)}
+        onApprove={(p) => {
+          setReviewTarget(null)
+          setApproveConfirm(p)
+        }}
+        onMerge={(p) => {
+          setReviewTarget(null)
+          openMergeDialog(p)
+        }}
+        onReject={(p) => {
+          setReviewTarget(null)
+          setRejectConfirm(p)
+        }}
+      />
 
       <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
         <DialogContent>
@@ -305,5 +722,16 @@ export function PendingParticipantsTab() {
         </DialogContent>
       </Dialog>
     </>
+  )
+}
+
+function DetailField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className='flex flex-col gap-0.5'>
+      <span className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+        {label}
+      </span>
+      <span className='text-sm font-medium'>{value}</span>
+    </div>
   )
 }

@@ -1,12 +1,5 @@
 import { Link } from '@tanstack/react-router'
 import { AlertTriangle, ExternalLink } from 'lucide-react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -19,6 +12,7 @@ import {
 import { useSensus, useSensusSnapshots } from '../../hooks/use-lupg-queries'
 import { CATEGORY_CODES, CATEGORY_LABELS } from '../../constants'
 import { type MonthlyReportRow, type SensusRow } from '../../types'
+import { SectionHeading } from '../components/section-heading'
 
 interface Props {
   report: MonthlyReportRow
@@ -50,28 +44,26 @@ export function SensusPreviewSection({ report }: Props) {
   const hasData = totalCount > 0
 
   return (
-    <Card>
-      <CardHeader>
-        <div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between'>
-          <div>
-            <CardTitle>Sensus Generus</CardTitle>
-            <CardDescription>
-              {isSubmitted
-                ? 'Snapshot sensus saat laporan disubmit.'
-                : 'Data master sensus kelompok saat ini (akan di-snapshot saat submit).'}
-            </CardDescription>
-          </div>
-          {!isSubmitted && (
+    <section id='section-sensus' className='scroll-mt-24 flex flex-col gap-4'>
+      <SectionHeading
+        kicker='Sensus Generus'
+        description={
+          isSubmitted
+            ? 'Snapshot sensus saat laporan disubmit.'
+            : 'Data master sensus kelompok saat ini (akan di-snapshot saat submit).'
+        }
+        action={
+          !isSubmitted ? (
             <Link to='/admin/lupg/sensus'>
               <Button variant='outline' size='sm'>
                 <ExternalLink className='mr-2 h-3 w-3' />
                 Update Sensus
               </Button>
             </Link>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
+          ) : undefined
+        }
+      />
+      <div>
         {!hasData ? (
           <div className='flex items-center gap-2 rounded-md border border-dashed p-4 text-sm text-muted-foreground'>
             <AlertTriangle className='h-4 w-4 text-yellow-500' />
@@ -133,7 +125,7 @@ export function SensusPreviewSection({ report }: Props) {
             </Table>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
 }

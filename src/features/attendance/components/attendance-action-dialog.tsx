@@ -757,6 +757,14 @@ export function AttendanceActionDialog({
           </form>
         </Form>
         <DialogFooter>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+          >
+            Batal
+          </Button>
           <Button type='submit' form='attendance-form' disabled={isSubmitting}>
             {isSubmitting ? 'Menyimpan...' : 'Simpan'}
           </Button>

@@ -8,7 +8,6 @@ import {
   type ColumnDef,
   type ColumnFiltersState,
 } from '@tanstack/react-table'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -19,15 +18,16 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableFacetedFilter } from '@/components/data-table'
-import { cn } from '@/lib/utils'
 import type { MonthlyFormRecap, ParticipantMonthlyRecap } from '../types'
+import { RateBarCell } from './rate-bar-cell'
 
 type Props = {
   recap: MonthlyFormRecap | undefined
   isLoading: boolean
+  month: Date
 }
 
-export function FollowUpTable({ recap, isLoading }: Props) {
+export function FollowUpTable({ recap, isLoading, month }: Props) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
   const totalMeetings = recap?.totals.totalMeetings ?? 0
@@ -90,35 +90,22 @@ export function FollowUpTable({ recap, isLoading }: Props) {
       accessorKey: 'hadirCount',
       header: () => <div className='text-center'>Kehadiran</div>,
       cell: ({ row }) => (
-        <div className='text-center font-mono text-sm'>
+        <div className='text-center text-sm tabular-nums'>
           {row.original.hadirCount}/{totalMeetings}
         </div>
       ),
     },
     {
       accessorKey: 'attendanceRate',
-      header: () => <div className='text-right'>Rate</div>,
-      cell: ({ row }) => {
-        const rate = Math.round(row.original.attendanceRate * 100)
-        const isLow = rate < 50
-        const isCritical = rate < 25
-
-        return (
-          <div className='text-right'>
-            <Badge
-              variant={isCritical ? 'destructive' : isLow ? 'secondary' : 'outline'}
-              className={cn(
-                'font-mono',
-                !isCritical && !isLow && 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-              )}
-            >
-              {rate}%
-            </Badge>
-          </div>
-        )
-      },
+      header: () => <div className='text-right'>Tingkat</div>,
+      cell: ({ row }) => (
+        <RateBarCell
+          ratePct={row.original.attendanceRate * 100}
+          month={month}
+        />
+      ),
     },
-  ], [totalMeetings])
+  ], [totalMeetings, month])
 
   const table = useReactTable({
     data: recap?.participants ?? [],
