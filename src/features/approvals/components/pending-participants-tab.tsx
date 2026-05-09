@@ -3,7 +3,6 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { id as idLocale } from 'date-fns/locale'
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -15,6 +14,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { id as idLocale } from 'date-fns/locale'
 import {
   Check,
   ChevronDown,
@@ -27,7 +27,6 @@ import { toast } from 'sonner'
 import { type PendingParticipant, type Participant } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import { usePermissions } from '@/hooks/use-permissions'
-import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -60,6 +59,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import {
   DataTableBulkActions,
   DataTableColumnHeader,
@@ -68,6 +68,7 @@ import {
 } from '@/components/data-table'
 import { TableSkeleton } from '@/components/data-table/table-skeleton'
 import { PermissionGate } from '@/components/permission-gate'
+import { formatKategoriLabel } from '../approval-utils'
 import { approvalService } from '../services'
 import { useApprovals } from './approvals-provider'
 import { PendingReviewDrawer } from './pending-review-drawer'
@@ -256,7 +257,7 @@ export function PendingParticipantsTab() {
         header: 'Kategori',
         cell: ({ row }) => (
           <Badge variant='outline'>
-            Kategori {row.original.suggestedKategori}
+            {formatKategoriLabel(row.original.suggestedKategori)}
           </Badge>
         ),
       },
@@ -366,7 +367,7 @@ export function PendingParticipantsTab() {
   if (pendingList.length === 0) {
     return (
       <div className='rounded-md border border-dashed p-10 text-center'>
-        <p className='text-muted-foreground text-sm'>
+        <p className='text-sm text-muted-foreground'>
           Tidak ada pengajuan peserta baru.
         </p>
       </div>
@@ -413,7 +414,7 @@ export function PendingParticipantsTab() {
                 <TableRow>
                   <TableCell
                     colSpan={table.getAllColumns().length + 1}
-                    className='text-muted-foreground h-24 text-center'
+                    className='h-24 text-center text-muted-foreground'
                   >
                     Tidak ada pengajuan yang cocok dengan filter.
                   </TableCell>
@@ -426,7 +427,9 @@ export function PendingParticipantsTab() {
                     <Fragment key={row.id}>
                       <TableRow
                         className='cursor-pointer'
-                        data-state={row.getIsSelected() ? 'selected' : undefined}
+                        data-state={
+                          row.getIsSelected() ? 'selected' : undefined
+                        }
                         onClick={() =>
                           setExpandedRow(isExpanded ? null : pending.id)
                         }
@@ -459,11 +462,9 @@ export function PendingParticipantsTab() {
                                 label='Tgl lahir'
                                 value={
                                   pending.birthDate
-                                    ? format(
-                                        pending.birthDate,
-                                        'dd MMM yyyy',
-                                        { locale: idLocale }
-                                      )
+                                    ? format(pending.birthDate, 'dd MMM yyyy', {
+                                        locale: idLocale,
+                                      })
                                     : '—'
                                 }
                               />
@@ -575,9 +576,7 @@ export function PendingParticipantsTab() {
         destructive
         confirmText='Tolak pengajuan'
         cancelBtnText='Batal'
-        handleConfirm={() =>
-          rejectConfirm && void executeReject(rejectConfirm)
-        }
+        handleConfirm={() => rejectConfirm && void executeReject(rejectConfirm)}
       />
 
       <ConfirmDialog
@@ -588,7 +587,11 @@ export function PendingParticipantsTab() {
           <>
             <strong>{approveConfirm?.name}</strong> akan ditambahkan sebagai
             peserta baru di kelompok {approveConfirm?.suggestedKelompok},
-            kategori {approveConfirm?.suggestedKategori}.
+            kategori{' '}
+            {approveConfirm
+              ? formatKategoriLabel(approveConfirm.suggestedKategori)
+              : '—'}
+            .
           </>
         }
         confirmText='Ya, setujui'
@@ -651,8 +654,8 @@ export function PendingParticipantsTab() {
           <DialogHeader>
             <DialogTitle>Gabungkan ke Peserta yang Ada</DialogTitle>
             <DialogDescription>
-              Hubungkan absensi dari "{selectedPending?.name}" ke peserta yang
-              sudah terdaftar.
+              Hubungkan absensi dan lengkapi tempat/tanggal lahir yang masih
+              kosong pada peserta terdaftar.
             </DialogDescription>
           </DialogHeader>
           <div className='py-4'>
@@ -696,8 +699,8 @@ export function PendingParticipantsTab() {
                           <div className='flex flex-col'>
                             <span>{participant.name}</span>
                             <span className='text-xs text-muted-foreground'>
-                              {participant.kelompok} - Kategori{' '}
-                              {participant.kategori}
+                              {participant.kelompok} -{' '}
+                              {formatKategoriLabel(participant.kategori)}
                             </span>
                           </div>
                         </CommandItem>
@@ -728,7 +731,7 @@ export function PendingParticipantsTab() {
 function DetailField({ label, value }: { label: string; value: string }) {
   return (
     <div className='flex flex-col gap-0.5'>
-      <span className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+      <span className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
         {label}
       </span>
       <span className='text-sm font-medium'>{value}</span>

@@ -11,6 +11,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { formatKategoriLabel } from '../approval-utils'
 
 interface Props {
   pending: PendingParticipant | null
@@ -29,27 +30,32 @@ export function PendingReviewDrawer({
 }: Props) {
   return (
     <Sheet open={!!pending} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side='right' className='w-full sm:max-w-md'>
-        <SheetHeader>
-          <div className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+      <SheetContent
+        side='right'
+        className='flex w-full flex-col gap-0 p-0 sm:max-w-lg'
+      >
+        <SheetHeader className='border-b border-border/70 px-6 py-5 text-left'>
+          <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
             Pengajuan peserta
           </div>
-          <SheetTitle>{pending?.name ?? '—'}</SheetTitle>
-          <SheetDescription>
+          <SheetTitle className='text-xl'>{pending?.name ?? '—'}</SheetTitle>
+          <SheetDescription className='max-w-[42ch]'>
             Tinjau data lengkap sebelum menyetujui, menggabungkan, atau menolak.
           </SheetDescription>
         </SheetHeader>
 
         {pending && (
-          <div className='flex flex-col gap-4 py-4'>
+          <div className='flex-1 overflow-y-auto px-6 py-2'>
             <DetailRow label='Kelompok' value={pending.suggestedKelompok} />
             <DetailRow
               label='Kategori'
-              value={`Kategori ${pending.suggestedKategori}`}
+              value={formatKategoriLabel(pending.suggestedKategori)}
             />
             <DetailRow
               label='Jenis kelamin'
-              value={pending.suggestedGender === 'L' ? 'Laki-laki' : 'Perempuan'}
+              value={
+                pending.suggestedGender === 'L' ? 'Laki-laki' : 'Perempuan'
+              }
             />
             <DetailRow
               label='Tanggal lahir'
@@ -75,10 +81,10 @@ export function PendingReviewDrawer({
           </div>
         )}
 
-        <SheetFooter className='flex-col gap-2 sm:flex-col sm:space-x-0'>
+        <SheetFooter className='mt-auto flex-col gap-2 border-t border-border/70 px-6 py-5 sm:flex-col sm:space-x-0'>
           <Button
             type='button'
-            className='w-full'
+            className='min-h-11 w-full'
             onClick={() => pending && onApprove(pending)}
           >
             <Check className='mr-2 h-4 w-4' />
@@ -87,7 +93,7 @@ export function PendingReviewDrawer({
           <Button
             type='button'
             variant='outline'
-            className='w-full'
+            className='min-h-11 w-full'
             onClick={() => pending && onMerge(pending)}
           >
             <Merge className='mr-2 h-4 w-4' />
@@ -96,7 +102,7 @@ export function PendingReviewDrawer({
           <Button
             type='button'
             variant='ghost'
-            className='text-destructive hover:text-destructive w-full'
+            className='min-h-11 w-full text-destructive hover:text-destructive'
             onClick={() => pending && onReject(pending)}
           >
             <X className='mr-2 h-4 w-4' />
@@ -110,11 +116,11 @@ export function PendingReviewDrawer({
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className='border-border/60 grid grid-cols-[140px_1fr] items-baseline gap-3 border-b pb-3 last:border-0 last:pb-0'>
-      <div className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+    <div className='grid gap-1 border-b border-border/60 py-4 last:border-0 sm:grid-cols-[160px_1fr] sm:gap-4'>
+      <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
         {label}
       </div>
-      <div className='text-sm font-medium'>{value}</div>
+      <div className='text-sm leading-6 font-medium'>{value}</div>
     </div>
   )
 }
