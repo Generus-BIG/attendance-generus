@@ -659,7 +659,7 @@ export function PendingParticipantsTab() {
             </DialogDescription>
           </DialogHeader>
           <div className='py-4'>
-            <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
+            <Popover modal={true} open={openCombobox} onOpenChange={setOpenCombobox}>
               <PopoverTrigger asChild>
                 <Button
                   variant='outline'
