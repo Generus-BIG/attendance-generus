@@ -24,7 +24,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 import {
   Command,
   CommandEmpty,
@@ -54,7 +53,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  getFormConfiguredKelompok,
+  getFormKelompokOptions,
+} from '../form-options'
 import { submitAttendanceForm, searchParticipants } from '../services'
 
 const publicFormSchema = z
@@ -88,6 +92,7 @@ interface PublicAttendanceFormProps {
     allowedCategories?: string[]
     formType?: 'desa' | 'kelompok'
     kelompokId?: string | null
+    kelompokName?: string | null
   }
 }
 
@@ -116,6 +121,16 @@ export function PublicAttendanceForm({
 
   const attendanceStatus = form.watch('status')
   const permissionReason = form.watch('permissionReason')
+  const configuredKelompok = getFormConfiguredKelompok(formConfig)
+  const kelompokOptions = getFormKelompokOptions(
+    formConfig.formType,
+    formConfig.kelompokName
+  )
+
+  useEffect(() => {
+    if (!configuredKelompok) return
+    form.setValue('tempKelompok', configuredKelompok)
+  }, [configuredKelompok, form])
 
   // Debounce search query
   useEffect(() => {
@@ -155,7 +170,7 @@ export function PublicAttendanceForm({
         permissionReason: data.permissionReason ?? undefined,
         notes: data.notes ?? undefined,
         tempName: data.tempName,
-        tempKelompok: data.tempKelompok,
+        tempKelompok: configuredKelompok ?? data.tempKelompok,
         tempKategori: data.tempKategori,
         tempGender: data.tempGender,
       })
@@ -189,7 +204,7 @@ export function PublicAttendanceForm({
     if (KELOMPOK.includes(participant.group as (typeof KELOMPOK)[number])) {
       form.setValue(
         'tempKelompok',
-        participant.group as (typeof KELOMPOK)[number]
+        configuredKelompok ?? (participant.group as (typeof KELOMPOK)[number])
       )
     }
 
@@ -265,7 +280,7 @@ export function PublicAttendanceForm({
                 participantId: undefined,
                 tempName: '',
                 tempGender: undefined,
-                tempKelompok: undefined,
+                tempKelompok: configuredKelompok ?? undefined,
                 tempKategori: undefined,
                 status: undefined,
                 permissionReason: undefined,
@@ -424,7 +439,9 @@ export function PublicAttendanceForm({
                         value={field.value || undefined}
                       >
                         <FormControl>
-                          <SelectTrigger className='h-12 rounded-lg border-border px-4 font-normal shadow-sm transition-colors hover:bg-muted'>
+                          <SelectTrigger
+                            className='h-12 rounded-lg border-border px-4 font-normal shadow-sm transition-colors hover:bg-muted'
+                          >
                             <SelectValue
                               placeholder='Pilih'
                               className='text-muted-foreground'
@@ -462,6 +479,7 @@ export function PublicAttendanceForm({
                       <Select
                         onValueChange={field.onChange}
                         value={field.value || undefined}
+                        disabled={!!configuredKelompok}
                       >
                         <FormControl>
                           <SelectTrigger className='h-12 rounded-lg border-border px-4 font-normal shadow-sm transition-colors hover:bg-muted'>
@@ -472,7 +490,7 @@ export function PublicAttendanceForm({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className='max-h-75 rounded-lg border-border shadow-lg'>
-                          {KELOMPOK.map((k) => (
+                          {kelompokOptions.map((k) => (
                             <SelectItem
                               key={k}
                               value={k}
@@ -519,7 +537,7 @@ export function PublicAttendanceForm({
                               />
                             </FormControl>
                             <FormLabel className='flex-1 cursor-pointer py-2 text-[15px] font-medium text-foreground/90 transition-colors group-hover:text-foreground'>
-                              {k === 'AR' ? 'AR' : `GPN ${k}`}
+                              {k === 'A' || k === 'B' ? `GPN ${k}` : k}
                             </FormLabel>
                           </FormItem>
                         ))}
@@ -645,7 +663,7 @@ export function PublicAttendanceForm({
               <div className='flex justify-end'>
                 <Button
                   type='submit'
-                  className='h-11 px-8 rounded-xl bg-foreground text-[14px] font-semibold text-background shadow-md transition-[filter,background-color] hover:brightness-110 disabled:pointer-events-none disabled:opacity-50'
+                  className='h-11 rounded-xl bg-foreground px-8 text-[14px] font-semibold text-background shadow-md transition-[filter,background-color] hover:brightness-110 disabled:pointer-events-none disabled:opacity-50'
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
