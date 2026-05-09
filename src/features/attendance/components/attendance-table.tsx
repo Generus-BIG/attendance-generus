@@ -176,55 +176,58 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
         'flex flex-1 flex-col gap-4'
       )}
     >
-      <div className='flex flex-wrap items-center gap-1.5'>
+      <div className='flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2'>
         <span className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
           Periode
         </span>
-        <DatePicker
-          selected={fromDate ? parseISO(fromDate) : undefined}
-          onSelect={(d) =>
-            navigate({
-              search: (prev) => ({
-                ...prev,
-                from: d ? format(d, 'yyyy-MM-dd') : undefined,
-              }),
-            })
-          }
-          placeholder='Dari'
-          className='w-44'
-        />
-        <span className='text-muted-foreground text-xs'>—</span>
-        <DatePicker
-          selected={toDate ? parseISO(toDate) : undefined}
-          onSelect={(d) =>
-            navigate({
-              search: (prev) => ({
-                ...prev,
-                to: d ? format(d, 'yyyy-MM-dd') : undefined,
-              }),
-            })
-          }
-          placeholder='Sampai'
-          className='w-44'
-        />
-        {(fromDate || toDate) && (
-          <Button
-            type='button'
-            variant='ghost'
-            size='sm'
-            onClick={() =>
+        <div className='flex w-full items-center gap-1.5 sm:w-auto'>
+          <DatePicker
+            selected={fromDate ? parseISO(fromDate) : undefined}
+            onSelect={(d) =>
               navigate({
                 search: (prev) => ({
                   ...prev,
-                  from: undefined,
-                  to: undefined,
+                  from: d ? format(d, 'yyyy-MM-dd') : undefined,
                 }),
               })
             }
-          >
-            Reset
-          </Button>
-        )}
+            placeholder='Dari'
+            className='flex-1 sm:w-44 sm:flex-none'
+          />
+          <span className='text-muted-foreground text-xs'>—</span>
+          <DatePicker
+            selected={toDate ? parseISO(toDate) : undefined}
+            onSelect={(d) =>
+              navigate({
+                search: (prev) => ({
+                  ...prev,
+                  to: d ? format(d, 'yyyy-MM-dd') : undefined,
+                }),
+              })
+            }
+            placeholder='Sampai'
+            className='flex-1 sm:w-44 sm:flex-none'
+          />
+          {(fromDate || toDate) && (
+            <Button
+              type='button'
+              variant='ghost'
+              size='sm'
+              className='max-sm:px-2'
+              onClick={() =>
+                navigate({
+                  search: (prev) => ({
+                    ...prev,
+                    from: undefined,
+                    to: undefined,
+                  }),
+                })
+              }
+            >
+              Reset
+            </Button>
+          )}
+        </div>
       </div>
       <DataTableToolbar
         table={table}
