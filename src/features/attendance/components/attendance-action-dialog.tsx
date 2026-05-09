@@ -1,16 +1,34 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { z } from 'zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { toast } from 'sonner'
-import { Check, ChevronsUpDown, UserPlus } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { cn } from '@/lib/utils'
+import { Check, ChevronsUpDown, UserPlus } from 'lucide-react'
+import { toast } from 'sonner'
+import { useAuthStore } from '@/stores/auth-store'
 import { analytics } from '@/lib/analytics'
+import {
+  type Attendance,
+  type Participant,
+  ATTENDANCE_STATUS,
+  PERMISSION_REASONS,
+  KELOMPOK,
+  KATEGORI,
+  GENDER,
+} from '@/lib/schema'
+import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { DatePicker } from '@/components/date-picker'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
 import {
   Dialog,
   DialogContent,
@@ -28,31 +46,18 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { SelectDropdown } from '@/components/select-dropdown'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/date-picker'
+import { SelectDropdown } from '@/components/select-dropdown'
 import {
-  type Attendance,
-  type Participant,
-  ATTENDANCE_STATUS,
-  PERMISSION_REASONS,
-  KELOMPOK,
-  KATEGORI,
-  GENDER,
-} from '@/lib/schema'
-import { supabase } from '@/lib/supabase'
+  filterParticipantsForAttendanceForm,
+  getAttendanceFormKelompok,
+} from '../attendance-options'
 import { useAttendance } from './attendance-provider'
 import { MultiParticipantInput } from './multi-participant-input'
 
@@ -60,7 +65,8 @@ import { MultiParticipantInput } from './multi-participant-input'
 async function getActiveParticipants(): Promise<Participant[]> {
   const { data, error } = await supabase
     .from('participants')
-    .select(`
+    .select(
+      `
       id,
       name,
       gender,
@@ -68,7 +74,8 @@ async function getActiveParticipants(): Promise<Participant[]> {
       categories:category_id(value),
       status_active,
       created_at
-    `)
+    `
+    )
     .eq('status_active', true)
     .order('name')
 
@@ -84,11 +91,20 @@ async function getActiveParticipants(): Promise<Participant[]> {
     created_at: string
   }
 
-  function mapDbCategoryToInternal(dbCategory: string): Participant['kategori'] {
+  function mapDbCategoryToInternal(
+    dbCategory: string
+  ): Participant['kategori'] {
     if (dbCategory === 'GPN A') return 'A'
     if (dbCategory === 'GPN B') return 'B'
     if (dbCategory === 'AR') return 'AR'
-    if (dbCategory === 'A' || dbCategory === 'B' || dbCategory === 'AR') return dbCategory
+    if (dbCategory === 'APR') return 'APR'
+    if (
+      dbCategory === 'A' ||
+      dbCategory === 'B' ||
+      dbCategory === 'AR' ||
+      dbCategory === 'APR'
+    )
+      return dbCategory
     return 'AR'
   }
 
@@ -108,12 +124,32 @@ async function getActiveParticipants(): Promise<Participant[]> {
 async function getActiveForms() {
   const { data, error } = await supabase
     .from('attendance_forms')
-    .select('id, title, date')
+    .select(
+      'id, title, date, form_type, kelompok_id, allowed_categories, kelompok:lookup_values!attendance_forms_kelompok_id_fkey(value)'
+    )
     .eq('is_active', true)
     .order('date', { ascending: false })
 
   if (error) throw error
-  return data
+  return (data as unknown as ActiveAttendanceForm[]).map((form) => ({
+    id: form.id,
+    title: form.title,
+    date: form.date,
+    formType: form.form_type ?? 'desa',
+    kelompokId: form.kelompok_id ?? null,
+    kelompokName: form.kelompok?.value ?? null,
+    allowedCategories: form.allowed_categories ?? [],
+  }))
+}
+
+type ActiveAttendanceForm = {
+  id: string
+  title: string
+  date: string
+  form_type: string | null
+  kelompok_id: string | null
+  allowed_categories: string[] | null
+  kelompok: { value: string } | null
 }
 
 const formSchema = z.object({
@@ -147,6 +183,8 @@ export function AttendanceActionDialog({
 }: AttendanceActionDialogProps) {
   const isEdit = !!currentRow
   const { refreshData } = useAttendance()
+  const role = useAuthStore((s) => s.auth.role)
+  const userKelompok = useAuthStore((s) => s.auth.kelompok)
   const [openCombobox, setOpenCombobox] = useState(false)
   const [showNewParticipantForm, setShowNewParticipantForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -172,7 +210,9 @@ export function AttendanceActionDialog({
     defaultValues: isEdit
       ? {
           participantId: currentRow.participantId,
-          participantIds: currentRow.participantId ? [currentRow.participantId] : [],
+          participantIds: currentRow.participantId
+            ? [currentRow.participantId]
+            : [],
           formId: currentRow.formId || null,
           date: currentRow.date,
           status: currentRow.status,
@@ -201,20 +241,79 @@ export function AttendanceActionDialog({
   })
 
   const watchStatus = useWatch({ control: form.control, name: 'status' })
-  const watchParticipantId = useWatch({ control: form.control, name: 'participantId' })
+  const watchParticipantId = useWatch({
+    control: form.control,
+    name: 'participantId',
+  })
+  const watchFormId = useWatch({ control: form.control, name: 'formId' })
+
+  const availableForms = useMemo(
+    () =>
+      role === 'team_manager'
+        ? userKelompok
+          ? activeForms.filter(
+              (form) =>
+                form.formType !== 'kelompok' ||
+                form.kelompokName === userKelompok
+            )
+          : []
+        : activeForms,
+    [activeForms, role, userKelompok]
+  )
+  const selectedFormKelompok = getAttendanceFormKelompok(
+    watchFormId,
+    availableForms
+  )
+  const effectiveKelompokFilter =
+    role === 'team_manager'
+      ? (userKelompok ?? '__NO_TEAM_MANAGER_GROUP__')
+      : selectedFormKelompok
+  const scopedTempKelompok = KELOMPOK.find(
+    (kelompok) => kelompok === effectiveKelompokFilter
+  )
+  const filteredParticipants = useMemo(
+    () =>
+      filterParticipantsForAttendanceForm(
+        participants,
+        effectiveKelompokFilter
+      ),
+    [participants, effectiveKelompokFilter]
+  )
+  const tempKelompokOptions = scopedTempKelompok
+    ? [scopedTempKelompok]
+    : role === 'team_manager'
+      ? []
+      : KELOMPOK
+
+  const validateSelectedForm = (formId: string | null | undefined) => {
+    if (!formId) return true
+
+    if (availableForms.some((form) => form.id === formId)) return true
+
+    form.setError('formId', {
+      type: 'manual',
+      message: 'Form tidak tersedia untuk kelompok Anda',
+    })
+    setIsSubmitting(false)
+    return false
+  }
 
   // Update form values whenever currentRow changes (when dialog opens with edit data)
   useEffect(() => {
     if (isEdit && currentRow && open) {
       // Ensure date is a Date object
-      const editDate = currentRow.date instanceof Date ? currentRow.date : new Date(currentRow.date)
+      const editDate =
+        currentRow.date instanceof Date
+          ? currentRow.date
+          : new Date(currentRow.date)
 
       const editParticipantId =
         currentRow.participantId ??
         // Some table rows may include joined participant without mapping participantId
-        (currentRow as unknown as { participant?: { id?: string } }).participant?.id ??
+        (currentRow as unknown as { participant?: { id?: string } }).participant
+          ?.id ??
         null
-      
+
       form.reset({
         participantId: editParticipantId,
         participantIds: editParticipantId ? [editParticipantId] : [],
@@ -235,42 +334,113 @@ export function AttendanceActionDialog({
     }
   }, [isEdit, currentRow, open, form])
 
+  useEffect(() => {
+    if (!open || !scopedTempKelompok) return
+
+    form.setValue('tempKelompok', scopedTempKelompok)
+
+    const participantIds = form.getValues('participantIds') ?? []
+    const allowedIds = new Set(
+      filteredParticipants.map((participant) => participant.id)
+    )
+    const scopedParticipantIds = participantIds.filter((id) =>
+      allowedIds.has(id)
+    )
+
+    if (scopedParticipantIds.length !== participantIds.length) {
+      form.setValue('participantIds', scopedParticipantIds)
+    }
+
+    const participantId = form.getValues('participantId')
+    if (participantId && !allowedIds.has(participantId)) {
+      form.setValue('participantId', null)
+    }
+  }, [filteredParticipants, form, open, scopedTempKelompok])
+
   const onSubmit = async (values: AttendanceForm) => {
     setIsSubmitting(true)
     try {
       // Construct timestamp: selected date at 00:00 UTC
       const selectedDate = values.date
-      const timestamp = new Date(Date.UTC(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(),
-        selectedDate.getDate(),
-        0, 0, 0, 0
-      )).toISOString()
+      const timestamp = new Date(
+        Date.UTC(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate(),
+          0,
+          0,
+          0,
+          0
+        )
+      ).toISOString()
 
       if (isEdit) {
         const fallbackParticipantId =
           values.participantId ??
           currentRow.participantId ??
-          (currentRow as unknown as { participant?: { id?: string } }).participant?.id ??
+          (currentRow as unknown as { participant?: { id?: string } })
+            .participant?.id ??
           null
 
         const fallbackFormId = values.formId ?? currentRow.formId ?? null
 
+        if (!validateSelectedForm(fallbackFormId)) return
+
         // If this record is actually a pending/new participant row, keep it that way
         const effectiveIsNewParticipant =
-          values.isNewParticipant || (!!currentRow.tempName && !fallbackParticipantId)
+          values.isNewParticipant ||
+          (!!currentRow.tempName && !fallbackParticipantId)
+
+        if (!effectiveIsNewParticipant && fallbackParticipantId) {
+          const allowedIds = new Set(
+            filteredParticipants.map((participant) => participant.id)
+          )
+          if (!allowedIds.has(fallbackParticipantId)) {
+            form.setError('participantId', {
+              type: 'manual',
+              message: 'Peserta tidak sesuai dengan kelompok form',
+            })
+            setIsSubmitting(false)
+            return
+          }
+        }
+
+        if (effectiveIsNewParticipant && role === 'team_manager') {
+          const fallbackTempKelompok =
+            values.tempKelompok ?? currentRow.tempKelompok ?? null
+          if (!userKelompok || fallbackTempKelompok !== userKelompok) {
+            form.setError('tempKelompok', {
+              type: 'manual',
+              message: 'Kelompok peserta tidak sesuai dengan akun Anda',
+            })
+            setIsSubmitting(false)
+            return
+          }
+        }
 
         // Update existing attendance record in Supabase
         const updatePayload = {
-          participant_id: effectiveIsNewParticipant ? null : fallbackParticipantId,
+          participant_id: effectiveIsNewParticipant
+            ? null
+            : fallbackParticipantId,
           form_id: fallbackFormId,
           status: values.status.toUpperCase(),
-          permission_reason: values.status === 'izin' ? values.permissionReason : null,
-          permission_description: values.status === 'izin' ? values.notes : null,
-          temp_name: effectiveIsNewParticipant ? values.tempName ?? currentRow.tempName : null,
-          temp_group: effectiveIsNewParticipant ? values.tempKelompok ?? currentRow.tempKelompok : null,
-          temp_category: effectiveIsNewParticipant ? values.tempKategori ?? currentRow.tempKategori : null,
-          temp_gender: effectiveIsNewParticipant ? values.tempGender ?? currentRow.tempGender : null,
+          permission_reason:
+            values.status === 'izin' ? values.permissionReason : null,
+          permission_description:
+            values.status === 'izin' ? values.notes : null,
+          temp_name: effectiveIsNewParticipant
+            ? (values.tempName ?? currentRow.tempName)
+            : null,
+          temp_group: effectiveIsNewParticipant
+            ? (values.tempKelompok ?? currentRow.tempKelompok)
+            : null,
+          temp_category: effectiveIsNewParticipant
+            ? (values.tempKategori ?? currentRow.tempKategori)
+            : null,
+          temp_gender: effectiveIsNewParticipant
+            ? (values.tempGender ?? currentRow.tempGender)
+            : null,
           timestamp: timestamp,
         }
 
@@ -282,13 +452,47 @@ export function AttendanceActionDialog({
         if (error) throw error
         toast.success('Data absensi berhasil diperbarui')
       } else {
-        if (!values.isNewParticipant && (!values.participantIds || values.participantIds.length === 0)) {
+        if (
+          !values.isNewParticipant &&
+          (!values.participantIds || values.participantIds.length === 0)
+        ) {
           form.setError('participantIds', {
             type: 'manual',
             message: 'Pilih minimal satu peserta',
           })
           setIsSubmitting(false)
           return
+        }
+
+        if (!values.isNewParticipant) {
+          const allowedIds = new Set(
+            filteredParticipants.map((participant) => participant.id)
+          )
+          const hasOutOfScopeParticipant = (values.participantIds || []).some(
+            (participantId) => !allowedIds.has(participantId)
+          )
+
+          if (hasOutOfScopeParticipant) {
+            form.setError('participantIds', {
+              type: 'manual',
+              message: 'Peserta tidak sesuai dengan kelompok form',
+            })
+            setIsSubmitting(false)
+            return
+          }
+        }
+
+        if (!validateSelectedForm(values.formId)) return
+
+        if (values.isNewParticipant && role === 'team_manager') {
+          if (!userKelompok || values.tempKelompok !== userKelompok) {
+            form.setError('tempKelompok', {
+              type: 'manual',
+              message: 'Kelompok peserta tidak sesuai dengan akun Anda',
+            })
+            setIsSubmitting(false)
+            return
+          }
         }
 
         // Create new attendance record in Supabase
@@ -298,8 +502,10 @@ export function AttendanceActionDialog({
             participant_id: null,
             form_id: values.formId || null, // Link to selected form/event
             status: values.status.toUpperCase(),
-            permission_reason: values.status === 'izin' ? values.permissionReason : null,
-            permission_description: values.status === 'izin' ? values.notes : null,
+            permission_reason:
+              values.status === 'izin' ? values.permissionReason : null,
+            permission_description:
+              values.status === 'izin' ? values.notes : null,
             temp_name: values.tempName,
             temp_group: values.tempKelompok,
             temp_category: values.tempKategori,
@@ -307,27 +513,32 @@ export function AttendanceActionDialog({
             timestamp: timestamp,
           }
 
-          const { data: insertedAttendance, error: attendanceError } = await supabase
-            .from('attendance')
-            .insert(insertPayload)
-            .select()
-            .single()
+          const { data: insertedAttendance, error: attendanceError } =
+            await supabase
+              .from('attendance')
+              .insert(insertPayload)
+              .select()
+              .single()
 
           if (attendanceError) throw attendanceError
           attendanceData = insertedAttendance
         } else {
-          const insertPayloads = (values.participantIds || []).map((participantId) => ({
-            participant_id: participantId,
-            form_id: values.formId || null,
-            status: values.status.toUpperCase(),
-            permission_reason: values.status === 'izin' ? values.permissionReason : null,
-            permission_description: values.status === 'izin' ? values.notes : null,
-            temp_name: null,
-            temp_group: null,
-            temp_category: null,
-            temp_gender: null,
-            timestamp: timestamp,
-          }))
+          const insertPayloads = (values.participantIds || []).map(
+            (participantId) => ({
+              participant_id: participantId,
+              form_id: values.formId || null,
+              status: values.status.toUpperCase(),
+              permission_reason:
+                values.status === 'izin' ? values.permissionReason : null,
+              permission_description:
+                values.status === 'izin' ? values.notes : null,
+              temp_name: null,
+              temp_group: null,
+              temp_category: null,
+              temp_gender: null,
+              timestamp: timestamp,
+            })
+          )
 
           const { error: attendanceError } = await supabase
             .from('attendance')
@@ -337,7 +548,14 @@ export function AttendanceActionDialog({
         }
 
         // If new participant, create pending participant in Supabase
-        if (values.isNewParticipant && values.tempName && values.tempKelompok && values.tempGender && values.tempKategori && attendanceData?.id) {
+        if (
+          values.isNewParticipant &&
+          values.tempName &&
+          values.tempKelompok &&
+          values.tempGender &&
+          values.tempKategori &&
+          attendanceData?.id
+        ) {
           const pendingPayload = {
             name: values.tempName,
             suggested_group: values.tempKelompok,
@@ -364,18 +582,27 @@ export function AttendanceActionDialog({
       // Track attendance submission with form details
       const participantIds = values.isNewParticipant
         ? []
-        : (values.participantIds || [])
-      const selectedParticipants = participants.filter((p) => participantIds.includes(p.id))
-      const selectedParticipantSummary = selectedParticipants.length === 1 ? selectedParticipants[0] : null
+        : values.participantIds || []
+      const selectedParticipants = filteredParticipants.filter((p) =>
+        participantIds.includes(p.id)
+      )
+      const selectedParticipantSummary =
+        selectedParticipants.length === 1 ? selectedParticipants[0] : null
 
       analytics.submitAttendance({
         status: values.status,
         formId: values.formId || 'unknown',
         formTitle: 'Attendance Record',
         isNewParticipant: values.isNewParticipant,
-        kelompok: values.isNewParticipant ? values.tempKelompok : selectedParticipantSummary?.kelompok,
-        kategori: values.isNewParticipant ? values.tempKategori : selectedParticipantSummary?.kategori,
-        participantCount: values.isNewParticipant ? 1 : participantIds.length || 1,
+        kelompok: values.isNewParticipant
+          ? values.tempKelompok
+          : selectedParticipantSummary?.kelompok,
+        kategori: values.isNewParticipant
+          ? values.tempKategori
+          : selectedParticipantSummary?.kategori,
+        participantCount: values.isNewParticipant
+          ? 1
+          : participantIds.length || 1,
       })
 
       refreshData()
@@ -386,22 +613,25 @@ export function AttendanceActionDialog({
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error saving attendance:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+
       // Track failed attendance submission
       analytics.submitAttendanceFailed(
         errorMessage,
         values.status,
         'Attendance Record'
       )
-      
+
       toast.error('Gagal menyimpan absensi: ' + errorMessage)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const selectedParticipant = participants.find((p) => p.id === watchParticipantId)
+  const selectedParticipant = filteredParticipants.find(
+    (p) => p.id === watchParticipantId
+  )
 
   return (
     <Dialog
@@ -415,8 +645,8 @@ export function AttendanceActionDialog({
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
-        <DialogHeader className='text-left'>
+      <DialogContent className='grid max-h-[calc(100dvh-1rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-lg'>
+        <DialogHeader className='border-b border-border/70 px-4 py-4 text-left sm:px-6'>
           <DialogTitle>{isEdit ? 'Edit Absensi' : 'Input Absensi'}</DialogTitle>
           <DialogDescription>
             {isEdit
@@ -428,7 +658,7 @@ export function AttendanceActionDialog({
           <form
             id='attendance-form'
             onSubmit={form.handleSubmit(onSubmit)}
-            className='space-y-4 p-0.5'
+            className='min-h-0 space-y-4 overflow-y-auto px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-6'
           >
             <FormField
               control={form.control}
@@ -459,7 +689,7 @@ export function AttendanceActionDialog({
                     value={field.value || undefined}
                     onValueChange={field.onChange}
                     placeholder='Pilih kegiatan/form...'
-                    items={activeForms.map((f) => ({
+                    items={availableForms.map((f) => ({
                       label: `${f.title} (${new Date(f.date).toLocaleDateString('id-ID')})`,
                       value: f.id,
                     }))}
@@ -478,11 +708,14 @@ export function AttendanceActionDialog({
                     <FormItem className='flex flex-col'>
                       <FormLabel>Nama Peserta</FormLabel>
                       <Popover
+                        modal={true}
                         open={openCombobox}
                         onOpenChange={(nextOpen) => {
                           setOpenCombobox(nextOpen)
                           if (nextOpen) {
-                            queueMicrotask(() => participantSearchRef.current?.focus())
+                            queueMicrotask(() =>
+                              participantSearchRef.current?.focus()
+                            )
                           } else {
                             setParticipantQuery('')
                           }
@@ -506,7 +739,11 @@ export function AttendanceActionDialog({
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className='w-full p-0' align='start'>
+                        <PopoverContent
+                          className='w-[var(--radix-popover-trigger-width)] p-0'
+                          align='start'
+                          avoidCollisions
+                        >
                           <Command shouldFilter>
                             <CommandInput
                               ref={participantSearchRef}
@@ -517,7 +754,8 @@ export function AttendanceActionDialog({
                             <CommandList
                               className='touch-pan-y overscroll-contain'
                               style={{
-                                maxHeight: '16rem',
+                                maxHeight:
+                                  'min(18rem, calc(var(--radix-popover-content-available-height) - 0.5rem))',
                                 overflowY: 'auto',
                                 WebkitOverflowScrolling: 'touch',
                               }}
@@ -544,12 +782,15 @@ export function AttendanceActionDialog({
                                 </div>
                               </CommandEmpty>
                               <CommandGroup>
-                                {participants.map((participant) => (
+                                {filteredParticipants.map((participant) => (
                                   <CommandItem
                                     key={participant.id}
                                     value={`${participant.name} ${participant.kelompok} ${participant.kategori}`}
                                     onSelect={() => {
-                                      form.setValue('participantId', participant.id)
+                                      form.setValue(
+                                        'participantId',
+                                        participant.id
+                                      )
                                       form.setValue('isNewParticipant', false)
                                       setOpenCombobox(false)
                                     }}
@@ -564,8 +805,13 @@ export function AttendanceActionDialog({
                                     />
                                     <div className='flex flex-col'>
                                       <span>{participant.name}</span>
-                                      <span className='text-muted-foreground text-xs'>
-                                        {participant.kelompok} - {participant.kategori === 'A' ? 'GPN A' : participant.kategori === 'B' ? 'GPN B' : `Kategori ${participant.kategori}`}
+                                      <span className='text-xs text-muted-foreground'>
+                                        {participant.kelompok} -{' '}
+                                        {participant.kategori === 'A'
+                                          ? 'GPN A'
+                                          : participant.kategori === 'B'
+                                            ? 'GPN B'
+                                            : `Kategori ${participant.kategori}`}
                                       </span>
                                     </div>
                                   </CommandItem>
@@ -588,7 +834,8 @@ export function AttendanceActionDialog({
                       <FormLabel>Nama Peserta</FormLabel>
                       <FormControl>
                         <MultiParticipantInput
-                          participants={participants}
+                          participants={filteredParticipants}
+                          maxListHeight='min(18rem, calc(var(--radix-popover-content-available-height) - 0.5rem))'
                           value={field.value || []}
                           onChange={(nextValue) => {
                             field.onChange(nextValue)
@@ -667,7 +914,11 @@ export function AttendanceActionDialog({
                           value={field.value || undefined}
                           onValueChange={field.onChange}
                           placeholder='Pilih kelompok'
-                          items={KELOMPOK.map((k) => ({ label: k, value: k }))}
+                          items={tempKelompokOptions.map((k) => ({
+                            label: k,
+                            value: k,
+                          }))}
+                          disabled={!!scopedTempKelompok}
                         />
                         <FormMessage />
                       </FormItem>
@@ -686,7 +937,7 @@ export function AttendanceActionDialog({
                         onValueChange={field.onChange}
                         placeholder='Pilih kategori'
                         items={KATEGORI.map((k) => ({
-                          label: k === 'A' ? 'GPN A' : k === 'B' ? 'GPN B' : 'AR',
+                          label: k === 'A' ? 'GPN A' : k === 'B' ? 'GPN B' : k,
                           value: k,
                         }))}
                       />
@@ -729,7 +980,10 @@ export function AttendanceActionDialog({
                         defaultValue={field.value || undefined}
                         onValueChange={field.onChange}
                         placeholder='Pilih alasan'
-                        items={PERMISSION_REASONS.map((r) => ({ label: r, value: r }))}
+                        items={PERMISSION_REASONS.map((r) => ({
+                          label: r,
+                          value: r,
+                        }))}
                       />
                       <FormMessage />
                     </FormItem>
@@ -756,16 +1010,22 @@ export function AttendanceActionDialog({
             )}
           </form>
         </Form>
-        <DialogFooter>
+        <DialogFooter className='border-t border-border/70 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-6'>
           <Button
             type='button'
             variant='outline'
+            className='min-h-11'
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
             Batal
           </Button>
-          <Button type='submit' form='attendance-form' disabled={isSubmitting}>
+          <Button
+            type='submit'
+            form='attendance-form'
+            className='min-h-11'
+            disabled={isSubmitting}
+          >
             {isSubmitting ? 'Menyimpan...' : 'Simpan'}
           </Button>
         </DialogFooter>

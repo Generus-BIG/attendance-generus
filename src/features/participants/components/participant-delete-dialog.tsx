@@ -1,7 +1,7 @@
 'use client'
 
-import { ConfirmDialog } from '@/components/confirm-dialog'
 import { type Participant } from '@/lib/schema'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useParticipantsCRUD } from '../context/participants-context'
 
 type ParticipantDeleteDialogProps = {
@@ -31,32 +31,30 @@ export function ParticipantDeleteDialog({
       open={open}
       onOpenChange={onOpenChange}
       handleConfirm={handleDelete}
-      title={
-        <span className='text-destructive'>
-          Hapus Peserta{' '}
-          <span className='text-primary font-semibold'>{currentRow.name}</span>?
-        </span>
-      }
+      title='Hapus peserta ini?'
       desc={
-        <div className='space-y-4'>
-          <p className='mb-2'>
-            Anda yakin ingin menghapus peserta ini? Data yang sudah dihapus tidak dapat
-            dikembalikan.
+        <div className='space-y-3'>
+          <p>
+            Peserta <span className='font-semibold'>{currentRow.name}</span>{' '}
+            akan dihapus. Data yang sudah dihapus tidak dapat dipulihkan.
           </p>
-          <ul className='text-muted-foreground list-disc ps-4 text-sm'>
+          <ul className='list-disc space-y-1 ps-4 text-sm text-muted-foreground'>
             <li>
               Nama: <span className='font-semibold'>{currentRow.name}</span>
             </li>
             <li>
-              Kelompok: <span className='font-semibold'>{currentRow.kelompok}</span>
+              Kelompok:{' '}
+              <span className='font-semibold'>{currentRow.kelompok}</span>
             </li>
             <li>
-              Kategori: <span className='font-semibold'>{currentRow.kategori}</span>
+              Kategori:{' '}
+              <span className='font-semibold'>{currentRow.kategori}</span>
             </li>
           </ul>
         </div>
       }
-      confirmText='Hapus'
+      cancelBtnText='Batal'
+      confirmText='Hapus peserta'
       destructive
     />
   )

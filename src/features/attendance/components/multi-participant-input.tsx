@@ -1,7 +1,9 @@
 import { useMemo, useRef, useState } from 'react'
 import { Check, ChevronsUpDown, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { type Participant } from '@/lib/schema'
+import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Command,
   CommandEmpty,
@@ -15,8 +17,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
-import { type Participant } from '@/lib/schema'
 
 type MultiParticipantInputProps = {
   participants: Participant[]
@@ -24,6 +24,7 @@ type MultiParticipantInputProps = {
   onChange: (value: string[]) => void
   placeholder?: string
   disabled?: boolean
+  maxListHeight?: string
 }
 
 export function MultiParticipantInput({
@@ -32,6 +33,7 @@ export function MultiParticipantInput({
   onChange,
   placeholder = 'Pilih peserta...',
   disabled = false,
+  maxListHeight = '16rem',
 }: MultiParticipantInputProps) {
   const [open, setOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
@@ -60,6 +62,7 @@ export function MultiParticipantInput({
 
   return (
     <Popover
+      modal={true}
       open={open}
       onOpenChange={(nextOpen) => {
         setOpen(nextOpen)
@@ -97,7 +100,7 @@ export function MultiParticipantInput({
                       event.stopPropagation()
                       removeParticipant(participant.id)
                     }}
-                    className='rounded-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+                    className='rounded-sm ring-offset-background outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
                     aria-label={`Hapus ${participant.name}`}
                   >
                     <X className='h-3 w-3' />
@@ -111,7 +114,11 @@ export function MultiParticipantInput({
           <ChevronsUpDown className='h-4 w-4 shrink-0 opacity-50' />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className='w-full p-0' align='start'>
+      <PopoverContent
+        className='w-[var(--radix-popover-trigger-width)] p-0'
+        align='start'
+        avoidCollisions
+      >
         <Command shouldFilter>
           <CommandInput
             ref={inputRef}
@@ -122,7 +129,7 @@ export function MultiParticipantInput({
           <CommandList
             className='touch-pan-y overscroll-contain'
             style={{
-              maxHeight: '16rem',
+              maxHeight: maxListHeight,
               overflowY: 'auto',
               WebkitOverflowScrolling: 'touch',
             }}
@@ -137,18 +144,18 @@ export function MultiParticipantInput({
                     value={`${participant.name} ${participant.kelompok} ${participant.kategori}`}
                     onSelect={() => toggleParticipant(participant.id)}
                   >
-                  <Check
-                    className={cn(
-                      'mr-2 h-4 w-4',
-                      isSelected ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
-                  <div className='flex flex-col'>
-                    <span>{participant.name}</span>
-                    <span className='text-muted-foreground text-xs'>
-                      {participant.kelompok} - {participant.kategori}
-                    </span>
-                  </div>
+                    <Check
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        isSelected ? 'opacity-100' : 'opacity-0'
+                      )}
+                    />
+                    <div className='flex flex-col'>
+                      <span>{participant.name}</span>
+                      <span className='text-xs text-muted-foreground'>
+                        {participant.kelompok} - {participant.kategori}
+                      </span>
+                    </div>
                   </CommandItem>
                 )
               })}

@@ -211,7 +211,7 @@ export function UnmatchedAttendanceTab() {
                 <strong>Status:</strong> {selectedAttendance?.status}
               </p>
             </div>
-            <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
+            <Popover modal={true} open={openCombobox} onOpenChange={setOpenCombobox}>
               <PopoverTrigger asChild>
                 <Button
                   variant='outline'

@@ -4,6 +4,14 @@ import { useEffect } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useAuthStore } from '@/stores/auth-store'
+import {
+  type Participant,
+  KELOMPOK,
+  KATEGORI,
+  GENDER,
+  PARTICIPANT_STATUS,
+} from '@/lib/schema'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -24,8 +32,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { DatePicker } from '@/components/date-picker'
 import { SelectDropdown } from '@/components/select-dropdown'
-import { type Participant, KELOMPOK, KATEGORI, GENDER, PARTICIPANT_STATUS } from '@/lib/schema'
-import { useAuthStore } from '@/stores/auth-store'
 import { useParticipantsCRUD } from '../context/participants-context'
 
 const formSchema = z.object({
@@ -34,7 +40,12 @@ const formSchema = z.object({
   kategori: z.enum(KATEGORI, { message: 'Kategori wajib dipilih.' }),
   gender: z.enum(GENDER, { message: 'Jenis kelamin wajib dipilih.' }),
   status: z.enum(PARTICIPANT_STATUS),
-  birthPlace: z.string().trim().max(100, 'Maksimal 100 karakter').optional().nullable(),
+  birthPlace: z
+    .string()
+    .trim()
+    .max(100, 'Maksimal 100 karakter')
+    .optional()
+    .nullable(),
   birthDate: z
     .date()
     .refine((d) => d <= new Date(), {
@@ -53,7 +64,9 @@ type ParticipantActionDialogProps = {
 }
 
 function StackedField({ children }: { children: React.ReactNode }) {
-  return <FormItem className='flex flex-col gap-1.5 space-y-0'>{children}</FormItem>
+  return (
+    <FormItem className='flex flex-col gap-1.5 space-y-0'>{children}</FormItem>
+  )
 }
 
 export function ParticipantActionDialog({
@@ -140,9 +153,11 @@ export function ParticipantActionDialog({
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
-        <DialogHeader className='text-left'>
-          <DialogTitle>{isEdit ? 'Edit Peserta' : 'Tambah Peserta'}</DialogTitle>
+      <DialogContent className='grid max-h-[calc(100dvh-1rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-lg'>
+        <DialogHeader className='border-b border-border/70 px-4 py-4 text-left sm:px-6'>
+          <DialogTitle>
+            {isEdit ? 'Edit Peserta' : 'Tambah Peserta'}
+          </DialogTitle>
           <DialogDescription>
             {isEdit
               ? 'Perbarui informasi peserta yang sudah ada.'
@@ -153,11 +168,11 @@ export function ParticipantActionDialog({
           <form
             id='participant-form'
             onSubmit={form.handleSubmit(onSubmit)}
-            className='p-0.5'
+            className='min-h-0 overflow-y-auto px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-6'
           >
             <div className='flex flex-col gap-5'>
               <section className='flex flex-col gap-3'>
-                <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
                   Identitas
                 </div>
                 <FormField
@@ -234,7 +249,7 @@ export function ParticipantActionDialog({
               </section>
 
               <section className='flex flex-col gap-3'>
-                <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
                   Klasifikasi
                 </div>
                 <FormField
@@ -248,7 +263,10 @@ export function ParticipantActionDialog({
                         value={field.value}
                         onValueChange={field.onChange}
                         placeholder='Pilih kelompok'
-                        items={kelompokOptions.map((k) => ({ label: k, value: k }))}
+                        items={kelompokOptions.map((k) => ({
+                          label: k,
+                          value: k,
+                        }))}
                         disabled={isTeamManager && !scopedKelompok}
                       />
                       <FormMessage />
@@ -278,7 +296,7 @@ export function ParticipantActionDialog({
 
               {isEdit && (
                 <section className='flex flex-col gap-3'>
-                  <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                  <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
                     Status
                   </div>
                   <FormField
@@ -305,15 +323,21 @@ export function ParticipantActionDialog({
             </div>
           </form>
         </Form>
-        <DialogFooter>
+        <DialogFooter className='border-t border-border/70 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-6'>
           <Button
             type='button'
             variant='outline'
+            className='min-h-11'
             onClick={() => onOpenChange(false)}
           >
             Batal
           </Button>
-          <Button type='submit' form='participant-form' disabled={isTeamManager && !scopedKelompok}>
+          <Button
+            type='submit'
+            form='participant-form'
+            className='min-h-11'
+            disabled={isTeamManager && !scopedKelompok}
+          >
             Simpan
           </Button>
         </DialogFooter>

@@ -1,150 +1,248 @@
+import { format } from 'date-fns'
+import {
+  attendanceFormConfigSchema,
+  KELOMPOK,
+  type AttendanceFormConfig,
+} from '@/lib/schema'
 import { supabase } from '../../lib/supabase'
-import { attendanceFormConfigSchema, type AttendanceFormConfig } from '@/lib/schema'
 
-export async function getFormBySlug(slug: string): Promise<AttendanceFormConfig | null> {
-    const { data, error } = await supabase
-        .from('attendance_forms')
-        .select('*')
-        .eq('slug', slug)
-        .eq('is_active', true)
-        .single()
+export async function getFormBySlug(
+  slug: string
+): Promise<AttendanceFormConfig | null> {
+  const { data, error } = await supabase
+    .from('attendance_forms')
+    .select(
+      '*, kelompok:lookup_values!attendance_forms_kelompok_id_fkey(value)'
+    )
+    .eq('slug', slug)
+    .eq('is_active', true)
+    .single()
 
-    if (error || !data) return null
+  if (error || !data) return null
 
-    const mappedData = {
-        ...data,
-        isActive: data.is_active,
-        allowedCategories: data.allowed_categories || ['A', 'B', 'AR'],
-        formType: data.form_type ?? 'desa',
-        kelompokId: data.kelompok_id ?? null,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at
-    }
+  const mappedData = {
+    ...data,
+    isActive: data.is_active,
+    allowedCategories: data.allowed_categories || ['A', 'B', 'AR'],
+    formType: data.form_type ?? 'desa',
+    kelompokId: data.kelompok_id ?? null,
+    kelompokName: data.kelompok?.value ?? null,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  }
 
-    return attendanceFormConfigSchema.parse(mappedData)
+  return attendanceFormConfigSchema.parse(mappedData)
 }
 
-export async function submitAttendanceForm(formId: string, data: {
-    participantId?: string | null;
-    status?: string;
-    permissionReason?: string | null;
-    notes?: string | null;
-    tempName?: string;
-    tempKelompok?: string;
-    tempKategori?: string;
-    tempGender?: string;
-}) {
-    const payload = {
-        form_id: formId,
-        participant_id: data.participantId || null,
-        status: data.status?.toUpperCase(),
-        permission_reason: data.permissionReason || null,
-        permission_description: data.notes || null,
-        temp_name: data.tempName || null,
-        temp_group: data.tempKelompok || null,
-        temp_category: data.tempKategori || null,
-        temp_gender: data.tempGender || null,
-        timestamp: new Date().toISOString()
-    }
+async function getAttendanceFormScope(formId: string) {
+  const { data, error } = await supabase
+    .from('attendance_forms')
+    .select(
+      'form_type, kelompok_id, allowed_categories, kelompok:lookup_values!attendance_forms_kelompok_id_fkey(value)'
+    )
+    .eq('id', formId)
+    .single()
 
-    const { error } = await supabase
-        .from('attendance')
-        .insert(payload)
+  if (error) throw error
+
+  return data as unknown as {
+    form_type: string | null
+    kelompok_id: string | null
+    allowed_categories: string[] | null
+    kelompok: { value: string } | null
+  }
+}
+
+async function assertAttendanceMatchesFormScope(
+  formId: string,
+  data: {
+    participantId?: string | null
+    tempKelompok?: string | null
+    tempKategori?: string | null
+  }
+) {
+  const scope = await getAttendanceFormScope(formId)
+  const allowedCategories = scope.allowed_categories ?? ['A', 'B', 'AR']
+
+  if (scope.form_type === 'kelompok') {
+    const validKelompok = KELOMPOK.some(
+      (kelompok) => kelompok === scope.kelompok?.value
+    )
+
+    if (!scope.kelompok_id || !scope.kelompok || !validKelompok) {
+      throw new Error('Konfigurasi kelompok form tidak valid')
+    }
+  }
+
+  if (data.participantId) {
+    const { data: participant, error } = await supabase
+      .from('participants')
+      .select('group_id, categories:category_id(value)')
+      .eq('id', data.participantId)
+      .single()
 
     if (error) throw error
+    if (
+      scope.form_type === 'kelompok' &&
+      participant?.group_id !== scope.kelompok_id
+    ) {
+      throw new Error('Peserta tidak sesuai dengan kelompok form')
+    }
+
+    const participantCategory = mapDbCategoryToInternal(
+      (participant as unknown as { categories?: { value?: string } }).categories
+        ?.value ?? ''
+    )
+    if (!allowedCategories.includes(participantCategory)) {
+      throw new Error('Kategori peserta tidak sesuai dengan konfigurasi form')
+    }
+  }
+
+  if (
+    scope.form_type === 'kelompok' &&
+    data.tempKelompok &&
+    scope.kelompok?.value !== data.tempKelompok
+  ) {
+    throw new Error('Kelompok tidak sesuai dengan konfigurasi form')
+  }
+
+  if (data.tempKategori && !allowedCategories.includes(data.tempKategori)) {
+    throw new Error('Kategori tidak sesuai dengan konfigurasi form')
+  }
 }
 
-export async function submitPendingAttendance(formId: string, data: {
-    status: string;
-    permissionReason?: string;
-    notes?: string;
-    tempName: string;
-    tempKelompok: string;
-    tempKategori: string;
-    tempGender: string;
-    birthPlace: string;
-    birthDate: Date;
-}) {
-    // 1. Insert into attendance table with temp fields
-    const attendancePayload = {
-        form_id: formId,
-        participant_id: null,
-        status: data.status.toUpperCase(),
-        permission_reason: data.permissionReason || null,
-        permission_description: data.notes || null,
-        temp_name: data.tempName,
-        temp_group: data.tempKelompok,
-        temp_category: data.tempKategori,
-        temp_gender: data.tempGender,
-        timestamp: new Date().toISOString()
-    }
+export async function submitAttendanceForm(
+  formId: string,
+  data: {
+    participantId?: string | null
+    status?: string
+    permissionReason?: string | null
+    notes?: string | null
+    tempName?: string
+    tempKelompok?: string
+    tempKategori?: string
+    tempGender?: string
+  }
+) {
+  await assertAttendanceMatchesFormScope(formId, data)
 
-    const { data: attendanceData, error: attendanceError } = await supabase
-        .from('attendance')
-        .insert(attendancePayload)
-        .select()
-        .single()
+  const payload = {
+    form_id: formId,
+    participant_id: data.participantId || null,
+    status: data.status?.toUpperCase(),
+    permission_reason: data.permissionReason || null,
+    permission_description: data.notes || null,
+    temp_name: data.tempName || null,
+    temp_group: data.tempKelompok || null,
+    temp_category: data.tempKategori || null,
+    temp_gender: data.tempGender || null,
+    timestamp: new Date().toISOString(),
+  }
 
-    if (attendanceError) throw attendanceError
+  const { error } = await supabase.from('attendance').insert(payload)
 
-    // 2. Insert into pending_participants
-    const pendingPayload = {
-        name: data.tempName,
-        suggested_group: data.tempKelompok,
-        suggested_gender: data.tempGender,
-        suggested_category: data.tempKategori,
-        attendance_ref_ids: [attendanceData.id],
-        status: 'pending',
-        birth_place: data.birthPlace,
-        birth_date: data.birthDate.toISOString().split('T')[0]
-    }
+  if (error) throw error
+}
 
-    const { error: pendingError } = await supabase
-        .from('pending_participants')
-        .insert(pendingPayload)
+export async function submitPendingAttendance(
+  formId: string,
+  data: {
+    status: string
+    permissionReason?: string
+    notes?: string
+    tempName: string
+    tempKelompok: string
+    tempKategori: string
+    tempGender: string
+    birthPlace: string
+    birthDate: Date
+  }
+) {
+  await assertAttendanceMatchesFormScope(formId, {
+    tempKelompok: data.tempKelompok,
+    tempKategori: data.tempKategori,
+  })
 
-    if (pendingError) throw pendingError
+  // 1. Insert into attendance table with temp fields
+  const attendancePayload = {
+    form_id: formId,
+    participant_id: null,
+    status: data.status.toUpperCase(),
+    permission_reason: data.permissionReason || null,
+    permission_description: data.notes || null,
+    temp_name: data.tempName,
+    temp_group: data.tempKelompok,
+    temp_category: data.tempKategori,
+    temp_gender: data.tempGender,
+    timestamp: new Date().toISOString(),
+  }
+
+  const { data: attendanceData, error: attendanceError } = await supabase
+    .from('attendance')
+    .insert(attendancePayload)
+    .select()
+    .single()
+
+  if (attendanceError) throw attendanceError
+
+  // 2. Insert into pending_participants
+  const pendingPayload = {
+    name: data.tempName,
+    suggested_group: data.tempKelompok,
+    suggested_gender: data.tempGender,
+    suggested_category: data.tempKategori,
+    attendance_ref_ids: [attendanceData.id],
+    status: 'pending',
+    birth_place: data.birthPlace,
+    birth_date: format(data.birthDate, 'yyyy-MM-dd'),
+  }
+
+  const { error: pendingError } = await supabase
+    .from('pending_participants')
+    .insert(pendingPayload)
+
+  if (pendingError) throw pendingError
 }
 
 interface ParticipantSearchResult {
-    id: string
-    name: string
-    gender: string
-    group: string
-    category: string
+  id: string
+  name: string
+  gender: string
+  group: string
+  category: string
 }
 
 // Map database category values to internal form values
 // Database: "GPN A", "GPN B", "AR" -> Form: "A", "B", "AR"
 function mapDbCategoryToInternal(dbCategory: string): string {
-    if (dbCategory === 'GPN A') return 'A'
-    if (dbCategory === 'GPN B') return 'B'
-    if (dbCategory === 'Anak Remaja') return 'AR'
-    return dbCategory // "AR" stays as "AR"
+  if (dbCategory === 'GPN A') return 'A'
+  if (dbCategory === 'GPN B') return 'B'
+  if (dbCategory === 'Anak Remaja') return 'AR'
+  return dbCategory // "AR" stays as "AR"
 }
 
 // Map internal form values back to database category values for filtering
 function mapInternalToDbCategories(allowedCategories: string[]): string[] {
-    const dbCategories: string[] = []
-    if (allowedCategories.includes('A')) dbCategories.push('GPN A')
-    if (allowedCategories.includes('B')) dbCategories.push('GPN B')
-    if (allowedCategories.includes('AR')) {
-        dbCategories.push('Anak Remaja')
-        dbCategories.push('AR')
-    }
-    if (allowedCategories.includes('APR')) dbCategories.push('APR')
-    return dbCategories
+  const dbCategories: string[] = []
+  if (allowedCategories.includes('A')) dbCategories.push('GPN A')
+  if (allowedCategories.includes('B')) dbCategories.push('GPN B')
+  if (allowedCategories.includes('AR')) {
+    dbCategories.push('Anak Remaja')
+    dbCategories.push('AR')
+  }
+  if (allowedCategories.includes('APR')) dbCategories.push('APR')
+  return dbCategories
 }
 
 export async function searchParticipants(
-    query: string,
-    allowedCategories?: string[],
-    groupId?: string | null
+  query: string,
+  allowedCategories?: string[],
+  groupId?: string | null
 ): Promise<ParticipantSearchResult[]> {
-    // Construct the select string based on whether we need to filter by category (inner join) or not
-    const hasCategoryFilter = allowedCategories && allowedCategories.length > 0
+  // Construct the select string based on whether we need to filter by category (inner join) or not
+  const hasCategoryFilter = allowedCategories && allowedCategories.length > 0
 
-    const selectQuery = `
+  const selectQuery = `
         id,
         name,
         gender,
@@ -152,71 +250,73 @@ export async function searchParticipants(
         categories:category_id${hasCategoryFilter ? '!inner' : ''}(value)
     `
 
-    let queryBuilder = supabase
-        .from('participants')
-        .select(selectQuery)
-        .eq('status_active', true)
-        .ilike('name', `%${query || ''}%`)
+  let queryBuilder = supabase
+    .from('participants')
+    .select(selectQuery)
+    .eq('status_active', true)
+    .ilike('name', `%${query || ''}%`)
 
-    // Filter by kelompok (group_id) for kelompok-type forms
-    if (groupId) {
-        queryBuilder = queryBuilder.eq('group_id', groupId)
+  // Filter by kelompok (group_id) for kelompok-type forms
+  if (groupId) {
+    queryBuilder = queryBuilder.eq('group_id', groupId)
+  }
+
+  // Apply category filter if needed
+  if (hasCategoryFilter) {
+    const dbAllowedValues = mapInternalToDbCategories(allowedCategories)
+    queryBuilder = queryBuilder.in('categories.value', dbAllowedValues)
+  }
+
+  // Apply limit after filtering
+  const { data, error } = await queryBuilder.limit(20)
+
+  if (error || !data) {
+    return []
+  }
+
+  // Type-safe mapping for Supabase foreign key relations
+  type ParticipantRow = {
+    id: string
+    name: string
+    gender: string
+    groups: { value: string } | null
+    categories: { value: string } | null
+  }
+
+  // Supabase returns foreign key relations as objects or arrays depending on the relationship
+  const mapped: ParticipantSearchResult[] = (
+    data as unknown as ParticipantRow[]
+  ).map((p) => {
+    // Handle both single object and array responses from Supabase
+    const groupData = p.groups
+    const categoryData = p.categories
+
+    const groupValue = groupData?.value
+
+    const categoryValue = categoryData?.value
+
+    return {
+      id: p.id,
+      name: p.name,
+      gender: p.gender,
+      group: groupValue || '',
+      category: categoryValue || '', // Keep original DB value for display
     }
+  })
 
-    // Apply category filter if needed
-    if (hasCategoryFilter) {
-        const dbAllowedValues = mapInternalToDbCategories(allowedCategories)
-        queryBuilder = queryBuilder.in('categories.value', dbAllowedValues)
-    }
-
-    // Apply limit after filtering
-    const { data, error } = await queryBuilder.limit(20)
-
-    if (error || !data) {
-        return []
-    }
-
-    // Type-safe mapping for Supabase foreign key relations
-    type ParticipantRow = {
-        id: string
-        name: string
-        gender: string
-        groups: { value: string } | null
-        categories: { value: string } | null
-    }
-
-    // Supabase returns foreign key relations as objects or arrays depending on the relationship
-    const mapped: ParticipantSearchResult[] = (data as unknown as ParticipantRow[]).map((p) => {
-        // Handle both single object and array responses from Supabase
-        const groupData = p.groups
-        const categoryData = p.categories
-
-        const groupValue = groupData?.value
-
-        const categoryValue = categoryData?.value
-
-        return {
-            id: p.id,
-            name: p.name,
-            gender: p.gender,
-            group: groupValue || '',
-            category: categoryValue || '', // Keep original DB value for display
-        }
+  // Filter by allowed categories if provided
+  // Since we now filter in the DB using !inner join, we can skip strict filtering here,
+  // but we still map the category value for the frontend.
+  // However, if the mapping logic differs (e.g. multiple DB values mapping to one internal),
+  // we should ensure the returned object uses the "display" or "internal" value?
+  // The current code keeps the original DB value.
+  if (allowedCategories && allowedCategories.length > 0) {
+    // Redundant client-side check but safe to keep
+    return mapped.filter((p) => {
+      const internalCategory = mapDbCategoryToInternal(p.category)
+      return allowedCategories.includes(internalCategory)
     })
+  }
 
-    // Filter by allowed categories if provided
-    // Since we now filter in the DB using !inner join, we can skip strict filtering here,
-    // but we still map the category value for the frontend.
-    // However, if the mapping logic differs (e.g. multiple DB values mapping to one internal),
-    // we should ensure the returned object uses the "display" or "internal" value?
-    // The current code keeps the original DB value.
-    if (allowedCategories && allowedCategories.length > 0) {
-        // Redundant client-side check but safe to keep
-        return mapped.filter((p) => {
-            const internalCategory = mapDbCategoryToInternal(p.category)
-            return allowedCategories.includes(internalCategory)
-        })
-    }
-
-    return mapped
+  return mapped
 }
