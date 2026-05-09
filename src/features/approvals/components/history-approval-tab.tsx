@@ -1,10 +1,14 @@
-"use client"
+'use client'
 
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { id as idLocale } from 'date-fns/locale'
-import { toast } from 'sonner'
 import { Check, X, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { type PendingParticipant } from '@/lib/schema'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -20,12 +24,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import { type PendingParticipant } from '@/lib/schema'
+import { formatKategoriLabel } from '../approval-utils'
 import { approvalService } from '../services'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 export function HistoryApprovalTab() {
   const queryClient = useQueryClient()
@@ -100,18 +101,28 @@ export function HistoryApprovalTab() {
                 <TableCell className='font-medium'>{item.name}</TableCell>
                 <TableCell>
                   <div className='flex flex-col gap-1 text-sm text-muted-foreground'>
-                    <span>{item.suggestedKelompok} - {item.suggestedKategori}</span>
-                    <span>{item.suggestedGender === 'L' ? 'Laki-laki' : 'Perempuan'}</span>
+                    <span>
+                      {item.suggestedKelompok} -{' '}
+                      {formatKategoriLabel(item.suggestedKategori)}
+                    </span>
+                    <span>
+                      {item.suggestedGender === 'L' ? 'Laki-laki' : 'Perempuan'}
+                    </span>
                     {item.birthPlace && item.birthDate && (
                       <span className='text-xs'>
-                        Lahir: {item.birthPlace}, {format(item.birthDate, 'dd MMM yyyy', { locale: idLocale })}
+                        Lahir: {item.birthPlace},{' '}
+                        {format(item.birthDate, 'dd MMM yyyy', {
+                          locale: idLocale,
+                        })}
                       </span>
                     )}
                   </div>
                 </TableCell>
                 <TableCell>
                   <Badge
-                    variant={item.status === 'approved' ? 'default' : 'destructive'}
+                    variant={
+                      item.status === 'approved' ? 'default' : 'destructive'
+                    }
                   >
                     {item.status === 'approved' ? (
                       <div className='flex items-center gap-1'>
@@ -125,7 +136,9 @@ export function HistoryApprovalTab() {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                   {format(item.updatedAt, 'dd MMM yyyy HH:mm', { locale: idLocale })}
+                  {format(item.updatedAt, 'dd MMM yyyy HH:mm', {
+                    locale: idLocale,
+                  })}
                 </TableCell>
                 <TableCell>
                   <Button
