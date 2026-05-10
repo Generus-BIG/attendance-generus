@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link } from '@tanstack/react-router'
 import { CheckCircle2, Loader2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -45,6 +44,7 @@ import {
   getFormKelompokOptions,
 } from '../form-options'
 import { submitPendingAttendance } from '../services'
+import { getPublicFormUrl } from '../utils/public-form-url'
 
 const registerFormSchema = z.object({
   tempName: z
@@ -96,6 +96,7 @@ export function RegisterParticipantForm({
     formConfig.formType,
     formConfig.kelompokName
   )
+  const publicFormUrl = getPublicFormUrl(formConfig.slug)
 
   useEffect(() => {
     if (!configuredKelompok) return
@@ -153,9 +154,8 @@ export function RegisterParticipantForm({
             variant='outline'
             className='h-11 w-full rounded-xl border-zinc-200 px-8 font-semibold transition-colors hover:bg-zinc-50 sm:w-auto dark:border-zinc-800 dark:hover:bg-zinc-900'
           >
-            <Link
-              to='/absensi/$formId'
-              params={{ formId: formConfig.slug }}
+            <a
+              href={publicFormUrl}
               onClick={() => {
                 // Reset form saat kembali ke form utama
                 form.reset({
@@ -173,7 +173,7 @@ export function RegisterParticipantForm({
               }}
             >
               Kembali ke Form Utama
-            </Link>
+            </a>
           </Button>
         </CardFooter>
       </Card>
@@ -190,9 +190,9 @@ export function RegisterParticipantForm({
             asChild
             className='-ml-3 h-9 rounded-lg font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
           >
-            <Link to='/absensi/$formId' params={{ formId: formConfig.slug }}>
+            <a href={publicFormUrl}>
               <ArrowLeft className='mr-2 h-4 w-4' /> Kembali
-            </Link>
+            </a>
           </Button>
         </div>
         <div className='flex flex-col gap-1.5'>
