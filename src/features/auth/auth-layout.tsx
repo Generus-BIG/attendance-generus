@@ -75,7 +75,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         </div>
 
         {/* Attribution — bottom-right, quiet */}
-        <p className='absolute right-4 bottom-3 z-10 hidden text-[10px] tracking-wide text-[oklch(0.85_0.01_258_/_0.5)] lg:block'>
+        <p className='absolute right-4 bottom-3 z-10 hidden text-[10px] tracking-wide text-[oklch(0.85_0.01_258/0.5)] lg:block'>
           Developed by PH Desa BIG
         </p>
       </section>
