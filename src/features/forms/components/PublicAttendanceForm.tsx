@@ -4,7 +4,6 @@ import { format } from 'date-fns'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
 import { id as idLocale } from 'date-fns/locale'
 import { CheckCircle2, Loader2, ChevronsUpDown } from 'lucide-react'
 import { toast } from 'sonner'
@@ -60,6 +59,7 @@ import {
   getFormKelompokOptions,
 } from '../form-options'
 import { submitAttendanceForm, searchParticipants } from '../services'
+import { getRegisterParticipantUrl } from '../utils/public-form-url'
 
 const publicFormSchema = z
   .object({
@@ -126,6 +126,7 @@ export function PublicAttendanceForm({
     formConfig.formType,
     formConfig.kelompokName
   )
+  const registerUrl = getRegisterParticipantUrl(formConfig.slug)
 
   useEffect(() => {
     if (!configuredKelompok) return
@@ -378,12 +379,9 @@ export function PublicAttendanceForm({
                                       asChild
                                       className='h-10 w-full rounded-lg px-6 text-sm font-medium sm:w-auto'
                                     >
-                                      <Link
-                                        to='/register/add-participant'
-                                        search={{ slug: formConfig.slug }}
-                                      >
+                                      <a href={registerUrl}>
                                         Klik buat daftar!
-                                      </Link>
+                                      </a>
                                     </Button>
                                   </div>
                                 </CommandEmpty>
@@ -681,13 +679,12 @@ export function PublicAttendanceForm({
                 <p className='text-[14px] text-muted-foreground'>
                   Belum nemu namamu?
                 </p>
-                <Link
-                  to='/register/add-participant'
-                  search={{ slug: formConfig.slug }}
+                <a
+                  href={registerUrl}
                   className='text-[15px] font-semibold text-foreground underline decoration-foreground underline-offset-3 transition-opacity hover:opacity-75'
                 >
                   Yuk isi data kamu disini
-                </Link>
+                </a>
               </div>
             </div>
           </form>
