@@ -27,6 +27,10 @@ import { PermissionGate } from '@/components/permission-gate'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
+import {
+  formatPublicFormUrlLabel,
+  getPublicFormUrl,
+} from './utils/public-form-url'
 import { FormActions } from './components/form-actions'
 import { FormTypeBadge } from './components/form-type-badge'
 import { FormsProvider, useFormsContext } from './context/forms-context'
@@ -72,12 +76,13 @@ function FormsList() {
       cell: ({ row }) => {
         const title = row.getValue('title') as string
         const slug = row.original.slug
+        const formUrl = getPublicFormUrl(slug)
         return (
           <div className='flex flex-col gap-0.5'>
             <span className='font-medium'>{title}</span>
             <span className='flex items-center gap-1 text-xs text-muted-foreground'>
               <ExternalLink className='h-3 w-3' />
-              /absensi/{slug}
+              {formatPublicFormUrlLabel(formUrl)}
             </span>
           </div>
         )
@@ -220,7 +225,7 @@ function FormsList() {
           <div className='divide-y'>
             {table.getRowModel().rows.map((row) => {
               const form = row.original
-              const formUrl = `${window.location.origin}/absensi/${form.slug}`
+              const formUrl = getPublicFormUrl(form.slug)
               return (
                 <div
                   key={row.id}
@@ -241,7 +246,7 @@ function FormsList() {
                         kelompokName={form.kelompokName}
                       />
                       <span className='text-border'>|</span>
-                      /absensi/{form.slug}
+                      {formatPublicFormUrlLabel(formUrl)}
                     </p>
                   </a>
                   <div className='hidden items-center gap-2 text-sm text-muted-foreground sm:flex'>

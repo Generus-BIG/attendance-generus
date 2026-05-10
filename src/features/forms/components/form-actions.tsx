@@ -22,6 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { getPublicFormUrl } from '../utils/public-form-url'
 import { useFormsContext } from '../context/forms-context'
 import { FormDialogs } from './form-dialogs'
 
@@ -43,7 +44,7 @@ export function FormActions({ form }: FormActionsProps) {
       form.kelompokName === kelompok)
 
   const copyLink = () => {
-    const url = `${window.location.origin}/absensi/${form.slug}`
+    const url = getPublicFormUrl(form.slug)
     navigator.clipboard.writeText(url)
     toast.success('Link copied to clipboard')
   }
