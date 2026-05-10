@@ -5,6 +5,11 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/:slug",
+      "has": [{ "type": "host", "value": "forms.generusbig.my.id" }],
+      "destination": "/api/forms/:slug"
+    },
+    {
       "source": "/absensi/:slug",
       "destination": "/api/absensi/:slug"
     },

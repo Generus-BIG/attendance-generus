@@ -345,7 +345,7 @@ export function PublicAttendanceForm({
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent
-                        className='w-[var(--radix-popover-trigger-width)] max-w-lg overflow-hidden rounded-lg border-border p-0 shadow-xl'
+                        className='w-(--radix-popover-trigger-width) max-w-lg overflow-hidden rounded-lg border-border p-0 shadow-xl'
                         align='start'
                       >
                         <Command shouldFilter={false} className='bg-popover'>
