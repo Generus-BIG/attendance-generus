@@ -23,7 +23,7 @@
       "destination": "/api/register/add-participant"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
