@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FormsIndexRouteImport } from './routes/forms/index'
 import { Route as RegisterAddParticipantRouteImport } from './routes/register/add-participant'
+import { Route as FormsSlugRouteImport } from './routes/forms/$slug'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as Admin403RouteImport } from './routes/admin/403'
 import { Route as AbsensiFormIdRouteImport } from './routes/absensi/$formId'
@@ -62,9 +64,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FormsIndexRoute = FormsIndexRouteImport.update({
+  id: '/forms/',
+  path: '/forms/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterAddParticipantRoute = RegisterAddParticipantRouteImport.update({
   id: '/register/add-participant',
   path: '/register/add-participant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FormsSlugRoute = FormsSlugRouteImport.update({
+  id: '/forms/$slug',
+  path: '/forms/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
@@ -283,7 +295,9 @@ export interface FileRoutesByFullPath {
   '/absensi/$formId': typeof AbsensiFormIdRoute
   '/admin/403': typeof Admin403Route
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/forms/$slug': typeof FormsSlugRoute
   '/register/add-participant': typeof RegisterAddParticipantRoute
+  '/forms': typeof FormsIndexRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
   '/admin/forms/create': typeof AdminFormsCreateRoute
   '/admin/lupg/dashboard': typeof AdminLupgDashboardRoute
@@ -326,7 +340,9 @@ export interface FileRoutesByTo {
   '/absensi/$formId': typeof AbsensiFormIdRoute
   '/admin/403': typeof Admin403Route
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/forms/$slug': typeof FormsSlugRoute
   '/register/add-participant': typeof RegisterAddParticipantRoute
+  '/forms': typeof FormsIndexRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
   '/admin/forms/create': typeof AdminFormsCreateRoute
   '/admin/lupg/dashboard': typeof AdminLupgDashboardRoute
@@ -371,7 +387,9 @@ export interface FileRoutesById {
   '/absensi/$formId': typeof AbsensiFormIdRoute
   '/admin/403': typeof Admin403Route
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/forms/$slug': typeof FormsSlugRoute
   '/register/add-participant': typeof RegisterAddParticipantRoute
+  '/forms/': typeof FormsIndexRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
   '/admin/forms/create': typeof AdminFormsCreateRoute
   '/admin/lupg/dashboard': typeof AdminLupgDashboardRoute
@@ -417,7 +435,9 @@ export interface FileRouteTypes {
     | '/absensi/$formId'
     | '/admin/403'
     | '/admin/dashboard'
+    | '/forms/$slug'
     | '/register/add-participant'
+    | '/forms'
     | '/admin/errors/$error'
     | '/admin/forms/create'
     | '/admin/lupg/dashboard'
@@ -460,7 +480,9 @@ export interface FileRouteTypes {
     | '/absensi/$formId'
     | '/admin/403'
     | '/admin/dashboard'
+    | '/forms/$slug'
     | '/register/add-participant'
+    | '/forms'
     | '/admin/errors/$error'
     | '/admin/forms/create'
     | '/admin/lupg/dashboard'
@@ -504,7 +526,9 @@ export interface FileRouteTypes {
     | '/absensi/$formId'
     | '/admin/403'
     | '/admin/dashboard'
+    | '/forms/$slug'
     | '/register/add-participant'
+    | '/forms/'
     | '/admin/errors/$error'
     | '/admin/forms/create'
     | '/admin/lupg/dashboard'
@@ -545,7 +569,9 @@ export interface RootRouteChildren {
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
   AbsensiFormIdRoute: typeof AbsensiFormIdRoute
+  FormsSlugRoute: typeof FormsSlugRoute
   RegisterAddParticipantRoute: typeof RegisterAddParticipantRoute
+  FormsIndexRoute: typeof FormsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -564,11 +590,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forms/': {
+      id: '/forms/'
+      path: '/forms'
+      fullPath: '/forms'
+      preLoaderRoute: typeof FormsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register/add-participant': {
       id: '/register/add-participant'
       path: '/register/add-participant'
       fullPath: '/register/add-participant'
       preLoaderRoute: typeof RegisterAddParticipantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forms/$slug': {
+      id: '/forms/$slug'
+      path: '/forms/$slug'
+      fullPath: '/forms/$slug'
+      preLoaderRoute: typeof FormsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/dashboard': {
@@ -947,7 +987,9 @@ const rootRouteChildren: RootRouteChildren = {
   errors500Route: errors500Route,
   errors503Route: errors503Route,
   AbsensiFormIdRoute: AbsensiFormIdRoute,
+  FormsSlugRoute: FormsSlugRoute,
   RegisterAddParticipantRoute: RegisterAddParticipantRoute,
+  FormsIndexRoute: FormsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
