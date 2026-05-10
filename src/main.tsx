@@ -10,6 +10,7 @@ import {
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { FormsSubdomainRouter } from '@/features/forms/components/forms-subdomain-router'
+import { shouldRenderFormsSubdomainRouter } from '@/features/forms/utils/forms-host'
 import { useAuthStore } from '@/stores/auth-store'
 import { handleServerError } from '@/lib/handle-server-error'
 import { initializeData } from '@/lib/seed-data'
@@ -22,7 +23,7 @@ import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
 
-const isFormsSubdomain = window.location.hostname.startsWith('forms.')
+const renderFormsSubdomainRouter = shouldRenderFormsSubdomainRouter()
 
 // Initialize Vercel Web Analytics
 inject()
@@ -114,7 +115,7 @@ if (!rootElement.innerHTML) {
           <PaletteProvider>
             <FontProvider>
               <DirectionProvider>
-                {isFormsSubdomain ? (
+                {renderFormsSubdomainRouter ? (
                   <FormsSubdomainRouter />
                 ) : (
                   <RouterProvider router={router} />
