@@ -16,6 +16,8 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   const selectedRows = table.getSelectedRowModel().rows
   const [deleteOpen, setDeleteOpen] = useState(false)
 
+  if (!selectedRows.length) return null
+
   const handleDeactivate = async () => {
     const updates = selectedRows.map((row) =>
       updateParticipant(row.original.id, { status: 'inactive' })
@@ -54,26 +56,39 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   }
 
   return (
-    <div className='flex items-center gap-2'>
-      <span className='text-sm text-muted-foreground'>
+    <div className='flex w-full flex-col gap-2 sm:flex-row sm:items-center'>
+      <span className='text-sm text-muted-foreground sm:me-1'>
         {selectedRows.length} peserta dipilih
       </span>
-      <Button variant='outline' size='sm' onClick={handleActivate}>
-        <UserCheck className='mr-2 h-4 w-4' />
-        Aktifkan
-      </Button>
-      <Button variant='outline' size='sm' onClick={handleDeactivate}>
-        <UserMinus className='mr-2 h-4 w-4' />
-        Nonaktifkan
-      </Button>
-      <Button
-        variant='destructive'
-        size='sm'
-        onClick={() => setDeleteOpen(true)}
-      >
-        <Trash2 className='mr-2 h-4 w-4' />
-        Hapus
-      </Button>
+      <div className='flex flex-wrap gap-2'>
+        <Button
+          variant='outline'
+          size='sm'
+          className='flex-1 sm:flex-none'
+          onClick={handleActivate}
+        >
+          <UserCheck className='mr-2 h-4 w-4' />
+          Aktifkan
+        </Button>
+        <Button
+          variant='outline'
+          size='sm'
+          className='flex-1 sm:flex-none'
+          onClick={handleDeactivate}
+        >
+          <UserMinus className='mr-2 h-4 w-4' />
+          Nonaktifkan
+        </Button>
+        <Button
+          variant='destructive'
+          size='sm'
+          className='flex-1 sm:flex-none'
+          onClick={() => setDeleteOpen(true)}
+        >
+          <Trash2 className='mr-2 h-4 w-4' />
+          Hapus
+        </Button>
+      </div>
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}

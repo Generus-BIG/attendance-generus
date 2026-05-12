@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { type Role } from '@/lib/rbac'
@@ -11,6 +11,7 @@ import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { KelompokSelector } from '../components/kelompok-selector'
 import { MonthPicker } from '../components/month-picker'
 import {
@@ -114,8 +115,14 @@ export function YearlyProgramTracker({
               Program Analytics {year}
             </h2>
             <p className='text-muted-foreground'>
-              Monitoring progres program per kelompok. Input dilakukan di
-              halaman Laporan Bulanan.
+              Monitoring progres program per kelompok. Input dilakukan di{' '}
+              <Link
+                to='/admin/lupg/reports'
+                className='underline underline-offset-2 hover:text-foreground'
+              >
+                halaman Laporan Bulanan
+              </Link>
+              .
             </p>
           </div>
           <div className='flex flex-wrap items-center gap-2'>
@@ -128,32 +135,15 @@ export function YearlyProgramTracker({
           </div>
         </div>
         {!isTeamManager && (
-          <div className='flex border-b'>
-            <button
-              type='button'
-              onClick={() => setTab('desa')}
-              className={
-                effectiveTab === 'desa'
-                  ? 'border-primary border-b-2 px-4 py-2 text-sm font-medium'
-                  : 'text-muted-foreground hover:text-foreground border-b-2 border-transparent px-4 py-2 text-sm'
-              }
-              aria-pressed={effectiveTab === 'desa'}
-            >
-              Desa Overview
-            </button>
-            <button
-              type='button'
-              onClick={() => setTab('kelompok')}
-              className={
-                effectiveTab === 'kelompok'
-                  ? 'border-primary border-b-2 px-4 py-2 text-sm font-medium'
-                  : 'text-muted-foreground hover:text-foreground border-b-2 border-transparent px-4 py-2 text-sm'
-              }
-              aria-pressed={effectiveTab === 'kelompok'}
-            >
-              Per Kelompok
-            </button>
-          </div>
+          <Tabs
+            value={effectiveTab}
+            onValueChange={(v) => setTab(v as 'desa' | 'kelompok')}
+          >
+            <TabsList>
+              <TabsTrigger value='desa'>Desa Overview</TabsTrigger>
+              <TabsTrigger value='kelompok'>Per Kelompok</TabsTrigger>
+            </TabsList>
+          </Tabs>
         )}
 
         {effectiveTab === 'desa' ? (

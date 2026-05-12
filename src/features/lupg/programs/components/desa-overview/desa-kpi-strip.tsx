@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatRupiahShort } from '../../../utils/format-currency'
+import { PROGRAM_STATUS_THRESHOLDS } from '../../constants'
 import { type DesaSummary } from '../../hooks/use-desa-overview'
 
 interface Props {
@@ -17,7 +18,7 @@ function DeltaBadge({
   inverse?: boolean
 }) {
   if (delta == null)
-    return <span className='text-muted-foreground text-[10px]'>—</span>
+    return <span className='text-muted-foreground text-xs'>—</span>
   const isPositive = delta > 0
   const isZero = Math.abs(delta) < 0.5
   const kindUp = isPositive && !inverse
@@ -26,14 +27,14 @@ function DeltaBadge({
   const cls = isZero
     ? 'text-muted-foreground'
     : kindUp
-      ? 'text-emerald-600 dark:text-emerald-400'
+      ? 'text-success'
       : kindDown
-        ? 'text-red-600 dark:text-red-400'
+        ? 'text-destructive'
         : 'text-muted-foreground'
   const sign = isZero ? '' : isPositive ? '+' : '−'
   return (
-    <span className={cn('inline-flex items-center gap-0.5 text-[10px]', cls)}>
-      <Icon className='h-2.5 w-2.5' />
+    <span className={cn('inline-flex items-center gap-0.5 text-xs', cls)}>
+      <Icon className='h-3 w-3' />
       <span className='tabular-nums'>
         {sign}
         {Math.abs(delta).toLocaleString('id-ID')}
@@ -53,26 +54,19 @@ function Chip({
   sub: React.ReactNode
 }) {
   return (
-    <div className='bg-card flex min-w-0 flex-col gap-0.5 rounded-md border p-3'>
-      <div className='text-muted-foreground text-[10px] font-medium uppercase tracking-wide'>
-        {label}
-      </div>
-      <div className='truncate font-mono text-xl font-semibold tabular-nums'>
-        {value}
-      </div>
-      <div className='min-h-3.5'>{sub}</div>
+    <div className='flex min-w-0 flex-col gap-0.5 px-3 py-2 @2xl/desa:border-r @2xl/desa:last:border-r-0'>
+      <div className='text-muted-foreground text-xs font-medium'>{label}</div>
+      <div className='truncate text-xl font-semibold tabular-nums'>{value}</div>
+      <div className='min-h-4 text-xs'>{sub}</div>
     </div>
   )
 }
 
 export function DesaKPIStrip({ summary }: Props) {
   return (
-    <div
-      className='grid gap-2'
-      style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}
-    >
+    <div className='bg-card rounded-lg border grid grid-cols-2 divide-y @md/desa:grid-cols-3 @2xl/desa:grid-cols-6 @2xl/desa:divide-y-0'>
       <Chip
-        label='Rata² Desa'
+        label='Rata-rata Desa'
         value={summary.desaAvg != null ? `${summary.desaAvg}%` : '—'}
         sub={<DeltaBadge delta={summary.deltaDesaAvg} unit='%' />}
       />
@@ -83,26 +77,22 @@ export function DesaKPIStrip({ summary }: Props) {
       />
       <Chip
         label='Kehadiran'
-        value={
-          summary.kehadiranAvg != null ? `${summary.kehadiranAvg}%` : '—'
-        }
+        value={summary.kehadiranAvg != null ? `${summary.kehadiranAvg}%` : '—'}
         sub={<DeltaBadge delta={summary.deltaKehadiran} unit='%' />}
       />
       <Chip
-        label='Program OK'
+        label='Program Tercapai'
         value={`${summary.programOkCount}`}
         sub={
-          <span className='text-muted-foreground text-[10px]'>≥ 80% target</span>
+          <span className='text-muted-foreground'>
+            ≥ {PROGRAM_STATUS_THRESHOLDS.ok}% target
+          </span>
         }
       />
       <Chip
-        label='Sarpras OK'
+        label='Sarpras Lengkap'
         value={`${summary.sarprasOkCount}`}
-        sub={
-          <span className='text-muted-foreground text-[10px]'>
-            item lengkap desa
-          </span>
-        }
+        sub={<span className='text-muted-foreground'>item lengkap per kelompok</span>}
       />
       <Chip
         label='Shodaqoh PPG'

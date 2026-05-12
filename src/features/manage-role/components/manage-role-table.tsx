@@ -54,6 +54,7 @@ export function ManageRoleTable({ search, navigate }: DataTableProps) {
     columnFilters: [
       { columnId: 'full_name', searchKey: 'name', type: 'string' },
       { columnId: 'role', searchKey: 'role', type: 'array' },
+      { columnId: 'kelompok', searchKey: 'kelompok', type: 'array' },
     ],
   })
 
@@ -117,7 +118,7 @@ export function ManageRoleTable({ search, navigate }: DataTableProps) {
         ]}
       />
       <div className='overflow-hidden rounded-md border'>
-        <Table>
+        <Table className='min-w-[720px]'>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className='group/row'>

@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
 import { type SarprasCompletenessRow } from '../../hooks/use-desa-overview'
 
@@ -18,7 +19,13 @@ export function TileSarprasChecklist({ rows }: Props) {
           </div>
         ) : (
           rows.map((r) => (
-            <div key={r.kelompokId} className='flex items-center gap-2'>
+            <Link
+              key={r.kelompokId}
+              to='/admin/lupg/programs'
+              search={{ tab: 'kelompok' as const, kelompok: r.kelompokId }}
+              className='hover:bg-muted focus:ring-ring flex items-center gap-2 rounded px-1 py-0.5 focus:ring-2 focus:outline-none'
+              title={`${r.kelompokName}: ${r.okCount}/${r.total} item lengkap`}
+            >
               <div className='w-16 truncate text-xs font-medium'>
                 {r.kelompokName}
               </div>
@@ -28,9 +35,7 @@ export function TileSarprasChecklist({ rows }: Props) {
                     key={i}
                     className={cn(
                       'h-3 flex-1 rounded-[2px]',
-                      ok
-                        ? 'bg-emerald-500 dark:bg-emerald-400'
-                        : 'bg-muted'
+                      ok ? 'bg-success' : 'bg-muted'
                     )}
                     title={`Item ${i + 1}`}
                   />
@@ -39,7 +44,7 @@ export function TileSarprasChecklist({ rows }: Props) {
               <div className='w-10 text-right font-mono text-xs tabular-nums'>
                 {r.okCount}/{r.total}
               </div>
-            </div>
+            </Link>
           ))
         )}
       </div>

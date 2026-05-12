@@ -40,22 +40,22 @@ export function TileHeroTrend({
   const currentLabel = formatMonthLabel(currentMonthKey)
 
   return (
-    <div className='bg-card flex h-full flex-col justify-between rounded-lg border p-4'>
+    <div className='flex h-full flex-col justify-between p-4 @3xl/desa:p-6'>
       <div>
-        <div className='text-muted-foreground text-xs font-medium uppercase tracking-wide'>
+        <div className='text-muted-foreground text-sm font-medium'>
           Rata² Desa — {currentLabel}
         </div>
         <div className='mt-1 flex items-baseline gap-3'>
-          <span className='font-mono text-4xl font-semibold tabular-nums'>
+          <span className='font-mono text-5xl font-semibold tabular-nums @3xl/desa:text-6xl'>
             {summary.desaAvg != null ? `${summary.desaAvg}%` : '—'}
           </span>
           {summary.deltaDesaAvg != null && (
             <span
               className={
                 summary.deltaDesaAvg > 0
-                  ? 'text-emerald-600 dark:text-emerald-400 text-sm'
+                  ? 'text-success text-sm'
                   : summary.deltaDesaAvg < 0
-                    ? 'text-red-600 dark:text-red-400 text-sm'
+                    ? 'text-destructive text-sm'
                     : 'text-muted-foreground text-sm'
               }
             >
@@ -70,7 +70,7 @@ export function TileHeroTrend({
         height={SVG_H}
         viewBox={`0 0 ${SVG_W} ${SVG_H}`}
         preserveAspectRatio='none'
-        className='mt-2 text-emerald-500 dark:text-emerald-400'
+        className='mt-2 text-chart-1'
         aria-hidden='true'
       >
         {area && (

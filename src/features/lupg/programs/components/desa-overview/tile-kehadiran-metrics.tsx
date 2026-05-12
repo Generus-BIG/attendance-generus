@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { KEHADIRAN_STATUS_THRESHOLDS } from '../../constants'
 import { type KehadiranMetricRow } from '../../hooks/use-desa-overview'
 
 interface Props {
@@ -8,9 +9,9 @@ interface Props {
 
 function barColor(pct: number | null): string {
   if (pct == null) return 'bg-muted'
-  if (pct >= 85) return 'bg-emerald-500'
-  if (pct >= 80) return 'bg-emerald-400'
-  return 'bg-amber-500'
+  if (pct >= KEHADIRAN_STATUS_THRESHOLDS.ok) return 'bg-success'
+  if (pct >= KEHADIRAN_STATUS_THRESHOLDS.warn) return 'bg-warning'
+  return 'bg-destructive'
 }
 
 export function TileKehadiranMetrics({ rows }: Props) {
@@ -52,9 +53,9 @@ export function TileKehadiranMetrics({ rows }: Props) {
                     className={cn(
                       'h-3 w-3 shrink-0',
                       m.trend === 'up'
-                        ? 'text-emerald-600 dark:text-emerald-400'
+                        ? 'text-success'
                         : m.trend === 'down'
-                          ? 'text-red-600 dark:text-red-400'
+                          ? 'text-destructive'
                           : 'text-muted-foreground'
                     )}
                   />

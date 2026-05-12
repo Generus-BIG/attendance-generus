@@ -49,44 +49,43 @@ export function DesaOverviewTab({ year, monthKey }: Props) {
     <div className='@container/desa flex flex-col gap-3'>
       <DesaKPIStrip summary={data.summary} />
       <div
-        className='grid gap-3'
-        style={{
-          gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
-          gridAutoRows: 'minmax(120px, auto)',
-        }}
+        aria-live='polite'
+        aria-busy={false}
+        className='grid grid-cols-1 gap-3 auto-rows-[minmax(120px,auto)] @md/desa:grid-cols-6'
       >
-        <div className='col-span-6 @3xl/desa:col-span-4' style={{ gridRow: 'span 2' }}>
+        <div className='@md/desa:col-span-6 @3xl/desa:col-span-4 row-span-2'>
           <TileHeroTrend
             summary={data.summary}
             trend={data.trendRataDesa}
             currentMonthKey={monthKey}
           />
         </div>
-        <div className='col-span-6 @3xl/desa:col-span-2' style={{ gridRow: 'span 2' }}>
+        <div className='@md/desa:col-span-6 @3xl/desa:col-span-2 row-span-2'>
           <TileSensusDonut
             slices={data.sensusByCategory}
             sensusTotal={sensusTotal}
           />
         </div>
-        <div className='col-span-6 @3xl/desa:col-span-3' style={{ gridRow: 'span 2' }}>
+        <div className='@md/desa:col-span-6 @2xl/desa:col-span-3 row-span-2'>
           <TileKehadiranMetrics rows={data.kehadiranMetrics} />
         </div>
-        <div className='col-span-6 @3xl/desa:col-span-3' style={{ gridRow: 'span 2' }}>
+        <div className='@md/desa:col-span-6 @2xl/desa:col-span-3 row-span-2'>
           <TileProgramRanked rows={data.programRanked} />
         </div>
-        <div className='col-span-6 @3xl/desa:col-span-3' style={{ gridRow: 'span 2' }}>
+        <div className='@md/desa:col-span-6 @2xl/desa:col-span-3 row-span-2'>
           <TileProgramMatrix
             rows={data.programKelompokMatrix}
             kelompoks={data.kelompoks}
+            year={year}
           />
         </div>
-        <div className='col-span-6 @3xl/desa:col-span-3' style={{ gridRow: 'span 2' }}>
+        <div className='@md/desa:col-span-6 @2xl/desa:col-span-3 row-span-2'>
           <TileSarprasChecklist rows={data.sarprasCompleteness} />
         </div>
-        <div className='col-span-6' style={{ gridRow: 'span 2' }}>
+        <div className='@md/desa:col-span-6 row-span-2'>
           <TileShodaqohBars rows={data.shodaqohPerKelompok} />
         </div>
-        <div className='col-span-6' style={{ gridRow: 'span 1' }}>
+        <div className='@md/desa:col-span-6 row-span-1'>
           <TileFullTrend
             lines={data.programTrendLines}
             desaTrend={data.trendRataDesa}
