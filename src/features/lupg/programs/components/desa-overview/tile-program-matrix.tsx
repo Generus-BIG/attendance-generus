@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
 import {
   bucketClass,
@@ -7,20 +8,36 @@ import {
   type KelompokLite,
   type ProgramKelompokMatrixRow,
 } from '../../hooks/use-desa-overview'
+import { StatusLegend } from './status-legend'
 
 interface Props {
   rows: ProgramKelompokMatrixRow[]
   kelompoks: KelompokLite[]
+  year: number
 }
 
-export function TileProgramMatrix({ rows, kelompoks }: Props) {
+function kelompokInitials(name: string): string {
+  const words = name.split(/\s+/).filter(Boolean)
+  if (words.length === 0) return '?'
+  if (words.length === 1) return words[0].slice(0, 3).toUpperCase()
+  return words
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 4)
+    .toUpperCase()
+}
+
+export function TileProgramMatrix({ rows, kelompoks, year }: Props) {
   return (
     <div className='bg-card flex h-full flex-col rounded-lg border p-4'>
-      <div className='text-muted-foreground mb-3 text-xs font-medium uppercase tracking-wide'>
-        Matrix Program × Kelompok
+      <div className='mb-3 flex items-start justify-between gap-2'>
+        <div className='text-muted-foreground text-xs font-medium'>
+          Matrix Program × Kelompok
+        </div>
+        <StatusLegend />
       </div>
       <div className='min-h-0 flex-1 overflow-auto'>
-        <table className='w-full border-collapse text-[11px]'>
+        <table className='w-full border-collapse text-xs'>
           <thead>
             <tr>
               <th className='bg-card sticky left-0 z-10 px-1 py-1 text-left font-medium'>
@@ -29,10 +46,10 @@ export function TileProgramMatrix({ rows, kelompoks }: Props) {
               {kelompoks.map((k) => (
                 <th
                   key={k.id}
-                  className='truncate px-1 py-1 text-center font-medium'
+                  className='px-1 py-1 text-center font-mono font-medium'
                   title={k.name}
                 >
-                  {k.name.slice(0, 8)}
+                  {kelompokInitials(k.name)}
                 </th>
               ))}
             </tr>
@@ -50,11 +67,22 @@ export function TileProgramMatrix({ rows, kelompoks }: Props) {
                     <td
                       key={k.id}
                       className={cn(
-                        'px-1 py-1 text-center font-mono tabular-nums',
+                        'px-0 py-0 text-center font-mono tabular-nums',
                         bucketClass(b)
                       )}
                     >
-                      {v != null ? `${v}%` : '·'}
+                      <Link
+                        to='/admin/lupg/programs'
+                        search={{
+                          tab: 'kelompok' as const,
+                          kelompok: k.id,
+                          year: String(year),
+                        }}
+                        className='focus:ring-ring block w-full px-1 py-1 hover:underline focus:ring-2 focus:outline-none'
+                        title={`${p.name} — ${k.name}: ${v != null ? `${v}%` : 'tidak ada data'}`}
+                      >
+                        {v != null ? `${v}%` : '·'}
+                      </Link>
                     </td>
                   )
                 })}

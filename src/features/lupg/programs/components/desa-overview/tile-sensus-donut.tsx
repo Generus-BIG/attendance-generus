@@ -10,22 +10,37 @@ interface Props {
 }
 
 const PALETTE = [
-  'text-emerald-500',
-  'text-sky-500',
-  'text-amber-500',
-  'text-fuchsia-500',
-  'text-lime-500',
-  'text-indigo-500',
-  'text-rose-500',
-  'text-teal-500',
-]
+  'text-chart-1',
+  'text-chart-2',
+  'text-chart-3',
+  'text-chart-4',
+  'text-chart-5',
+] as const
+
+const OTHER_COLOR = 'text-muted-foreground'
+const MAX_SLICES = 5
 
 const RADIUS = 32
 const STROKE = 10
 const VIEW = (RADIUS + STROKE) * 2
 
 export function TileSensusDonut({ slices, sensusTotal }: Props) {
-  const donutSlices: DonutSlice[] = slices.map((s) => ({
+  // Cap at MAX_SLICES and roll the rest into a single "Lainnya" slice.
+  const visibleSlices = slices.slice(0, MAX_SLICES)
+  const overflow = slices.slice(MAX_SLICES)
+  const displaySlices =
+    overflow.length === 0
+      ? visibleSlices
+      : [
+          ...visibleSlices,
+          {
+            category: 'Lainnya',
+            count: overflow.reduce((a, b) => a + b.count, 0),
+            pct: overflow.reduce((a, b) => a + b.pct, 0),
+          },
+        ]
+
+  const donutSlices: DonutSlice[] = displaySlices.map((s) => ({
     key: s.category,
     value: s.count,
   }))
@@ -34,9 +49,14 @@ export function TileSensusDonut({ slices, sensusTotal }: Props) {
     strokeWidth: STROKE,
   })
 
+  function colorFor(idx: number): string {
+    if (overflow.length > 0 && idx === displaySlices.length - 1) return OTHER_COLOR
+    return PALETTE[idx % PALETTE.length]
+  }
+
   return (
     <div className='bg-card flex h-full flex-col rounded-lg border p-4'>
-      <div className='text-muted-foreground mb-3 text-xs font-medium uppercase tracking-wide'>
+      <div className='text-muted-foreground mb-3 text-xs font-medium'>
         Sensus per Kategori
       </div>
       <div className='flex min-h-0 flex-1 items-center gap-3'>
@@ -44,7 +64,7 @@ export function TileSensusDonut({ slices, sensusTotal }: Props) {
           width={VIEW}
           height={VIEW}
           viewBox={`0 0 ${VIEW} ${VIEW}`}
-          aria-label='Donat distribusi sensus per kategori'
+          aria-label='Distribusi sensus per kategori'
           className='shrink-0'
         >
           {segs.length === 0 ? (
@@ -70,7 +90,7 @@ export function TileSensusDonut({ slices, sensusTotal }: Props) {
                 strokeWidth={STROKE}
                 strokeDasharray={s.dashArray}
                 strokeDashoffset={s.dashOffset}
-                className={PALETTE[i % PALETTE.length]}
+                className={colorFor(i)}
                 style={{
                   transform: 'rotate(-90deg)',
                   transformOrigin: `${VIEW / 2}px ${VIEW / 2}px`,
@@ -92,23 +112,23 @@ export function TileSensusDonut({ slices, sensusTotal }: Props) {
             y={VIEW / 2 + 12}
             textAnchor='middle'
             className='fill-muted-foreground'
-            style={{ fontSize: '9px' }}
+            style={{ fontSize: '10px' }}
           >
             total
           </text>
         </svg>
-        <ul className='flex flex-1 flex-col gap-0.5 text-[11px]'>
-          {slices.length === 0 ? (
+        <ul className='flex flex-1 flex-col gap-1 text-xs'>
+          {displaySlices.length === 0 ? (
             <li className='text-muted-foreground'>Tidak ada snapshot.</li>
           ) : (
-            slices.map((s, i) => (
+            displaySlices.map((s, i) => (
               <li
                 key={s.category}
                 className='flex items-center justify-between gap-2'
               >
                 <span className='inline-flex items-center gap-1.5 truncate'>
                   <span
-                    className={`inline-block h-2 w-2 rounded-full ${PALETTE[i % PALETTE.length].replace('text-', 'bg-')}`}
+                    className={`inline-block h-2 w-2 rounded-full ${colorFor(i).replace('text-', 'bg-')}`}
                   />
                   <span className='truncate'>{s.category}</span>
                 </span>
