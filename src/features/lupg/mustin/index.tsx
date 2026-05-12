@@ -1,44 +1,25 @@
-import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { ExternalLink, Loader2 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { supabase } from '@/lib/supabase'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { KelompokSelector } from '../components/kelompok-selector'
-import { MUSTIN_STATUS_LABELS } from '../constants'
 import { listOpenMustinNotes } from '../services/mustin-notes.service'
-import { type MustinStatus } from '../types'
-import { formatMonthLabel, monthKeyFromDate } from '../utils/month-utils'
-
-type StatusFilter = 'all' | MustinStatus
+import {
+  currentMonthKey,
+  formatMonthLabel,
+  monthKeyFromDate,
+} from '../utils/month-utils'
 
 export function MustinCrossReport() {
   const { role, kelompok } = useAuthStore((s) => s.auth)
@@ -58,7 +39,6 @@ export function MustinCrossReport() {
   })
 
   const [adminKelompokId, setAdminKelompokId] = useState<string | undefined>()
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
 
   const resolvedKelompokId: string | undefined = isTeamManager
     ? kelompokOptions.find((o) => o.value === kelompok)?.id
@@ -72,10 +52,29 @@ export function MustinCrossReport() {
       ),
   })
 
-  const filtered =
-    statusFilter === 'all'
-      ? notes
-      : notes.filter((n) => n.status === statusFilter)
+  const monthGroups = useMemo(() => {
+    const byMonth = new Map<string, typeof notes>()
+
+    for (const note of notes) {
+      const monthKey = monthKeyFromDate(note.month)
+      byMonth.set(monthKey, [...(byMonth.get(monthKey) ?? []), note])
+    }
+
+    const thisMonth = currentMonthKey()
+
+    return Array.from(byMonth.entries())
+      .sort(([a], [b]) => b.localeCompare(a))
+      .map(([monthKey, items]) => ({
+        monthKey,
+        label:
+          monthKey === thisMonth ? 'Bulan ini' : formatMonthLabel(monthKey),
+        items,
+      }))
+  }, [notes])
+
+  const activeMonth =
+    monthGroups.find((group) => group.monthKey === currentMonthKey())
+      ?.monthKey ?? monthGroups[0]?.monthKey
 
   const kelompokLabel = (id: string) =>
     kelompokOptions.find((o) => o.id === id)?.value ?? '-'
@@ -93,12 +92,10 @@ export function MustinCrossReport() {
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
           <div>
-            <h2 className='text-2xl font-bold tracking-tight'>
-              Resume Mustin
-            </h2>
+            <h2 className='text-2xl font-bold tracking-tight'>Resume Mustin</h2>
             <p className='text-muted-foreground'>
-              Action tracker lintas-bulan. Menampilkan item open dan in
-              progress dari semua laporan.
+              Ringkasan pokok masalah dan tindak lanjut yang masih terbuka,
+              dikelompokkan per bulan laporan.
             </p>
           </div>
           <div className='flex flex-wrap items-center gap-2'>
@@ -108,98 +105,102 @@ export function MustinCrossReport() {
                 onChange={setAdminKelompokId}
               />
             )}
-            <Select
-              value={statusFilter}
-              onValueChange={(v) => setStatusFilter(v as StatusFilter)}
-            >
-              <SelectTrigger className='w-35'>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='all'>Semua aktif</SelectItem>
-                <SelectItem value='open'>Open</SelectItem>
-                <SelectItem value='in_progress'>In Progress</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle className='text-base'>
-              {filtered.length} item aktif
+              {notes.length} item aktif
             </CardTitle>
           </CardHeader>
-          <CardContent className='overflow-x-auto'>
+          <CardContent>
             {isLoading ? (
-              <div className='text-muted-foreground flex items-center justify-center py-8'>
+              <div className='flex items-center justify-center py-8 text-muted-foreground'>
                 <Loader2 className='mr-2 h-5 w-5 animate-spin' />
                 Memuat...
               </div>
-            ) : filtered.length === 0 ? (
-              <div className='text-muted-foreground rounded-md border border-dashed p-6 text-center text-sm'>
-                Tidak ada item aktif.
+            ) : monthGroups.length === 0 || !activeMonth ? (
+              <div className='rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground'>
+                Tidak ada resume Mustin aktif untuk filter ini.
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {!isTeamManager && <TableHead>Kelompok</TableHead>}
-                    <TableHead>Bulan</TableHead>
-                    <TableHead>Pokok Masalah</TableHead>
-                    <TableHead>Keputusan / Rencana</TableHead>
-                    <TableHead>PIC</TableHead>
-                    <TableHead>Deadline</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((n) => (
-                    <TableRow key={n.id}>
-                      {!isTeamManager && (
-                        <TableCell>{kelompokLabel(n.kelompok_id)}</TableCell>
-                      )}
-                      <TableCell>
-                        {formatMonthLabel(monthKeyFromDate(n.month))}
-                      </TableCell>
-                      <TableCell className='max-w-xs whitespace-pre-wrap'>
-                        {n.pokok_masalah}
-                      </TableCell>
-                      <TableCell className='max-w-xs whitespace-pre-wrap'>
-                        {n.keputusan_rencana}
-                      </TableCell>
-                      <TableCell>{n.pic ?? '-'}</TableCell>
-                      <TableCell>
-                        {n.deadline
-                          ? new Date(n.deadline).toLocaleDateString('id-ID')
-                          : '-'}
-                      </TableCell>
-                      <TableCell>
-                        <span className='bg-muted inline-flex items-center rounded-full px-2 py-0.5 text-xs'>
-                          {MUSTIN_STATUS_LABELS[n.status as MustinStatus]}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Link
-                          to='/admin/lupg/reports/$monthlyReportId'
-                          params={{
-                            monthlyReportId: n.monthly_report_id,
-                          }}
+              <Tabs key={activeMonth} defaultValue={activeMonth}>
+                <div className='-mx-6 overflow-x-auto px-6'>
+                  <TabsList className='h-auto w-max justify-start rounded-none border-b bg-transparent p-0 text-muted-foreground'>
+                    {monthGroups.map((group) => (
+                      <TabsTrigger
+                        key={group.monthKey}
+                        value={group.monthKey}
+                        className='h-auto rounded-none border-x-0 border-t-0 border-b-2 border-transparent bg-transparent px-4 py-3 font-semibold shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none'
+                      >
+                        {group.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+
+                {monthGroups.map((group) => (
+                  <TabsContent
+                    key={group.monthKey}
+                    value={group.monthKey}
+                    className='mt-4'
+                  >
+                    <div className='mb-3 flex items-center justify-between gap-3'>
+                      <div>
+                        <h3 className='font-semibold'>
+                          {formatMonthLabel(group.monthKey)}
+                        </h3>
+                        <p className='text-sm text-muted-foreground'>
+                          {group.items.length} pokok masalah masih perlu
+                          ditindaklanjuti.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className='divide-y rounded-md border'>
+                      {group.items.map((note) => (
+                        <div
+                          key={note.id}
+                          className='grid gap-3 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]'
                         >
-                          <Button
-                            variant='ghost'
-                            size='icon'
-                            className='h-7 w-7'
-                          >
-                            <ExternalLink className='h-3 w-3' />
-                          </Button>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                          <div className='space-y-1'>
+                            {!isTeamManager && (
+                              <p className='text-xs font-medium text-muted-foreground'>
+                                {kelompokLabel(note.kelompok_id)}
+                              </p>
+                            )}
+                            <p className='text-sm font-medium whitespace-pre-wrap'>
+                              {note.pokok_masalah}
+                            </p>
+                          </div>
+                          <div className='space-y-1'>
+                            <p className='text-xs font-medium text-muted-foreground'>
+                              Keputusan / Rencana
+                            </p>
+                            <p className='text-sm whitespace-pre-wrap'>
+                              {note.keputusan_rencana}
+                            </p>
+                          </div>
+                          <div className='flex items-start md:justify-end'>
+                            <Link
+                              to='/admin/lupg/reports/$monthlyReportId'
+                              params={{
+                                monthlyReportId: note.monthly_report_id,
+                              }}
+                            >
+                              <Button variant='outline' size='sm'>
+                                <ExternalLink className='mr-2 h-3.5 w-3.5' />
+                                Buka laporan
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+                ))}
+              </Tabs>
             )}
           </CardContent>
         </Card>
