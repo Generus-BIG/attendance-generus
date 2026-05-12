@@ -136,13 +136,13 @@ export function Dashboard() {
         {/* Page header + month slider */}
         <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
           <div className='flex flex-col gap-1'>
-            <span className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.14em]'>
+            <span className='text-[0.6875rem] font-medium tracking-[0.14em] text-muted-foreground uppercase'>
               Dashboard Absensi
             </span>
             <h2 className='text-3xl font-semibold tracking-tight text-foreground sm:text-[2rem]'>
               {format(monthDate, 'MMMM yyyy', { locale: idLocale })}
             </h2>
-            <p className='text-muted-foreground text-sm'>
+            <p className='text-sm text-muted-foreground'>
               Rekap kehadiran bulanan per pertemuan.
             </p>
           </div>
@@ -150,10 +150,10 @@ export function Dashboard() {
           {/* Month Slider + Export */}
           <div className='flex flex-wrap items-center gap-2 print:hidden'>
             <span
-              className='text-muted-foreground hidden text-[0.6875rem] uppercase tracking-[0.12em] md:inline'
+              className='hidden text-[0.6875rem] tracking-[0.12em] text-muted-foreground uppercase md:inline'
               aria-hidden='true'
             >
-              ← → T
+              ← / → switch month
             </span>
             <div className='flex items-center gap-1'>
               <Button
@@ -184,7 +184,7 @@ export function Dashboard() {
             </div>
             <span
               aria-hidden='true'
-              className='bg-border hidden h-6 w-px sm:inline-block'
+              className='hidden h-6 w-px bg-border sm:inline-block'
             />
             <Button variant='outline' size='sm' onClick={handleExport}>
               <FileDown className='mr-2 h-4 w-4' />

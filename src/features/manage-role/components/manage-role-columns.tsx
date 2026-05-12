@@ -72,7 +72,7 @@ export function useManageRoleColumns(): ColumnDef<ManagedUser>[] {
         return Array.isArray(value) && value.includes(row.getValue(id))
       },
       meta: {
-        className: cn('hidden @lg/content:table-cell'),
+        className: cn('w-35'),
       },
     },
     {
@@ -88,7 +88,7 @@ export function useManageRoleColumns(): ColumnDef<ManagedUser>[] {
         return Array.isArray(value) && value.includes(row.getValue(id))
       },
       meta: {
-        className: cn('hidden @2xl/content:table-cell'),
+        className: cn('w-35'),
       },
     },
   ]
@@ -106,7 +106,7 @@ export function useManageRoleColumns(): ColumnDef<ManagedUser>[] {
           <TempPasswordReveal password={row.original.temp_password ?? null} />
         ),
         meta: {
-          className: cn('hidden @3xl/content:table-cell'),
+          className: cn('w-48'),
         },
         enableSorting: false,
       },
