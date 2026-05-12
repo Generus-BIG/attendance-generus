@@ -54,6 +54,7 @@ export function ManageRoleTable({ search, navigate }: DataTableProps) {
     columnFilters: [
       { columnId: 'full_name', searchKey: 'name', type: 'string' },
       { columnId: 'role', searchKey: 'role', type: 'array' },
+      { columnId: 'kelompok', searchKey: 'kelompok', type: 'array' },
     ],
   })
 

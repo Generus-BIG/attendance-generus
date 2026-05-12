@@ -26,7 +26,7 @@ export function useManageRoleColumns(): ColumnDef<ManagedUser>[] {
         />
       ),
       meta: {
-        className: cn('max-md:sticky start-0 z-10 rounded-tl-[inherit]'),
+        className: cn('w-8 max-md:sticky start-0 z-20 rounded-tl-[inherit]'),
       },
       cell: ({ row }) => (
         <Checkbox
@@ -57,7 +57,7 @@ export function useManageRoleColumns(): ColumnDef<ManagedUser>[] {
       meta: {
         className: cn(
           'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)]',
-          'ps-0.5 max-md:sticky start-6 @4xl/content:table-cell @4xl/content:drop-shadow-none'
+          'ps-0.5 max-md:sticky start-8 z-10 @4xl/content:table-cell @4xl/content:drop-shadow-none'
         ),
       },
       enableHiding: false,
@@ -71,6 +71,9 @@ export function useManageRoleColumns(): ColumnDef<ManagedUser>[] {
       filterFn: (row, id, value) => {
         return Array.isArray(value) && value.includes(row.getValue(id))
       },
+      meta: {
+        className: cn('hidden @lg/content:table-cell'),
+      },
     },
     {
       accessorKey: 'kelompok',
@@ -80,6 +83,12 @@ export function useManageRoleColumns(): ColumnDef<ManagedUser>[] {
       cell: ({ row }) => {
         const kelompok = row.getValue('kelompok') as string | null
         return <span>{kelompok ?? '-'}</span>
+      },
+      filterFn: (row, id, value) => {
+        return Array.isArray(value) && value.includes(row.getValue(id))
+      },
+      meta: {
+        className: cn('hidden @2xl/content:table-cell'),
       },
     },
   ]
@@ -91,14 +100,14 @@ export function useManageRoleColumns(): ColumnDef<ManagedUser>[] {
         id: 'password',
         accessorKey: 'temp_password',
         header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title='Password Sementara'
-          />
+          <DataTableColumnHeader column={column} title='Password Sementara' />
         ),
         cell: ({ row }) => (
           <TempPasswordReveal password={row.original.temp_password ?? null} />
         ),
+        meta: {
+          className: cn('hidden @3xl/content:table-cell'),
+        },
         enableSorting: false,
       },
       {
