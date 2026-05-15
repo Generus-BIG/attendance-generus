@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { format, formatDistanceToNow } from 'date-fns'
-import { id as idLocale } from 'date-fns/locale'
+import { format } from 'date-fns'
 import {
   Tooltip,
   TooltipContent,
@@ -11,6 +10,17 @@ import {
 type Props = {
   updatedAt: number | undefined
   refreshIntervalMs?: number
+}
+
+function formatRelative(from: Date, now: Date): string {
+  const diffSec = Math.max(0, Math.floor((now.getTime() - from.getTime()) / 1000))
+  if (diffSec < 45) return 'just now'
+  const diffMin = Math.floor(diffSec / 60)
+  if (diffMin < 60) return `${diffMin}m ago`
+  const diffHr = Math.floor(diffMin / 60)
+  if (diffHr < 24) return `${diffHr}h ago`
+  const diffDay = Math.floor(diffHr / 24)
+  return `${diffDay}d ago`
 }
 
 export function FreshnessPill({ updatedAt, refreshIntervalMs = 30_000 }: Props) {
@@ -24,6 +34,7 @@ export function FreshnessPill({ updatedAt, refreshIntervalMs = 30_000 }: Props) 
 
   if (!updatedAt) return null
   const date = new Date(updatedAt)
+  const label = formatRelative(date, new Date())
   return (
     <TooltipProvider delayDuration={120}>
       <Tooltip>
@@ -33,17 +44,11 @@ export function FreshnessPill({ updatedAt, refreshIntervalMs = 30_000 }: Props) 
               className='h-1.5 w-1.5 rounded-full bg-success'
               aria-hidden='true'
             />
-            Diperbarui{' '}
-            {formatDistanceToNow(date, {
-              addSuffix: true,
-              locale: idLocale,
-            })}
+            {label === 'just now' ? 'Updated just now' : `Updated ${label}`}
           </span>
         </TooltipTrigger>
         <TooltipContent>
-          {format(date, "EEEE, dd MMM yyyy 'pukul' HH:mm:ss", {
-            locale: idLocale,
-          })}
+          {format(date, 'EEE, dd MMM yyyy HH:mm:ss')}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
