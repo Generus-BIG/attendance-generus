@@ -262,6 +262,11 @@
   --brand-accent-foreground: var(--accent-foreground);
   --success: oklch(0.55 0.14 150);
 
+  /* Skeleton uses --accent in other palettes (which are already soft, ~92-95%
+   * lightness). Sage-green's accent is intentionally dark for brand contrast,
+   * so override the skeleton with a soft, very light sage tint here. */
+  --skeleton: oklch(0.9450 0.0220 134.5);
+
   --font-sans: 'Plus Jakarta Sans', 'Geist', ui-sans-serif, system-ui, sans-serif;
   --font-serif: 'Lora', ui-serif, Georgia, serif;
   --font-mono:
@@ -315,6 +320,10 @@
   --sidebar-ring: oklch(0.7830 0.0384 132.7370);
 
   --success: oklch(0.66 0.15 150);
+
+  /* Subtle sage-tinted skeleton, slightly above card lightness so it reads
+   * as a placeholder without dominating the dark surface. */
+  --skeleton: oklch(0.2350 0.0180 134.5);
 }
 
 /* ─── Shared tokens (palette-agnostic) ─────────────────────────────────── */
@@ -375,6 +384,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-skeleton: var(--skeleton, var(--accent));
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
