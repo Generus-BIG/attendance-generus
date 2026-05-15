@@ -1,9 +1,12 @@
 import { AlertCircle, RefreshCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useMonthlyFormRecap } from '../hooks/use-monthly-form-recap'
+import { AbsenceReasonDonut } from './absence-reason-donut'
 import { AttendanceByGroupRowChart } from './attendance-by-group-row-chart'
 import { AttendanceCalendarHeatmap } from './attendance-calendar-heatmap'
+import { CategoryDistributionBar } from './category-distribution-bar'
 import { FollowUpTable } from './follow-up-table'
+import { GenderDistributionPie } from './gender-distribution-pie'
 import { MonthlyFormStatCards } from './monthly-form-stat-cards'
 
 interface Props {
@@ -11,7 +14,7 @@ interface Props {
   month: Date
   prevMonth: Date
   kelompokId?: string
-  showGroupChart?: boolean
+  viewMode: 'desa' | 'kelompok'
 }
 
 export function MonthlyFormDashboard({
@@ -19,7 +22,7 @@ export function MonthlyFormDashboard({
   month,
   prevMonth,
   kelompokId,
-  showGroupChart = true,
+  viewMode,
 }: Props) {
   const { data, isLoading, error, refetch } = useMonthlyFormRecap({
     formIds,
@@ -32,6 +35,8 @@ export function MonthlyFormDashboard({
     kelompokId,
   })
 
+  const isDesa = viewMode === 'desa'
+
   return (
     <div className='flex flex-col gap-5'>
       <MonthlyFormStatCards
@@ -40,22 +45,50 @@ export function MonthlyFormDashboard({
         isLoading={isLoading}
       />
 
-      <div
-        className={
-          showGroupChart
-            ? 'grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,3fr)]'
-            : 'grid gap-4'
-        }
-      >
-        <AttendanceCalendarHeatmap
-          recap={data}
-          monthDate={month}
-          isLoading={isLoading}
-        />
-        {showGroupChart && (
-          <AttendanceByGroupRowChart recap={data} isLoading={isLoading} />
-        )}
-      </div>
+      {/* Hero row.
+          Desa: Per-Kelompok (2/3, hero — most actionable chart) + Calendar (1/3,
+            compact widget). Calendar's narrower column naturally produces
+            ~40px cells, height-matching the kelompok bar chart.
+          Kelompok: Calendar (2/3, primary chart since per-kelompok bar is
+            redundant in single-kelompok view) + Kategori/Gender pies stacked
+            on the 1/3 right column. Pie heights together balance the
+            calendar's natural height. */}
+      {isDesa ? (
+        <div className='grid gap-4 lg:grid-cols-3'>
+          <div className='lg:col-span-2'>
+            <AttendanceByGroupRowChart recap={data} isLoading={isLoading} />
+          </div>
+          <AttendanceCalendarHeatmap
+            recap={data}
+            monthDate={month}
+            isLoading={isLoading}
+          />
+        </div>
+      ) : (
+        <div className='grid gap-4 lg:grid-cols-3'>
+          <div className='lg:col-span-2'>
+            <AttendanceCalendarHeatmap
+              recap={data}
+              monthDate={month}
+              isLoading={isLoading}
+            />
+          </div>
+          <div className='flex flex-col gap-4'>
+            <CategoryDistributionBar data={data?.byCategory ?? []} />
+            <GenderDistributionPie data={data?.byGender ?? []} />
+          </div>
+        </div>
+      )}
+
+      {/* Distribution row (Desa only) — Kategori + Gender + Absence as a
+          balanced 3-up. Eliminates the orphan absence donut row. */}
+      {isDesa && (
+        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+          <CategoryDistributionBar data={data?.byCategory ?? []} />
+          <GenderDistributionPie data={data?.byGender ?? []} />
+          <AbsenceReasonDonut data={data?.byAbsenceReason ?? []} />
+        </div>
+      )}
 
       <FollowUpTable recap={data} isLoading={isLoading} month={month} />
 

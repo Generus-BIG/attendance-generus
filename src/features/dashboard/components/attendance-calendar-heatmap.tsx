@@ -8,6 +8,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useIsMobile } from '@/hooks/use-mobile'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { type MonthlyFormRecap } from '../types'
 import {
   buildCalendarCells,
@@ -54,12 +60,12 @@ export function AttendanceCalendarHeatmap({ recap, monthDate, isLoading }: Props
       ) : (
         <TooltipProvider delayDuration={120}>
           <div className='flex flex-col gap-1.5'>
-            <div className='text-muted-foreground grid grid-cols-7 gap-1 text-center text-[0.625rem] font-medium uppercase tracking-[0.08em]'>
+            <div className='text-muted-foreground grid grid-cols-7 gap-0.5 text-center text-[0.625rem] font-medium uppercase tracking-[0.08em] sm:gap-1'>
               {WEEKDAY_LABELS.map((l) => (
                 <div key={l}>{l}</div>
               ))}
             </div>
-            <div className='grid grid-cols-7 gap-1'>
+            <div className='grid grid-cols-7 gap-0.5 sm:gap-1'>
               {cells.map((cell) => (
                 <HeatmapCell key={cell.date.getTime()} cell={cell} />
               ))}
@@ -72,67 +78,91 @@ export function AttendanceCalendarHeatmap({ recap, monthDate, isLoading }: Props
 }
 
 function HeatmapCell({ cell }: { cell: DayCell }) {
+  const isMobile = useIsMobile()
   const { date, inMonth, inFuture, meeting, ratePct, tier } = cell
   const dayNum = format(date, 'd')
   const dateLabel = format(date, 'EEEE, dd MMMM yyyy', { locale: idLocale })
 
-  // Base cell appearance
-  const baseClasses =
-    'relative flex aspect-square min-h-8 items-center justify-center rounded-md text-xs tabular-nums transition-colors'
+  const baseClasses = cn(
+    'relative flex aspect-square items-center justify-center rounded-md tabular-nums transition-colors',
+    'min-h-7 text-[0.6875rem] sm:min-h-8 sm:text-xs'
+  )
   const stateClasses = !inMonth
     ? 'text-muted-foreground/40 bg-transparent'
     : inFuture
       ? 'text-muted-foreground/60 bg-muted/30'
       : cn(tierBg(tier), tierText(tier))
 
-  // When meeting exists: wrap in Tooltip for hover detail.
-  if (meeting && inMonth) {
-    const izinPct =
-      meeting.izin > 0 && ratePct != null
-        ? (meeting.izin / (meeting.hadir + meeting.izin)) * 100
-        : 0
+  // No meeting / padding day: static, no interaction
+  if (!meeting || !inMonth) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type='button'
-            className={cn(
-              baseClasses,
-              stateClasses,
-              'hover:ring-foreground/40 focus-visible:ring-foreground focus-visible:outline-none hover:ring-1 focus-visible:ring-2'
-            )}
-            aria-label={`${dateLabel} — kehadiran ${Math.round(ratePct ?? 0)}%`}
-          >
-            <span className='font-semibold'>{dayNum}</span>
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side='top' className='max-w-xs text-xs'>
-          <div className='flex flex-col gap-1'>
-            <div className='font-medium'>{dateLabel}</div>
-            <div className='tabular-nums'>
-              Hadir: {meeting.hadir}
-              {' · '}Izin: {meeting.izin}
-            </div>
-            {ratePct != null && (
-              <div className='text-muted-foreground tabular-nums'>
-                Tingkat: {Math.round(ratePct)}%
-                {izinPct > 0 && ` · Izin ${Math.round(izinPct)}% dari yang merespons`}
-              </div>
-            )}
-          </div>
-        </TooltipContent>
-      </Tooltip>
+      <div
+        className={cn(baseClasses, stateClasses)}
+        aria-label={inMonth ? `${dateLabel} — tidak ada pertemuan` : undefined}
+      >
+        <span>{inMonth ? dayNum : ''}</span>
+      </div>
     )
   }
 
-  // No meeting (or padding day): static div, no tooltip, no interaction.
-  return (
-    <div
-      className={cn(baseClasses, stateClasses)}
-      aria-label={inMonth ? `${dateLabel} — tidak ada pertemuan` : undefined}
+  const izinPct =
+    meeting.izin > 0 && ratePct != null
+      ? (meeting.izin / (meeting.hadir + meeting.izin)) * 100
+      : 0
+
+  const cellButton = (
+    <button
+      type='button'
+      className={cn(
+        baseClasses,
+        stateClasses,
+        'hover:ring-foreground/40 focus-visible:ring-foreground focus-visible:outline-none hover:ring-1 focus-visible:ring-2'
+      )}
+      aria-label={`${dateLabel} — kehadiran ${Math.round(ratePct ?? 0)}%`}
     >
-      <span>{inMonth ? dayNum : ''}</span>
+      <span className='font-semibold'>{dayNum}</span>
+    </button>
+  )
+
+  const tooltipBody = (
+    <div className='flex flex-col gap-1'>
+      <div className='font-medium'>{dateLabel}</div>
+      <div className='tabular-nums'>
+        Hadir: {meeting.hadir}
+        {' · '}Izin: {meeting.izin}
+      </div>
+      {ratePct != null && (
+        <div className='text-muted-foreground tabular-nums'>
+          Tingkat: {Math.round(ratePct)}%
+          {izinPct > 0 && ` · Izin ${Math.round(izinPct)}% dari yang merespons`}
+        </div>
+      )}
     </div>
+  )
+
+  if (isMobile) {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>{cellButton}</PopoverTrigger>
+        <PopoverContent
+          className='w-auto max-w-xs text-xs'
+          side='top'
+          align='center'
+          collisionPadding={8}
+        >
+          {tooltipBody}
+        </PopoverContent>
+      </Popover>
+    )
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{cellButton}</TooltipTrigger>
+      <TooltipContent side='top' className='max-w-xs text-xs'>
+        {tooltipBody}
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
