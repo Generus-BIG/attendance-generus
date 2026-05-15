@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils'
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -58,20 +57,18 @@ export function AttendanceCalendarHeatmap({ recap, monthDate, isLoading }: Props
           Belum ada pertemuan tercatat di bulan ini.
         </div>
       ) : (
-        <TooltipProvider delayDuration={120}>
-          <div className='flex flex-col gap-1.5'>
-            <div className='text-muted-foreground grid grid-cols-7 gap-0.5 text-center text-[0.625rem] font-medium uppercase tracking-[0.08em] sm:gap-1'>
-              {WEEKDAY_LABELS.map((l) => (
-                <div key={l}>{l}</div>
-              ))}
-            </div>
-            <div className='grid grid-cols-7 gap-0.5 sm:gap-1'>
-              {cells.map((cell) => (
-                <HeatmapCell key={cell.date.getTime()} cell={cell} />
-              ))}
-            </div>
+        <div className='flex flex-col gap-1.5'>
+          <div className='text-muted-foreground grid grid-cols-7 gap-0.5 text-center text-[0.625rem] font-medium uppercase tracking-[0.08em] sm:gap-1'>
+            {WEEKDAY_LABELS.map((l) => (
+              <div key={l}>{l}</div>
+            ))}
           </div>
-        </TooltipProvider>
+          <div className='grid grid-cols-7 gap-0.5 sm:gap-1'>
+            {cells.map((cell) => (
+              <HeatmapCell key={cell.date.getTime()} cell={cell} />
+            ))}
+          </div>
+        </div>
       )}
     </div>
   )
@@ -98,7 +95,14 @@ function HeatmapCell({ cell }: { cell: DayCell }) {
     return (
       <div
         className={cn(baseClasses, stateClasses)}
-        aria-label={inMonth ? `${dateLabel} — tidak ada pertemuan` : undefined}
+        aria-hidden={!inMonth || undefined}
+        aria-label={
+          inMonth
+            ? inFuture
+              ? `${dateLabel} — belum berlangsung`
+              : `${dateLabel} — tidak ada pertemuan`
+            : undefined
+        }
       >
         <span>{inMonth ? dayNum : ''}</span>
       </div>

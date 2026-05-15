@@ -32,7 +32,7 @@ export function FormSelectorDropdown({
       value={selectedFormId ?? '__all__'}
       onValueChange={(v) => onSelect(v === '__all__' ? undefined : v)}
     >
-      <SelectTrigger className='w-70'>
+      <SelectTrigger className='w-full sm:w-70'>
         <SelectValue placeholder='Pilih form...' />
       </SelectTrigger>
       <SelectContent>
@@ -43,7 +43,7 @@ export function FormSelectorDropdown({
               <span
                 className={cn(
                   'h-1.5 w-1.5 rounded-full',
-                  f.isActive ? 'bg-emerald-500' : 'bg-muted-foreground/40'
+                  f.isActive ? 'bg-success' : 'bg-muted-foreground/40'
                 )}
               />
               {f.title}

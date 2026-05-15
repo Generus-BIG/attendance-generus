@@ -39,7 +39,7 @@ export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
   const hasData = !isLoading && data.length > 0
 
   return (
-    <Card>
+    <Card data-print-card>
       <CardHeader>
         <CardTitle>Persentase Per Kelompok</CardTitle>
         <CardDescription>

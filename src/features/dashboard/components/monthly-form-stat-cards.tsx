@@ -1,6 +1,13 @@
-import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
+import { ArrowDown, ArrowUp, Info, Minus } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import { KPI_DELTA_THRESHOLDS } from '../constants'
 import type { MonthlyFormRecap } from '../types'
 
 type Props = {
@@ -14,7 +21,10 @@ type KpiDef = {
   label: string
   description: string
   tooltip: string
-  format: (t: MonthlyFormRecap['totals']) => { display: string; numeric: number | null }
+  format: (t: MonthlyFormRecap['totals']) => {
+    display: string
+    numeric: number | null
+  }
   deltaUnit: 'pp' | 'count' | 'decimal'
 }
 
@@ -24,14 +34,18 @@ const KPIS: KpiDef[] = [
     label: 'Jumlah Pertemuan',
     description: 'Pertemuan bulan ini',
     tooltip: 'Banyaknya pertemuan yang tercatat di bulan berjalan.',
-    format: (t) => ({ display: String(t.totalMeetings), numeric: t.totalMeetings }),
+    format: (t) => ({
+      display: String(t.totalMeetings),
+      numeric: t.totalMeetings,
+    }),
     deltaUnit: 'count',
   },
   {
     key: 'avg-hadir',
     label: 'Rata-rata Hadir',
     description: 'Peserta hadir per pertemuan',
-    tooltip: 'Rata-rata jumlah peserta yang hadir dalam setiap pertemuan.',
+    tooltip:
+      'Rata-rata jumlah peserta yang hadir dalam setiap pertemuan.',
     format: (t) => ({
       display: t.avgHadirPerMeeting.toFixed(1),
       numeric: t.avgHadirPerMeeting,
@@ -69,7 +83,7 @@ function formatDelta(
   unit: KpiDef['deltaUnit']
 ): { label: string; kind: 'up' | 'down' | 'flat' | 'none' } {
   if (delta == null || Number.isNaN(delta)) return { label: '—', kind: 'none' }
-  const threshold = unit === 'pp' ? 0.5 : unit === 'decimal' ? 0.05 : 0.5
+  const threshold = KPI_DELTA_THRESHOLDS[unit]
   if (Math.abs(delta) < threshold) return { label: 'Stabil', kind: 'flat' }
   const sign = delta > 0 ? '+' : '−'
   const magnitude = Math.abs(delta)
@@ -94,14 +108,13 @@ export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
         style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}
       >
         {KPIS.map((k) => (
-          <div
-            key={k.key}
-            className='border-border/70 bg-background rounded-md border p-3'
-          >
-            <Skeleton className='h-3 w-24' />
-            <Skeleton className='mt-2 h-7 w-16' />
-            <Skeleton className='mt-2 h-4 w-28' />
-          </div>
+          <Card key={k.key} data-print-card>
+            <CardContent className='p-4'>
+              <Skeleton className='h-3 w-24' />
+              <Skeleton className='mt-2 h-9 w-16' />
+              <Skeleton className='mt-2 h-4 w-28' />
+            </CardContent>
+          </Card>
         ))}
       </div>
     )
@@ -137,45 +150,57 @@ export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
 
         const deltaTone =
           goodKind === 'up'
-            ? 'text-emerald-700 bg-emerald-500/10 dark:text-emerald-300 dark:bg-emerald-400/10'
+            ? 'text-success bg-success/15'
             : goodKind === 'down'
-              ? 'text-red-700 bg-red-500/10 dark:text-red-300 dark:bg-red-400/10'
+              ? 'text-destructive bg-destructive/15'
               : 'text-muted-foreground bg-muted/60'
 
         return (
-          <div
-            key={k.key}
-            className='border-border/70 bg-background flex flex-col rounded-md border p-3'
-          >
-            <div
-              className='text-muted-foreground truncate text-[0.6875rem] font-medium uppercase tracking-[0.12em]'
-              title={k.tooltip}
-            >
-              {k.label}
-            </div>
-            <div className='mt-1.5 flex items-baseline gap-1.5'>
-              <span className='text-[1.75rem] font-semibold leading-none tabular-nums'>
-                {current.display}
-              </span>
-            </div>
-            <div className='mt-2 flex items-center gap-2 text-xs'>
-              <span
-                className={cn(
-                  'inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium tabular-nums',
-                  deltaTone
+          <Card key={k.key} data-print-card>
+            <CardContent className='flex flex-col p-4'>
+              <div className='flex items-center gap-1'>
+                <span className='text-muted-foreground truncate text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+                  {k.label}
+                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type='button'
+                      aria-label={`Tentang ${k.label}`}
+                      className='text-muted-foreground/60 hover:text-muted-foreground rounded-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+                    >
+                      <Info className='h-3 w-3' />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side='top' className='max-w-[260px] text-xs'>
+                    {k.tooltip}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <div className='mt-1.5 flex items-baseline gap-1.5'>
+                <span className='text-[2.25rem] font-semibold leading-none tabular-nums'>
+                  {current.display}
+                </span>
+              </div>
+              <div className='mt-2 flex items-center gap-2 text-xs'>
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium tabular-nums',
+                    deltaTone
+                  )}
+                >
+                  <Arrow className='h-3.5 w-3.5' strokeWidth={2.25} />
+                  {deltaLabel}
+                </span>
+                {kind !== 'none' && kind !== 'flat' && (
+                  <span className='text-muted-foreground'>vs bulan lalu</span>
                 )}
-              >
-                <Arrow className='h-3 w-3' strokeWidth={2.5} />
-                {deltaLabel}
-              </span>
-              {kind !== 'none' && kind !== 'flat' && (
-                <span className='text-muted-foreground'>vs bulan lalu</span>
-              )}
-            </div>
-            <div className='text-muted-foreground mt-1.5 text-xs'>
-              {k.description}
-            </div>
-          </div>
+              </div>
+              <div className='text-muted-foreground mt-1.5 text-xs'>
+                {k.description}
+              </div>
+            </CardContent>
+          </Card>
         )
       })}
     </div>
