@@ -226,10 +226,12 @@ function Sidebar({
       <div
         data-slot='sidebar-container'
         className={cn(
-          'fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[inset-inline,width] duration-200 ease-linear md:flex',
+          'fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[width,transform] duration-200 ease-linear will-change-transform md:flex',
+          // Offcanvas slide uses GPU-accelerated transform instead of animating
+          // inset-inline; icon-mode collapse continues to use the width transition.
           side === 'left'
-            ? 'start-0 group-data-[collapsible=offcanvas]:-start-[calc(var(--sidebar-width))]'
-            : 'end-0 group-data-[collapsible=offcanvas]:-end-[calc(var(--sidebar-width))]',
+            ? 'start-0 group-data-[collapsible=offcanvas]:-translate-x-full rtl:group-data-[collapsible=offcanvas]:translate-x-full'
+            : 'end-0 group-data-[collapsible=offcanvas]:translate-x-full rtl:group-data-[collapsible=offcanvas]:-translate-x-full',
           // Adjust the padding for floating and inset variants.
           variant === 'floating' || variant === 'inset'
             ? 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]'
