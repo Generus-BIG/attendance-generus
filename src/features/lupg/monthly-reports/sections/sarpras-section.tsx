@@ -72,7 +72,10 @@ export function SarprasSection({ report, readOnly }: Props) {
   const bulkDisabled = readOnly || bulkPending !== null
 
   return (
-    <section id='section-sarpras' className='scroll-mt-24 flex flex-col gap-4'>
+    <section
+      id='section-sarpras'
+      className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+    >
       <SectionHeading
         kicker='Sarpras'
         description='Checklist kelengkapan sarana dan prasarana.'

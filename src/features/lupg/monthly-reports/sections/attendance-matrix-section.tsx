@@ -92,7 +92,10 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
   }, [data])
 
   return (
-    <section id='section-attendance' className='scroll-mt-24 flex flex-col gap-4'>
+    <section
+      id='section-attendance'
+      className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+    >
       <SectionHeading
         kicker='Kehadiran'
         title='Attendance Matrix'
@@ -123,7 +126,7 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
           </div>
         ) : (
           <div className='overflow-x-auto'>
-            <table className='w-full min-w-[960px] table-fixed text-sm'>
+            <table className='w-full min-w-240 table-fixed text-sm'>
               <colgroup>
                 <col className='w-28' />
                 {monthKeys.map((mk) => (
