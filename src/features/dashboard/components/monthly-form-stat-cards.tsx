@@ -103,16 +103,13 @@ function formatDelta(
 export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
   if (isLoading) {
     return (
-      <div
-        className='grid gap-2'
-        style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}
-      >
+      <div className='grid grid-cols-2 gap-2 md:grid-cols-4'>
         {KPIS.map((k) => (
           <Card key={k.key} data-print-card>
-            <CardContent className='p-4'>
-              <Skeleton className='h-3 w-24' />
-              <Skeleton className='mt-2 h-9 w-16' />
-              <Skeleton className='mt-2 h-4 w-28' />
+            <CardContent className='p-3 sm:p-4'>
+              <Skeleton className='h-3 w-20 sm:w-24' />
+              <Skeleton className='mt-2 h-7 w-14 sm:h-9 sm:w-16' />
+              <Skeleton className='mt-2 h-4 w-24 sm:w-28' />
             </CardContent>
           </Card>
         ))}
@@ -124,10 +121,7 @@ export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
   const pt = prevRecap?.totals
 
   return (
-    <div
-      className='grid gap-2'
-      style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}
-    >
+    <div className='grid grid-cols-2 gap-2 md:grid-cols-4'>
       {KPIS.map((k) => {
         const current = t ? k.format(t) : { display: '—', numeric: null }
         const prev = pt ? k.format(pt) : { display: '—', numeric: null }
@@ -157,9 +151,9 @@ export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
 
         return (
           <Card key={k.key} data-print-card>
-            <CardContent className='flex flex-col p-4'>
+            <CardContent className='flex flex-col p-3 sm:p-4'>
               <div className='flex items-center gap-1'>
-                <span className='text-muted-foreground truncate text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+                <span className='text-muted-foreground truncate text-[0.625rem] font-medium uppercase tracking-[0.1em] sm:text-[0.6875rem] sm:tracking-[0.12em]'>
                   {k.label}
                 </span>
                 <Tooltip>
@@ -178,25 +172,27 @@ export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
                 </Tooltip>
               </div>
               <div className='mt-1.5 flex items-baseline gap-1.5'>
-                <span className='text-[2.25rem] font-semibold leading-none tabular-nums'>
+                <span className='text-2xl font-semibold leading-none tabular-nums sm:text-[2.25rem]'>
                   {current.display}
                 </span>
               </div>
-              <div className='mt-2 flex items-center gap-2 text-xs'>
+              <div className='mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.6875rem] sm:text-xs'>
                 <span
                   className={cn(
                     'inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium tabular-nums',
                     deltaTone
                   )}
                 >
-                  <Arrow className='h-3.5 w-3.5' strokeWidth={2.25} />
+                  <Arrow className='h-3 w-3 sm:h-3.5 sm:w-3.5' strokeWidth={2.25} />
                   {deltaLabel}
                 </span>
                 {kind !== 'none' && kind !== 'flat' && (
-                  <span className='text-muted-foreground'>vs bulan lalu</span>
+                  <span className='text-muted-foreground hidden sm:inline'>
+                    vs bulan lalu
+                  </span>
                 )}
               </div>
-              <div className='text-muted-foreground mt-1.5 text-xs'>
+              <div className='text-muted-foreground mt-1.5 text-[0.6875rem] sm:text-xs'>
                 {k.description}
               </div>
             </CardContent>
