@@ -227,7 +227,7 @@ export function Dashboard() {
               formIds={desaFormIds}
               month={monthDate}
               prevMonth={prevMonthDate}
-              showGroupChart={true}
+              viewMode='desa'
             />
           </TabsContent>
 
@@ -238,7 +238,7 @@ export function Dashboard() {
               month={monthDate}
               prevMonth={prevMonthDate}
               kelompokId={resolvedKelompokId}
-              showGroupChart={false}
+              viewMode='kelompok'
             />
           </TabsContent>
         </Tabs>
