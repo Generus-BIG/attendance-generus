@@ -70,7 +70,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
     useQueries({
       queries: [
         {
-          queryKey: ['lupg', 'present', 'sensus', monthKey, reportIdsKey],
+          queryKey: ['lupg', 'present', 'sensus', monthKey, reportIdsKey, reportIds] as const,
           queryFn: async () => {
             if (reportIds.length === 0) return [] as SensusSnapshotRow[]
             const { data, error } = await supabase
@@ -83,7 +83,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'present', 'programs', monthKey, reportIdsKey],
+          queryKey: ['lupg', 'present', 'programs', monthKey, reportIdsKey, reportIds] as const,
           queryFn: async () => {
             if (reportIds.length === 0) return [] as ProgramReportRow[]
             const { data, error } = await supabase
@@ -96,7 +96,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'present', 'metrics', monthKey, reportIdsKey],
+          queryKey: ['lupg', 'present', 'metrics', monthKey, reportIdsKey, reportIds] as const,
           queryFn: async () => {
             if (reportIds.length === 0) return [] as MetricReportRow[]
             const { data, error } = await supabase
@@ -109,7 +109,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'present', 'sarpras', monthKey, reportIdsKey],
+          queryKey: ['lupg', 'present', 'sarpras', monthKey, reportIdsKey, reportIds] as const,
           queryFn: async () => {
             if (reportIds.length === 0) return [] as SarprasReportRow[]
             const { data, error } = await supabase
@@ -122,7 +122,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'present', 'shodaqoh', monthKey, reportIdsKey],
+          queryKey: ['lupg', 'present', 'shodaqoh', monthKey, reportIdsKey, reportIds] as const,
           queryFn: async () => {
             if (reportIds.length === 0) return [] as ShodaqohRow[]
             const { data, error } = await supabase
@@ -135,7 +135,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'present', 'mustin', monthKey, reportIdsKey],
+          queryKey: ['lupg', 'present', 'mustin', monthKey, reportIdsKey, reportIds] as const,
           queryFn: async () => {
             if (reportIds.length === 0) return [] as MustinNoteRow[]
             const { data, error } = await supabase

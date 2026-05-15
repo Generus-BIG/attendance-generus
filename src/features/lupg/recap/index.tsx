@@ -197,32 +197,32 @@ export function RekapDesa() {
     useQueries({
       queries: [
         {
-          queryKey: ['lupg', 'recap', 'sensus', monthKey, reportIdsKey],
+          queryKey: ['lupg', 'recap', 'sensus', monthKey, reportIdsKey, reportIds] as const,
           queryFn: () => fetchSensusSnapshotsBatch(reportIds),
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'recap', 'programs', monthKey, windowReportIdsKey],
+          queryKey: ['lupg', 'recap', 'programs', monthKey, windowReportIdsKey, windowReportIds] as const,
           queryFn: () => fetchProgramReportsBatch(windowReportIds),
           enabled: windowReportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'recap', 'metrics', monthKey, reportIdsKey],
+          queryKey: ['lupg', 'recap', 'metrics', monthKey, reportIdsKey, reportIds] as const,
           queryFn: () => fetchMetricReportsBatch(reportIds),
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'recap', 'sarpras', monthKey, reportIdsKey],
+          queryKey: ['lupg', 'recap', 'sarpras', monthKey, reportIdsKey, reportIds] as const,
           queryFn: () => fetchSarprasReportsBatch(reportIds),
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'recap', 'shodaqoh', monthKey, reportIdsKey],
+          queryKey: ['lupg', 'recap', 'shodaqoh', monthKey, reportIdsKey, reportIds] as const,
           queryFn: () => fetchShodaqohBatch(reportIds),
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'recap', 'mustin', monthKey, reportIdsKey],
+          queryKey: ['lupg', 'recap', 'mustin', monthKey, reportIdsKey, reportIds] as const,
           queryFn: () => fetchMustinBatch(reportIds),
           enabled: reportIds.length > 0,
         },
