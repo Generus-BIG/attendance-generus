@@ -263,9 +263,12 @@ function MatrixCell({
   useEffect(() => {
     // Sync local input to server row when the row identity or revision
     // changes (e.g. month switch, after a save). Intentional pattern;
-    // out of scope to refactor to key-based remount.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // out of scope to refactor to key-based remount. We intentionally do
+    // NOT depend on existing?.current_value — it would clobber in-flight
+    // edits before the save round-trip lands.
+     
     setVal(existing?.current_value?.toString() ?? '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existing?.id, existing?.updated_at])
 
   const save = () => {
