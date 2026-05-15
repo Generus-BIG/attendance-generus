@@ -1,10 +1,13 @@
 import { AlertCircle, RefreshCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { type Role } from '@/lib/rbac'
 import { useMonthlyFormRecap } from '../hooks/use-monthly-form-recap'
 import { AbsenceReasonDonut } from './absence-reason-donut'
 import { AttendanceByGroupRowChart } from './attendance-by-group-row-chart'
 import { AttendanceCalendarHeatmap } from './attendance-calendar-heatmap'
 import { CategoryDistributionBar } from './category-distribution-bar'
+import { DashboardEmptyState } from './dashboard-empty-state'
+import { DashboardSkeleton } from './dashboard-skeleton'
 import { FollowUpTable } from './follow-up-table'
 import { GenderDistributionPie } from './gender-distribution-pie'
 import { MonthlyFormStatCards } from './monthly-form-stat-cards'
@@ -15,6 +18,13 @@ interface Props {
   prevMonth: Date
   kelompokId?: string
   viewMode: 'desa' | 'kelompok'
+  q: string | undefined
+  fGroup: string[] | undefined
+  fCategory: string[] | undefined
+  onQChange: (value: string | undefined) => void
+  onFGroupChange: (value: string[] | undefined) => void
+  onFCategoryChange: (value: string[] | undefined) => void
+  role: Role
 }
 
 export function MonthlyFormDashboard({
@@ -23,6 +33,13 @@ export function MonthlyFormDashboard({
   prevMonth,
   kelompokId,
   viewMode,
+  q,
+  fGroup,
+  fCategory,
+  onQChange,
+  onFGroupChange,
+  onFCategoryChange,
+  role,
 }: Props) {
   const { data, isLoading, error, refetch } = useMonthlyFormRecap({
     formIds,
@@ -36,6 +53,28 @@ export function MonthlyFormDashboard({
   })
 
   const isDesa = viewMode === 'desa'
+
+  if (isLoading && !data) {
+    return <DashboardSkeleton viewMode={viewMode} />
+  }
+
+  if (!isLoading && formIds.length === 0) {
+    return (
+      <DashboardEmptyState
+        title='Belum ada form di bulan ini'
+        description={
+          isDesa
+            ? 'Buat form pertemuan desa terlebih dahulu untuk mulai mencatat kehadiran.'
+            : 'Belum ada form pertemuan untuk kelompok ini di bulan berjalan.'
+        }
+        primaryAction={
+          isDesa && role !== 'team_manager' && role !== 'member'
+            ? { label: 'Buat form', to: '/admin/forms', show: true }
+            : undefined
+        }
+      />
+    )
+  }
 
   return (
     <div className='flex flex-col gap-5'>
@@ -90,7 +129,17 @@ export function MonthlyFormDashboard({
         </div>
       )}
 
-      <FollowUpTable recap={data} isLoading={isLoading} month={month} />
+      <FollowUpTable
+        recap={data}
+        isLoading={isLoading}
+        month={month}
+        q={q}
+        fGroup={fGroup}
+        fCategory={fCategory}
+        onQChange={onQChange}
+        onFGroupChange={onFGroupChange}
+        onFCategoryChange={onFCategoryChange}
+      />
 
       {error && (
         <div className='border-destructive/40 bg-destructive/5 flex items-center justify-between gap-3 rounded-md border px-4 py-3'>

@@ -4,7 +4,8 @@ import { format, addMonths, subMonths, startOfMonth, parseISO } from 'date-fns'
 import { type DashboardTab } from '../types'
 
 export function useDashboardState() {
-  const { tab, month, kelompokId, formId } = Route.useSearch()
+  const { tab, month, kelompokId, formId, q, fGroup, fCategory } =
+    Route.useSearch()
   const navigate = Route.useNavigate()
 
   // Stable Date object — only recalculated when `month` string changes
@@ -20,6 +21,9 @@ export function useDashboardState() {
         tab: newTab,
         formId: undefined,
         kelompokId: newTab === 'kelompok' ? prev.kelompokId : undefined,
+        q: undefined,
+        fGroup: undefined,
+        fCategory: undefined,
       }),
     })
   }
@@ -40,7 +44,7 @@ export function useDashboardState() {
 
   const setKelompokId = (id: string) => {
     navigate({
-      search: (prev) => ({ ...prev, kelompokId: id }),
+      search: (prev) => ({ ...prev, kelompokId: id, fGroup: undefined }),
     })
   }
 
@@ -50,12 +54,42 @@ export function useDashboardState() {
     })
   }
 
+  const setQ = (value: string | undefined) => {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        q: value && value.length > 0 ? value : undefined,
+      }),
+    })
+  }
+
+  const setFGroup = (value: string[] | undefined) => {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        fGroup: value && value.length > 0 ? value : undefined,
+      }),
+    })
+  }
+
+  const setFCategory = (value: string[] | undefined) => {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        fCategory: value && value.length > 0 ? value : undefined,
+      }),
+    })
+  }
+
   return {
     tab,
     monthDate,
     monthString: month,
     kelompokId,
     formId,
+    q,
+    fGroup,
+    fCategory,
     setTab,
     setMonth,
     prevMonth,
@@ -63,5 +97,8 @@ export function useDashboardState() {
     jumpToCurrentMonth,
     setKelompokId,
     setFormId,
+    setQ,
+    setFGroup,
+    setFCategory,
   }
 }
