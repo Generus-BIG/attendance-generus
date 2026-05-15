@@ -77,13 +77,15 @@ export function GenderDistributionPie({ data }: Props) {
 
   return (
     <Card data-print-card>
-      <CardHeader>
-        <CardTitle>Distribusi Gender</CardTitle>
-        <CardDescription>
+      <CardHeader className='px-3 pt-4 pb-2 sm:px-6 sm:pt-6 sm:pb-3'>
+        <CardTitle className='text-base sm:text-lg'>
+          Distribusi Gender
+        </CardTitle>
+        <CardDescription className='hidden sm:block'>
           Rasio kehadiran Laki-laki dan Perempuan.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className='px-2 pb-4 sm:px-6 sm:pb-6'>
         {!hasData ? (
           <div className='text-muted-foreground flex h-60 items-center justify-center text-sm'>
             Belum ada data kehadiran bulan ini.
@@ -93,7 +95,7 @@ export function GenderDistributionPie({ data }: Props) {
             <ChartContainer
               config={chartConfig}
               className='mx-auto w-full'
-              style={{ height: 240 }}
+              style={{ height: isMobile ? 180 : 240 }}
             >
               <PieChart>
                 {!isMobile && (
@@ -114,15 +116,18 @@ export function GenderDistributionPie({ data }: Props) {
                 <Legend
                   verticalAlign='bottom'
                   iconType='circle'
-                  iconSize={8}
-                  wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
+                  iconSize={isMobile ? 6 : 8}
+                  wrapperStyle={{
+                    fontSize: isMobile ? 10 : 11,
+                    paddingTop: isMobile ? 4 : 8,
+                  }}
                 />
                 <Pie
                   data={chartData}
                   dataKey='hadirCount'
                   nameKey='label'
-                  innerRadius={60}
-                  outerRadius={100}
+                  innerRadius={isMobile ? 36 : 60}
+                  outerRadius={isMobile ? 60 : 100}
                   paddingAngle={2}
                   label={(props) => {
                     const { cx, cy, midAngle, innerRadius, outerRadius, percent, payload } = props
@@ -146,7 +151,7 @@ export function GenderDistributionPie({ data }: Props) {
                         fill='var(--foreground)'
                         textAnchor='middle'
                         dominantBaseline='central'
-                        fontSize={11}
+                        fontSize={isMobile ? 9 : 11}
                         fontWeight={600}
                       >
                         {`${pct.toFixed(0)}%`}

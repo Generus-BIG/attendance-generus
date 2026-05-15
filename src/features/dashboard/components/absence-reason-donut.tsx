@@ -77,32 +77,10 @@ function formatSliceRows(slice: DonutSlice): { label: string; value: string }[] 
   ]
 }
 
-function deriveInsight(data: AbsenceReasonBreakdownRow[]): string | null {
-  const hadir = data.find((d) => d.reason === 'Hadir')?.percentage ?? 0
-  const alpa = data.find((d) => d.reason === 'Alpa')?.percentage ?? 0
-  const izinTotal = data
-    .filter((d) => d.reason === 'Sakit' || d.reason === 'Kerja' || d.reason === 'Lainnya')
-    .reduce((sum, d) => sum + d.percentage, 0)
-  const absencesTotal = alpa + izinTotal
-  if (absencesTotal === 0) {
-    return hadir >= 75
-      ? 'Tingkat kehadiran sangat baik bulan ini.'
-      : null
-  }
-  if (alpa > izinTotal) {
-    return 'Mayoritas absen tanpa keterangan — perlu follow-up komitmen.'
-  }
-  if (izinTotal > alpa) {
-    return 'Mayoritas absen sudah memberi keterangan — cek apakah jadwal kegiatan berbenturan.'
-  }
-  return null
-}
-
 export function AbsenceReasonDonut({ data }: Props) {
   const isMobile = useIsMobile()
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const hasData = data.some((d) => d.count > 0)
-  const insight = useMemo(() => deriveInsight(data), [data])
 
   // Collapse the 5-row breakdown (Hadir, Sakit, Kerja, Lainnya, Alpa) into
   // 3 chart slices. Izin folds the three permission reasons together.
@@ -154,23 +132,25 @@ export function AbsenceReasonDonut({ data }: Props) {
 
   return (
     <Card data-print-card>
-      <CardHeader>
-        <CardTitle>Distribusi Kehadiran</CardTitle>
-        <CardDescription>
+      <CardHeader className='px-3 pt-4 pb-2 sm:px-6 sm:pt-6 sm:pb-3'>
+        <CardTitle className='text-base sm:text-lg'>
+          Distribusi Kehadiran
+        </CardTitle>
+        <CardDescription className='hidden sm:block'>
           Hadir, Izin, dan Alpa dari total slot kehadiran. Hover/tap Izin untuk rincian Sakit/Kerja/Lainnya.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className='px-2 pb-4 sm:px-6 sm:pb-6'>
         {!hasData ? (
           <div className='text-muted-foreground flex h-60 items-center justify-center text-sm'>
             Belum ada pertemuan tercatat di bulan ini.
           </div>
         ) : (
-          <div className='flex flex-col gap-4'>
+          <div className='flex flex-col gap-3 sm:gap-4'>
             <ChartContainer
               config={chartConfig}
               className='mx-auto w-full'
-              style={{ height: 260 }}
+              style={{ height: isMobile ? 180 : 240 }}
             >
               <PieChart>
                 {!isMobile && (
@@ -191,15 +171,18 @@ export function AbsenceReasonDonut({ data }: Props) {
                 <Legend
                   verticalAlign='bottom'
                   iconType='circle'
-                  iconSize={8}
-                  wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
+                  iconSize={isMobile ? 6 : 8}
+                  wrapperStyle={{
+                    fontSize: isMobile ? 10 : 11,
+                    paddingTop: isMobile ? 4 : 8,
+                  }}
                 />
                 <Pie
                   data={slices}
                   dataKey='count'
                   nameKey='reason'
-                  innerRadius={70}
-                  outerRadius={110}
+                  innerRadius={isMobile ? 38 : 64}
+                  outerRadius={isMobile ? 60 : 100}
                   paddingAngle={2}
                   label={(props) => {
                     const { cx, cy, midAngle, innerRadius, outerRadius, percent, payload } = props
@@ -221,7 +204,7 @@ export function AbsenceReasonDonut({ data }: Props) {
                         fill='var(--foreground)'
                         textAnchor='middle'
                         dominantBaseline='central'
-                        fontSize={11}
+                        fontSize={isMobile ? 9 : 11}
                         fontWeight={600}
                       >
                         {`${pct.toFixed(0)}%`}
@@ -262,12 +245,6 @@ export function AbsenceReasonDonut({ data }: Props) {
                   rows={formatSliceRows(slices[activeIndex])}
                 />
               </button>
-            )}
-
-            {insight && (
-              <p className='text-muted-foreground bg-muted/30 rounded-md px-3 py-2 text-xs'>
-                {insight}
-              </p>
             )}
           </div>
         )}

@@ -119,11 +119,15 @@ export function MonthlyFormDashboard({
         </div>
       )}
 
-      {/* Distribution row (Desa only) — Kategori + Gender + Absence as a
-          balanced 3-up. Eliminates the orphan absence donut row. */}
+      {/* Distribution row (Desa only). On mobile/tablet: kategori bar spans
+          full width (bars want width); gender + absence pies share a 2-up row
+          below (pies are square and don't need full width). On lg+: all three
+          flow into a single equal-width row. */}
       {isDesa && (
-        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-          <CategoryDistributionBar data={data?.byCategory ?? []} />
+        <div className='grid grid-cols-2 gap-4 lg:grid-cols-3'>
+          <div className='col-span-2 lg:col-span-1'>
+            <CategoryDistributionBar data={data?.byCategory ?? []} />
+          </div>
           <GenderDistributionPie data={data?.byGender ?? []} />
           <AbsenceReasonDonut data={data?.byAbsenceReason ?? []} />
         </div>
