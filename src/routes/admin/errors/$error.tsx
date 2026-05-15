@@ -14,7 +14,7 @@ export const Route = createFileRoute('/admin/errors/$error')({
   component: RouteComponent,
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
+ 
 function RouteComponent() {
   const { error } = Route.useParams()
 
