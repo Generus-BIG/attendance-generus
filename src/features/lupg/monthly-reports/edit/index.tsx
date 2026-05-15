@@ -169,7 +169,7 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
         <div className='grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]'>
           <SectionNav sections={SECTIONS} />
 
-          <div className='flex flex-col gap-8 lg:gap-10'>
+          <div className='flex flex-col gap-8 lg:gap-12'>
             <RevealOnScroll>
               <SensusPreviewSection report={report} />
             </RevealOnScroll>
