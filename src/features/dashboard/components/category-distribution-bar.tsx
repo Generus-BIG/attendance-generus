@@ -18,22 +18,11 @@ interface Props {
   data: CategoryBreakdownRow[]
 }
 
-const COLOR_BY_CATEGORY: Record<string, string> = {
-  'GPN A': 'var(--chart-1)',
-  'GPN B': 'var(--chart-2)',
-  AR: 'var(--chart-3)',
-  APR: 'var(--chart-4)',
-}
-
-const FALLBACK_COLOR = 'var(--muted-foreground)'
+const BAR_COLOR = 'var(--chart-1)'
 
 const chartConfig = {
-  percentage: { label: 'Persentase' },
+  percentage: { label: 'Persentase', color: BAR_COLOR },
 } satisfies ChartConfig
-
-function colorFor(category: string): string {
-  return COLOR_BY_CATEGORY[category] ?? FALLBACK_COLOR
-}
 
 function formatRow(row: CategoryBreakdownRow): { label: string; value: string }[] {
   return [
@@ -46,15 +35,10 @@ function formatRow(row: CategoryBreakdownRow): { label: string; value: string }[
 export function CategoryDistributionBar({ data }: Props) {
   const hasData = data.some((d) => d.hadirCount > 0)
 
-  const chartData = [...data]
-    .sort((a, b) => b.percentage - a.percentage)
-    .map((row) => ({
-      ...row,
-      fill: colorFor(row.category),
-    }))
+  const chartData = [...data].sort((a, b) => b.percentage - a.percentage)
 
   return (
-    <Card>
+    <Card data-print-card>
       <CardHeader>
         <CardTitle>Persentase Per Kategori</CardTitle>
         <CardDescription>
@@ -102,7 +86,7 @@ export function CategoryDistributionBar({ data }: Props) {
                   return (
                     <ChartSegmentTooltip
                       label={row.category}
-                      color={colorFor(row.category)}
+                      color={BAR_COLOR}
                       rows={formatRow(row)}
                     />
                   )
@@ -114,7 +98,7 @@ export function CategoryDistributionBar({ data }: Props) {
                 isAnimationActive={false}
               >
                 {chartData.map((entry) => (
-                  <Cell key={`cell-${entry.category}`} fill={entry.fill} />
+                  <Cell key={`cell-${entry.category}`} fill={BAR_COLOR} />
                 ))}
                 <LabelList
                   dataKey='percentage'

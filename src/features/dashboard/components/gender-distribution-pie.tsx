@@ -13,6 +13,7 @@ import {
   ChartTooltip,
 } from '@/components/ui/chart'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { PIE_LABEL_MIN_FRACTION } from '../constants'
 import type { GenderBreakdownRow } from '../types'
 import { ChartSegmentTooltip } from './chart-segment-tooltip'
 
@@ -40,11 +41,22 @@ function colorFor(gender: string): string {
   return COLOR_BY_GENDER[gender] ?? 'var(--muted-foreground)'
 }
 
-function formatRow(row: GenderBreakdownRow): { label: string; value: string }[] {
+// Row augmented with `sharePct`: Hadir share within total Hadir, summing to
+// 100% across genders. This is the metric the chart visualizes (slice size
+// is proportional to hadirCount), so label + tooltip should both surface it.
+// `percentage` (the attendance rate vs sensus) is intentionally not shown
+// here — that comparison belongs in the rate-oriented widgets.
+type GenderChartRow = GenderBreakdownRow & {
+  label: string
+  fill: string
+  index: number
+  sharePct: number
+}
+
+function formatRow(row: GenderChartRow): { label: string; value: string }[] {
   return [
     { label: 'Hadir', value: row.hadirCount.toLocaleString('id-ID') },
-    { label: 'Total Sensus', value: row.totalSensus.toLocaleString('id-ID') },
-    { label: 'Persentase', value: `${row.percentage.toFixed(1)}%` },
+    { label: 'Persentase', value: `${row.sharePct.toFixed(1)}%` },
   ]
 }
 
@@ -53,15 +65,18 @@ export function GenderDistributionPie({ data }: Props) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const hasData = data.some((d) => d.hadirCount > 0)
 
-  const chartData = data.map((row, index) => ({
+  const totalHadir = data.reduce((sum, r) => sum + r.hadirCount, 0)
+
+  const chartData: GenderChartRow[] = data.map((row, index) => ({
     ...row,
     label: LABEL_BY_GENDER[row.gender] ?? row.gender,
     fill: colorFor(row.gender),
     index,
+    sharePct: totalHadir > 0 ? (row.hadirCount / totalHadir) * 100 : 0,
   }))
 
   return (
-    <Card>
+    <Card data-print-card>
       <CardHeader>
         <CardTitle>Distribusi Gender</CardTitle>
         <CardDescription>
@@ -85,9 +100,7 @@ export function GenderDistributionPie({ data }: Props) {
                   <ChartTooltip
                     content={({ active, payload }) => {
                       if (!active || !payload?.length) return null
-                      const row = payload[0].payload as GenderBreakdownRow & {
-                        label: string
-                      }
+                      const row = payload[0].payload as GenderChartRow
                       return (
                         <ChartSegmentTooltip
                           label={row.label}
@@ -113,16 +126,18 @@ export function GenderDistributionPie({ data }: Props) {
                   paddingAngle={2}
                   label={(props) => {
                     const { cx, cy, midAngle, innerRadius, outerRadius, percent, payload } = props
-                    if (typeof percent !== 'number' || percent < 0.05) return null
+                    if (typeof percent !== 'number' || percent < PIE_LABEL_MIN_FRACTION) return null
                     if (typeof midAngle !== 'number') return null
                     const RADIAN = Math.PI / 180
                     const r =
                       ((innerRadius as number) + (outerRadius as number)) * 0.5
                     const x = (cx as number) + r * Math.cos(-midAngle * RADIAN)
                     const y = (cy as number) + r * Math.sin(-midAngle * RADIAN)
+                    // sharePct = hadirCount / totalHadir × 100, summing to 100%
+                    // across genders. Matches the slice size by design.
                     const pct =
-                      typeof (payload as GenderBreakdownRow | undefined)?.percentage === 'number'
-                        ? (payload as GenderBreakdownRow).percentage
+                      typeof (payload as GenderChartRow | undefined)?.sharePct === 'number'
+                        ? (payload as GenderChartRow).sharePct
                         : percent * 100
                     return (
                       <text
