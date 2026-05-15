@@ -159,12 +159,28 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
   const yearlyKelompokQ = useYearlyProgramData(kelompokFilter, year)
   const yearlyDesaQ = useYearlyProgramDataDesa(year)
 
-  const yearlyMonthlyReports = kelompokFilter
-    ? (yearlyKelompokQ.data?.monthlyReports ?? [])
-    : (yearlyDesaQ.data?.monthlyReports ?? [])
-  const yearlyProgramReports = kelompokFilter
-    ? (yearlyKelompokQ.data?.programReports ?? [])
-    : (yearlyDesaQ.data?.programReports ?? [])
+  const yearlyMonthlyReports = useMemo(
+    () =>
+      kelompokFilter
+        ? (yearlyKelompokQ.data?.monthlyReports ?? [])
+        : (yearlyDesaQ.data?.monthlyReports ?? []),
+    [
+      kelompokFilter,
+      yearlyKelompokQ.data?.monthlyReports,
+      yearlyDesaQ.data?.monthlyReports,
+    ]
+  )
+  const yearlyProgramReports = useMemo(
+    () =>
+      kelompokFilter
+        ? (yearlyKelompokQ.data?.programReports ?? [])
+        : (yearlyDesaQ.data?.programReports ?? []),
+    [
+      kelompokFilter,
+      yearlyKelompokQ.data?.programReports,
+      yearlyDesaQ.data?.programReports,
+    ]
+  )
 
   const { data: programs = [] } = useActivePrograms()
   const { data: metrics = [] } = useActiveMetrics()

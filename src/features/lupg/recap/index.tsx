@@ -234,12 +234,21 @@ export function RekapDesa() {
   const { data: sarprasItems = [] } = useActiveSarprasItems()
   const { data: mustinTemplates = [] } = useActiveMustinTemplates()
 
-  const sensusSnapshots = sensusQ.data ?? []
-  const programReports = programsBatchQ.data ?? []
-  const metricReports = metricsBatchQ.data ?? []
-  const sarprasReports = sarprasBatchQ.data ?? []
-  const shodaqohRows = shodaqohQ.data ?? []
-  const mustinRows = mustinQ.data ?? []
+  const sensusSnapshots = useMemo(() => sensusQ.data ?? [], [sensusQ.data])
+  const programReports = useMemo(
+    () => programsBatchQ.data ?? [],
+    [programsBatchQ.data]
+  )
+  const metricReports = useMemo(
+    () => metricsBatchQ.data ?? [],
+    [metricsBatchQ.data]
+  )
+  const sarprasReports = useMemo(
+    () => sarprasBatchQ.data ?? [],
+    [sarprasBatchQ.data]
+  )
+  const shodaqohRows = useMemo(() => shodaqohQ.data ?? [], [shodaqohQ.data])
+  const mustinRows = useMemo(() => mustinQ.data ?? [], [mustinQ.data])
 
   const compositeDataByProgram = useMemo(() => {
     // Index monthly reports by (kelompok, monthKey).
