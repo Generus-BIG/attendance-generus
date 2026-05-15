@@ -261,6 +261,10 @@ function MatrixCell({
   const [val, setVal] = useState(existing?.current_value?.toString() ?? '')
 
   useEffect(() => {
+    // Sync local input to server row when the row identity or revision
+    // changes (e.g. month switch, after a save). Intentional pattern;
+    // out of scope to refactor to key-based remount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVal(existing?.current_value?.toString() ?? '')
   }, [existing?.id, existing?.updated_at])
 

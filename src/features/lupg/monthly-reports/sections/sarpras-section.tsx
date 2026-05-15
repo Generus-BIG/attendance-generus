@@ -153,6 +153,9 @@ function SarprasRow({ report, item, existing, readOnly }: RowProps) {
   const [notes, setNotes] = useState(existing?.notes ?? '')
 
   useEffect(() => {
+    // Sync local form state to server row when the row identity or revision
+    // changes. Intentional "form mirrors server data" pattern.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsFulfilled(existing?.is_fulfilled ?? false)
   }, [existing?.id, existing?.updated_at, existing?.is_fulfilled])
 

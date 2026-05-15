@@ -59,7 +59,7 @@ export function useMonthlyReports(params: {
 
 export function useMonthlyReport(id: string | undefined) {
   return useQuery({
-    queryKey: id ? KEYS.monthlyReport(id) : ['lupg', 'monthly-report', 'none'],
+    queryKey: ['lupg', 'monthly-report', id ?? 'none'] as const,
     queryFn: () =>
       id ? monthlyReportSvc.getMonthlyReportById(id) : Promise.resolve(null),
     enabled: !!id,
@@ -71,10 +71,13 @@ export function useMonthlyReportByKelompokMonth(
   month: string | undefined
 ) {
   return useQuery({
-    queryKey:
-      kelompokId && month
-        ? KEYS.monthlyReportByKelompokMonth(kelompokId, month)
-        : ['lupg', 'monthly-report', 'by', 'none'],
+    queryKey: [
+      'lupg',
+      'monthly-report',
+      'by',
+      kelompokId ?? 'none',
+      month ?? 'none',
+    ] as const,
     queryFn: () =>
       kelompokId && month
         ? monthlyReportSvc.getMonthlyReport(kelompokId, month)
@@ -161,7 +164,7 @@ export function useActiveMustinTemplates() {
 
 export function useSensus(kelompokId: string | undefined) {
   return useQuery({
-    queryKey: kelompokId ? KEYS.sensus(kelompokId) : ['lupg', 'sensus', 'none'],
+    queryKey: ['lupg', 'sensus', kelompokId ?? 'none'] as const,
     queryFn: () =>
       kelompokId ? sensusSvc.listSensus(kelompokId) : Promise.resolve([]),
     enabled: !!kelompokId,
@@ -180,9 +183,7 @@ export function useUpsertSensusCell() {
 
 export function useSensusSnapshots(monthlyReportId: string | undefined) {
   return useQuery({
-    queryKey: monthlyReportId
-      ? KEYS.sensusSnapshots(monthlyReportId)
-      : ['lupg', 'sensus-snapshots', 'none'],
+    queryKey: ['lupg', 'sensus-snapshots', monthlyReportId ?? 'none'] as const,
     queryFn: () =>
       monthlyReportId
         ? sensusSvc.listSensusSnapshots(monthlyReportId)
@@ -195,9 +196,7 @@ export function useSensusSnapshots(monthlyReportId: string | undefined) {
 
 export function useProgramReports(monthlyReportId: string | undefined) {
   return useQuery({
-    queryKey: monthlyReportId
-      ? KEYS.programReports(monthlyReportId)
-      : ['lupg', 'program-reports', 'none'],
+    queryKey: ['lupg', 'program-reports', monthlyReportId ?? 'none'] as const,
     queryFn: () =>
       monthlyReportId
         ? programSvc.listProgramReports(monthlyReportId)
@@ -222,9 +221,7 @@ export function useUpsertProgramReport() {
 
 export function useMetricReports(monthlyReportId: string | undefined) {
   return useQuery({
-    queryKey: monthlyReportId
-      ? KEYS.metricReports(monthlyReportId)
-      : ['lupg', 'metric-reports', 'none'],
+    queryKey: ['lupg', 'metric-reports', monthlyReportId ?? 'none'] as const,
     queryFn: () =>
       monthlyReportId
         ? metricSvc.listMetricReports(monthlyReportId)
@@ -249,9 +246,7 @@ export function useUpsertMetricReport() {
 
 export function useSarprasReports(monthlyReportId: string | undefined) {
   return useQuery({
-    queryKey: monthlyReportId
-      ? KEYS.sarprasReports(monthlyReportId)
-      : ['lupg', 'sarpras-reports', 'none'],
+    queryKey: ['lupg', 'sarpras-reports', monthlyReportId ?? 'none'] as const,
     queryFn: () =>
       monthlyReportId
         ? sarprasSvc.listSarprasReports(monthlyReportId)
@@ -276,9 +271,7 @@ export function useUpsertSarprasReport() {
 
 export function useShodaqoh(monthlyReportId: string | undefined) {
   return useQuery({
-    queryKey: monthlyReportId
-      ? KEYS.shodaqoh(monthlyReportId)
-      : ['lupg', 'shodaqoh', 'none'],
+    queryKey: ['lupg', 'shodaqoh', monthlyReportId ?? 'none'] as const,
     queryFn: () =>
       monthlyReportId
         ? shodaqohSvc.getShodaqoh(monthlyReportId)
@@ -315,9 +308,7 @@ export function useUpsertShodaqoh() {
 
 export function useMustinNotes(monthlyReportId: string | undefined) {
   return useQuery({
-    queryKey: monthlyReportId
-      ? KEYS.mustin(monthlyReportId)
-      : ['lupg', 'mustin', 'none'],
+    queryKey: ['lupg', 'mustin', monthlyReportId ?? 'none'] as const,
     queryFn: () =>
       monthlyReportId
         ? mustinSvc.listMustinNotes(monthlyReportId)
@@ -555,9 +546,7 @@ export function useYearlyProgramData(
   year: number
 ) {
   return useQuery({
-    queryKey: kelompokId
-      ? PROGRAM_YEARLY_KEY(kelompokId, year)
-      : ['lupg', 'programs-yearly', 'none'],
+    queryKey: ['lupg', 'programs-yearly', kelompokId ?? 'none', year] as const,
     queryFn: () =>
       kelompokId
         ? programsSvc.listYearlyProgramData(kelompokId, year)
@@ -595,9 +584,7 @@ export function useYearlyMatrixData(
   year: number
 ) {
   return useQuery({
-    queryKey: kelompokId
-      ? MATRIX_YEARLY_KEY(kelompokId, year)
-      : ['lupg', 'matrix-yearly', 'none'],
+    queryKey: ['lupg', 'matrix-yearly', kelompokId ?? 'none', year] as const,
     queryFn: () =>
       kelompokId
         ? matrixSvc.listYearlyMatrixData(kelompokId, year)
@@ -649,8 +636,8 @@ export function useMonthlyReportsWithSubmitter(params?: {
       'lupg',
       'monthly-reports-with-submitter',
       params ?? {},
-      reportsQ.data?.length ?? 0,
-    ],
+      reportsQ.data,
+    ] as const,
     queryFn: async () => {
       const reports = reportsQ.data ?? []
       const withNames: MonthlyReportWithSubmitterRow[] = await Promise.all(

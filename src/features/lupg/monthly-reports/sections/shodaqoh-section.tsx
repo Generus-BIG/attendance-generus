@@ -55,9 +55,13 @@ export function ShodaqohSection({ report, readOnly }: Props) {
         cancelled = true
       }
     }
+    // Sync local form state to server row when the row identity or revision
+    // changes. Intentional "form mirrors server data" pattern.
+    /* eslint-disable react-hooks/set-state-in-effect */
     setNominal(existing.nominal?.toString() ?? '')
     setJumlahKK(existing.jumlah_kk?.toString() ?? '')
     setNotes(existing.notes ?? '')
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [existing?.id, existing?.updated_at, report.kelompok_id, report.month, readOnly])
 
   const save = () => {
