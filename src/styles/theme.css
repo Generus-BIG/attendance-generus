@@ -233,8 +233,13 @@
   --muted: oklch(0.9702 0 0);
   --muted-foreground: oklch(0.6234 0 0);
 
-  --accent: oklch(0.4429 0.0444 134.5073);
-  --accent-foreground: oklch(1.0000 0 0);
+  /* Soft sage tint for hover/active surfaces — matches the lightness band the
+   * other palettes use (~92-95%) so the dropdown active item, popover hover,
+   * and sidebar active row all read as gentle highlights rather than a dark
+   * brand block. The original dark sage is preserved below as --brand-accent
+   * for elements that should carry the bold brand color. */
+  --accent: oklch(0.9300 0.0136 134.8996);
+  --accent-foreground: oklch(0.2000 0.0400 134.5073);
 
   --destructive: oklch(0.4926 0.1864 26.2192);
   --destructive-foreground: oklch(1.0000 0 0);
@@ -258,13 +263,12 @@
   --sidebar-border: oklch(0.9401 0 0);
   --sidebar-ring: oklch(0.7830 0.0384 132.7370);
 
-  --brand-accent: var(--accent);
-  --brand-accent-foreground: var(--accent-foreground);
+  /* Brand accent stays the original deep sage so brand-marked elements don't
+   * lose their character when --accent is softened. */
+  --brand-accent: oklch(0.4429 0.0444 134.5073);
+  --brand-accent-foreground: oklch(1.0000 0 0);
   --success: oklch(0.55 0.14 150);
 
-  /* Skeleton uses --accent in other palettes (which are already soft, ~92-95%
-   * lightness). Sage-green's accent is intentionally dark for brand contrast,
-   * so override the skeleton with a soft, very light sage tint here. */
   --skeleton: oklch(0.9450 0.0220 134.5);
 
   --font-sans: 'Plus Jakarta Sans', 'Geist', ui-sans-serif, system-ui, sans-serif;
@@ -294,8 +298,11 @@
   --muted: oklch(0.2203 0.0129 77.9565);
   --muted-foreground: oklch(0.6511 0.0081 80.7132);
 
-  --accent: oklch(0.4429 0.0444 134.5073);
-  --accent-foreground: oklch(1.0000 0 0);
+  /* Softer sage hover tint for dark mode — sits close to card lightness so
+   * active rows feel highlighted without flashing the bold brand green at the
+   * user. Brand accent below keeps the deep sage for brand-marked elements. */
+  --accent: oklch(0.2750 0.0250 134.5073);
+  --accent-foreground: oklch(0.9498 0.0080 80.7204);
 
   --destructive: oklch(0.4926 0.1864 26.2192);
   --destructive-foreground: oklch(0.9796 0.0017 67.8026);
@@ -314,11 +321,13 @@
   --sidebar-foreground: oklch(0.9498 0.0046 78.2977);
   --sidebar-primary: oklch(0.7830 0.0384 132.7370);
   --sidebar-primary-foreground: oklch(0.0986 0.0063 72.5271);
-  --sidebar-accent: oklch(0.4429 0.0444 134.5073);
-  --sidebar-accent-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.2750 0.0250 134.5073);
+  --sidebar-accent-foreground: oklch(0.9498 0.0080 80.7204);
   --sidebar-border: oklch(0.2513 0.0200 80.2775);
   --sidebar-ring: oklch(0.7830 0.0384 132.7370);
 
+  --brand-accent: oklch(0.4429 0.0444 134.5073);
+  --brand-accent-foreground: oklch(1.0000 0 0);
   --success: oklch(0.66 0.15 150);
 
   /* Subtle sage-tinted skeleton, slightly above card lightness so it reads
