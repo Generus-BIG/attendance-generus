@@ -287,6 +287,20 @@ export function useShodaqoh(monthlyReportId: string | undefined) {
   })
 }
 
+export function useYearlyShodaqohData(
+  kelompokId: string | undefined,
+  year: number
+) {
+  return useQuery({
+    queryKey: ['lupg', 'shodaqoh-yearly', kelompokId ?? 'none', year] as const,
+    queryFn: () =>
+      kelompokId
+        ? shodaqohSvc.listYearlyShodaqohData(kelompokId, year)
+        : Promise.resolve({ monthlyReports: [], shodaqohRows: [] }),
+    enabled: !!kelompokId,
+  })
+}
+
 export function useUpsertShodaqoh() {
   const qc = useQueryClient()
   return useMutation({

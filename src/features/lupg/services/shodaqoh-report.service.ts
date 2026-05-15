@@ -37,6 +37,51 @@ export async function upsertShodaqoh(input: {
   return data as ShodaqohRow
 }
 
+export interface YearlyShodaqohData {
+  /** All monthly reports for this kelompok within the year (0..12 rows). */
+  monthlyReports: { id: string; month: string }[]
+  /** All shodaqoh rows joined to those monthly reports. */
+  shodaqohRows: ShodaqohRow[]
+}
+
+/**
+ * Fetch all monthly reports + their shodaqoh rows for (kelompokId, year) in 2 queries.
+ * Empty months are absent from the result — the UI pivots + fills blanks.
+ */
+export async function listYearlyShodaqohData(
+  kelompokId: string,
+  year: number
+): Promise<YearlyShodaqohData> {
+  const from = `${year}-01-01`
+  const to = `${year}-12-01`
+
+  const { data: reports, error: e1 } = await supabase
+    .from('lupg_monthly_reports')
+    .select('id, month')
+    .eq('kelompok_id', kelompokId)
+    .gte('month', from)
+    .lte('month', to)
+    .order('month')
+  if (e1) throw e1
+  const monthlyReports = (reports ?? []) as { id: string; month: string }[]
+
+  if (monthlyReports.length === 0) {
+    return { monthlyReports, shodaqohRows: [] }
+  }
+
+  const reportIds = monthlyReports.map((r) => r.id)
+  const { data: shodaqoh, error: e2 } = await supabase
+    .from('lupg_shodaqoh')
+    .select('*')
+    .in('monthly_report_id', reportIds)
+  if (e2) throw e2
+
+  return {
+    monthlyReports,
+    shodaqohRows: (shodaqoh ?? []) as ShodaqohRow[],
+  }
+}
+
 export async function getPrevMonthShodaqoh(
   kelompokId: string,
   currentMonth: string
