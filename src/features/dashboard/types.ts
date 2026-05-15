@@ -1,3 +1,7 @@
+import { type PERMISSION_REASONS } from '@/lib/schema'
+
+type PermissionReason = (typeof PERMISSION_REASONS)[number]
+
 export type DashboardTab = 'desa' | 'kelompok'
 
 export interface DashboardFormItem {
@@ -26,6 +30,8 @@ export type AttendanceRecord = {
   participant_name: string | null
   category_value: string | null
   group_value: string | null
+  gender_value: 'L' | 'P' | null
+  permission_reason: PermissionReason | null
 }
 
 // Aggregated meeting recap for a single date
@@ -34,6 +40,42 @@ export type MeetingRecap = {
   hadir: number
   izin: number
   totalSubmissions: number
+}
+
+export type CategoryBreakdownRow = {
+  category: string
+  hadirCount: number
+  totalSensus: number
+  percentage: number
+}
+
+export type GenderBreakdownRow = {
+  gender: 'L' | 'P' | 'Unknown'
+  hadirCount: number
+  totalSensus: number
+  percentage: number
+}
+
+// Distribution across all attendance outcomes for the month: 'Hadir', the
+// three IZIN reasons (from attendance.permission_reason), and 'Alpa'
+// (synthetic — computed as census*meetings minus all submitted records).
+export type AbsenceReasonBreakdownRow = {
+  reason: PermissionReason | 'Alpa' | 'Hadir'
+  count: number
+  percentage: number
+}
+
+// Per-group attendance breakdown by gender for the month.
+export type GroupGenderBreakdownRow = {
+  group: string
+  censusL: number
+  censusP: number
+  censusTotal: number
+  hadirL: number
+  hadirP: number
+  hadirTotal: number
+  // Census-based attendance rate: hadirTotal / (censusTotal * totalMeetings) * 100
+  percentage: number
 }
 
 // Per-participant monthly recap
@@ -57,6 +99,10 @@ export type MonthlyFormRecap = {
   meetings: MeetingRecap[]
   participants: ParticipantMonthlyRecap[]
   censusByGroup: Record<string, number>
+  byCategory: CategoryBreakdownRow[]
+  byGender: GenderBreakdownRow[]
+  byAbsenceReason: AbsenceReasonBreakdownRow[]
+  byGroupGender: GroupGenderBreakdownRow[]
   totals: {
     totalMeetings: number
     totalHadir: number

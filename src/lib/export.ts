@@ -10,7 +10,7 @@ function sanitizeFileName(fileName: string) {
 }
 
 export async function exportToExcel(
-  data: any[],
+  data: Array<Record<string, unknown>>,
   fileName: string,
   options: ExportToExcelOptions = {}
 ) {

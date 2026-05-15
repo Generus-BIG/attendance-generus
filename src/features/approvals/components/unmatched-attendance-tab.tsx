@@ -67,8 +67,13 @@ export function UnmatchedAttendanceTab() {
   }
 
   useEffect(() => {
+    // Initial load + register refresh callback with parent. The setState calls
+    // are the intended sync from the local service layer to component state;
+    // not a candidate for the lift-state-up refactor.
+    /* eslint-disable react-hooks/set-state-in-effect */
     loadData()
     setRefreshData(() => loadData)
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [setRefreshData])
 
   const handleLink = () => {

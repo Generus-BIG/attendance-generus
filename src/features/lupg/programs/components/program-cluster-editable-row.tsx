@@ -37,12 +37,17 @@ export function ProgramClusterEditableRow({
   const [notes, setNotes] = useState(existing?.notes ?? '')
 
   useEffect(() => {
+    // Sync local form state to server row when the row identity or revision
+    // changes. Intentional "form mirrors server data" pattern.
     const e = parseNikahClusterExtras(existing?.extras)
+     
     setDenominator(existing?.denominator?.toString() ?? '')
     setNotReady(e.not_ready.toString())
     setReady(e.ready.toString())
     setMarried(e.married.toString())
     setNotes(existing?.notes ?? '')
+     
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existing?.id, existing?.updated_at])
 
   const denomNum = parseInt(denominator, 10) || 0

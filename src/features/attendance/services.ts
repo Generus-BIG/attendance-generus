@@ -39,10 +39,10 @@ export async function getAttendanceList(
     const { data, error } = await query
 
     if (error) {
-        console.error('Error fetching attendance:', error)
-        return []
+        throw error
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested-relation rows are deeply dynamic; typing them globally cascades type errors across legacy attendance queries (see CLAUDE.md "no global Database types" note).
     return data.map((item: any) => ({
         ...item,
         // Normalize foreign keys to camelCase for dialogs/edit flow
@@ -73,8 +73,7 @@ export async function getAttendanceStats() {
         .select('status')
 
     if (error) {
-        console.error('Error fetching stats:', error)
-        return { total: 0, hadir: 0, izin: 0, hadirPercent: 0, izinPercent: 0 }
+        throw error
     }
 
     const total = data.length

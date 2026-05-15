@@ -246,7 +246,10 @@ export function MustinSection({ report, readOnly }: Props) {
   const canSeed = !readOnly && templates.length > 0 && notes.length === 0
 
   return (
-    <section id='section-mustin' className='scroll-mt-24 flex flex-col gap-4'>
+    <section
+      id='section-mustin'
+      className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+    >
       <SectionHeading
         kicker='Resume Mustin'
         description='Findings dan keputusan musyawarah bulan ini.'

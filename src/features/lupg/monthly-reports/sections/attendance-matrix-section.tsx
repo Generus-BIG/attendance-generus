@@ -92,7 +92,10 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
   }, [data])
 
   return (
-    <section id='section-attendance' className='scroll-mt-24 flex flex-col gap-4'>
+    <section
+      id='section-attendance'
+      className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+    >
       <SectionHeading
         kicker='Kehadiran'
         title='Attendance Matrix'
@@ -123,7 +126,7 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
           </div>
         ) : (
           <div className='overflow-x-auto'>
-            <table className='w-full min-w-[960px] table-fixed text-sm'>
+            <table className='w-full min-w-240 table-fixed text-sm'>
               <colgroup>
                 <col className='w-28' />
                 {monthKeys.map((mk) => (
@@ -258,7 +261,14 @@ function MatrixCell({
   const [val, setVal] = useState(existing?.current_value?.toString() ?? '')
 
   useEffect(() => {
+    // Sync local input to server row when the row identity or revision
+    // changes (e.g. month switch, after a save). Intentional pattern;
+    // out of scope to refactor to key-based remount. We intentionally do
+    // NOT depend on existing?.current_value — it would clobber in-flight
+    // edits before the save round-trip lands.
+     
     setVal(existing?.current_value?.toString() ?? '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existing?.id, existing?.updated_at])
 
   const save = () => {

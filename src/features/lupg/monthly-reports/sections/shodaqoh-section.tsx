@@ -55,9 +55,16 @@ export function ShodaqohSection({ report, readOnly }: Props) {
         cancelled = true
       }
     }
+    // Sync local form state to server row when the row identity or revision
+    // changes. Intentional "form mirrors server data" pattern. We deliberately
+    // do NOT depend on `existing` (the whole object) since its individual
+    // fields would clobber in-flight edits before save completes.
+     
     setNominal(existing.nominal?.toString() ?? '')
     setJumlahKK(existing.jumlah_kk?.toString() ?? '')
     setNotes(existing.notes ?? '')
+     
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existing?.id, existing?.updated_at, report.kelompok_id, report.month, readOnly])
 
   const save = () => {
@@ -84,7 +91,10 @@ export function ShodaqohSection({ report, readOnly }: Props) {
   const rataPerKk = kkNum > 0 ? Math.round(nomNum / kkNum) : 0
 
   return (
-    <section id='section-shodaqoh' className='scroll-mt-24 flex flex-col gap-4'>
+    <section
+      id='section-shodaqoh'
+      className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+    >
       <SectionHeading
         kicker='Shodaqoh PPG'
         description='Total nominal shodaqoh bulan ini dan jumlah KK penyumbang.'

@@ -37,9 +37,14 @@ export function ProgramEditableRow({
   const [notes, setNotes] = useState(existing?.notes ?? '')
 
   useEffect(() => {
+    // Sync local form state to server row when the row identity or revision
+    // changes. Intentional "form mirrors server data" pattern.
+     
     setDenominator(existing?.denominator?.toString() ?? '')
     setCount(existing?.count_this_month?.toString() ?? '')
     setNotes(existing?.notes ?? '')
+     
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existing?.id, existing?.updated_at])
 
   const saveNumeric = () => {

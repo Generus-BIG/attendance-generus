@@ -1,9 +1,15 @@
 import { AlertCircle, RefreshCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { type Role } from '@/lib/rbac'
 import { useMonthlyFormRecap } from '../hooks/use-monthly-form-recap'
+import { AbsenceReasonDonut } from './absence-reason-donut'
 import { AttendanceByGroupRowChart } from './attendance-by-group-row-chart'
 import { AttendanceCalendarHeatmap } from './attendance-calendar-heatmap'
+import { CategoryDistributionBar } from './category-distribution-bar'
+import { DashboardEmptyState } from './dashboard-empty-state'
+import { DashboardSkeleton } from './dashboard-skeleton'
 import { FollowUpTable } from './follow-up-table'
+import { GenderDistributionPie } from './gender-distribution-pie'
 import { MonthlyFormStatCards } from './monthly-form-stat-cards'
 
 interface Props {
@@ -11,7 +17,14 @@ interface Props {
   month: Date
   prevMonth: Date
   kelompokId?: string
-  showGroupChart?: boolean
+  viewMode: 'desa' | 'kelompok'
+  q: string | undefined
+  fGroup: string[] | undefined
+  fCategory: string[] | undefined
+  onQChange: (value: string | undefined) => void
+  onFGroupChange: (value: string[] | undefined) => void
+  onFCategoryChange: (value: string[] | undefined) => void
+  role: Role
 }
 
 export function MonthlyFormDashboard({
@@ -19,7 +32,14 @@ export function MonthlyFormDashboard({
   month,
   prevMonth,
   kelompokId,
-  showGroupChart = true,
+  viewMode,
+  q,
+  fGroup,
+  fCategory,
+  onQChange,
+  onFGroupChange,
+  onFCategoryChange,
+  role,
 }: Props) {
   const { data, isLoading, error, refetch } = useMonthlyFormRecap({
     formIds,
@@ -32,6 +52,30 @@ export function MonthlyFormDashboard({
     kelompokId,
   })
 
+  const isDesa = viewMode === 'desa'
+
+  if (isLoading && !data) {
+    return <DashboardSkeleton viewMode={viewMode} />
+  }
+
+  if (!isLoading && formIds.length === 0) {
+    return (
+      <DashboardEmptyState
+        title='Belum ada form di bulan ini'
+        description={
+          isDesa
+            ? 'Buat form pertemuan desa terlebih dahulu untuk mulai mencatat kehadiran.'
+            : 'Belum ada form pertemuan untuk kelompok ini di bulan berjalan.'
+        }
+        primaryAction={
+          isDesa && role !== 'team_manager' && role !== 'member'
+            ? { label: 'Buat form', to: '/admin/forms', show: true }
+            : undefined
+        }
+      />
+    )
+  }
+
   return (
     <div className='flex flex-col gap-5'>
       <MonthlyFormStatCards
@@ -40,24 +84,66 @@ export function MonthlyFormDashboard({
         isLoading={isLoading}
       />
 
-      <div
-        className={
-          showGroupChart
-            ? 'grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,3fr)]'
-            : 'grid gap-4'
-        }
-      >
-        <AttendanceCalendarHeatmap
-          recap={data}
-          monthDate={month}
-          isLoading={isLoading}
-        />
-        {showGroupChart && (
-          <AttendanceByGroupRowChart recap={data} isLoading={isLoading} />
-        )}
-      </div>
+      {/* Hero row.
+          Desa: Per-Kelompok (2/3, hero — most actionable chart) + Calendar (1/3,
+            compact widget). Calendar's narrower column naturally produces
+            ~40px cells, height-matching the kelompok bar chart.
+          Kelompok: Calendar (2/3, primary chart since per-kelompok bar is
+            redundant in single-kelompok view) + Kategori/Gender pies stacked
+            on the 1/3 right column. Pie heights together balance the
+            calendar's natural height. */}
+      {isDesa ? (
+        <div className='grid gap-4 lg:grid-cols-3'>
+          <div className='lg:col-span-2'>
+            <AttendanceByGroupRowChart recap={data} isLoading={isLoading} />
+          </div>
+          <AttendanceCalendarHeatmap
+            recap={data}
+            monthDate={month}
+            isLoading={isLoading}
+          />
+        </div>
+      ) : (
+        <div className='grid gap-4 lg:grid-cols-3'>
+          <div className='lg:col-span-2'>
+            <AttendanceCalendarHeatmap
+              recap={data}
+              monthDate={month}
+              isLoading={isLoading}
+            />
+          </div>
+          <div className='flex flex-col gap-4'>
+            <CategoryDistributionBar data={data?.byCategory ?? []} />
+            <GenderDistributionPie data={data?.byGender ?? []} />
+          </div>
+        </div>
+      )}
 
-      <FollowUpTable recap={data} isLoading={isLoading} month={month} />
+      {/* Distribution row (Desa only). On mobile/tablet: kategori bar spans
+          full width (bars want width); gender + absence pies share a 2-up row
+          below (pies are square and don't need full width). On lg+: all three
+          flow into a single equal-width row. */}
+      {isDesa && (
+        <div className='grid grid-cols-2 gap-4 lg:grid-cols-3'>
+          <div className='col-span-2 lg:col-span-1'>
+            <CategoryDistributionBar data={data?.byCategory ?? []} />
+          </div>
+          <GenderDistributionPie data={data?.byGender ?? []} />
+          <AbsenceReasonDonut data={data?.byAbsenceReason ?? []} />
+        </div>
+      )}
+
+      <FollowUpTable
+        recap={data}
+        isLoading={isLoading}
+        month={month}
+        q={q}
+        fGroup={fGroup}
+        fCategory={fCategory}
+        onQChange={onQChange}
+        onFGroupChange={onFGroupChange}
+        onFCategoryChange={onFCategoryChange}
+      />
 
       {error && (
         <div className='border-destructive/40 bg-destructive/5 flex items-center justify-between gap-3 rounded-md border px-4 py-3'>

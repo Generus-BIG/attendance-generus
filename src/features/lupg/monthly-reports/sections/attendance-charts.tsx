@@ -148,7 +148,7 @@ export function AttendanceCharts({
             </CardDescription>
           </div>
         </div>
-        <div className='mt-2 flex justify-center'>
+        <div className='-mx-2 mt-2 flex justify-center overflow-x-auto px-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]'>
           <MonthSelectionChips
             months={allMonths}
             selectedMonths={selected}
@@ -177,24 +177,26 @@ export function AttendanceCharts({
               return row
             })
             return (
-              <div key={chart.key} className='flex flex-col gap-2'>
+              <div key={chart.key} className='flex w-full min-w-0 flex-col gap-2'>
                 <div>
                   <div className='text-sm font-semibold'>{chart.title}</div>
                   <div className='text-muted-foreground text-xs'>
                     {chart.description}
                   </div>
                 </div>
-                <HighlightedMultiBar
-                  data={data}
-                  series={chart.series}
-                  height={260}
-                  valueDomain={[0, 100]}
-                  xAxisLabel='Bulan'
-                  yAxisLabel='Persentase Kehadiran (%)'
-                  showValueLabel
-                  tickFormatter={percentTickFormatter}
-                  valueFormatter={percentValueFormatter}
-                />
+                <div className='-mx-2 overflow-x-auto px-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]'>
+                  <div className='min-w-70'>
+                    <HighlightedMultiBar
+                      data={data}
+                      series={chart.series}
+                      height={260}
+                      valueDomain={[0, 100]}
+                      showValueLabel
+                      tickFormatter={percentTickFormatter}
+                      valueFormatter={percentValueFormatter}
+                    />
+                  </div>
+                </div>
               </div>
             )
           })}

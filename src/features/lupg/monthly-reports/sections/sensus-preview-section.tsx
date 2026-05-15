@@ -44,7 +44,10 @@ export function SensusPreviewSection({ report }: Props) {
   const hasData = totalCount > 0
 
   return (
-    <section id='section-sensus' className='scroll-mt-24 flex flex-col gap-4'>
+    <section
+      id='section-sensus'
+      className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+    >
       <SectionHeading
         kicker='Sensus Generus'
         description={

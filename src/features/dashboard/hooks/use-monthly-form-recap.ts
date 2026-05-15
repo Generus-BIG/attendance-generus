@@ -33,7 +33,10 @@ export function useMonthlyFormRecap({
       const monthDate = parseISO(`${monthKey}-01`)
       const [records, censusParticipants] = await Promise.all([
         fetchMonthlyAttendance({ formIds, month: monthDate }),
-        fetchCensusParticipants(['GPN A', 'GPN B', 'AR'], kelompokId),
+        // 'APR' added 2026-05-15: widens census denominator used by all
+        // dashboard tiles (attendanceRate, izinRate, Alpa). Previously APR
+        // participants were excluded from census.
+        fetchCensusParticipants(['GPN A', 'GPN B', 'AR', 'APR'], kelompokId),
       ])
       return aggregateMonthlyRecap(records, monthDate, censusParticipants)
     },

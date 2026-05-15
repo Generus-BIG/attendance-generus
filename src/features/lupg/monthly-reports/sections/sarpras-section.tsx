@@ -72,7 +72,10 @@ export function SarprasSection({ report, readOnly }: Props) {
   const bulkDisabled = readOnly || bulkPending !== null
 
   return (
-    <section id='section-sarpras' className='scroll-mt-24 flex flex-col gap-4'>
+    <section
+      id='section-sarpras'
+      className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+    >
       <SectionHeading
         kicker='Sarpras'
         description='Checklist kelengkapan sarana dan prasarana.'
@@ -150,6 +153,9 @@ function SarprasRow({ report, item, existing, readOnly }: RowProps) {
   const [notes, setNotes] = useState(existing?.notes ?? '')
 
   useEffect(() => {
+    // Sync local form state to server row when the row identity or revision
+    // changes. Intentional "form mirrors server data" pattern.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsFulfilled(existing?.is_fulfilled ?? false)
   }, [existing?.id, existing?.updated_at, existing?.is_fulfilled])
 

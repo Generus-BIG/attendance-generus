@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ArrowDown, ArrowUp, ChevronDown, Minus } from 'lucide-react'
+import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   type MonthlyReportRow,
@@ -15,18 +15,19 @@ type Props = {
   currentMonthKey: string
   monthlyReports: MonthlyReportRow[]
   programReports: ProgramReportRow[]
-  open: boolean
-  onToggle: () => void
   children: React.ReactNode
 }
 
-export function ProgramAccordionItem({
+/**
+ * Static (non-collapsible) program card. Mirrors the previous accordion's header
+ * summary — kicker, name, % completion, delta vs previous month, and current
+ * count — but renders the body unconditionally below it.
+ */
+export function ProgramSectionCard({
   program,
   currentMonthKey,
   monthlyReports,
   programReports,
-  open,
-  onToggle,
   children,
 }: Props) {
   const { reportByMonthKey, programRowByReportId } = useMemo(() => {
@@ -78,19 +79,10 @@ export function ProgramAccordionItem({
       : null
 
   return (
-    <div className='border-border/70 bg-background rounded-md border'>
-      <button
-        type='button'
-        onClick={onToggle}
-        aria-expanded={open}
-        className={cn(
-          'grid w-full grid-cols-[1fr_auto_auto_auto] items-center gap-3 px-4 py-3 text-left',
-          'hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0',
-          'transition-colors'
-        )}
-      >
+    <div className='bg-card text-card-foreground rounded-xl border shadow-sm'>
+      <div className='grid grid-cols-[1fr_auto_auto_auto] items-center gap-3 px-4 py-3 sm:px-5'>
         <div className='min-w-0'>
-          <div className='text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-muted-foreground'>
+          <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
             {program.denominator_label} → {program.count_label}
           </div>
           <div className='truncate text-sm font-semibold tracking-tight'>
@@ -113,24 +105,10 @@ export function ProgramAccordionItem({
               {displayCount}
             </span>
           )}
-          <ChevronDown
-            className={cn(
-              'h-4 w-4 text-muted-foreground transition-transform duration-300',
-              open && 'rotate-180'
-            )}
-            aria-hidden='true'
-          />
         </div>
-      </button>
-      <div
-        className={cn(
-          'grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
-          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-        )}
-      >
-        <div className='overflow-hidden'>
-          <div className='border-border/60 border-t px-4 py-4'>{children}</div>
-        </div>
+      </div>
+      <div className='border-border/60 border-t px-4 py-4 sm:px-5'>
+        {children}
       </div>
     </div>
   )

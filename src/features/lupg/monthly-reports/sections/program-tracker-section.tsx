@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
@@ -13,7 +13,7 @@ import { currentMonthKey } from '../../utils/month-utils'
 import { ProgramClusterBody } from '../../programs/components/program-cluster-card'
 import { ProgramMonthlyBody } from '../../programs/components/program-monthly-card'
 import { ProgramQuarterlyBody } from '../../programs/components/program-quarterly-card'
-import { ProgramAccordionItem } from '../components/program-accordion-item'
+import { ProgramSectionCard } from '../components/program-section-card'
 import { SectionHeading } from '../components/section-heading'
 
 interface Props {
@@ -54,28 +54,28 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
   }, [isTeamManager, kelompok, kelompokOptions, report.kelompok_id])
 
   const reportMonthKey = report.month.slice(0, 7)
-  const [openCode, setOpenCode] = useState<string | null>(
-    () => programs[0]?.code ?? null
-  )
 
   return (
-    <section id='section-program-tracker' className='scroll-mt-24 flex flex-col gap-4'>
+    <section
+      id='section-program-tracker'
+      className='scroll-mt-24 flex flex-col gap-4'
+    >
       <SectionHeading
         kicker='Program Tracker'
         description='Update progress program per bulan / quarter. Data tersinkron ke laporan bulanan terkait.'
       />
 
       {isLoading ? (
-        <div className='text-muted-foreground flex items-center justify-center py-8'>
+        <div className='text-muted-foreground bg-card flex items-center justify-center rounded-xl border py-8 shadow-sm'>
           <Loader2 className='mr-2 h-5 w-5 animate-spin' />
           Memuat...
         </div>
       ) : programs.length === 0 ? (
-        <div className='text-muted-foreground py-8 text-center text-sm'>
+        <div className='text-muted-foreground bg-card rounded-xl border py-8 text-center text-sm shadow-sm'>
           Belum ada program aktif.
         </div>
       ) : (
-        <div className='flex flex-col gap-2'>
+        <div className='flex flex-col gap-4'>
           {programs.map((p) => {
             const commonProps = {
               program: p,
@@ -87,7 +87,6 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
               userRole: typedRole,
               userOwnsKelompok: userOwnsKelompok && !readOnly,
             }
-            const open = openCode === p.code
             const body =
               p.code === 'NIKAH_JM' ? (
                 <ProgramClusterBody {...commonProps} />
@@ -97,17 +96,15 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
                 <ProgramMonthlyBody {...commonProps} />
               )
             return (
-              <ProgramAccordionItem
+              <ProgramSectionCard
                 key={p.code}
                 program={p}
                 currentMonthKey={reportMonthKey}
                 monthlyReports={data?.monthlyReports ?? []}
                 programReports={data?.programReports ?? []}
-                open={open}
-                onToggle={() => setOpenCode(open ? null : p.code)}
               >
                 {body}
-              </ProgramAccordionItem>
+              </ProgramSectionCard>
             )
           })}
         </div>

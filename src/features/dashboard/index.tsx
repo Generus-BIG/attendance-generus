@@ -2,25 +2,30 @@ import { useCallback } from 'react'
 import { format, subMonths } from 'date-fns'
 import { useQuery } from '@tanstack/react-query'
 import { id as idLocale } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, CalendarDays, FileDown } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, FileDown } from 'lucide-react'
 import { usePermissions } from '@/hooks/use-permissions'
 import { Button } from '@/components/ui/button'
+import { Kbd } from '@/components/ui/kbd'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { FreshnessPill } from '@/components/freshness-pill'
 import { FormSelectorDropdown } from './components/form-selector-dropdown'
 import { KelompokPills } from './components/kelompok-pills'
 import { MonthlyFormDashboard } from './components/monthly-form-dashboard'
 import { useDashboardState } from './hooks/use-dashboard-state'
 import { useDashboardShortcuts } from './hooks/use-keyboard-shortcuts'
+import { useMonthlyFormRecap } from './hooks/use-monthly-form-recap'
 import {
   fetchFormsByType,
   fetchKelompokOptions,
 } from './services/dashboard-forms.service'
+import './print.css'
 
 export function Dashboard() {
   const { role, kelompok } = usePermissions()
@@ -29,12 +34,18 @@ export function Dashboard() {
     monthDate,
     kelompokId,
     formId,
+    q,
+    fGroup,
+    fCategory,
     setTab,
     prevMonth,
     nextMonth,
     jumpToCurrentMonth,
     setKelompokId,
     setFormId,
+    setQ,
+    setFGroup,
+    setFCategory,
   } = useDashboardState()
 
   const handleExport = useCallback(() => {
@@ -91,36 +102,43 @@ export function Dashboard() {
 
   const kelompokFormIds = kelompokForms.map((f) => f.id)
 
+  const activeFormIds = tab === 'desa' ? desaFormIds : kelompokFormIds
+  const activeKelompokId =
+    tab === 'kelompok' ? resolvedKelompokId : undefined
+
+  // Read freshness only — full data is fetched inside MonthlyFormDashboard.
+  // Same query key dedupes the request.
+  const { dataUpdatedAt } = useMonthlyFormRecap({
+    formIds: activeFormIds,
+    month: monthDate,
+    kelompokId: activeKelompokId,
+  })
+
   // Filter pills for team_manager
   const visibleKelompokOptions =
     role === 'team_manager'
       ? kelompokOptions.filter((k) => k.value === kelompok)
       : kelompokOptions
 
+  const scopeLabel =
+    tab === 'desa'
+      ? 'Desa'
+      : (() => {
+          const k = visibleKelompokOptions.find(
+            (o) => o.id === resolvedKelompokId
+          )
+          return k ? `Kelompok ${k.value}` : 'Kelompok'
+        })()
+
   return (
     <>
-      <style>{`
-        @media print {
-          [data-sidebar],
-          aside,
-          header.header-fixed,
-          header.sticky,
-          header.fixed,
-          nav,
-          .print\\:hidden {
-            display: none !important;
-          }
-          main, [role="main"] {
-            padding: 0 !important;
-            margin: 0 !important;
-            max-width: none !important;
-            width: 100% !important;
-          }
-          table { break-inside: avoid; }
-          .card, [class*="border"] { box-shadow: none !important; }
-          @page { margin: 1cm; }
-        }
-      `}</style>
+      <div className='print-only-header' aria-hidden>
+        <h1 className='text-2xl font-semibold'>Dashboard Absensi</h1>
+        <p className='text-sm text-muted-foreground'>
+          {scopeLabel} ·{' '}
+          {format(monthDate, 'MMMM yyyy', { locale: idLocale })}
+        </p>
+      </div>
       {/* ===== Top Heading ===== */}
       <Header fixed>
         <Search />
@@ -132,117 +150,138 @@ export function Dashboard() {
       </Header>
 
       {/* ===== Main Content ===== */}
-      <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
-        {/* Page header + month slider */}
-        <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
-          <div className='flex flex-col gap-1'>
-            <span className='text-[0.6875rem] font-medium tracking-[0.14em] text-muted-foreground uppercase'>
-              Dashboard Absensi
-            </span>
-            <h2 className='text-3xl font-semibold tracking-tight text-foreground sm:text-[2rem]'>
-              {format(monthDate, 'MMMM yyyy', { locale: idLocale })}
-            </h2>
-            <p className='text-sm text-muted-foreground'>
-              Rekap kehadiran bulanan per pertemuan.
-            </p>
-          </div>
-
-          {/* Month Slider + Export */}
-          <div className='flex flex-wrap items-center gap-2 print:hidden'>
-            <span
-              className='hidden text-[0.6875rem] tracking-[0.12em] text-muted-foreground uppercase md:inline'
-              aria-hidden='true'
-            >
-              ← / → switch month
-            </span>
-            <div className='flex items-center gap-1'>
-              <Button
-                variant='outline'
-                size='icon'
-                className='h-11 w-11'
-                onClick={prevMonth}
-                aria-label='Bulan sebelumnya'
-              >
-                <ChevronLeft className='h-4 w-4' />
-              </Button>
-              <div
-                className='flex min-w-40 items-center justify-center gap-1.5 px-3 text-sm font-medium'
-                aria-live='polite'
-              >
-                <CalendarDays className='h-4 w-4 text-muted-foreground' />
+      <TooltipProvider delayDuration={120}>
+        <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+          {/* Page header + month slider */}
+          <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
+            <div className='flex flex-col gap-1'>
+              <span className='text-[0.6875rem] font-medium tracking-[0.14em] text-muted-foreground uppercase'>
+                Dashboard Absensi
+              </span>
+              <h2 className='text-3xl font-semibold tracking-tight text-foreground sm:text-[2rem]'>
                 {format(monthDate, 'MMMM yyyy', { locale: idLocale })}
-              </div>
-              <Button
-                variant='outline'
-                size='icon'
-                className='h-11 w-11'
-                onClick={nextMonth}
-                aria-label='Bulan berikutnya'
+              </h2>
+              <p className='text-sm text-muted-foreground'>
+                Rekap kehadiran bulanan per pertemuan.
+              </p>
+            </div>
+
+            {/* Month Slider + Export */}
+            <div className='flex flex-wrap items-center gap-2 print:hidden'>
+              <span
+                className='hidden items-center gap-1 text-[0.6875rem] tracking-[0.12em] text-muted-foreground uppercase md:inline-flex'
+                aria-hidden='true'
               >
-                <ChevronRight className='h-4 w-4' />
+                <Kbd>←</Kbd>
+                <Kbd>→</Kbd>
+                <span className='ms-1'>Switch month</span>
+              </span>
+              <div className='flex items-center gap-1'>
+                <Button
+                  variant='outline'
+                  size='icon'
+                  className='h-11 w-11'
+                  onClick={prevMonth}
+                  aria-label='Bulan sebelumnya'
+                  aria-keyshortcuts='ArrowLeft'
+                >
+                  <ChevronLeft className='h-4 w-4' />
+                </Button>
+                <div
+                  className='flex min-w-40 items-center justify-center gap-1.5 px-3 text-sm font-medium'
+                  aria-live='polite'
+                >
+                  <CalendarDays className='h-4 w-4 text-muted-foreground' />
+                  {format(monthDate, 'MMMM yyyy', { locale: idLocale })}
+                </div>
+                <Button
+                  variant='outline'
+                  size='icon'
+                  className='h-11 w-11'
+                  onClick={nextMonth}
+                  aria-label='Bulan berikutnya'
+                  aria-keyshortcuts='ArrowRight'
+                >
+                  <ChevronRight className='h-4 w-4' />
+                </Button>
+              </div>
+              <FreshnessPill updatedAt={dataUpdatedAt} />
+              <span
+                aria-hidden='true'
+                className='hidden h-6 w-px bg-border sm:inline-block'
+              />
+              <Button variant='outline' size='sm' onClick={handleExport}>
+                <FileDown className='mr-2 h-4 w-4' />
+                Export PDF
               </Button>
             </div>
-            <span
-              aria-hidden='true'
-              className='hidden h-6 w-px bg-border sm:inline-block'
-            />
-            <Button variant='outline' size='sm' onClick={handleExport}>
-              <FileDown className='mr-2 h-4 w-4' />
-              Export PDF
-            </Button>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <Tabs
-          value={tab}
-          onValueChange={(v) => setTab(v as 'desa' | 'kelompok')}
-        >
-          <div className='flex flex-wrap items-center gap-3'>
-            <TabsList>
-              <TabsTrigger value='desa'>Desa</TabsTrigger>
-              <TabsTrigger value='kelompok'>Kelompok</TabsTrigger>
-            </TabsList>
-
-            {/* Tab-specific controls inline */}
-            {tab === 'desa' && (
-              <FormSelectorDropdown
-                forms={desaForms}
-                selectedFormId={formId}
-                onSelect={setFormId}
-              />
-            )}
-            {tab === 'kelompok' && (
-              <KelompokPills
-                options={visibleKelompokOptions}
-                selectedId={resolvedKelompokId}
-                onSelect={setKelompokId}
-              />
-            )}
           </div>
 
-          {/* Desa Tab Content */}
-          <TabsContent value='desa' className='mt-4 space-y-4'>
-            <MonthlyFormDashboard
-              formIds={desaFormIds}
-              month={monthDate}
-              prevMonth={prevMonthDate}
-              showGroupChart={true}
-            />
-          </TabsContent>
+          {/* Tabs */}
+          <Tabs
+            value={tab}
+            onValueChange={(v) => setTab(v as 'desa' | 'kelompok')}
+          >
+            <div className='flex flex-wrap items-center gap-3'>
+              <TabsList>
+                <TabsTrigger value='desa'>Desa</TabsTrigger>
+                <TabsTrigger value='kelompok'>Kelompok</TabsTrigger>
+              </TabsList>
 
-          {/* Kelompok Tab Content */}
-          <TabsContent value='kelompok' className='mt-4 space-y-4'>
-            <MonthlyFormDashboard
-              formIds={kelompokFormIds}
-              month={monthDate}
-              prevMonth={prevMonthDate}
-              kelompokId={resolvedKelompokId}
-              showGroupChart={false}
-            />
-          </TabsContent>
-        </Tabs>
-      </Main>
+              {/* Tab-specific controls inline */}
+              {tab === 'desa' && (
+                <FormSelectorDropdown
+                  forms={desaForms}
+                  selectedFormId={formId}
+                  onSelect={setFormId}
+                />
+              )}
+              {tab === 'kelompok' && (
+                <KelompokPills
+                  options={visibleKelompokOptions}
+                  selectedId={resolvedKelompokId}
+                  onSelect={setKelompokId}
+                />
+              )}
+            </div>
+
+            {/* Desa Tab Content */}
+            <TabsContent value='desa' className='mt-4 space-y-4'>
+              <MonthlyFormDashboard
+                formIds={desaFormIds}
+                month={monthDate}
+                prevMonth={prevMonthDate}
+                viewMode='desa'
+                q={q}
+                fGroup={fGroup}
+                fCategory={fCategory}
+                onQChange={setQ}
+                onFGroupChange={setFGroup}
+                onFCategoryChange={setFCategory}
+                role={role}
+              />
+            </TabsContent>
+
+            {/* Kelompok Tab Content */}
+            <TabsContent value='kelompok' className='mt-4 space-y-4'>
+              <MonthlyFormDashboard
+                formIds={kelompokFormIds}
+                month={monthDate}
+                prevMonth={prevMonthDate}
+                kelompokId={resolvedKelompokId}
+                viewMode='kelompok'
+                q={q}
+                fGroup={fGroup}
+                fCategory={fCategory}
+                onQChange={setQ}
+                onFGroupChange={setFGroup}
+                onFCategoryChange={setFCategory}
+                role={role}
+              />
+            </TabsContent>
+          </Tabs>
+        </Main>
+      </TooltipProvider>
     </>
   )
 }

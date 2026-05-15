@@ -1,0 +1,55 @@
+/* Print-only stylesheet for the Absensi Dashboard.
+   Imported by src/features/dashboard/index.tsx; rules apply only when @media print matches. */
+
+.print-only-header {
+  display: none;
+}
+
+@media print {
+  /* hide all chrome */
+  [data-sidebar],
+  aside,
+  header.header-fixed,
+  header.sticky,
+  header.fixed,
+  nav,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* reset main padding */
+  main,
+  [role='main'] {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  /* show the print-only banner */
+  .print-only-header {
+    display: block !important;
+    margin-bottom: 1rem;
+  }
+
+  /* table integrity: don't break rows; repeat thead per page */
+  table,
+  tr {
+    break-inside: avoid;
+  }
+  thead {
+    display: table-header-group;
+  }
+
+  /* card integrity: don't bisect */
+  [data-print-card] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+}

@@ -55,7 +55,14 @@ function SheetContent({
       <SheetPrimitive.Content
         data-slot='sheet-content'
         className={cn(
-          'fixed z-50 flex flex-col gap-4 bg-background shadow-lg transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-500',
+          // Animation is keyframe-driven (animate-in/-out + slide-from-*) and
+          // operates on transform — composited by the GPU. We deliberately do
+          // NOT add a bare `transition` class here: in Tailwind v4 it would
+          // include box-shadow + bg-color in the transition property list,
+          // forcing per-frame paint on shadow-lg over a tall panel. Mobile
+          // GPUs at 2-3x DPR drop frames under that load. Keyframe slide is
+          // sufficient on its own.
+          'fixed z-50 flex flex-col gap-4 bg-background shadow-lg data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-300',
           side === 'right' &&
             'inset-y-0 end-0 h-full w-3/4 border-s data-[state=closed]:slide-out-to-end data-[state=open]:slide-in-from-end sm:max-w-sm',
           side === 'left' &&

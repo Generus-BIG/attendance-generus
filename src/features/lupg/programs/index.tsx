@@ -23,6 +23,7 @@ import { AttendanceCharts } from '../monthly-reports/sections/attendance-charts'
 import { currentMonthKey } from '../utils/month-utils'
 import { DesaOverviewTab } from './components/desa-overview-tab'
 import { ProgramAnalyticsCard } from './components/program-analytics-card'
+import { ShodaqohAnalyticsSection } from './components/shodaqoh-analytics-section'
 import { YearPicker } from './components/year-picker'
 
 interface Props {
@@ -181,6 +182,11 @@ export function YearlyProgramTracker({
                 />
               ))}
             </div>
+            <ShodaqohAnalyticsSection
+              kelompokId={resolvedKelompokId}
+              year={year}
+              currentMonthKey={current}
+            />
           </div>
         )}
       </Main>

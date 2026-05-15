@@ -327,7 +327,7 @@ export function PendingParticipantsTab() {
       .map((v) => ({ label: v, value: v }))
   }, [pendingList])
 
-  // eslint-disable-next-line react-hooks/incompatible-library
+   
   const table = useReactTable({
     data: pendingList,
     columns,

@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { AT_RISK_RATE_PCT } from '../constants'
 import { isPastMidMonth } from '../utils/mid-month'
 
 interface Props {
@@ -15,7 +16,7 @@ interface Props {
  */
 export function RateBarCell({ ratePct, month }: Props) {
   const clamped = Math.max(0, Math.min(100, Math.round(ratePct)))
-  const isAtRisk = clamped < 25 && isPastMidMonth(month)
+  const isAtRisk = clamped < AT_RISK_RATE_PCT && isPastMidMonth(month)
 
   return (
     <div className='flex items-center justify-end gap-2'>
