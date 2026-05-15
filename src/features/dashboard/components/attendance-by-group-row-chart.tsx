@@ -12,6 +12,7 @@ import {
   ChartTooltip,
 } from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useIsMobile } from '@/hooks/use-mobile'
 import type { GroupGenderBreakdownRow, MonthlyFormRecap } from '../types'
 import { ChartSegmentTooltip } from './chart-segment-tooltip'
 
@@ -37,16 +38,17 @@ function formatRow(row: GroupGenderBreakdownRow): { label: string; value: string
 export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
   const data = recap?.byGroupGender ?? []
   const hasData = !isLoading && data.length > 0
+  const isMobile = useIsMobile()
 
   return (
     <Card data-print-card>
-      <CardHeader>
+      <CardHeader className='px-4 sm:px-6'>
         <CardTitle>Persentase Per Kelompok</CardTitle>
         <CardDescription>
           Tingkat kehadiran rata-rata per kelompok bulan ini.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className='px-2 sm:px-6'>
         {isLoading ? (
           <Skeleton className='h-64 w-full' />
         ) : !hasData ? (
@@ -57,18 +59,23 @@ export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
           <ChartContainer
             config={chartConfig}
             className='w-full'
-            style={{ height: Math.max(200, data.length * 40) }}
+            style={{ height: Math.max(200, data.length * (isMobile ? 32 : 40)) }}
           >
             <BarChart
               accessibilityLayer
               data={data}
               layout='vertical'
-              margin={{ top: 8, right: 56, left: 4, bottom: 4 }}
+              margin={{
+                top: 8,
+                right: isMobile ? 36 : 56,
+                left: 0,
+                bottom: 4,
+              }}
             >
               <XAxis
                 type='number'
                 domain={[0, 100]}
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: isMobile ? 10 : 11 }}
                 tickFormatter={(v: number) => `${v}%`}
                 axisLine={false}
                 tickLine={false}
@@ -76,10 +83,10 @@ export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
               <YAxis
                 type='category'
                 dataKey='group'
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: isMobile ? 10 : 11 }}
                 tickLine={false}
                 axisLine={false}
-                width={100}
+                width={isMobile ? 56 : 100}
               />
               <ChartTooltip
                 cursor={{ fill: 'var(--muted)', fillOpacity: 0.4 }}
@@ -106,7 +113,7 @@ export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
                 <LabelList
                   dataKey='percentage'
                   position='right'
-                  fontSize={11}
+                  fontSize={isMobile ? 10 : 11}
                   className='fill-foreground'
                   formatter={(v: unknown) => {
                     const num = typeof v === 'number' ? v : Number(v)
