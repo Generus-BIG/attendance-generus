@@ -44,12 +44,9 @@ export function AttendanceCalendarHeatmap({ recap, monthDate, isLoading }: Props
   const hasAnyMeeting = (recap?.meetings.length ?? 0) > 0
 
   return (
-    <div className='flex flex-col gap-3'>
-      <div className='flex items-center justify-between gap-2'>
-        <div className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
-          Kalender kehadiran — {format(monthDate, 'MMMM yyyy', { locale: idLocale })}
-        </div>
-        <HeatmapLegend />
+    <div className='flex w-full min-w-0 flex-col gap-3'>
+      <div className='text-muted-foreground text-[0.625rem] font-medium uppercase tracking-[0.1em] sm:text-[0.6875rem] sm:tracking-[0.12em]'>
+        Kalender kehadiran — {format(monthDate, 'MMMM yyyy', { locale: idLocale })}
       </div>
 
       {!hasAnyMeeting ? (
@@ -57,18 +54,23 @@ export function AttendanceCalendarHeatmap({ recap, monthDate, isLoading }: Props
           Belum ada pertemuan tercatat di bulan ini.
         </div>
       ) : (
-        <div className='flex flex-col gap-1.5'>
-          <div className='text-muted-foreground grid grid-cols-7 gap-0.5 text-center text-[0.625rem] font-medium uppercase tracking-[0.08em] sm:gap-1'>
-            {WEEKDAY_LABELS.map((l) => (
-              <div key={l}>{l}</div>
-            ))}
+        <>
+          <div className='flex flex-col gap-1 sm:gap-1.5'>
+            <div className='text-muted-foreground grid grid-cols-7 gap-0.5 text-center text-[0.5625rem] font-medium uppercase tracking-[0.06em] sm:gap-1 sm:text-[0.625rem] sm:tracking-[0.08em]'>
+              {WEEKDAY_LABELS.map((l) => (
+                <div key={l}>{l}</div>
+              ))}
+            </div>
+            <div className='grid grid-cols-7 gap-0.5 sm:gap-1'>
+              {cells.map((cell) => (
+                <HeatmapCell key={cell.date.getTime()} cell={cell} />
+              ))}
+            </div>
           </div>
-          <div className='grid grid-cols-7 gap-0.5 sm:gap-1'>
-            {cells.map((cell) => (
-              <HeatmapCell key={cell.date.getTime()} cell={cell} />
-            ))}
+          <div className='flex justify-center pt-1'>
+            <HeatmapLegend />
           </div>
-        </div>
+        </>
       )}
     </div>
   )
@@ -82,7 +84,7 @@ function HeatmapCell({ cell }: { cell: DayCell }) {
 
   const baseClasses = cn(
     'relative flex aspect-square items-center justify-center rounded-md tabular-nums transition-colors',
-    'min-h-7 text-[0.6875rem] sm:min-h-8 sm:text-xs'
+    'min-h-6 text-[0.625rem] sm:min-h-8 sm:text-xs'
   )
   const stateClasses = !inMonth
     ? 'text-muted-foreground/40 bg-transparent'
