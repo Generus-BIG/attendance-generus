@@ -150,10 +150,10 @@ export function Dashboard() {
           {/* Month Slider + Export */}
           <div className='flex flex-wrap items-center gap-2 print:hidden'>
             <span
-              className='hidden text-[0.6875rem] tracking-[0.12em] text-muted-foreground uppercase md:inline'
+              className='hidden text-[0.6875rem] tracking-[0.12em] text-muted-foreground md:inline'
               aria-hidden='true'
             >
-              ← / → switch month
+              ← / → Switch Month
             </span>
             <div className='flex items-center gap-1'>
               <Button

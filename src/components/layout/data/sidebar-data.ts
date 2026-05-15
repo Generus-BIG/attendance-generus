@@ -16,7 +16,7 @@ interface SidebarUserInfo {
 export const WORKSPACE_TEAMS: WorkspaceTeam[] = [
   {
     key: 'absensi',
-    name: 'Absensi MuMiBig',
+    name: 'Absensi Generus',
     logo: Command,
     plan: 'Dashboard Absensi',
   },
