@@ -199,6 +199,12 @@ export default function Aurora(props: AuroraProps) {
       }
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
+    // The animation loop reads `blend`, `colorStops`, `time`, `speed`, and
+    // `amplitude` via `propsRef.current` on every frame, so they intentionally
+    // do NOT belong in the dep array — adding them would re-init WebGL on
+    // every prop change. `amplitude` is the only retained dep because the
+    // initial Program uniform binds its closure value.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [amplitude]);
 
   return <div ref={ctnDom} className="w-full h-full" />;

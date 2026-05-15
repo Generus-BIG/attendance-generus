@@ -111,7 +111,7 @@ export function PaletteProvider({
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
+ 
 export const usePalette = () => {
   const context = useContext(PaletteContext)
   if (!context)
