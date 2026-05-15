@@ -67,7 +67,7 @@ export function HighlightedMultiBar({
     return valueFormatter ? valueFormatter(num) : String(value)
   }
 
-  const yAxisWidth = yAxisLabel ? 48 : 30
+  const yAxisWidth = yAxisLabel ? 48 : 38
 
   return (
     <ChartContainer
@@ -80,9 +80,9 @@ export function HighlightedMultiBar({
         data={data}
         onMouseLeave={() => setActiveIndex(null)}
         margin={{
-          top: 24,
+          top: showValueLabel ? 32 : 16,
           right: 8,
-          left: yAxisLabel ? 8 : 0,
+          left: 4,
           bottom: xAxisLabel ? 20 : 4,
         }}
       >
