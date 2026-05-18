@@ -289,7 +289,7 @@ function ShodaqohTooltip({ active, payload }: ShodaqohTooltipProps) {
   const jumlahKK = p.jumlahKK ?? 0
   const rataRata = p.rataRata ?? 0
   return (
-    <div className='border-border/50 bg-background grid min-w-[180px] gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl'>
+    <div className='border-border/50 bg-background grid min-w-45 gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl'>
       <div className='text-foreground font-medium'>{p.fullLabel}</div>
       <div className='grid gap-1'>
         <Row label='Total Shodaqah' value={formatChartValue(shodaqah, 'rupiah')} />

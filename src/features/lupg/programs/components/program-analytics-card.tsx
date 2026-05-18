@@ -78,6 +78,8 @@ export function ProgramAnalyticsCard({
           label: `Q${q}`,
           value: row?.count_this_month ?? 0,
           isPlaceholder: notStarted,
+          // Q1 → chart-1, Q2 → chart-2, Q3 → chart-3, Q4 → chart-4
+          colorIndex: q - 1,
         }
       })
     }
@@ -90,10 +92,16 @@ export function ProgramAnalyticsCard({
       const report = reportByMonthKey.get(mk)
       const row = report ? programRowByReportId.get(report.id) : undefined
       const isFuture = mk > currentMonthKey
+      // Group monthly bars into quarters for color: Jan-Mar → chart-1,
+      // Apr-Jun → chart-2, Jul-Sep → chart-3, Oct-Dec → chart-4. Stays under
+      // the 5-token cap and gives the eye a quarter-rhythm at a glance.
+      const monthNum = parseInt(mk.slice(5, 7), 10)
+      const colorIndex = Math.floor((monthNum - 1) / 3)
       return {
         label: monthNameFromKey(mk).slice(0, 3),
         value: row?.count_this_month ?? 0,
         isPlaceholder: isFuture,
+        colorIndex,
       }
     })
   }, [
