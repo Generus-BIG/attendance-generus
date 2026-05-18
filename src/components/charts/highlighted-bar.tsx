@@ -11,6 +11,19 @@ export interface BarDatum {
   label: string
   value: number
   isPlaceholder?: boolean
+  /**
+   * Optional palette-aware color for this bar.
+   * 0 → var(--chart-1), 1 → var(--chart-2), … 4 → var(--chart-5).
+   * Higher indexes wrap modulo 5. Leave undefined to use the default series fill.
+   */
+  colorIndex?: number
+}
+
+const CHART_TOKEN_COUNT = 5
+
+function chartTokenAt(index: number): string {
+  const slot = ((index % CHART_TOKEN_COUNT) + CHART_TOKEN_COUNT) % CHART_TOKEN_COUNT
+  return `var(--chart-${slot + 1})`
 }
 
 interface Props {
@@ -175,9 +188,11 @@ export function HighlightedBar({
           isAnimationActive={false}
         >
           {data.map((d, index) => {
-            const baseFill = d.isPlaceholder
-              ? 'var(--muted)'
-              : 'var(--color-value)'
+            const seriesFill =
+              d.colorIndex != null
+                ? chartTokenAt(d.colorIndex)
+                : 'var(--color-value)'
+            const baseFill = d.isPlaceholder ? 'var(--muted)' : seriesFill
             const placeholderOpacity = 0.4
             const activeOpacity =
               activeIndex === null ? 1 : activeIndex === index ? 1 : 0.3
@@ -191,9 +206,7 @@ export function HighlightedBar({
                 fill={baseFill}
                 fillOpacity={opacity}
                 stroke={
-                  activeIndex === index && !d.isPlaceholder
-                    ? 'var(--color-value)'
-                    : ''
+                  activeIndex === index && !d.isPlaceholder ? seriesFill : ''
                 }
                 onMouseEnter={() => setActiveIndex(index)}
               />
