@@ -166,7 +166,7 @@ export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
                       <Info className='h-3 w-3' />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side='top' className='max-w-[260px] text-xs'>
+                  <TooltipContent side='top' className='max-w-65 text-xs'>
                     {k.tooltip}
                   </TooltipContent>
                 </Tooltip>
