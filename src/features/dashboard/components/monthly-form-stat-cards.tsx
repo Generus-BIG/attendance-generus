@@ -153,7 +153,7 @@ export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
           <Card key={k.key} data-print-card>
             <CardContent className='flex flex-col p-3 sm:p-4'>
               <div className='flex items-center gap-1'>
-                <span className='text-muted-foreground truncate text-[0.625rem] font-medium uppercase tracking-[0.1em] sm:text-[0.6875rem] sm:tracking-[0.12em]'>
+                <span className='text-muted-foreground truncate text-[0.625rem] font-medium uppercase tracking-widest sm:text-[0.6875rem] sm:tracking-widest'>
                   {k.label}
                 </span>
                 <Tooltip>
