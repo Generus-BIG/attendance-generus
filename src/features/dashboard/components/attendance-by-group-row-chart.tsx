@@ -21,6 +21,28 @@ type Props = {
   isLoading: boolean
 }
 
+const CHART_TOKENS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+] as const
+
+// Stable per-kelompok color across renders. We sort the kelompok names
+// alphabetically once and assign chart-N by sorted index so the same kelompok
+// always gets the same hue, regardless of the row order returned by recap.
+function buildGroupColorMap(rows: GroupGenderBreakdownRow[]): Map<string, string> {
+  const sorted = [...new Set(rows.map((r) => r.group))].sort((a, b) =>
+    a.localeCompare(b, 'id')
+  )
+  const map = new Map<string, string>()
+  sorted.forEach((name, i) => {
+    map.set(name, CHART_TOKENS[i % CHART_TOKENS.length])
+  })
+  return map
+}
+
 const chartConfig = {
   percentage: { label: 'Persentase', color: 'var(--chart-1)' },
 } satisfies ChartConfig
@@ -39,6 +61,9 @@ export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
   const data = recap?.byGroupGender ?? []
   const hasData = !isLoading && data.length > 0
   const isMobile = useIsMobile()
+  const colorByGroup = buildGroupColorMap(data)
+  const colorFor = (group: string) =>
+    colorByGroup.get(group) ?? 'var(--chart-1)'
 
   return (
     <Card data-print-card>
@@ -96,7 +121,7 @@ export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
                   return (
                     <ChartSegmentTooltip
                       label={row.group}
-                      color='var(--chart-1)'
+                      color={colorFor(row.group)}
                       rows={formatRow(row)}
                     />
                   )
@@ -108,7 +133,10 @@ export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
                 isAnimationActive={false}
               >
                 {data.map((entry) => (
-                  <Cell key={`cell-${entry.group}`} fill='var(--chart-1)' />
+                  <Cell
+                    key={`cell-${entry.group}`}
+                    fill={colorFor(entry.group)}
+                  />
                 ))}
                 <LabelList
                   dataKey='percentage'

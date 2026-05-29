@@ -1,7 +1,6 @@
-import { StrictMode } from 'react'
+import { lazy, StrictMode, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { AxiosError } from 'axios'
-import { inject } from '@vercel/analytics'
 import {
   QueryCache,
   QueryClient,
@@ -9,11 +8,9 @@ import {
 } from '@tanstack/react-query'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import { FormsSubdomainRouter } from '@/features/forms/components/forms-subdomain-router'
 import { shouldRenderFormsSubdomainRouter } from '@/features/forms/utils/forms-host'
 import { useAuthStore } from '@/stores/auth-store'
 import { handleServerError } from '@/lib/handle-server-error'
-import { initializeData } from '@/lib/seed-data'
 import { DirectionProvider } from './context/direction-provider'
 import { FontProvider } from './context/font-provider'
 import { PaletteProvider } from './context/palette-provider'
@@ -24,13 +21,30 @@ import { routeTree } from './routeTree.gen'
 import './styles/index.css'
 
 const renderFormsSubdomainRouter = shouldRenderFormsSubdomainRouter()
+const FormsSubdomainRouter = lazy(() =>
+  import('@/features/forms/components/forms-subdomain-router').then(
+    ({ FormsSubdomainRouter }) => ({ default: FormsSubdomainRouter })
+  )
+)
 
-// Initialize Vercel Web Analytics
-inject()
+function scheduleIdleTask(callback: () => void) {
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(callback, { timeout: 2000 })
+    return
+  }
 
-// Initialize seed data on first load
-// Initialize seed data on first load
-initializeData()
+  globalThis.setTimeout(callback, 1)
+}
+
+scheduleIdleTask(() => {
+  void import('@vercel/analytics').then(({ inject }) => inject())
+})
+
+scheduleIdleTask(() => {
+  void import('@/lib/seed-data')
+    .then(({ initializeData }) => initializeData())
+    .catch(() => undefined)
+})
 
 // Check for existing session
 useAuthStore.getState().auth.checkSession()
@@ -116,7 +130,9 @@ if (!rootElement.innerHTML) {
             <FontProvider>
               <DirectionProvider>
                 {renderFormsSubdomainRouter ? (
-                  <FormsSubdomainRouter />
+                  <Suspense fallback={null}>
+                    <FormsSubdomainRouter />
+                  </Suspense>
                 ) : (
                   <RouterProvider router={router} />
                 )}

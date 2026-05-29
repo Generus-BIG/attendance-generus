@@ -19,4 +19,29 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    target: 'baseline-widely-available',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const normalizedId = id.replace(/\\/g, '/')
+          if (!normalizedId.includes('/node_modules/')) return
+
+          if (normalizedId.includes('/node_modules/exceljs/')) return 'exceljs'
+          if (normalizedId.includes('/node_modules/recharts/')) return 'charts'
+          if (normalizedId.includes('/node_modules/@radix-ui/')) return 'radix-ui'
+          if (normalizedId.includes('/node_modules/@tanstack/')) return 'tanstack'
+          if (normalizedId.includes('/node_modules/@supabase/')) return 'supabase'
+          if (
+            normalizedId.includes('/node_modules/react/') ||
+            normalizedId.includes('/node_modules/react-dom/') ||
+            normalizedId.includes('/node_modules/scheduler/')
+          ) {
+            return 'react'
+          }
+        },
+      },
+    },
+  },
 })

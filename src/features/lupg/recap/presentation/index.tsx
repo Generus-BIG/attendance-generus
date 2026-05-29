@@ -9,16 +9,17 @@ import {
   X,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import {
   useActiveMetrics,
   useActiveMustinTemplates,
-  useActivePrograms,
   useActiveSarprasItems,
+  useAllPrograms,
   useMonthlyReports,
+  useYearlyMetrics,
   useYearlyProgramData,
   useYearlyProgramDataDesa,
+  useYearlyShodaqohData,
 } from '../../hooks/use-lupg-queries'
 import {
   type MetricReportRow,
@@ -38,10 +39,15 @@ interface Props {
 
 export function Presentation({ monthKey, kelompokFilter }: Props) {
   const navigate = useNavigate()
-  const role = useAuthStore((s) => s.auth.role)
-  const isTeamManager = role === 'team_manager'
   const containerRef = useRef<HTMLDivElement>(null)
   const [slideIndex, setSlideIndex] = useState(0)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [])
 
   const { data: kelompokList = [] } = useQuery({
     queryKey: ['lookup_values', 'GROUP'],
@@ -182,7 +188,27 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
     ]
   )
 
-  const { data: programs = [] } = useActivePrograms()
+  // Yearly metrics + shodaqoh — only needed for kelompok mode (desa mode uses
+  // current-month grouped bars). The hooks return empty arrays when kelompokId
+  // is undefined, so it's safe to wire unconditionally.
+  const yearlyMetricsQ = useYearlyMetrics(kelompokFilter, year)
+  const yearlyShodaqohQ = useYearlyShodaqohData(kelompokFilter, year)
+
+  const yearlyMetricReports = useMemo(
+    () =>
+      kelompokFilter ? (yearlyMetricsQ.data?.metricReports ?? []) : [],
+    [kelompokFilter, yearlyMetricsQ.data?.metricReports]
+  )
+
+  const yearlyShodaqohRows = useMemo(
+    () =>
+      kelompokFilter ? (yearlyShodaqohQ.data?.shodaqohRows ?? []) : [],
+    [kelompokFilter, yearlyShodaqohQ.data?.shodaqohRows]
+  )
+
+  // Presentation deck includes PHQ and SHOLAT_ACR (GMSU) per user spec, even if
+  // their `active` flag is false in DB. The deck builder filters by hardcoded code list.
+  const { data: programs = [] } = useAllPrograms()
   const { data: metrics = [] } = useActiveMetrics()
   const { data: sarprasItems = [] } = useActiveSarprasItems()
   const { data: mustinTemplates = [] } = useActiveMustinTemplates()
@@ -214,6 +240,8 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
         kelompokFilter,
         yearlyMonthlyReports,
         yearlyProgramReports,
+        yearlyMetricReports,
+        yearlyShodaqohRows,
       }),
     [
       monthKey,
@@ -232,6 +260,8 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
       kelompokFilter,
       yearlyMonthlyReports,
       yearlyProgramReports,
+      yearlyMetricReports,
+      yearlyShodaqohRows,
     ]
   )
 
@@ -242,11 +272,10 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {})
     }
-    if (isTeamManager) {
-      navigate({ to: '/admin/lupg/presentation' })
-    } else {
-      navigate({ to: '/admin/lupg/recap', search: { month: monthKey } })
-    }
+    // All roles return to the Presentation picker — admins were previously
+    // sent to /admin/lupg/recap, which was disorienting because that's not
+    // where they launched from.
+    navigate({ to: '/admin/lupg/presentation' })
   }
 
   useEffect(() => {
@@ -284,21 +313,23 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
       ref={containerRef}
       className='bg-background fixed inset-0 z-50 flex flex-col'
     >
-      <div className='flex items-center justify-between border-b px-6 py-3'>
-        <div className='text-muted-foreground text-sm'>
-          {formatMonthLabel(monthKey)} · {currentSlide?.title ?? ''}
+      {!isFullscreen && (
+        <div className='flex items-center justify-between border-b px-6 py-3'>
+          <div className='text-muted-foreground text-sm'>
+            {formatMonthLabel(monthKey)} · {currentSlide?.title ?? ''}
+          </div>
+          <div className='flex items-center gap-2'>
+            <Button variant='ghost' size='sm' onClick={requestFullscreen}>
+              <Maximize2 className='mr-2 h-4 w-4' />
+              Fullscreen
+            </Button>
+            <Button variant='ghost' size='sm' onClick={exit}>
+              <X className='mr-2 h-4 w-4' />
+              Keluar
+            </Button>
+          </div>
         </div>
-        <div className='flex items-center gap-2'>
-          <Button variant='ghost' size='sm' onClick={requestFullscreen}>
-            <Maximize2 className='mr-2 h-4 w-4' />
-            Fullscreen
-          </Button>
-          <Button variant='ghost' size='sm' onClick={exit}>
-            <X className='mr-2 h-4 w-4' />
-            Keluar
-          </Button>
-        </div>
-      </div>
+      )}
 
       <div className='flex flex-1 items-stretch overflow-hidden'>
         <Button
@@ -311,7 +342,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
         >
           <ChevronLeft className='h-6 w-6' />
         </Button>
-        <div className='flex-1 overflow-auto p-10'>
+        <div className='flex-1 overflow-hidden'>
           {isLoading || !currentSlide ? (
             <div className='text-muted-foreground flex h-full items-center justify-center'>
               <Loader2 className='mr-2 h-6 w-6 animate-spin' />

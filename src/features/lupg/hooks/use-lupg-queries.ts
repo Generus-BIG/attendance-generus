@@ -562,6 +562,27 @@ export function useYearlyProgramDataDesa(year: number) {
   })
 }
 
+export function useYearlyMetrics(
+  kelompokId: string | undefined,
+  year: number
+) {
+  return useQuery({
+    queryKey: ['lupg', 'metrics-yearly', kelompokId ?? 'none', year] as const,
+    queryFn: () =>
+      kelompokId
+        ? metricSvc.listYearlyMetrics(kelompokId, year)
+        : Promise.resolve({ monthlyReports: [], metricReports: [] }),
+    enabled: !!kelompokId,
+  })
+}
+
+export function useYearlyMetricsDesa(year: number) {
+  return useQuery({
+    queryKey: ['lupg', 'metrics-yearly-desa', year] as const,
+    queryFn: () => metricSvc.listYearlyMetrics(undefined, year),
+  })
+}
+
 export function useUpsertProgramMonth() {
   const qc = useQueryClient()
   return useMutation({

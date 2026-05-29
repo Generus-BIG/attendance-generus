@@ -19,10 +19,27 @@ interface Props {
   data: CategoryBreakdownRow[]
 }
 
-const BAR_COLOR = 'var(--chart-1)'
+// Stable per-category color so a kategori reads the same hue regardless of
+// row sort or which months happen to be empty. Aligned with the broader
+// canonical Sensus mapping (GPN A → ACR moves yellow → green) within whatever
+// chart ramp the active palette resolves to.
+const CATEGORY_COLOR_TOKENS: Record<string, string> = {
+  'GPN A': 'var(--chart-1)',
+  'GPN B': 'var(--chart-2)',
+  AR: 'var(--chart-3)',
+  'Anak Remaja': 'var(--chart-3)', // legacy alias for AR
+  APR: 'var(--chart-4)',
+  ACR: 'var(--chart-5)',
+}
+
+const FALLBACK_COLOR = 'var(--chart-1)'
+
+function colorForCategory(name: string): string {
+  return CATEGORY_COLOR_TOKENS[name] ?? FALLBACK_COLOR
+}
 
 const chartConfig = {
-  percentage: { label: 'Persentase', color: BAR_COLOR },
+  percentage: { label: 'Persentase', color: FALLBACK_COLOR },
 } satisfies ChartConfig
 
 function formatRow(row: CategoryBreakdownRow): { label: string; value: string }[] {
@@ -95,7 +112,7 @@ export function CategoryDistributionBar({ data }: Props) {
                   return (
                     <ChartSegmentTooltip
                       label={row.category}
-                      color={BAR_COLOR}
+                      color={colorForCategory(row.category)}
                       rows={formatRow(row)}
                     />
                   )
@@ -108,7 +125,10 @@ export function CategoryDistributionBar({ data }: Props) {
                 maxBarSize={56}
               >
                 {chartData.map((entry) => (
-                  <Cell key={`cell-${entry.category}`} fill={BAR_COLOR} />
+                  <Cell
+                    key={`cell-${entry.category}`}
+                    fill={colorForCategory(entry.category)}
+                  />
                 ))}
                 <LabelList
                   dataKey='percentage'
