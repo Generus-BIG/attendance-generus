@@ -103,7 +103,7 @@ function formatDelta(
 export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
   if (isLoading) {
     return (
-      <div className='grid grid-cols-2 gap-2 md:grid-cols-4'>
+      <div className='grid min-h-28 grid-cols-2 gap-2 md:grid-cols-4'>
         {KPIS.map((k) => (
           <Card key={k.key} data-print-card>
             <CardContent className='p-3 sm:p-4'>
@@ -121,7 +121,7 @@ export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
   const pt = prevRecap?.totals
 
   return (
-    <div className='grid grid-cols-2 gap-2 md:grid-cols-4'>
+    <div className='grid min-h-28 grid-cols-2 gap-2 md:grid-cols-4'>
       {KPIS.map((k) => {
         const current = t ? k.format(t) : { display: '—', numeric: null }
         const prev = pt ? k.format(pt) : { display: '—', numeric: null }
