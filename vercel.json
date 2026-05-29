@@ -29,6 +29,15 @@
   ],
   "headers": [
     {
+      "source": "/((?!assets/).*)",
+      "headers": [
+        {
+          "key": "Link",
+          "value": "<https://obvvznynkrkgxuckgncz.supabase.co>; rel=preconnect; crossorigin"
+        }
+      ]
+    },
+    {
       "source": "/assets/(.*)",
       "headers": [
         {
