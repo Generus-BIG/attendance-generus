@@ -1,16 +1,39 @@
+import { lazy, Suspense } from 'react'
 import { AlertCircle, RefreshCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { type Role } from '@/lib/rbac'
 import { useMonthlyFormRecap } from '../hooks/use-monthly-form-recap'
-import { AbsenceReasonDonut } from './absence-reason-donut'
-import { AttendanceByGroupRowChart } from './attendance-by-group-row-chart'
-import { AttendanceCalendarHeatmap } from './attendance-calendar-heatmap'
-import { CategoryDistributionBar } from './category-distribution-bar'
 import { DashboardEmptyState } from './dashboard-empty-state'
 import { DashboardSkeleton } from './dashboard-skeleton'
 import { FollowUpTable } from './follow-up-table'
-import { GenderDistributionPie } from './gender-distribution-pie'
 import { MonthlyFormStatCards } from './monthly-form-stat-cards'
+
+const AttendanceByGroupRowChart = lazy(() =>
+  import('./attendance-by-group-row-chart').then((m) => ({
+    default: m.AttendanceByGroupRowChart,
+  }))
+)
+const AttendanceCalendarHeatmap = lazy(() =>
+  import('./attendance-calendar-heatmap').then((m) => ({
+    default: m.AttendanceCalendarHeatmap,
+  }))
+)
+const CategoryDistributionBar = lazy(() =>
+  import('./category-distribution-bar').then((m) => ({
+    default: m.CategoryDistributionBar,
+  }))
+)
+const GenderDistributionPie = lazy(() =>
+  import('./gender-distribution-pie').then((m) => ({
+    default: m.GenderDistributionPie,
+  }))
+)
+const AbsenceReasonDonut = lazy(() =>
+  import('./absence-reason-donut').then((m) => ({
+    default: m.AbsenceReasonDonut,
+  }))
+)
 
 interface Props {
   formIds: string[]
@@ -92,45 +115,45 @@ export function MonthlyFormDashboard({
             redundant in single-kelompok view) + Kategori/Gender pies stacked
             on the 1/3 right column. Pie heights together balance the
             calendar's natural height. */}
-      {isDesa ? (
-        <div className='grid gap-4 lg:grid-cols-3'>
-          <div className='lg:col-span-2'>
-            <AttendanceByGroupRowChart recap={data} isLoading={isLoading} />
-          </div>
-          <AttendanceCalendarHeatmap
-            recap={data}
-            monthDate={month}
-            isLoading={isLoading}
-          />
-        </div>
-      ) : (
-        <div className='grid gap-4 lg:grid-cols-3'>
-          <div className='lg:col-span-2'>
+      <Suspense fallback={<Skeleton className='h-80 w-full rounded-lg' />}>
+        {isDesa ? (
+          <div className='grid min-h-80 gap-4 lg:grid-cols-3'>
+            <div className='lg:col-span-2'>
+              <AttendanceByGroupRowChart recap={data} isLoading={isLoading} />
+            </div>
             <AttendanceCalendarHeatmap
               recap={data}
               monthDate={month}
               isLoading={isLoading}
             />
           </div>
-          <div className='flex flex-col gap-4'>
-            <CategoryDistributionBar data={data?.byCategory ?? []} />
-            <GenderDistributionPie data={data?.byGender ?? []} />
+        ) : (
+          <div className='grid min-h-80 gap-4 lg:grid-cols-3'>
+            <div className='lg:col-span-2'>
+              <AttendanceCalendarHeatmap
+                recap={data}
+                monthDate={month}
+                isLoading={isLoading}
+              />
+            </div>
+            <div className='flex flex-col gap-4'>
+              <CategoryDistributionBar data={data?.byCategory ?? []} />
+              <GenderDistributionPie data={data?.byGender ?? []} />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </Suspense>
 
-      {/* Distribution row (Desa only). On mobile/tablet: kategori bar spans
-          full width (bars want width); gender + absence pies share a 2-up row
-          below (pies are square and don't need full width). On lg+: all three
-          flow into a single equal-width row. */}
       {isDesa && (
-        <div className='grid grid-cols-2 gap-4 lg:grid-cols-3'>
-          <div className='col-span-2 lg:col-span-1'>
-            <CategoryDistributionBar data={data?.byCategory ?? []} />
+        <Suspense fallback={<Skeleton className='h-52 w-full rounded-lg' />}>
+          <div className='grid grid-cols-2 gap-4 lg:grid-cols-3'>
+            <div className='col-span-2 lg:col-span-1'>
+              <CategoryDistributionBar data={data?.byCategory ?? []} />
+            </div>
+            <GenderDistributionPie data={data?.byGender ?? []} />
+            <AbsenceReasonDonut data={data?.byAbsenceReason ?? []} />
           </div>
-          <GenderDistributionPie data={data?.byGender ?? []} />
-          <AbsenceReasonDonut data={data?.byAbsenceReason ?? []} />
-        </div>
+        </Suspense>
       )}
 
       <FollowUpTable
