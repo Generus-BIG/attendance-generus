@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase'
 import {
   Select,
   SelectContent,
@@ -6,15 +7,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { supabase } from '@/lib/supabase'
 
 interface Props {
   value: string | undefined
   onChange: (kelompokId: string) => void
   placeholder?: string
+  allOption?: {
+    value: string
+    label: string
+  }
 }
 
-export function KelompokSelector({ value, onChange, placeholder }: Props) {
+export function KelompokSelector({
+  value,
+  onChange,
+  placeholder,
+  allOption,
+}: Props) {
   const { data: options = [] } = useQuery({
     queryKey: ['lookup_values', 'GROUP'],
     queryFn: async () => {
@@ -34,6 +43,9 @@ export function KelompokSelector({ value, onChange, placeholder }: Props) {
         <SelectValue placeholder={placeholder ?? 'Pilih kelompok'} />
       </SelectTrigger>
       <SelectContent>
+        {allOption ? (
+          <SelectItem value={allOption.value}>{allOption.label}</SelectItem>
+        ) : null}
         {options.map((o) => (
           <SelectItem key={o.id} value={o.id}>
             {o.value}

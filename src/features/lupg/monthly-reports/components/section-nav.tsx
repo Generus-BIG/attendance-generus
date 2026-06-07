@@ -21,6 +21,7 @@ export function SectionNav({ sections }: Props) {
     e.preventDefault()
     const target = document.getElementById(id)
     if (!target) return
+    window.dispatchEvent(new CustomEvent('lupg:reveal-section', { detail: id }))
     target.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 

@@ -21,6 +21,32 @@ export function RevealOnScroll({ children, delayMs = 0, className }: Props) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
+
+    const revealIfContainsSection = (sectionId: string | null) => {
+      if (!sectionId) return
+      const el = ref.current
+      const target = document.getElementById(sectionId)
+      if (el && target && el.contains(target)) setRevealed(true)
+    }
+
+    revealIfContainsSection(window.location.hash.slice(1) || null)
+
+    const handleReveal = (event: Event) => {
+      const sectionId =
+        event instanceof CustomEvent && typeof event.detail === 'string'
+          ? event.detail
+          : null
+      revealIfContainsSection(sectionId)
+    }
+
+    window.addEventListener('lupg:reveal-section', handleReveal)
+    return () => {
+      window.removeEventListener('lupg:reveal-section', handleReveal)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
     const el = ref.current
     if (!el) return
     // If reduced-motion is preferred, state was seeded true; skip observer.

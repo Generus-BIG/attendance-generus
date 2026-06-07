@@ -11,16 +11,23 @@ interface DerivedMap {
 }
 
 interface Props {
-  kelompokId: string
+  kelompokId: string | undefined
   byCell: Record<string, number>
   derivedByKey: DerivedMap
+  readOnly?: boolean
 }
 
-export function SensusCardList({ kelompokId, byCell, derivedByKey }: Props) {
+export function SensusCardList({
+  kelompokId,
+  byCell,
+  derivedByKey,
+  readOnly = false,
+}: Props) {
   return (
     <div className='flex flex-col gap-3'>
       {CATEGORY_CODES.map((code) => {
         const isDerived = code === 'GPN_A' || code === 'GPN_B'
+        const isReadOnly = readOnly || isDerived || !kelompokId
         const l = isDerived
           ? (derivedByKey.get(`${code}__L`) ?? 0)
           : (byCell[`${code}_L`] ?? 0)
@@ -37,26 +44,26 @@ export function SensusCardList({ kelompokId, byCell, derivedByKey }: Props) {
           >
             <div className='flex items-start justify-between gap-3'>
               <div className='flex flex-col gap-0.5'>
-                <div className='text-sm font-semibold leading-tight'>
+                <div className='text-sm leading-tight font-semibold'>
                   {CATEGORY_LABELS[code]}
                 </div>
                 {isDerived && (
-                  <span className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                  <span className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
                     Otomatis dari absensi
                   </span>
                 )}
               </div>
               <div className='text-right tabular-nums'>
-                <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
                   Total
                 </div>
                 <div className='text-lg font-semibold'>{l + p}</div>
               </div>
             </div>
-            {!isDerived ? (
+            {!isReadOnly ? (
               <div className='mt-4 grid grid-cols-2 gap-3'>
                 <label className='flex flex-col gap-1.5'>
-                  <span className='text-muted-foreground text-xs font-medium tracking-wider uppercase'>
+                  <span className='text-xs font-medium tracking-wider text-muted-foreground uppercase'>
                     Laki-laki
                   </span>
                   <SensusStepperInput
@@ -67,7 +74,7 @@ export function SensusCardList({ kelompokId, byCell, derivedByKey }: Props) {
                   />
                 </label>
                 <label className='flex flex-col gap-1.5'>
-                  <span className='text-muted-foreground text-xs font-medium tracking-wider uppercase'>
+                  <span className='text-xs font-medium tracking-wider text-muted-foreground uppercase'>
                     Perempuan
                   </span>
                   <SensusStepperInput

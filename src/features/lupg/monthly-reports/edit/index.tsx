@@ -23,6 +23,8 @@ import { ProgramTrackerSection } from '../sections/program-tracker-section'
 import { SarprasSection } from '../sections/sarpras-section'
 import { ShodaqohSection } from '../sections/shodaqoh-section'
 import { MustinSection } from '../sections/mustin-section'
+import { CharacterMonitoringSection } from '../sections/character-monitoring-section'
+import { CharacterTargetSection } from '../sections/character-target-section'
 import { SectionNav, type SectionItem } from '../components/section-nav'
 import { RevealOnScroll } from '../components/reveal-on-scroll'
 
@@ -37,6 +39,8 @@ const SECTIONS: SectionItem[] = [
   { id: 'section-sarpras', label: 'Sarpras' },
   { id: 'section-shodaqoh', label: 'Shodaqoh' },
   { id: 'section-mustin', label: 'Resume Mustin' },
+  { id: 'section-character-targets', label: 'Target Capaian Materi' },
+  { id: 'section-character-monitoring', label: 'Penerapan 29 Karakter' },
 ]
 
 export function MonthlyReportEdit({ monthlyReportId }: Props) {
@@ -139,7 +143,7 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
       </Header>
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <div className='flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between'>
-          <div className='flex items-start gap-2'>
+          <div className='flex min-w-0 items-start gap-2'>
             <Link
               to='/admin/lupg/reports'
               aria-label='Kembali ke daftar laporan'
@@ -148,11 +152,11 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
                 <ArrowLeft className='h-4 w-4' />
               </Button>
             </Link>
-            <div className='flex flex-col gap-1 pt-1'>
+            <div className='flex min-w-0 flex-col gap-1 pt-1'>
               <span className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.14em]'>
                 Laporan Bulanan
               </span>
-              <h2 className='text-3xl font-semibold tracking-tight text-foreground sm:text-[2rem]'>
+              <h2 className='text-3xl font-semibold tracking-tight text-foreground whitespace-normal wrap-break-word sm:text-[2rem]'>
                 {kelompokName} · {formatMonthLabel(monthKeyFromDate(report.month))}
               </h2>
               <p className='text-muted-foreground text-sm'>
@@ -187,6 +191,12 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
             </RevealOnScroll>
             <RevealOnScroll delayMs={250}>
               <MustinSection report={report} readOnly={readOnly} />
+            </RevealOnScroll>
+            <RevealOnScroll delayMs={300}>
+              <CharacterTargetSection report={report} readOnly={readOnly} />
+            </RevealOnScroll>
+            <RevealOnScroll delayMs={350}>
+              <CharacterMonitoringSection report={report} readOnly={readOnly} />
             </RevealOnScroll>
           </div>
         </div>
