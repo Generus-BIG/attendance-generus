@@ -953,7 +953,7 @@ function GenderLegend() {
   return (
     <div className='flex items-center justify-center gap-4 text-xs text-muted-foreground'>
       <span className='inline-flex items-center gap-1.5'>
-        <span className='h-2.5 w-2.5 rounded-sm bg-[var(--chart-1)]' />
+        <span className='h-2.5 w-2.5 rounded-sm bg-chart-1' />
         Laki-laki
       </span>
       <span className='inline-flex items-center gap-1.5'>
@@ -1112,14 +1112,14 @@ function SensusGenderChart({
                   if (!active || !payload?.length) return null
                   const row = payload[0].payload as SensusChartRow
                   return (
-                    <div className='min-w-[140px] rounded-lg border border-border/80 bg-popover/95 p-3 text-xs text-popover-foreground shadow-lg backdrop-blur-sm'>
+                    <div className='min-w-35 rounded-lg border border-border/80 bg-popover/95 p-3 text-xs text-popover-foreground shadow-lg backdrop-blur-sm'>
                       <div className='mb-2 border-b border-border/50 pb-1.5 font-bold text-foreground'>
                         {row.label}
                       </div>
                       <div className='space-y-1.5'>
                         <div className='flex items-center justify-between gap-4'>
                           <span className='flex items-center gap-1.5 text-muted-foreground'>
-                            <span className='h-2 w-2 rounded-full bg-[var(--chart-1)]' />
+                            <span className='h-2 w-2 rounded-full bg-chart-1' />
                             Laki-laki
                           </span>
                           <span className='font-mono font-medium text-foreground tabular-nums'>
@@ -1202,7 +1202,7 @@ function SummaryTile({
   return (
     <div
       className={cn(
-        'flex items-center justify-between rounded-lg border border-border/70 bg-card p-4 shadow-sm transition-all duration-200 hover:border-border/100',
+        'flex items-center justify-between rounded-lg border border-border/70 bg-card p-4 shadow-sm transition-all duration-200 hover:border-border',
         className
       )}
     >

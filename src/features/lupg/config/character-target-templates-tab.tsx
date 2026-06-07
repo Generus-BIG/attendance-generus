@@ -209,7 +209,7 @@ export function CharacterTargetTemplatesTab() {
                   ].join(' ')}
                 >
                   <div className='flex w-full items-start justify-between gap-2'>
-                    <span className='block max-w-[170px] truncate font-medium text-foreground'>
+                    <span className='block max-w-42.5 truncate font-medium text-foreground'>
                       {template.name}
                     </span>
                     {template.status === 'active' ? (
@@ -825,17 +825,17 @@ function TemplateItemsEditor({
           Template ini belum memiliki item. Klik "Tambah Item" untuk memulai.
         </div>
       ) : (
-        <div className='max-h-[38rem] overflow-auto rounded-md border border-border/70 shadow-sm'>
+        <div className='max-h-152 overflow-auto rounded-md border border-border/70 shadow-sm'>
           <Table>
             <TableHeader className='bg-muted/30'>
               <TableRow>
-                <TableHead className='w-[140px]'>Bulan</TableHead>
-                <TableHead className='w-[80px]'>Jenjang</TableHead>
-                <TableHead className='w-[180px]'>Kategori</TableHead>
+                <TableHead className='w-35'>Bulan</TableHead>
+                <TableHead className='w-20'>Jenjang</TableHead>
+                <TableHead className='w-45'>Kategori</TableHead>
                 <TableHead>Materi</TableHead>
-                <TableHead className='w-[180px]'>Ayat/hal</TableHead>
-                <TableHead className='w-[100px]'>Status</TableHead>
-                <TableHead className='w-[60px]'></TableHead>
+                <TableHead className='w-45'>Ayat/hal</TableHead>
+                <TableHead className='w-25'>Status</TableHead>
+                <TableHead className='w-15'></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1178,7 +1178,7 @@ function EditableItemsTable({
   }
 
   return (
-    <div className='max-h-[32rem] overflow-auto rounded-md border'>
+    <div className='max-h-128 overflow-auto rounded-md border'>
       <Table>
         <TableHeader>
           <TableRow>
