@@ -41,11 +41,12 @@ interface ParseIssue {
 }
 
 interface ParseResult {
-  parser_method: 'azure_openai' | 'deterministic'
+  parser_method: 'deterministic'
   confidence: number
   mapping: Record<string, string | null>
   issues: ParseIssue[]
   items: ParsedItem[]
+  deployment_name?: string
 }
 
 const MONTHS = [
@@ -366,160 +367,7 @@ function deterministicParse(input: ParseRequest): ParseResult {
     },
     issues,
     items,
-  }
-}
-
-function azureSchema() {
-  const item = {
-    type: 'object',
-    properties: {
-      month_label: { type: 'string' },
-      month_index: { type: 'integer' },
-      level_code: { type: 'string', enum: ['ACR', 'APR', 'AR', 'GPN'] },
-      category_label: { type: 'string' },
-      material_label: { type: 'string' },
-      detail_label: { type: ['string', 'null'] },
-      reference_from: { type: ['string', 'null'] },
-      reference_to: { type: ['string', 'null'] },
-      uses_reference: { type: 'boolean' },
-      source_sheet: { type: ['string', 'null'] },
-      source_row: { type: ['integer', 'null'] },
-      confidence: { type: 'number' },
-    },
-    required: [
-      'month_label',
-      'month_index',
-      'level_code',
-      'category_label',
-      'material_label',
-      'detail_label',
-      'reference_from',
-      'reference_to',
-      'uses_reference',
-      'source_sheet',
-      'source_row',
-      'confidence',
-    ],
-    additionalProperties: false,
-  }
-
-  return {
-    type: 'json_schema',
-    json_schema: {
-      name: 'target_29_character_import',
-      strict: true,
-      schema: {
-        type: 'object',
-        properties: {
-          confidence: { type: 'number' },
-          mapping: {
-            type: 'object',
-            properties: {
-              month_column: { type: ['string', 'null'] },
-              level_column: { type: ['string', 'null'] },
-              category_column: { type: ['string', 'null'] },
-              material_column: { type: ['string', 'null'] },
-              detail_column: { type: ['string', 'null'] },
-              reference_from_column: { type: ['string', 'null'] },
-              reference_to_column: { type: ['string', 'null'] },
-            },
-            required: [
-              'month_column',
-              'level_column',
-              'category_column',
-              'material_column',
-              'detail_column',
-              'reference_from_column',
-              'reference_to_column',
-            ],
-            additionalProperties: false,
-          },
-          issues: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                severity: {
-                  type: 'string',
-                  enum: ['info', 'warning', 'error'],
-                },
-                message: { type: 'string' },
-              },
-              required: ['severity', 'message'],
-              additionalProperties: false,
-            },
-          },
-          items: { type: 'array', items: item },
-        },
-        required: ['confidence', 'mapping', 'issues', 'items'],
-        additionalProperties: false,
-      },
-    },
-  }
-}
-
-async function parseWithAzure(input: ParseRequest): Promise<ParseResult | null> {
-  const apiKey = process.env.AZURE_OPENAI_API_KEY
-  const endpoint = process.env.AZURE_OPENAI_ENDPOINT
-  const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME
-  const apiVersion = process.env.AZURE_OPENAI_API_VERSION
-  if (!apiKey || !endpoint || !deployment || !apiVersion) return null
-
-  const baseUrl = endpoint.replace(/\/+$/, '')
-  const url = `${baseUrl}/openai/deployments/${encodeURIComponent(
-    deployment
-  )}/chat/completions?api-version=${encodeURIComponent(apiVersion)}`
-
-  const compactSheets = input.sheets.map((sheet) => ({
-    name: sheet.name,
-    rows: sheet.rows.map((row) => ({
-      rowNumber: row.rowNumber,
-      cells: row.cells.slice(0, 14),
-    })),
-  }))
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': apiKey,
-    },
-    body: JSON.stringify({
-      messages: [
-        {
-          role: 'system',
-          content:
-            'Extract Target 29 Karakter Excel rows into the provided schema. Do not invent content. Always use defaultLevel for level_code. Output every real material row only. Ignore filler rows where material is repeated by merged cells but detail is empty or 0. Keep Makna Quran and Hadist/Hadis rows even when detail is empty because users will fill ayat/hal later. Set uses_reference true only for rows that should show Dari/Sampai reference fields in reports, usually Quran/Hadis rows or rows with explicit reference columns. Use the category column next to Materi, not the broad 29 Karakter Luhur JM label.',
-        },
-        {
-          role: 'user',
-          content: JSON.stringify({
-            year: input.year,
-            defaultLevel: input.defaultLevel,
-            sheets: compactSheets,
-          }),
-        },
-      ],
-      response_format: azureSchema(),
-      temperature: 0,
-      max_tokens: 12000,
-    }),
-  })
-
-  if (!response.ok) return null
-  const payload = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>
-  }
-  const content = payload.choices?.[0]?.message?.content
-  if (!content) return null
-
-  const parsed = JSON.parse(content) as Omit<ParseResult, 'parser_method'>
-  return {
-    parser_method: 'azure_openai',
-    confidence: parsed.confidence,
-    mapping: parsed.mapping,
-    issues: parsed.issues,
-    items: parsed.items,
+    deployment_name: 'deterministic',
   }
 }
 
@@ -577,29 +425,7 @@ export default async function handler(
       deterministicParse(body),
       body.defaultLevel
     )
-    const azureResult = await parseWithAzure(body)
-    const normalizedAzureResult = azureResult
-      ? normalizeParseResult(azureResult, body.defaultLevel)
-      : null
-    const result =
-      normalizedAzureResult &&
-      normalizedAzureResult.items.length >=
-        Math.floor(deterministicResult.items.length * 0.8)
-        ? normalizedAzureResult
-        : {
-            ...deterministicResult,
-            issues: normalizedAzureResult
-              ? [
-                  ...deterministicResult.issues,
-                  {
-                    severity: 'warning' as const,
-                    message:
-                      'Hasil Azure OpenAI terlihat tidak lengkap, memakai parser lokal yang tervalidasi.',
-                  },
-                ]
-              : deterministicResult.issues,
-          }
-    sendJson(res, 200, result)
+    sendJson(res, 200, deterministicResult)
   } catch (e) {
     sendJson(res, 500, {
       error: e instanceof Error ? e.message : 'Gagal parsing template',
