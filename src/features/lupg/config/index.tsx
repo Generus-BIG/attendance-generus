@@ -10,6 +10,8 @@ import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { CharacterMonitoringConfigTab } from './character-monitoring-tab'
+import { CharacterTargetTemplatesTab } from './character-target-templates-tab'
 import { MetricsConfigTab } from './metrics-tab'
 import { MustinTemplatesConfigTab } from './mustin-templates-tab'
 import { ProgramsConfigTab } from './programs-tab'
@@ -39,12 +41,16 @@ export function LupgConfig() {
         </div>
 
         <Tabs defaultValue='programs'>
-          <TabsList>
-            <TabsTrigger value='programs'>Programs</TabsTrigger>
-            <TabsTrigger value='metrics'>Metrics</TabsTrigger>
-            <TabsTrigger value='sarpras'>Sarpras Items</TabsTrigger>
-            <TabsTrigger value='mustin'>Template Mustin</TabsTrigger>
-          </TabsList>
+          <div className='overflow-x-auto pb-1'>
+            <TabsList className='w-max'>
+              <TabsTrigger value='programs'>Programs</TabsTrigger>
+              <TabsTrigger value='metrics'>Metrics</TabsTrigger>
+              <TabsTrigger value='sarpras'>Sarpras Items</TabsTrigger>
+              <TabsTrigger value='mustin'>Template Mustin</TabsTrigger>
+              <TabsTrigger value='character'>Penerapan 29 Karakter</TabsTrigger>
+              <TabsTrigger value='character-targets'>Target Materi</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value='programs' className='mt-4'>
             <ProgramsConfigTab />
@@ -60,6 +66,14 @@ export function LupgConfig() {
 
           <TabsContent value='mustin' className='mt-4'>
             <MustinTemplatesConfigTab />
+          </TabsContent>
+
+          <TabsContent value='character' className='mt-4'>
+            <CharacterMonitoringConfigTab />
+          </TabsContent>
+
+          <TabsContent value='character-targets' className='mt-4'>
+            <CharacterTargetTemplatesTab />
           </TabsContent>
         </Tabs>
       </Main>
