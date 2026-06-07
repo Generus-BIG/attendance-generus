@@ -1,17 +1,12 @@
 import { useMemo } from 'react'
-import { Link, useSearch, useNavigate } from '@tanstack/react-router'
-import { useQueries, useQuery } from '@tanstack/react-query'
 import { format, parseISO } from 'date-fns'
+import { useQueries, useQuery } from '@tanstack/react-query'
+import { Link, useSearch, useNavigate } from '@tanstack/react-router'
 import { id as idLocale } from 'date-fns/locale'
 import { FileDown, Inbox, Loader2, Presentation } from 'lucide-react'
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import { ConfigDrawer } from '@/components/config-drawer'
-import { Header } from '@/components/layout/header'
-import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -21,6 +16,11 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import {
+  ChartContainer,
+  ChartTooltip,
+  type ChartConfig,
+} from '@/components/ui/chart'
+import {
   Table,
   TableBody,
   TableCell,
@@ -28,21 +28,33 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ConfigDrawer } from '@/components/config-drawer'
+import { Header } from '@/components/layout/header'
+import { Main } from '@/components/layout/main'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+import { Search } from '@/components/search'
+import { ThemeSwitch } from '@/components/theme-switch'
 import { MonthPicker } from '../components/month-picker'
 import { ReportStatusBadge } from '../components/report-status-badge'
 import {
   CATEGORY_CODES,
   CATEGORY_LABELS,
   MUSTIN_STATUS_LABELS,
+  type CategoryCode,
 } from '../constants'
 import {
+  useActiveCharacterMonitoringActivities,
   useActiveMetrics,
   useActiveMustinTemplates,
   useActivePrograms,
   useActiveSarprasItems,
+  useCharacterMonitoringReportsBatch,
+  useCharacterTargetItemsForMonth,
+  useCharacterTargetReportsBatch,
   useMonthlyReports,
 } from '../hooks/use-lupg-queries'
 import {
+  type DerivedGpnSensusRow,
   type MetricReportRow,
   type MonthlyReportRow,
   type MustinNoteRow,
@@ -50,6 +62,8 @@ import {
   type MustinTemplateRow,
   type ProgramReportRow,
   type SarprasReportRow,
+  type SensusGender,
+  type SensusRow,
   type SensusSnapshotRow,
   type ShodaqohRow,
 } from '../types'
@@ -59,6 +73,8 @@ import {
   formatMonthLabel,
   shiftMonth,
 } from '../utils/month-utils'
+import { CharacterMonitoringRecap } from './components/character-monitoring-recap'
+import { CharacterTargetRecap } from './components/character-target-recap'
 import {
   ProgramCompositeCard,
   type ProgramCompositeCardData,
@@ -75,6 +91,30 @@ async function fetchSensusSnapshotsBatch(reportIds: string[]) {
     .in('monthly_report_id', reportIds)
   if (error) throw error
   return (data ?? []) as SensusSnapshotRow[]
+}
+
+async function fetchSensusMasterBatch(kelompokIds: string[]) {
+  if (kelompokIds.length === 0) return []
+  const { data, error } = await supabase
+    .from('lupg_sensus')
+    .select('*')
+    .in('kelompok_id', kelompokIds)
+    .order('category_code')
+    .order('gender')
+  if (error) throw error
+  return (data ?? []) as SensusRow[]
+}
+
+async function fetchDerivedGpnSensusBatch(kelompokIds: string[]) {
+  if (kelompokIds.length === 0) return []
+  const { data, error } = await supabase
+    .from('lupg_sensus_gpn_derived')
+    .select('*')
+    .in('kelompok_id', kelompokIds)
+    .order('category_code')
+    .order('gender')
+  if (error) throw error
+  return (data ?? []) as DerivedGpnSensusRow[]
 }
 
 async function fetchProgramReportsBatch(reportIds: string[]) {
@@ -174,12 +214,11 @@ export function RekapDesa() {
   )
   const fromWindowMonth = windowMonthKeys[0]
 
-  const { data: reportsRaw = [], isLoading: reportsLoading } = useMonthlyReports(
-    {
+  const { data: reportsRaw = [], isLoading: reportsLoading } =
+    useMonthlyReports({
       fromMonth: fromWindowMonth,
       toMonth: monthKey,
-    }
-  )
+    })
   const monthStart = firstDayOfMonth(monthKey)
   // Current month only — used by every card except program composites.
   const monthReports = reportsRaw.filter((r) =>
@@ -187,52 +226,144 @@ export function RekapDesa() {
   )
   const reportIds = monthReports.map((r) => r.id)
   const reportIdsKey = reportIds.join(',')
+  const kelompokIds = useMemo(
+    () => kelompokList.map((kelompok) => kelompok.id),
+    [kelompokList]
+  )
+  const kelompokIdsKey = kelompokIds.join(',')
 
   // All reports in the 5-month window — used by program composites.
   const windowReports = reportsRaw
   const windowReportIds = windowReports.map((r) => r.id)
   const windowReportIdsKey = windowReportIds.join(',')
 
-  const [sensusQ, programsBatchQ, metricsBatchQ, sarprasBatchQ, shodaqohQ, mustinQ] =
-    useQueries({
-      queries: [
-        {
-          queryKey: ['lupg', 'recap', 'sensus', monthKey, reportIdsKey, reportIds] as const,
-          queryFn: () => fetchSensusSnapshotsBatch(reportIds),
-          enabled: reportIds.length > 0,
-        },
-        {
-          queryKey: ['lupg', 'recap', 'programs', monthKey, windowReportIdsKey, windowReportIds] as const,
-          queryFn: () => fetchProgramReportsBatch(windowReportIds),
-          enabled: windowReportIds.length > 0,
-        },
-        {
-          queryKey: ['lupg', 'recap', 'metrics', monthKey, reportIdsKey, reportIds] as const,
-          queryFn: () => fetchMetricReportsBatch(reportIds),
-          enabled: reportIds.length > 0,
-        },
-        {
-          queryKey: ['lupg', 'recap', 'sarpras', monthKey, reportIdsKey, reportIds] as const,
-          queryFn: () => fetchSarprasReportsBatch(reportIds),
-          enabled: reportIds.length > 0,
-        },
-        {
-          queryKey: ['lupg', 'recap', 'shodaqoh', monthKey, reportIdsKey, reportIds] as const,
-          queryFn: () => fetchShodaqohBatch(reportIds),
-          enabled: reportIds.length > 0,
-        },
-        {
-          queryKey: ['lupg', 'recap', 'mustin', monthKey, reportIdsKey, reportIds] as const,
-          queryFn: () => fetchMustinBatch(reportIds),
-          enabled: reportIds.length > 0,
-        },
-      ],
+  const [
+    sensusQ,
+    programsBatchQ,
+    metricsBatchQ,
+    sarprasBatchQ,
+    shodaqohQ,
+    mustinQ,
+  ] = useQueries({
+    queries: [
+      {
+        queryKey: [
+          'lupg',
+          'recap',
+          'sensus',
+          monthKey,
+          reportIdsKey,
+          reportIds,
+        ] as const,
+        queryFn: () => fetchSensusSnapshotsBatch(reportIds),
+        enabled: reportIds.length > 0,
+      },
+      {
+        queryKey: [
+          'lupg',
+          'recap',
+          'programs',
+          monthKey,
+          windowReportIdsKey,
+          windowReportIds,
+        ] as const,
+        queryFn: () => fetchProgramReportsBatch(windowReportIds),
+        enabled: windowReportIds.length > 0,
+      },
+      {
+        queryKey: [
+          'lupg',
+          'recap',
+          'metrics',
+          monthKey,
+          reportIdsKey,
+          reportIds,
+        ] as const,
+        queryFn: () => fetchMetricReportsBatch(reportIds),
+        enabled: reportIds.length > 0,
+      },
+      {
+        queryKey: [
+          'lupg',
+          'recap',
+          'sarpras',
+          monthKey,
+          reportIdsKey,
+          reportIds,
+        ] as const,
+        queryFn: () => fetchSarprasReportsBatch(reportIds),
+        enabled: reportIds.length > 0,
+      },
+      {
+        queryKey: [
+          'lupg',
+          'recap',
+          'shodaqoh',
+          monthKey,
+          reportIdsKey,
+          reportIds,
+        ] as const,
+        queryFn: () => fetchShodaqohBatch(reportIds),
+        enabled: reportIds.length > 0,
+      },
+      {
+        queryKey: [
+          'lupg',
+          'recap',
+          'mustin',
+          monthKey,
+          reportIdsKey,
+          reportIds,
+        ] as const,
+        queryFn: () => fetchMustinBatch(reportIds),
+        enabled: reportIds.length > 0,
+      },
+    ],
+  })
+
+  const { data: sensusMasterRows = [], isLoading: sensusMasterLoading } =
+    useQuery({
+      queryKey: [
+        'lupg',
+        'recap',
+        'sensus-master',
+        kelompokIdsKey,
+        kelompokIds,
+      ] as const,
+      queryFn: () => fetchSensusMasterBatch(kelompokIds),
+      enabled: kelompokIds.length > 0,
     })
+
+  const { data: derivedGpnRows = [], isLoading: derivedGpnLoading } = useQuery({
+    queryKey: [
+      'lupg',
+      'recap',
+      'sensus-gpn-derived',
+      kelompokIdsKey,
+      kelompokIds,
+    ] as const,
+    queryFn: () => fetchDerivedGpnSensusBatch(kelompokIds),
+    enabled: kelompokIds.length > 0,
+  })
 
   const { data: programs = [] } = useActivePrograms()
   const { data: metrics = [] } = useActiveMetrics()
   const { data: sarprasItems = [] } = useActiveSarprasItems()
   const { data: mustinTemplates = [] } = useActiveMustinTemplates()
+  const {
+    data: characterActivities = [],
+    isLoading: characterActivitiesLoading,
+  } = useActiveCharacterMonitoringActivities()
+  const { data: characterReports = [], isLoading: characterReportsLoading } =
+    useCharacterMonitoringReportsBatch(reportIds)
+  const recapYear = Number(monthKey.slice(0, 4))
+  const recapMonthIndex = Number(monthKey.slice(5, 7))
+  const { data: characterTargetData, isLoading: characterTargetItemsLoading } =
+    useCharacterTargetItemsForMonth(recapYear, recapMonthIndex)
+  const {
+    data: characterTargetReports = [],
+    isLoading: characterTargetReportsLoading,
+  } = useCharacterTargetReportsBatch(reportIds)
 
   const sensusSnapshots = useMemo(() => sensusQ.data ?? [], [sensusQ.data])
   const programReports = useMemo(
@@ -321,11 +452,17 @@ export function RekapDesa() {
   const sectionsLoading =
     reportIds.length > 0 &&
     (sensusQ.isLoading ||
+      sensusMasterLoading ||
+      derivedGpnLoading ||
       programsBatchQ.isLoading ||
       metricsBatchQ.isLoading ||
       sarprasBatchQ.isLoading ||
       shodaqohQ.isLoading ||
-      mustinQ.isLoading)
+      mustinQ.isLoading ||
+      characterActivitiesLoading ||
+      characterReportsLoading ||
+      characterTargetItemsLoading ||
+      characterTargetReportsLoading)
 
   const reportByKelompok = useMemo(() => {
     const m = new Map<string, MonthlyReportRow>()
@@ -365,26 +502,26 @@ export function RekapDesa() {
           <ProfileDropdown />
         </div>
       </Header>
-      <Main className='flex flex-1 flex-col gap-5 print:gap-2 sm:gap-7'>
+      <Main className='flex flex-1 flex-col gap-5 sm:gap-7 print:gap-2'>
         <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
           <div className='flex flex-col gap-1'>
-            <span className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.14em]'>
+            <span className='text-[0.6875rem] font-medium tracking-[0.14em] text-muted-foreground uppercase'>
               Rekap Desa
             </span>
             <h2 className='text-3xl font-semibold tracking-tight text-foreground sm:text-[2rem]'>
               {formatMonthLabel(monthKey)}
             </h2>
-            <p className='text-muted-foreground text-sm'>
+            <p className='text-sm text-muted-foreground'>
               Konsolidasi laporan bulanan seluruh kelompok.
             </p>
           </div>
           <div className='flex flex-wrap items-center gap-2 print:hidden'>
             <MonthPicker monthKey={monthKey} onChange={setMonth} />
-            <span aria-hidden='true' className='bg-border hidden h-6 w-px sm:inline-block' />
-            <Link
-              to='/admin/lupg/recap/present'
-              search={{ month: monthKey }}
-            >
+            <span
+              aria-hidden='true'
+              className='hidden h-6 w-px bg-border sm:inline-block'
+            />
+            <Link to='/admin/lupg/recap/present' search={{ month: monthKey }}>
               <Button variant='outline' size='sm'>
                 <Presentation className='mr-2 h-4 w-4' />
                 Presentation
@@ -399,7 +536,7 @@ export function RekapDesa() {
 
         {reportsLoading ? (
           <Card>
-            <CardContent className='text-muted-foreground flex items-center justify-center gap-2 py-8'>
+            <CardContent className='flex items-center justify-center gap-2 py-8 text-muted-foreground'>
               <Loader2 className='h-5 w-5 animate-spin' />
               Memuat laporan...
             </CardContent>
@@ -411,13 +548,17 @@ export function RekapDesa() {
               reportByKelompok={reportByKelompok}
               monthLabel={formatMonthLabel(monthKey)}
             />
-            <div className='border-border/60 flex flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-12 text-center'>
-              <Inbox className='text-muted-foreground/70 h-8 w-8' aria-hidden='true' />
-              <p className='font-medium text-sm'>
+            <div className='flex flex-col items-center gap-2 rounded-lg border border-dashed border-border/60 px-6 py-12 text-center'>
+              <Inbox
+                className='h-8 w-8 text-muted-foreground/70'
+                aria-hidden='true'
+              />
+              <p className='text-sm font-medium'>
                 Belum ada laporan untuk {formatMonthLabel(monthKey)}.
               </p>
-              <p className='text-muted-foreground max-w-sm text-xs'>
-                Rekap akan muncul setelah kelompok mulai mengisi laporan bulanan.
+              <p className='max-w-sm text-xs text-muted-foreground'>
+                Rekap akan muncul setelah kelompok mulai mengisi laporan
+                bulanan.
               </p>
             </div>
           </>
@@ -431,7 +572,7 @@ export function RekapDesa() {
 
             {sectionsLoading ? (
               <Card>
-                <CardContent className='text-muted-foreground flex items-center justify-center gap-2 py-8'>
+                <CardContent className='flex items-center justify-center gap-2 py-8 text-muted-foreground'>
                   <Loader2 className='h-5 w-5 animate-spin' />
                   Memuat rekap...
                 </CardContent>
@@ -441,6 +582,8 @@ export function RekapDesa() {
                 <SensusRecapCard
                   kelompokList={kelompokList}
                   snapshots={sensusSnapshots}
+                  masterRows={sensusMasterRows}
+                  derivedRows={derivedGpnRows}
                 />
 
                 {programs.map((p) => {
@@ -473,6 +616,20 @@ export function RekapDesa() {
                   kelompokList={kelompokList}
                   reports={monthReports}
                   rows={shodaqohRows}
+                />
+
+                <CharacterMonitoringRecap
+                  kelompokList={kelompokList}
+                  reports={monthReports}
+                  activities={characterActivities}
+                  rows={characterReports}
+                />
+
+                <CharacterTargetRecap
+                  kelompokList={kelompokList}
+                  reports={monthReports}
+                  items={characterTargetData?.items ?? []}
+                  rows={characterTargetReports}
                 />
 
                 <MustinRecapCard
@@ -528,7 +685,7 @@ function StatusGridCard({
               <TableRow>
                 <TableCell
                   colSpan={3}
-                  className='text-muted-foreground text-center text-sm'
+                  className='text-center text-sm text-muted-foreground'
                 >
                   Tidak ada kelompok.
                 </TableCell>
@@ -546,16 +703,20 @@ function StatusGridCard({
                           locked={r.locked}
                         />
                       ) : (
-                        <span className='text-muted-foreground text-xs'>
+                        <span className='text-xs text-muted-foreground'>
                           Belum dibuka
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className='text-muted-foreground text-sm tabular-nums'>
+                    <TableCell className='text-sm text-muted-foreground tabular-nums'>
                       {r?.submitted_at
-                        ? format(parseISO(r.submitted_at), 'dd MMM yyyy, HH:mm', {
-                            locale: idLocale,
-                          })
+                        ? format(
+                            parseISO(r.submitted_at),
+                            'dd MMM yyyy, HH:mm',
+                            {
+                              locale: idLocale,
+                            }
+                          )
                         : '—'}
                     </TableCell>
                   </TableRow>
@@ -572,88 +733,484 @@ function StatusGridCard({
 function SensusRecapCard({
   kelompokList,
   snapshots,
+  masterRows,
+  derivedRows,
 }: {
   kelompokList: KelompokLite[]
   snapshots: SensusSnapshotRow[]
+  masterRows: SensusRow[]
+  derivedRows: DerivedGpnSensusRow[]
 }) {
   const kelompokIds = kelompokList.map((k) => k.id)
   const snapByKK = new Map<string, SensusSnapshotRow>()
   for (const s of snapshots) {
-    snapByKK.set(`${s.kelompok_id}_${s.category_code}_${s.gender}`, s)
+    snapByKK.set(makeSensusCellKey(s.kelompok_id, s.category_code, s.gender), s)
+  }
+
+  const masterByKK = new Map<string, SensusRow>()
+  for (const row of masterRows) {
+    masterByKK.set(
+      makeSensusCellKey(row.kelompok_id, row.category_code, row.gender),
+      row
+    )
+  }
+
+  const derivedByKK = new Map<string, DerivedGpnSensusRow>()
+  for (const row of derivedRows) {
+    derivedByKK.set(
+      makeSensusCellKey(row.kelompok_id, row.category_code, row.gender),
+      row
+    )
   }
 
   const rows = CATEGORY_CODES.map((code) => {
     const perKK = kelompokIds.map((kid) => {
-      const l = snapByKK.get(`${kid}_${code}_L`)?.count ?? 0
-      const p = snapByKK.get(`${kid}_${code}_P`)?.count ?? 0
+      const l = getSensusCellCount({
+        kelompokId: kid,
+        code,
+        gender: 'L',
+        snapByKK,
+        masterByKK,
+        derivedByKK,
+      })
+      const p = getSensusCellCount({
+        kelompokId: kid,
+        code,
+        gender: 'P',
+        snapByKK,
+        masterByKK,
+        derivedByKK,
+      })
       return l + p
     })
+    const l = kelompokIds.reduce(
+      (sum, kid) =>
+        sum +
+        getSensusCellCount({
+          kelompokId: kid,
+          code,
+          gender: 'L',
+          snapByKK,
+          masterByKK,
+          derivedByKK,
+        }),
+      0
+    )
+    const p = kelompokIds.reduce(
+      (sum, kid) =>
+        sum +
+        getSensusCellCount({
+          kelompokId: kid,
+          code,
+          gender: 'P',
+          snapByKK,
+          masterByKK,
+          derivedByKK,
+        }),
+      0
+    )
     const total = perKK.reduce((a, b) => a + b, 0)
-    return { code, perKK, total }
-  }).filter((r) => r.total > 0)
+    return { code, label: CATEGORY_LABELS[code], perKK, l, p, total }
+  })
+
+  const total = rows.reduce((sum, row) => sum + row.total, 0)
+  const generusTotal = rows
+    .filter((row) => row.code !== 'PENDIDIK_MT' && row.code !== 'PENDIDIK_MS')
+    .reduce((sum, row) => sum + row.total, 0)
+  const pendidikTotal = total - generusTotal
 
   return (
     <Card className='print:break-inside-avoid print:shadow-none'>
       <CardHeader>
-        <CardTitle>Sensus Generus (snapshot saat submit)</CardTitle>
+        <CardTitle>Sensus Generus</CardTitle>
         <CardDescription>
-          Total L + P per kategori, per kelompok.
+          Snapshot saat submit, dilengkapi master berjalan untuk data yang belum
+          tersnapshot.
         </CardDescription>
       </CardHeader>
-      <CardContent className='overflow-x-auto'>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Kategori</TableHead>
-              {kelompokList.map((k) => (
-                <TableHead key={k.id} className='text-right'>
-                  {k.value}
-                </TableHead>
-              ))}
-              <TableHead className='text-right'>Total</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={kelompokList.length + 2}
-                  className='text-muted-foreground text-center text-sm'
-                >
-                  Tidak ada snapshot sensus.
-                </TableCell>
-              </TableRow>
-            ) : (
-              rows.map((row) => (
-                <TableRow key={row.code}>
-                  <TableCell className='font-medium'>
-                    {
-                      CATEGORY_LABELS[
-                        row.code as keyof typeof CATEGORY_LABELS
-                      ]
-                    }
-                  </TableCell>
-                  {row.perKK.map((n, i) => (
-                    <TableCell
-                      key={kelompokIds[i]}
-                      className={cn(
-                        'text-right tabular-nums',
-                        n === 0 && 'text-muted-foreground/60'
-                      )}
-                    >
-                      {n || '—'}
-                    </TableCell>
+      <CardContent className='flex flex-col gap-4'>
+        {total === 0 ? (
+          <div className='py-8 text-center text-sm text-muted-foreground'>
+            Tidak ada snapshot sensus.
+          </div>
+        ) : (
+          <>
+            <SensusGenderChart
+              rows={rows.map((row) => ({
+                code: row.code,
+                label: row.label,
+                L: row.l,
+                P: row.p,
+                total: row.total,
+              }))}
+              kelompokCount={kelompokList.length}
+              total={total}
+              generusTotal={generusTotal}
+              pendidikTotal={pendidikTotal}
+            />
+            <div className='overflow-x-auto'>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Kategori</TableHead>
+                    {kelompokList.map((k) => (
+                      <TableHead key={k.id} className='text-right'>
+                        {k.value}
+                      </TableHead>
+                    ))}
+                    <TableHead className='text-right'>Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((row) => (
+                    <TableRow key={row.code}>
+                      <TableCell className='font-medium'>{row.label}</TableCell>
+                      {row.perKK.map((n, i) => (
+                        <TableCell
+                          key={kelompokIds[i]}
+                          className={cn(
+                            'text-right tabular-nums',
+                            n === 0 && 'text-muted-foreground/60'
+                          )}
+                        >
+                          {n || '—'}
+                        </TableCell>
+                      ))}
+                      <TableCell className='text-right font-semibold tabular-nums'>
+                        {row.total}
+                      </TableCell>
+                    </TableRow>
                   ))}
-                  <TableCell className='text-right font-semibold tabular-nums'>
-                    {row.total}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                </TableBody>
+              </Table>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
+  )
+}
+
+function makeSensusCellKey(
+  kelompokId: string,
+  categoryCode: string,
+  gender: string
+) {
+  return `${kelompokId}__${categoryCode}__${gender}`
+}
+
+function getSensusCellCount({
+  kelompokId,
+  code,
+  gender,
+  snapByKK,
+  masterByKK,
+  derivedByKK,
+}: {
+  kelompokId: string
+  code: CategoryCode
+  gender: SensusGender
+  snapByKK: Map<string, SensusSnapshotRow>
+  masterByKK: Map<string, SensusRow>
+  derivedByKK: Map<string, DerivedGpnSensusRow>
+}) {
+  const key = makeSensusCellKey(kelompokId, code, gender)
+  const snapshot = snapByKK.get(key)
+  if (snapshot) return snapshot.count
+
+  if (code === 'GPN_A' || code === 'GPN_B') {
+    return derivedByKK.get(key)?.count ?? masterByKK.get(key)?.count ?? 0
+  }
+
+  return masterByKK.get(key)?.count ?? 0
+}
+
+interface SensusChartRow {
+  code: CategoryCode
+  label: string
+  L: number
+  P: number
+  total: number
+}
+
+const sensusChartConfig = {
+  L: { label: 'Laki-laki', color: 'var(--chart-1)' },
+  P: { label: 'Perempuan', color: 'oklch(0.92 0.05 90)' },
+} satisfies ChartConfig
+
+function formatRecapNumber(value: number): string {
+  return value.toLocaleString('id-ID')
+}
+
+function formatSegmentLabel(value: unknown): string {
+  const numberValue = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(numberValue) && numberValue > 0
+    ? formatRecapNumber(numberValue)
+    : ''
+}
+
+function GenderLegend() {
+  return (
+    <div className='flex items-center justify-center gap-4 text-xs text-muted-foreground'>
+      <span className='inline-flex items-center gap-1.5'>
+        <span className='h-2.5 w-2.5 rounded-sm bg-[var(--chart-1)]' />
+        Laki-laki
+      </span>
+      <span className='inline-flex items-center gap-1.5'>
+        <span className='h-2.5 w-2.5 rounded-sm border border-border/40 bg-[oklch(0.92_0.05_90)]' />
+        Perempuan
+      </span>
+    </div>
+  )
+}
+
+function SensusGenderChart({
+  rows,
+  kelompokCount,
+  total,
+  generusTotal,
+  pendidikTotal,
+}: {
+  rows: SensusChartRow[]
+  kelompokCount: number
+  total: number
+  generusTotal: number
+  pendidikTotal: number
+}) {
+  const chartRows = useMemo(() => {
+    const rawRows = rows.map((row) => {
+      let shortLabel = row.label
+      if (row.code === 'GPN_A') shortLabel = 'GPN A'
+      if (row.code === 'GPN_B') shortLabel = 'GPN B'
+      return {
+        ...row,
+        shortLabel,
+      }
+    })
+
+    const nonPendidik = rawRows.filter(
+      (r) => r.code !== 'PENDIDIK_MT' && r.code !== 'PENDIDIK_MS'
+    )
+    const pendidik = rawRows.filter(
+      (r) => r.code === 'PENDIDIK_MT' || r.code === 'PENDIDIK_MS'
+    )
+
+    nonPendidik.sort((a, b) => b.total - a.total)
+    pendidik.sort((a, b) => b.total - a.total)
+
+    return [...nonPendidik, ...pendidik]
+  }, [rows])
+
+  const renderTotalLabel = (props: {
+    x?: string | number
+    y?: string | number
+    width?: string | number
+    index?: number
+  }) => {
+    const { x, y, width, index } = props
+    if (x == null || y == null || width == null || index == null) return null
+    const numX = typeof x === 'string' ? parseFloat(x) : x
+    const numY = typeof y === 'string' ? parseFloat(y) : y
+    const numWidth = typeof width === 'string' ? parseFloat(width) : width
+    const data = chartRows[index]
+    if (!data || data.total === 0) return null
+    return (
+      <text
+        x={numX + numWidth / 2}
+        y={numY - 8}
+        fill='var(--foreground)'
+        fontSize={11}
+        fontWeight={700}
+        textAnchor='middle'
+        className='tabular-nums'
+      >
+        {formatRecapNumber(data.total)}
+      </text>
+    )
+  }
+
+  const lakiTotal = chartRows.reduce((sum, row) => sum + row.L, 0)
+  const perempuanTotal = chartRows.reduce((sum, row) => sum + row.P, 0)
+
+  return (
+    <div className='flex flex-col gap-6'>
+      {/* 5 Summary Cards Grid */}
+      <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5'>
+        <SummaryTile label='Generus' value={generusTotal} />
+        <SummaryTile label='Pendidik' value={pendidikTotal} />
+        <SummaryTile label='Laki-laki' value={lakiTotal} />
+        <SummaryTile label='Perempuan' value={perempuanTotal} />
+        <SummaryTile
+          label='Kelompok'
+          value={kelompokCount}
+          className='col-span-2 sm:col-span-1'
+        />
+      </div>
+
+      {/* Chart Card */}
+      <div className='rounded-lg border border-border/70 bg-card p-6 shadow-sm'>
+        <div className='mb-6 flex flex-wrap items-start justify-between gap-4'>
+          <div>
+            <h3 className='text-lg font-bold tracking-tight text-foreground'>
+              Komposisi Sensus Desa
+            </h3>
+            <p className='text-sm text-muted-foreground'>
+              Snapshot gabungan {kelompokCount} kelompok, dipisah laki-laki dan
+              perempuan.
+            </p>
+          </div>
+          <div className='text-right'>
+            <div className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
+              Total
+            </div>
+            <div className='mt-1 text-3xl font-extrabold tracking-tight text-foreground tabular-nums'>
+              {formatRecapNumber(total)}
+            </div>
+          </div>
+        </div>
+        <div className='flex flex-col gap-4'>
+          <ChartContainer
+            config={sensusChartConfig}
+            className='aspect-auto h-72 w-full'
+          >
+            <BarChart
+              accessibilityLayer
+              data={chartRows}
+              margin={{ top: 20, right: 16, bottom: 8, left: 18 }}
+            >
+              <CartesianGrid
+                vertical={false}
+                stroke='var(--border)'
+                strokeOpacity={0.4}
+                strokeDasharray='4 4'
+              />
+              <XAxis
+                dataKey='shortLabel'
+                type='category'
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fill: 'var(--muted-foreground)',
+                  fontSize: 11,
+                  fontWeight: 500,
+                }}
+              />
+              <YAxis
+                type='number'
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(value: number) => formatRecapNumber(value)}
+                tick={{
+                  fill: 'var(--muted-foreground)',
+                  fontSize: 11,
+                  fontWeight: 400,
+                }}
+              />
+              <ChartTooltip
+                cursor={{ fill: 'var(--muted)', fillOpacity: 0.3 }}
+                content={({ active, payload }) => {
+                  if (!active || !payload?.length) return null
+                  const row = payload[0].payload as SensusChartRow
+                  return (
+                    <div className='min-w-[140px] rounded-lg border border-border/80 bg-popover/95 p-3 text-xs text-popover-foreground shadow-lg backdrop-blur-sm'>
+                      <div className='mb-2 border-b border-border/50 pb-1.5 font-bold text-foreground'>
+                        {row.label}
+                      </div>
+                      <div className='space-y-1.5'>
+                        <div className='flex items-center justify-between gap-4'>
+                          <span className='flex items-center gap-1.5 text-muted-foreground'>
+                            <span className='h-2 w-2 rounded-full bg-[var(--chart-1)]' />
+                            Laki-laki
+                          </span>
+                          <span className='font-mono font-medium text-foreground tabular-nums'>
+                            {formatRecapNumber(row.L)}
+                          </span>
+                        </div>
+                        <div className='flex items-center justify-between gap-4'>
+                          <span className='flex items-center gap-1.5 text-muted-foreground'>
+                            <span className='h-2 w-2 rounded-full bg-[oklch(0.92_0.05_90)]' />
+                            Perempuan
+                          </span>
+                          <span className='font-mono font-medium text-foreground tabular-nums'>
+                            {formatRecapNumber(row.P)}
+                          </span>
+                        </div>
+                        <div className='mt-1.5 flex items-center justify-between gap-4 border-t pt-1.5 font-extrabold text-foreground'>
+                          <span>Total</span>
+                          <span className='font-mono tabular-nums'>
+                            {formatRecapNumber(row.total)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }}
+              />
+              <Bar
+                dataKey='L'
+                stackId='gender'
+                fill='var(--color-L)'
+                stroke='var(--background)'
+                strokeWidth={2}
+                radius={[0, 0, 0, 0]}
+                isAnimationActive={false}
+              >
+                <LabelList
+                  dataKey='L'
+                  position='center'
+                  className='fill-white font-semibold'
+                  fontSize={11}
+                  formatter={formatSegmentLabel}
+                />
+              </Bar>
+              <Bar
+                dataKey='P'
+                stackId='gender'
+                fill='var(--color-P)'
+                stroke='var(--background)'
+                strokeWidth={2}
+                radius={[4, 4, 0, 0]}
+                isAnimationActive={false}
+              >
+                <LabelList
+                  dataKey='P'
+                  position='center'
+                  className='fill-foreground font-semibold'
+                  fontSize={11}
+                  formatter={formatSegmentLabel}
+                />
+                <LabelList dataKey='P' content={renderTotalLabel} />
+              </Bar>
+            </BarChart>
+          </ChartContainer>
+          <GenderLegend />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SummaryTile({
+  label,
+  value,
+  className,
+}: {
+  label: string
+  value: number
+  className?: string
+}) {
+  return (
+    <div
+      className={cn(
+        'flex items-center justify-between rounded-lg border border-border/70 bg-card p-4 shadow-sm transition-all duration-200 hover:border-border/100',
+        className
+      )}
+    >
+      <span className='text-sm font-medium text-muted-foreground'>{label}</span>
+      <span className='text-2xl font-bold text-foreground tabular-nums'>
+        {formatRecapNumber(value)}
+      </span>
+    </div>
   )
 }
 
@@ -662,6 +1219,12 @@ interface MetricDefLite {
   name: string
   value_format: string
   category_label: string | null
+}
+
+function formatMetricAverage(value: number): string {
+  return value.toLocaleString('id-ID', {
+    maximumFractionDigits: Number.isInteger(value) ? 0 : 1,
+  })
 }
 
 function MetricsRecapCard({
@@ -692,13 +1255,13 @@ function MetricsRecapCard({
       </CardHeader>
       <CardContent className='flex flex-col gap-4'>
         {Object.entries(grouped).length === 0 ? (
-          <div className='text-muted-foreground text-sm'>
+          <div className='text-sm text-muted-foreground'>
             Tidak ada metric aktif.
           </div>
         ) : (
           Object.entries(grouped).map(([group, items]) => (
             <div key={group}>
-              <div className='text-muted-foreground mb-2 text-sm font-semibold'>
+              <div className='mb-2 text-sm font-semibold text-muted-foreground'>
                 {group}
               </div>
               <div className='overflow-x-auto'>
@@ -711,23 +1274,36 @@ function MetricsRecapCard({
                           {k.value}
                         </TableHead>
                       ))}
+                      <TableHead className='text-right'>Rata-rata</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {items.map((m) => (
-                      <TableRow key={m.code}>
-                        <TableCell className='font-medium'>{m.name}</TableCell>
-                        {kelompokList.map((k) => {
-                          const report = reportByKelompok.get(k.id)
-                          const row = report
-                            ? byKey.get(`${report.id}_${m.code}`)
-                            : undefined
-                          const val = row?.current_value ?? null
-                          const suffix =
-                            m.value_format === 'percent' ? '%' : ''
-                          return (
+                    {items.map((m) => {
+                      const suffix = m.value_format === 'percent' ? '%' : ''
+                      const values = kelompokList.map((k) => {
+                        const report = reportByKelompok.get(k.id)
+                        const row = report
+                          ? byKey.get(`${report.id}_${m.code}`)
+                          : undefined
+                        return row?.current_value ?? null
+                      })
+                      const validValues = values.filter(
+                        (value): value is number => value != null
+                      )
+                      const average =
+                        validValues.length > 0
+                          ? validValues.reduce((sum, value) => sum + value, 0) /
+                            validValues.length
+                          : null
+
+                      return (
+                        <TableRow key={m.code}>
+                          <TableCell className='font-medium'>
+                            {m.name}
+                          </TableCell>
+                          {values.map((val, index) => (
                             <TableCell
-                              key={k.id}
+                              key={kelompokList[index]?.id ?? index}
                               className={cn(
                                 'text-right tabular-nums',
                                 val == null && 'text-muted-foreground/60'
@@ -735,10 +1311,20 @@ function MetricsRecapCard({
                             >
                               {val != null ? `${val}${suffix}` : '—'}
                             </TableCell>
-                          )
-                        })}
-                      </TableRow>
-                    ))}
+                          ))}
+                          <TableCell
+                            className={cn(
+                              'text-right font-semibold tabular-nums',
+                              average == null && 'text-muted-foreground/60'
+                            )}
+                          >
+                            {average != null
+                              ? `${formatMetricAverage(average)}${suffix}`
+                              : '—'}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
                   </TableBody>
                 </Table>
               </div>
@@ -777,9 +1363,7 @@ function SarprasRecapCard({
     <Card className='print:break-inside-avoid print:shadow-none'>
       <CardHeader>
         <CardTitle>Sarpras — % Pengadaan</CardTitle>
-        <CardDescription>
-          Berdasarkan {totalItems} item aktif.
-        </CardDescription>
+        <CardDescription>Berdasarkan {totalItems} item aktif.</CardDescription>
       </CardHeader>
       <CardContent className='overflow-x-auto'>
         <Table>
@@ -803,7 +1387,7 @@ function SarprasRecapCard({
                 </TableCell>
                 <TableCell className='min-w-40'>
                   <div
-                    className='bg-muted/70 h-1.5 w-full overflow-hidden rounded-full'
+                    className='h-1.5 w-full overflow-hidden rounded-full bg-muted/70'
                     role='progressbar'
                     aria-valuenow={e.pct}
                     aria-valuemin={0}
@@ -811,7 +1395,7 @@ function SarprasRecapCard({
                     aria-label={`${e.k.value}: ${e.pct}% pengadaan`}
                   >
                     <div
-                      className='bg-foreground/85 h-full rounded-full transition-[width] duration-500 ease-out'
+                      className='h-full rounded-full bg-foreground/85 transition-[width] duration-500 ease-out'
                       style={{ width: `${e.pct}%` }}
                     />
                   </div>
@@ -884,7 +1468,7 @@ function ShodaqohRecapCard({
               </TableRow>
             ))}
             <TableRow className='bg-muted/40 font-semibold hover:bg-muted/40'>
-              <TableCell className='text-[0.6875rem] uppercase tracking-[0.12em]'>
+              <TableCell className='text-[0.6875rem] tracking-[0.12em] uppercase'>
                 Total
               </TableCell>
               <TableCell className='text-right tabular-nums'>
@@ -921,8 +1505,12 @@ function MustinRecapCard({
 
   const sortNotes = (notes: MustinNoteRow[]): MustinNoteRow[] => {
     return [...notes].sort((a, b) => {
-      const ta = a.template_code ? templateByCode.get(a.template_code) : undefined
-      const tb = b.template_code ? templateByCode.get(b.template_code) : undefined
+      const ta = a.template_code
+        ? templateByCode.get(a.template_code)
+        : undefined
+      const tb = b.template_code
+        ? templateByCode.get(b.template_code)
+        : undefined
       const aOrder = ta ? ta.sort_order : 1_000_000 + a.sort_order
       const bOrder = tb ? tb.sort_order : 1_000_000 + b.sort_order
       return aOrder - bOrder
@@ -946,12 +1534,12 @@ function MustinRecapCard({
               <div key={k.id} className='flex flex-col gap-3'>
                 <div className='flex items-baseline justify-between gap-3'>
                   <h3 className='font-semibold tracking-tight'>{k.value}</h3>
-                  <span className='text-muted-foreground text-xs tabular-nums'>
+                  <span className='text-xs text-muted-foreground tabular-nums'>
                     {kkRows.length} item
                   </span>
                 </div>
                 {kkRows.length === 0 ? (
-                  <p className='text-muted-foreground text-sm'>
+                  <p className='text-sm text-muted-foreground'>
                     Tidak ada catatan.
                   </p>
                 ) : (
@@ -966,17 +1554,16 @@ function MustinRecapCard({
                               (v): v is string => typeof v === 'string'
                             ) as string[])
                           : []
-                      const showStatusBadge =
-                        !tmpl || n.status !== 'open'
+                      const showStatusBadge = !tmpl || n.status !== 'open'
                       return (
                         <div
                           key={n.id}
-                          className='border-border/60 bg-muted/20 rounded-md border p-3.5 text-sm'
+                          className='rounded-md border border-border/60 bg-muted/20 p-3.5 text-sm'
                         >
                           {(showStatusBadge || n.deadline || n.pic) && (
                             <div className='mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-1'>
                               {showStatusBadge && (
-                                <span className='bg-background border-border/70 inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium'>
+                                <span className='inline-flex items-center rounded-full border border-border/70 bg-background px-2 py-0.5 text-xs font-medium'>
                                   {
                                     MUSTIN_STATUS_LABELS[
                                       n.status as MustinStatus
@@ -985,7 +1572,7 @@ function MustinRecapCard({
                                 </span>
                               )}
                               {n.deadline && (
-                                <span className='text-muted-foreground text-xs tabular-nums'>
+                                <span className='text-xs text-muted-foreground tabular-nums'>
                                   Deadline{' '}
                                   {format(parseISO(n.deadline), 'dd MMM yyyy', {
                                     locale: idLocale,
@@ -993,7 +1580,7 @@ function MustinRecapCard({
                                 </span>
                               )}
                               {n.pic && (
-                                <span className='text-muted-foreground text-xs'>
+                                <span className='text-xs text-muted-foreground'>
                                   PIC {n.pic}
                                 </span>
                               )}
@@ -1001,14 +1588,14 @@ function MustinRecapCard({
                           )}
                           <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]'>
                             <div>
-                              <div className='text-muted-foreground/90 text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+                              <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground/90 uppercase'>
                                 Pokok Masalah
                               </div>
-                              <div className='mt-1 whitespace-pre-wrap font-medium'>
+                              <div className='mt-1 font-medium whitespace-pre-wrap'>
                                 {n.pokok_masalah}
                               </div>
                               {subs.length > 0 && (
-                                <ol className='text-muted-foreground mt-1.5 list-[lower-alpha] pl-5 text-xs leading-relaxed'>
+                                <ol className='mt-1.5 list-[lower-alpha] pl-5 text-xs leading-relaxed text-muted-foreground'>
                                   {subs.map((s, i) => (
                                     <li key={i}>{s}</li>
                                   ))}
@@ -1016,10 +1603,10 @@ function MustinRecapCard({
                               )}
                             </div>
                             <div>
-                              <div className='text-muted-foreground/90 text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+                              <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground/90 uppercase'>
                                 Keputusan / Rencana
                               </div>
-                              <div className='mt-1 whitespace-pre-wrap leading-relaxed'>
+                              <div className='mt-1 leading-relaxed whitespace-pre-wrap'>
                                 {n.keputusan_rencana || (
                                   <span className='text-muted-foreground italic'>
                                     (kosong)
