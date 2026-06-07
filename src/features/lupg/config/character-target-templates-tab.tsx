@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   CheckCircle2,
   Loader2,
@@ -8,8 +8,8 @@ import {
   Trash2,
   WandSparkles,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { useAuthStore } from '@/stores/auth-store'
 import { supabase } from '@/lib/supabase'
 import {
   AlertDialog,
@@ -119,20 +119,62 @@ interface ParsedItem {
 }
 
 interface ParseResult {
-  parser_method: 'azure_openai' | 'deterministic'
+  parser_method: 'deterministic'
   confidence: number
   mapping: Record<string, string | null>
   issues: Array<{ severity: 'info' | 'warning' | 'error'; message: string }>
   items: ParsedItem[]
+  deployment_name?: string
 }
 
 type EditableItem = ParsedItem & { localId: string }
 
+interface LogEntry {
+  timestamp: string
+  level: 'info' | 'success' | 'warning' | 'error'
+  message: string
+}
+
+interface ParserHistoryItem {
+  id: string
+  timestamp: string
+  filename: string
+  templateName: string
+  status: 'success' | 'warning' | 'error'
+  parserMethod: 'deterministic'
+  itemCount: number
+  confidence: number
+  logs: LogEntry[]
+}
+
 export function CharacterTargetTemplatesTab() {
-  const { auth } = useAuthStore()
   const { data: templates = [], isLoading } = useCharacterTargetTemplates()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isImporting, setIsImporting] = useState(false)
+  const [selectedLogItem, setSelectedLogItem] = useState<ParserHistoryItem | null>(null)
+
+  const [logHistory, setLogHistory] = useState<ParserHistoryItem[]>(() => {
+    try {
+      const saved =
+        localStorage.getItem('lupg_parser_history') ??
+        localStorage.getItem('lupg_ai_parser_history')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  useEffect(() => {
+    localStorage.setItem('lupg_parser_history', JSON.stringify(logHistory))
+  }, [logHistory])
+
+  const handleAddLogHistory = (item: ParserHistoryItem) => {
+    setLogHistory((prev) => [item, ...prev].slice(0, 50))
+  }
+
+  const handleClearLogHistory = () => {
+    setLogHistory([])
+  }
 
   useEffect(() => {
     if (!isLoading && templates.length === 0) {
@@ -175,18 +217,18 @@ export function CharacterTargetTemplatesTab() {
             className='h-8 px-2.5 text-xs'
           >
             <Plus className='mr-1.5 h-3.5 w-3.5' />
-            Import Baru
+            New Import
           </Button>
         </div>
 
         {isLoading ? (
           <div className='flex items-center justify-center py-6 text-sm text-muted-foreground'>
             <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-            Memuat...
+            Loading...
           </div>
         ) : templates.length === 0 ? (
           <div className='rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground'>
-            Belum ada template.
+            No templates yet.
           </div>
         ) : (
           <div className='flex flex-col gap-1'>
@@ -214,7 +256,7 @@ export function CharacterTargetTemplatesTab() {
                     </span>
                     {template.status === 'active' ? (
                       <span className='shrink-0 rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-success uppercase'>
-                        Aktif
+                        Active
                       </span>
                     ) : (
                       <span className='shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium tracking-wider text-muted-foreground uppercase'>
@@ -231,18 +273,80 @@ export function CharacterTargetTemplatesTab() {
             })}
           </div>
         )}
+
+        {/* Divider */}
+        <div className='h-px bg-border/70 my-2' />
+
+        {/* Section: Parser Activity Logs */}
+        <div className='flex flex-col gap-3'>
+          <div className='flex items-center justify-between'>
+            <h3 className='text-[11px] font-semibold tracking-wider text-muted-foreground uppercase'>
+              Parser Activity Logs
+            </h3>
+            {logHistory.length > 0 && (
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={handleClearLogHistory}
+                className='h-6 px-1.5 text-[10px] text-muted-foreground hover:text-destructive transition-colors'
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+
+          {logHistory.length === 0 ? (
+            <div className='rounded-md border border-dashed p-3 text-center text-[11px] text-muted-foreground'>
+              No parser activity yet.
+            </div>
+          ) : (
+            <div className='flex flex-col gap-1.5 max-h-80 overflow-y-auto pr-1 scrollbar-thin'>
+              {logHistory.map((item) => (
+                <button
+                  key={item.id}
+                  type='button'
+                  onClick={() => setSelectedLogItem(item)}
+                  className='flex w-full flex-col gap-1 rounded-md border border-border/40 bg-card/45 px-2.5 py-2 text-left text-xs transition-all hover:bg-muted/70 hover:border-border/70 group'
+                >
+                  <div className='flex w-full items-start justify-between gap-2'>
+                    <span className='block max-w-[15ch] truncate font-medium text-foreground group-hover:text-primary transition-colors'>
+                      {item.filename}
+                    </span>
+                    {item.status === 'success' ? (
+                      <span className='shrink-0 rounded bg-emerald-500/10 border border-emerald-500/20 px-1 py-0.2 text-[8px] font-bold text-emerald-600 uppercase'>
+                        Success
+                      </span>
+                    ) : item.status === 'warning' ? (
+                      <span className='shrink-0 rounded bg-amber-500/10 border border-amber-500/20 px-1 py-0.2 text-[8px] font-bold text-amber-600 uppercase'>
+                        Warning
+                      </span>
+                    ) : (
+                      <span className='shrink-0 rounded bg-red-500/10 border border-red-500/20 px-1 py-0.2 text-[8px] font-bold text-red-600 uppercase'>
+                        Error
+                      </span>
+                    )}
+                  </div>
+                  <div className='flex items-center justify-between text-[10px] text-muted-foreground/80'>
+                    <span>{item.itemCount} items · Conf: {item.confidence}%</span>
+                    <span>{item.timestamp.split(', ')[1] || item.timestamp}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Main Workspace */}
       <div className='min-w-0'>
         {isImporting ? (
           <TemplateImportCard
-            accessToken={auth.accessToken}
             onSaveSuccess={(newTemplateId) => {
               setSelectedId(newTemplateId)
               setIsImporting(false)
             }}
             onCancel={templates.length > 0 ? handleCancelImport : undefined}
+            onAddLogHistory={handleAddLogHistory}
           />
         ) : selectedTemplate ? (
           <Card className='border border-border/70 shadow-sm'>
@@ -255,7 +359,7 @@ export function CharacterTargetTemplatesTab() {
                     </CardTitle>
                     {selectedTemplate.status === 'active' ? (
                       <span className='rounded-md bg-success/15 px-2 py-0.5 text-xs font-semibold tracking-wider text-success uppercase'>
-                        Aktif
+                        Active
                       </span>
                     ) : (
                       <span className='rounded-md bg-muted px-2 py-0.5 text-xs font-medium tracking-wider text-muted-foreground uppercase'>
@@ -264,8 +368,8 @@ export function CharacterTargetTemplatesTab() {
                     )}
                   </div>
                   <CardDescription className='mt-1 text-xs'>
-                    Tahun {selectedTemplate.year} · Jenjang{' '}
-                    {selectedTemplate.level_code} · Diparsing via{' '}
+                    Year {selectedTemplate.year} · Level{' '}
+                    {selectedTemplate.level_code} · Parsed via{' '}
                     {selectedTemplate.parser_method}
                     {selectedTemplate.source_filename
                       ? ` · File: ${selectedTemplate.source_filename}`
@@ -286,22 +390,125 @@ export function CharacterTargetTemplatesTab() {
           </Card>
         ) : (
           <div className='rounded-md border border-dashed bg-muted/10 p-12 text-center text-sm text-muted-foreground'>
-            Pilih template di sebelah kiri atau klik "Import Baru".
+            Select a template from the left panel or click "New Import".
           </div>
         )}
       </div>
+
+      <LogDetailDialog
+        item={selectedLogItem}
+        open={!!selectedLogItem}
+        onOpenChange={(open) => !open && setSelectedLogItem(null)}
+      />
     </div>
   )
 }
 
+function LogDetailDialog({
+  item,
+  open,
+  onOpenChange,
+}: {
+  item: ParserHistoryItem | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  if (!item) return null
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className='sm:max-w-xl max-h-[90vh] flex flex-col p-6'>
+        <DialogHeader className='pb-4 border-b border-border/50'>
+          <DialogTitle className='text-base font-bold flex items-center gap-2'>
+            <span className={cn(
+              'h-2.5 w-2.5 rounded-full shrink-0',
+              item.status === 'success'
+                ? 'bg-emerald-500'
+                : item.status === 'warning'
+                  ? 'bg-amber-500'
+                  : 'bg-red-500'
+            )} />
+            Parser Log Details
+          </DialogTitle>
+          <DialogDescription className='text-xs'>
+            Parsing activity on {item.timestamp} for template "{item.templateName}"
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className='flex flex-col gap-4 py-4 overflow-y-auto min-h-0 flex-1 scrollbar-thin pr-1'>
+          <div className='grid grid-cols-2 gap-3 bg-muted/30 rounded-lg p-3 text-xs'>
+            <div>
+              <p className='text-muted-foreground'>File Name</p>
+              <p className='font-medium text-foreground truncate'>{item.filename}</p>
+            </div>
+            <div>
+              <p className='text-muted-foreground'>Parser Method</p>
+              <p className='font-medium text-foreground uppercase'>Local Deterministic</p>
+            </div>
+            <div>
+              <p className='text-muted-foreground'>Extracted Items</p>
+              <p className='font-medium text-foreground'>{item.itemCount} items</p>
+            </div>
+            <div>
+              <p className='text-muted-foreground'>Confidence Score</p>
+              <p className='font-medium text-foreground'>{item.confidence}%</p>
+            </div>
+          </div>
+
+          <div className='flex flex-col gap-1.5'>
+            <p className='text-xs font-semibold text-muted-foreground uppercase tracking-wider'>Terminal Trace Logs</p>
+            <div className='rounded-lg border border-zinc-800 bg-zinc-950 p-4 font-mono text-[10px] leading-relaxed text-zinc-300 max-h-72 overflow-y-auto scrollbar-thin'>
+              {item.logs.map((log, index) => (
+                <div key={index} className='flex items-start gap-2 mb-1.5 last:mb-0'>
+                  <span className='text-zinc-600 shrink-0 select-none'>[{log.timestamp}]</span>
+                  <span
+                    className={cn(
+                      'font-semibold shrink-0 select-none px-1 rounded text-[8px] uppercase tracking-wide',
+                      log.level === 'success'
+                        ? 'bg-emerald-950 text-emerald-400 border border-emerald-900/50'
+                        : log.level === 'warning'
+                          ? 'bg-amber-950 text-amber-400 border border-amber-900/50'
+                          : log.level === 'error'
+                            ? 'bg-red-950 text-red-400 border border-red-900/50'
+                            : 'bg-zinc-900 text-zinc-400 border border-zinc-800'
+                    )}
+                  >
+                    {log.level}
+                  </span>
+                  <span className='text-zinc-200 wrap-break-word whitespace-pre-wrap'>{log.message}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* How parser processed detail inside dialog */}
+          <div className='rounded-lg border border-border bg-gradient-to-br from-indigo-50/20 to-violet-50/10 dark:from-indigo-950/10 dark:to-violet-950/5 p-3.5 text-xs'>
+            <h6 className='font-bold text-foreground mb-1.5 flex items-center gap-1.5'>
+              <WandSparkles className='h-3.5 w-3.5 text-indigo-500' />
+              How This Parser Processed the Document
+            </h6>
+            <p className='text-muted-foreground leading-normal'>
+              The local parser reads the Excel file hierarchically. First, it identifies the worksheet layout, detects month header rows, and maps the column structure. Then it reads material patterns to infer categories, removes empty placeholders, and marks rows that need Ayat/hal references. Finally, it produces structured data that is ready to save.
+            </p>
+          </div>
+        </div>
+
+        <DialogFooter className='pt-2 border-t border-border/50'>
+          <Button onClick={() => onOpenChange(false)}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function TemplateImportCard({
-  accessToken,
   onSaveSuccess,
   onCancel,
+  onAddLogHistory,
 }: {
-  accessToken: string | null
   onSaveSuccess?: (templateId: string) => void
   onCancel?: () => void
+  onAddLogHistory: (item: ParserHistoryItem) => void
 }) {
   const createTemplate = useCreateCharacterTargetTemplate()
   const replaceItems = useReplaceCharacterTargetItems()
@@ -315,46 +522,88 @@ function TemplateImportCard({
   const [parsed, setParsed] = useState<ParseResult | null>(null)
   const [items, setItems] = useState<EditableItem[]>([])
   const [isParsing, setIsParsing] = useState(false)
+  const [currentLogs, setCurrentLogs] = useState<LogEntry[]>([])
+  const logEndRef = useRef<HTMLDivElement>(null)
 
   const normalizedItems = useMemo(
     () => items.filter((item) => item.material_label.trim()),
     [items]
   )
 
+  // Auto scroll to latest logs
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [currentLogs])
+
   const parseFile = async () => {
     if (!file) {
-      toast.error('Pilih file Excel terlebih dahulu')
-      return
-    }
-    if (!accessToken) {
-      toast.error('Session belum siap')
+      toast.error('Please choose an Excel file first')
       return
     }
 
     setIsParsing(true)
+    setCurrentLogs([])
+    setParsed(null)
+    setItems([])
+
+    const tempLogs: LogEntry[] = []
+    const addLog = (level: 'info' | 'success' | 'warning' | 'error', message: string) => {
+      const timeStr = new Date().toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+      tempLogs.push({ timestamp: timeStr, level, message })
+      setCurrentLogs([...tempLogs])
+    }
+
+    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
     try {
+      addLog('info', `Starting file parse: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`)
+      await delay(120)
+
+      addLog('info', `Opening Excel file and reading sheet previews...`)
       const sheets = await readWorkbookPreview(file)
-      let parseResult: ParseResult
-      try {
-        parseResult = await requestServerParse({
-          accessToken,
-          year,
-          defaultLevel,
-          sheets,
-        })
-      } catch (e) {
-        parseResult = deterministicParse({ year, defaultLevel, sheets })
-        parseResult.issues.unshift({
-          severity: 'warning',
-          message:
-            e instanceof Error
-              ? `Parser server tidak tersedia: ${e.message}`
-              : 'Parser server tidak tersedia, memakai parser lokal.',
-        })
-      }
+      await delay(120)
+
+      addLog('info', `Found ${sheets.length} sheet(s): ${sheets.map((s) => `"${s.name}"`).join(', ')}.`)
+      await delay(140)
+
+      addLog('info', `Looking for target material headers (Month, Category, Material, Ayat/Hal)...`)
+      await delay(140)
+
+      const activeSheet = sheets[0]
+      const headerRowIndex = findHeaderRowIndex(activeSheet?.rows ?? [])
+      addLog('info', `Header row detected on sheet "${activeSheet?.name ?? 'Sheet'}" at row ${headerRowIndex + 1}.`)
+      await delay(120)
+
+      addLog('info', `Mapping columns intelligently...`)
+      await delay(120)
+
+      addLog('info', `Running local deterministic parser...`)
+      await delay(120)
+
+      let parseResult = deterministicParse({ year, defaultLevel, sheets })
+      addLog('success', `Local deterministic parser processed the file successfully.`)
+
       parseResult = normalizeParseResult(
         forceParseLevel(parseResult, defaultLevel)
       )
+
+      addLog('info', `Balancing material categories and default level "${defaultLevel}"...`)
+      await delay(120)
+
+      if (parseResult.issues.length > 0) {
+        addLog('warning', `Found ${parseResult.issues.length} validation note(s):`)
+        for (const issue of parseResult.issues.slice(0, 3)) {
+          addLog('warning', `[Validation] ${issue.message}`)
+        }
+      }
+
+      const confidencePercent = Math.round(parseResult.confidence * 100)
+      addLog('success', `Extraction complete. Loaded ${parseResult.items.length} material item(s).`)
+      addLog('success', `Parser confidence score: ${confidencePercent}% via Local Deterministic.`)
 
       setParsed(parseResult)
       setItems(
@@ -363,11 +612,55 @@ function TemplateImportCard({
           localId: `${item.source_sheet ?? 'sheet'}_${item.source_row ?? index}`,
         }))
       )
+
+      // Add to history
+      onAddLogHistory({
+        id: crypto.randomUUID(),
+        timestamp: new Date().toLocaleString('id-ID', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        filename: file.name,
+        templateName: name.trim() || `Target 29 Karakter ${year}`,
+        status: parseResult.issues.some((i) => i.severity === 'error')
+          ? 'error'
+          : parseResult.issues.some((i) => i.severity === 'warning')
+            ? 'warning'
+            : 'success',
+        parserMethod: parseResult.parser_method,
+        itemCount: parseResult.items.length,
+        confidence: confidencePercent,
+        logs: [...tempLogs],
+      })
+
       toast.success(
-        `Parser membaca ${parseResult.items.length} item (${parseResult.parser_method})`
+        `Parser loaded ${parseResult.items.length} item(s) (${parseResult.parser_method})`
       )
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Gagal parsing file')
+      addLog('error', `Parsing failed: ${e instanceof Error ? e.message : 'Failed to parse file'}`)
+
+      onAddLogHistory({
+        id: crypto.randomUUID(),
+        timestamp: new Date().toLocaleString('id-ID', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        filename: file.name,
+        templateName: name.trim() || `Target 29 Karakter ${year}`,
+        status: 'error',
+        parserMethod: 'deterministic',
+        itemCount: 0,
+        confidence: 0,
+        logs: [...tempLogs],
+      })
+
+      toast.error(e instanceof Error ? e.message : 'Failed to parse file')
     } finally {
       setIsParsing(false)
     }
@@ -375,11 +668,11 @@ function TemplateImportCard({
 
   const saveTemplate = async () => {
     if (!parsed) {
-      toast.error('Parse file dulu sebelum menyimpan')
+      toast.error('Parse the file before saving')
       return
     }
     if (!file) {
-      toast.error('File sumber tidak ditemukan')
+      toast.error('Source file not found')
       return
     }
 
@@ -413,30 +706,31 @@ function TemplateImportCard({
         await activateTemplate.mutateAsync(template)
       }
 
-      toast.success('Template materi berhasil disimpan')
+      toast.success('Material template saved successfully')
       setParsed(null)
       setItems([])
       setFile(null)
+      setCurrentLogs([])
       if (onSaveSuccess) {
         onSaveSuccess(template.id)
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Gagal menyimpan template')
+      toast.error(e instanceof Error ? e.message : 'Failed to save template')
     }
   }
 
   return (
     <Card className='border border-border/70 shadow-sm'>
       <CardHeader>
-        <CardTitle>Import Excel + AI Parser</CardTitle>
+        <CardTitle>Import Excel + Local Parser</CardTitle>
         <CardDescription>
-          Upload file daerah, review hasil parser, lalu simpan sebagai template.
+          Upload the worksheet, review the deterministic parser result, then save it as a template.
         </CardDescription>
       </CardHeader>
       <CardContent className='flex flex-col gap-6'>
         <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
           <div className='grid gap-2'>
-            <Label htmlFor='target-year'>Tahun</Label>
+            <Label htmlFor='target-year'>Year</Label>
             <Input
               id='target-year'
               type='number'
@@ -449,7 +743,7 @@ function TemplateImportCard({
             />
           </div>
           <div className='grid gap-2'>
-            <Label htmlFor='target-name'>Nama Template</Label>
+            <Label htmlFor='target-name'>Template Name</Label>
             <Input
               id='target-name'
               value={name}
@@ -457,7 +751,7 @@ function TemplateImportCard({
             />
           </div>
           <div className='grid gap-2'>
-            <Label>Default Jenjang</Label>
+            <Label>Default Level</Label>
             <Select
               value={defaultLevel}
               onValueChange={(value) =>
@@ -477,7 +771,7 @@ function TemplateImportCard({
             </Select>
           </div>
           <div className='grid gap-2'>
-            <Label htmlFor='target-file'>File Excel</Label>
+            <Label htmlFor='target-file'>Excel File</Label>
             <Input
               id='target-file'
               type='file'
@@ -487,6 +781,7 @@ function TemplateImportCard({
                 setFile(e.target.files?.[0] ?? null)
                 setParsed(null)
                 setItems([])
+                setCurrentLogs([])
               }}
             />
           </div>
@@ -499,7 +794,7 @@ function TemplateImportCard({
             id='activate-after-save'
           />
           <Label htmlFor='activate-after-save' className='cursor-pointer'>
-            Aktifkan template setelah disimpan
+            Activate template after saving
           </Label>
         </div>
 
@@ -522,7 +817,7 @@ function TemplateImportCard({
             }
           >
             <Plus className='mr-2 h-4 w-4' />
-            Tambah Manual
+            Add Manual Item
           </Button>
           <Button
             onClick={saveTemplate}
@@ -535,42 +830,60 @@ function TemplateImportCard({
             }
           >
             <Save className='mr-2 h-4 w-4' />
-            Simpan Template
+            Save Template
           </Button>
           {onCancel && (
             <Button variant='ghost' onClick={onCancel}>
-              Batal
+              Cancel
             </Button>
           )}
         </div>
 
-        {parsed ? (
-          <div className='rounded-md border border-border/70 bg-muted/10 p-4'>
-            <div className='flex flex-wrap items-center gap-2 text-sm'>
-              <span className='font-semibold'>
-                {parsed.parser_method === 'azure_openai'
-                  ? 'Azure OpenAI'
-                  : 'Deterministic fallback'}
-              </span>
-              <span className='text-muted-foreground'>
-                Confidence {Math.round(parsed.confidence * 100)}% ·{' '}
-                {normalizedItems.length} item
-              </span>
-            </div>
-            {parsed.issues.length > 0 ? (
-              <div className='mt-2 space-y-1 border-t border-border/50 pt-2 text-xs text-muted-foreground'>
-                {parsed.issues.slice(0, 4).map((issue, index) => (
-                  <p key={`${issue.severity}_${index}`}>
-                    <span className='mr-1 rounded bg-amber-500/10 px-1 py-0.5 text-[10px] font-medium text-amber-600 uppercase'>
-                      {issue.severity}
-                    </span>{' '}
-                    {issue.message}
-                  </p>
-                ))}
+        {/* Real-time parser console output */}
+        {currentLogs.length > 0 && (
+          <div className='flex flex-col gap-4 mt-2'>
+            <div className='rounded-lg border border-zinc-800 bg-zinc-950 p-4 font-mono text-[11px] leading-relaxed text-zinc-300 shadow-lg relative overflow-hidden'>
+              <div className='flex items-center justify-between border-b border-zinc-800 pb-2 mb-3'>
+                <div className='flex items-center gap-2'>
+                  <span className={cn(
+                    'h-2 w-2 rounded-full shrink-0',
+                    isParsing ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-500'
+                  )} />
+                  <span className='text-[10px] uppercase tracking-wider text-zinc-400 font-bold'>
+                    Parser Terminal Output
+                  </span>
+                </div>
+                <span className='text-[10px] text-zinc-500'>
+                  Status: {isParsing ? 'Processing' : 'Finished'}
+                </span>
               </div>
-            ) : null}
+              <div className='max-h-60 overflow-y-auto space-y-1.5 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent pr-1'>
+                {currentLogs.map((log, index) => (
+                  <div key={index} className='flex items-start gap-2'>
+                    <span className='text-zinc-600 shrink-0 select-none'>[{log.timestamp}]</span>
+                    <span
+                      className={cn(
+                        'font-semibold shrink-0 select-none px-1 py-0.2 rounded text-[9px] uppercase tracking-wide',
+                        log.level === 'success'
+                          ? 'bg-emerald-950 text-emerald-400 border border-emerald-900/50'
+                          : log.level === 'warning'
+                            ? 'bg-amber-950 text-amber-400 border border-amber-900/50'
+                            : log.level === 'error'
+                              ? 'bg-red-950 text-red-400 border border-red-900/50'
+                              : 'bg-zinc-900 text-zinc-400 border border-zinc-800'
+                      )}
+                    >
+                      {log.level}
+                    </span>
+                    <span className='text-zinc-200 wrap-break-word whitespace-pre-wrap'>{log.message}</span>
+                  </div>
+                ))}
+                <div ref={logEndRef} />
+              </div>
+            </div>
+
           </div>
-        ) : null}
+        )}
 
         {items.length > 0 ? (
           <div className='mt-2 flex flex-col gap-2'>
@@ -614,14 +927,14 @@ function EditTemplateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-md'>
         <DialogHeader>
-          <DialogTitle>Edit Info Template</DialogTitle>
+          <DialogTitle>Edit Template Info</DialogTitle>
           <DialogDescription>
-            Ubah nama, tahun, atau jenjang template ini.
+            Update this template name, year, or level.
           </DialogDescription>
         </DialogHeader>
         <div className='grid gap-4 py-4'>
           <div className='grid gap-2'>
-            <Label htmlFor='edit-template-name'>Nama Template</Label>
+            <Label htmlFor='edit-template-name'>Template Name</Label>
             <Input
               id='edit-template-name'
               value={name}
@@ -630,7 +943,7 @@ function EditTemplateDialog({
           </div>
           <div className='grid grid-cols-2 gap-4'>
             <div className='grid gap-2'>
-              <Label htmlFor='edit-template-year'>Tahun</Label>
+              <Label htmlFor='edit-template-year'>Year</Label>
               <Input
                 id='edit-template-year'
                 type='number'
@@ -639,7 +952,7 @@ function EditTemplateDialog({
               />
             </div>
             <div className='grid gap-2'>
-              <Label htmlFor='edit-template-level'>Jenjang</Label>
+              <Label htmlFor='edit-template-level'>Level</Label>
               <Select
                 value={levelCode}
                 onValueChange={(value) =>
@@ -662,7 +975,7 @@ function EditTemplateDialog({
         </div>
         <DialogFooter>
           <Button variant='outline' onClick={() => onOpenChange(false)}>
-            Batal
+            Cancel
           </Button>
           <Button
             disabled={isPending}
@@ -675,7 +988,7 @@ function EditTemplateDialog({
             }}
           >
             {isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-            Simpan Perubahan
+            Save Changes
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -718,13 +1031,13 @@ function TemplateItemsEditor({
         month_label: 'JANUARI',
         level_code: template.level_code,
         category_label: 'Akhlakul Karimah',
-        material_label: 'Materi baru',
+        material_label: 'New material',
         sort_order: items.length + 1,
       },
       {
-        onSuccess: () => toast.success('Item ditambahkan'),
+        onSuccess: () => toast.success('Item added'),
         onError: (e: unknown) =>
-          toast.error(e instanceof Error ? e.message : 'Gagal menambah item'),
+          toast.error(e instanceof Error ? e.message : 'Failed to add item'),
       }
     )
   }
@@ -738,11 +1051,11 @@ function TemplateItemsEditor({
       { id: template.id, patch },
       {
         onSuccess: () => {
-          toast.success('Info template diperbarui')
+          toast.success('Template info updated')
           setIsEditDialogOpen(false)
         },
         onError: (e: unknown) =>
-          toast.error(e instanceof Error ? e.message : 'Gagal update template'),
+          toast.error(e instanceof Error ? e.message : 'Failed to update template'),
       }
     )
   }
@@ -759,16 +1072,16 @@ function TemplateItemsEditor({
             }
             onClick={() =>
               activateTemplate.mutate(template, {
-                onSuccess: () => toast.success('Template diaktifkan'),
+                onSuccess: () => toast.success('Template activated'),
                 onError: (e: unknown) =>
                   toast.error(
-                    e instanceof Error ? e.message : 'Gagal mengaktifkan'
+                    e instanceof Error ? e.message : 'Failed to activate'
                   ),
               })
             }
           >
             <CheckCircle2 className='mr-2 h-4 w-4 text-success' />
-            Aktifkan
+            Activate
           </Button>
           {template.status !== 'archived' && (
             <Button
@@ -778,16 +1091,16 @@ function TemplateItemsEditor({
                 updateTemplate.mutate(
                   { id: template.id, patch: { status: 'archived' } },
                   {
-                    onSuccess: () => toast.success('Template diarsipkan'),
+                    onSuccess: () => toast.success('Template archived'),
                     onError: (e: unknown) =>
                       toast.error(
-                        e instanceof Error ? e.message : 'Gagal arsip'
+                        e instanceof Error ? e.message : 'Failed to archive'
                       ),
                   }
                 )
               }
             >
-              Arsipkan
+              Archive
             </Button>
           )}
           <Button
@@ -800,7 +1113,7 @@ function TemplateItemsEditor({
           </Button>
           <Button size='sm' variant='outline' onClick={handleAdd}>
             <Plus className='mr-2 h-4 w-4' />
-            Tambah Item
+            Add Item
           </Button>
         </div>
         <Button
@@ -811,28 +1124,28 @@ function TemplateItemsEditor({
           onClick={() => setDeleteOpen(true)}
         >
           <Trash2 className='mr-2 h-4 w-4' />
-          Hapus Template
+          Delete Template
         </Button>
       </div>
 
       {isLoading ? (
         <div className='flex items-center justify-center py-12 text-muted-foreground'>
           <Loader2 className='mr-2 h-6 w-6 animate-spin' />
-          Memuat item...
+          Loading items...
         </div>
       ) : grouped.length === 0 ? (
         <div className='rounded-md border border-dashed bg-muted/10 p-12 text-center text-sm text-muted-foreground'>
-          Template ini belum memiliki item. Klik "Tambah Item" untuk memulai.
+          This template has no items yet. Click "Add Item" to get started.
         </div>
       ) : (
         <div className='max-h-152 overflow-auto rounded-md border border-border/70 shadow-sm'>
           <Table>
             <TableHeader className='bg-muted/30'>
               <TableRow>
-                <TableHead className='w-35'>Bulan</TableHead>
-                <TableHead className='w-20'>Jenjang</TableHead>
-                <TableHead className='w-45'>Kategori</TableHead>
-                <TableHead>Materi</TableHead>
+                <TableHead className='w-35'>Month</TableHead>
+                <TableHead className='w-20'>Level</TableHead>
+                <TableHead className='w-45'>Category</TableHead>
+                <TableHead>Material</TableHead>
                 <TableHead className='w-45'>Ayat/hal</TableHead>
                 <TableHead className='w-25'>Status</TableHead>
                 <TableHead className='w-15'></TableHead>
@@ -857,14 +1170,14 @@ function TemplateItemsEditor({
                         { id: item.id, patch },
                         {
                           onSuccess: () => {
-                            toast.success('Item diupdate')
+                            toast.success('Item updated')
                             setEditingId(null)
                           },
                           onError: (e: unknown) =>
                             toast.error(
                               e instanceof Error
                                 ? e.message
-                                : 'Gagal update item'
+                                : 'Failed to update item'
                             ),
                         }
                       )
@@ -889,21 +1202,21 @@ function TemplateItemsEditor({
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Hapus template Target 29?</AlertDialogTitle>
+            <AlertDialogTitle>Delete Target 29 template?</AlertDialogTitle>
             <AlertDialogDescription>
-              Template <strong>{template.name}</strong>, seluruh item materi,
-              dan data monitoring yang terhubung ke item template ini akan
-              dihapus permanen.
+              Template <strong>{template.name}</strong>, all material items,
+              and monitoring data linked to this template will be permanently
+              deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
               onClick={() =>
                 deleteTemplate.mutate(template.id, {
                   onSuccess: () => {
-                    toast.success('Template dihapus')
+                    toast.success('Template deleted')
                     setDeleteOpen(false)
                     onDeleted()
                   },
@@ -911,7 +1224,7 @@ function TemplateItemsEditor({
                     toast.error(
                       e instanceof Error
                         ? e.message
-                        : 'Gagal menghapus template'
+                        : 'Failed to delete template'
                     )
                   },
                 })
@@ -920,7 +1233,7 @@ function TemplateItemsEditor({
               {deleteTemplate.isPending ? (
                 <Loader2 className='mr-2 h-4 w-4 animate-spin' />
               ) : null}
-              Hapus
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1022,7 +1335,7 @@ function StoredItemRow({
                   detail_label: e.target.value,
                 }))
               }
-              placeholder='Detail materi'
+              placeholder='Material detail'
             />
           </div>
         </TableCell>
@@ -1030,7 +1343,7 @@ function StoredItemRow({
           <div className='flex min-w-44 flex-col gap-2'>
             <div className='flex items-center justify-between rounded-md border px-3 py-2'>
               <span className='text-xs font-medium text-muted-foreground'>
-                Acuan ayat/hal
+                Ayat/hal reference
               </span>
               <Switch
                 checked={draft.uses_reference}
@@ -1054,7 +1367,7 @@ function StoredItemRow({
                       reference_from: e.target.value,
                     }))
                   }
-                  placeholder='Dari'
+                  placeholder='From'
                 />
                 <Input
                   value={draft.reference_to}
@@ -1064,12 +1377,12 @@ function StoredItemRow({
                       reference_to: e.target.value,
                     }))
                   }
-                  placeholder='Sampai'
+                  placeholder='To'
                 />
               </>
             ) : (
               <p className='text-xs text-muted-foreground'>
-                Tidak tampilkan acuan ayat/hal di laporan.
+                Do not show Ayat/hal reference fields in reports.
               </p>
             )}
           </div>
@@ -1099,10 +1412,10 @@ function StoredItemRow({
                 })
               }
             >
-              Simpan
+              Save
             </Button>
             <Button size='sm' variant='ghost' onClick={onCancel}>
-              Batal
+              Cancel
             </Button>
           </div>
         </TableCell>
@@ -1140,14 +1453,14 @@ function StoredItemRow({
             <p className='mt-1'>
               {[item.reference_from, item.reference_to]
                 .filter(Boolean)
-                .join(' - ') || 'Acuan aktif'}
+                .join(' - ') || 'Reference enabled'}
             </p>
           </>
         ) : (
           '—'
         )}
       </TableCell>
-      <TableCell>{item.active ? 'Aktif' : 'Nonaktif'}</TableCell>
+      <TableCell>{item.active ? 'Active' : 'Inactive'}</TableCell>
       <TableCell className='text-right'>
         <Button
           size='icon'
@@ -1182,10 +1495,10 @@ function EditableItemsTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Bulan</TableHead>
-            <TableHead>Jenjang</TableHead>
-            <TableHead>Kategori</TableHead>
-            <TableHead>Materi</TableHead>
+            <TableHead>Month</TableHead>
+            <TableHead>Level</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead>Material</TableHead>
             <TableHead>Ayat/hal</TableHead>
             <TableHead>Confidence</TableHead>
           </TableRow>
@@ -1262,7 +1575,7 @@ function EditableItemsTable({
                         detail_label: e.target.value || null,
                       })
                     }
-                    placeholder='Detail materi'
+                    placeholder='Material detail'
                   />
                 </div>
               </TableCell>
@@ -1270,7 +1583,7 @@ function EditableItemsTable({
                 <div className='flex min-w-44 flex-col gap-2'>
                   <div className='flex items-center justify-between rounded-md border px-3 py-2'>
                     <span className='text-xs font-medium text-muted-foreground'>
-                      Acuan ayat/hal
+                      Ayat/hal reference
                     </span>
                     <Switch
                       checked={item.uses_reference}
@@ -1296,7 +1609,7 @@ function EditableItemsTable({
                             reference_from: e.target.value || null,
                           })
                         }
-                        placeholder='Dari'
+                        placeholder='From'
                       />
                       <Input
                         value={item.reference_to ?? ''}
@@ -1305,12 +1618,12 @@ function EditableItemsTable({
                             reference_to: e.target.value || null,
                           })
                         }
-                        placeholder='Sampai'
+                        placeholder='To'
                       />
                     </>
                   ) : (
                     <p className='text-xs text-muted-foreground'>
-                      Tidak tampilkan acuan ayat/hal.
+                      Do not show Ayat/hal reference fields.
                     </p>
                   )}
                 </div>
@@ -1361,47 +1674,6 @@ async function readWorkbookPreview(
     })
     return { name: sheet.name, rows }
   })
-}
-
-async function requestServerParse({
-  accessToken,
-  year,
-  defaultLevel,
-  sheets,
-}: {
-  accessToken: string
-  year: number
-  defaultLevel: CharacterMonitoringLevel
-  sheets: WorkbookPreviewSheet[]
-}): Promise<ParseResult> {
-  const response = await fetch('/api/lupg/character-targets/parse', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ year, defaultLevel, sheets }),
-  })
-
-  const text = await response.text()
-  if (!text.trim()) {
-    throw new Error(`response kosong (${response.status})`)
-  }
-
-  let result: ParseResult | { error?: string }
-  try {
-    result = JSON.parse(text) as ParseResult | { error?: string }
-  } catch {
-    throw new Error(`response bukan JSON (${response.status})`)
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      'error' in result && result.error ? result.error : 'Gagal parsing'
-    )
-  }
-
-  return result as ParseResult
 }
 
 const MONTHS = [
@@ -1581,12 +1853,12 @@ function normalizeParseResult(result: ParseResult): ParseResult {
     issues:
       skippedRows > 0
         ? [
-            ...result.issues,
-            {
-              severity: 'info',
-              message: `${skippedRows} baris kosong/placeholder diabaikan saat parsing.`,
-            },
-          ]
+          ...result.issues,
+          {
+            severity: 'info',
+            message: `${skippedRows} baris kosong/placeholder diabaikan saat parsing.`,
+          },
+        ]
         : result.issues,
     items,
   }
