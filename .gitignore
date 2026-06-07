@@ -37,3 +37,9 @@ dist-ssr
 *opencode.json
 *Example Worksheet GPN.xlsx
 *Target_29_Karakter Brief.pdf
+.vercel
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.template
