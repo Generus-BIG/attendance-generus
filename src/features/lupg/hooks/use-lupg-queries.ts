@@ -1,19 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import * as monthlyReportSvc from '../services/monthly-report.service'
-import * as sensusSvc from '../services/sensus.service'
+import * as matrixSvc from '../matrix/services'
+import * as programsSvc from '../programs/services'
+import * as characterSvc from '../services/character-monitoring.service'
+import * as characterTargetsSvc from '../services/character-targets.service'
 import * as defsSvc from '../services/definitions.service'
-import * as programSvc from '../services/program-report.service'
 import * as metricSvc from '../services/metric-report.service'
-import * as sarprasSvc from '../services/sarpras-report.service'
-import * as shodaqohSvc from '../services/shodaqoh-report.service'
+import * as monthlyReportSvc from '../services/monthly-report.service'
 import * as mustinSvc from '../services/mustin-notes.service'
 import * as mustinTmplSvc from '../services/mustin-templates.service'
-import * as programsSvc from '../programs/services'
-import * as matrixSvc from '../matrix/services'
+import * as programSvc from '../services/program-report.service'
+import * as sarprasSvc from '../services/sarpras-report.service'
+import * as sensusSvc from '../services/sensus.service'
+import * as shodaqohSvc from '../services/shodaqoh-report.service'
 import {
   type DerivedGpnSensusRow,
   type MonthlyReportWithSubmitterRow,
+  type SensusRow,
 } from '../types'
 
 const KEYS = {
@@ -32,14 +35,30 @@ const KEYS = {
   metrics: ['lupg', 'metric-defs'] as const,
   sarprasItems: ['lupg', 'sarpras-items'] as const,
   mustinTemplates: ['lupg', 'mustin-templates'] as const,
-  programReports: (mrId: string) =>
-    ['lupg', 'program-reports', mrId] as const,
-  metricReports: (mrId: string) =>
-    ['lupg', 'metric-reports', mrId] as const,
-  sarprasReports: (mrId: string) =>
-    ['lupg', 'sarpras-reports', mrId] as const,
+  programReports: (mrId: string) => ['lupg', 'program-reports', mrId] as const,
+  metricReports: (mrId: string) => ['lupg', 'metric-reports', mrId] as const,
+  sarprasReports: (mrId: string) => ['lupg', 'sarpras-reports', mrId] as const,
   shodaqoh: (mrId: string) => ['lupg', 'shodaqoh', mrId] as const,
   mustin: (mrId: string) => ['lupg', 'mustin', mrId] as const,
+  characterActivities: ['lupg', 'character-monitoring-activities'] as const,
+  characterActivitiesAll: [
+    'lupg',
+    'character-monitoring-activities',
+    'all',
+  ] as const,
+  characterReports: (mrId: string) =>
+    ['lupg', 'character-monitoring-reports', mrId] as const,
+  characterReportsBatch: (mrIds: readonly string[]) =>
+    ['lupg', 'character-monitoring-reports', 'batch', mrIds] as const,
+  characterTargetTemplates: ['lupg', 'character-target-templates'] as const,
+  characterTargetItems: (templateId: string) =>
+    ['lupg', 'character-target-items', templateId] as const,
+  characterTargetItemsForMonth: (year: number, monthIndex: number) =>
+    ['lupg', 'character-target-items', year, monthIndex] as const,
+  characterTargetReports: (mrId: string) =>
+    ['lupg', 'character-target-reports', mrId] as const,
+  characterTargetReportsBatch: (mrIds: readonly string[]) =>
+    ['lupg', 'character-target-reports', 'batch', mrIds] as const,
 }
 
 export const LUPG_QUERY_KEYS = KEYS
@@ -171,11 +190,44 @@ export function useSensus(kelompokId: string | undefined) {
   })
 }
 
+export function useSensusForKelompoks(kelompokIds: string[]) {
+  return useQuery({
+    queryKey: ['lupg', 'sensus', 'desa', kelompokIds] as const,
+    queryFn: async () => {
+      if (kelompokIds.length === 0) return [] as SensusRow[]
+      const { data, error } = await supabase
+        .from('lupg_sensus')
+        .select('*')
+        .in('kelompok_id', kelompokIds)
+        .order('category_code')
+        .order('gender')
+      if (error) throw error
+      return (data ?? []) as SensusRow[]
+    },
+    enabled: kelompokIds.length > 0,
+  })
+}
+
 export function useUpsertSensusCell() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: sensusSvc.upsertSensusCell,
     onSuccess: (row) => {
+      qc.setQueryData<SensusRow[]>(
+        KEYS.sensus(row.kelompok_id),
+        (prev = []) => {
+          const existingIndex = prev.findIndex(
+            (item) =>
+              item.kelompok_id === row.kelompok_id &&
+              item.category_code === row.category_code &&
+              item.gender === row.gender
+          )
+          if (existingIndex === -1) return [...prev, row]
+          const next = [...prev]
+          next[existingIndex] = row
+          return next
+        }
+      )
       qc.invalidateQueries({ queryKey: KEYS.sensus(row.kelompok_id) })
     },
   })
@@ -378,6 +430,280 @@ export function useSeedMustinFromTemplates() {
   })
 }
 
+// ============== Character Monitoring ==============
+
+export function useActiveCharacterMonitoringActivities() {
+  return useQuery({
+    queryKey: KEYS.characterActivities,
+    queryFn: characterSvc.listActiveCharacterMonitoringActivities,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useAllCharacterMonitoringActivities() {
+  return useQuery({
+    queryKey: KEYS.characterActivitiesAll,
+    queryFn: characterSvc.listAllCharacterMonitoringActivities,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useCreateCharacterMonitoringActivity() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: characterSvc.createCharacterMonitoringActivity,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEYS.characterActivities })
+      qc.invalidateQueries({ queryKey: KEYS.characterActivitiesAll })
+    },
+  })
+}
+
+export function useUpdateCharacterMonitoringActivity() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      id: string
+      patch: Parameters<
+        typeof characterSvc.updateCharacterMonitoringActivity
+      >[1]
+    }) => characterSvc.updateCharacterMonitoringActivity(vars.id, vars.patch),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEYS.characterActivities })
+      qc.invalidateQueries({ queryKey: KEYS.characterActivitiesAll })
+    },
+  })
+}
+
+export function useDeleteCharacterMonitoringActivity() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: characterSvc.deleteCharacterMonitoringActivity,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEYS.characterActivities })
+      qc.invalidateQueries({ queryKey: KEYS.characterActivitiesAll })
+    },
+  })
+}
+
+export function useCharacterMonitoringReports(
+  monthlyReportId: string | undefined
+) {
+  return useQuery({
+    queryKey: [
+      'lupg',
+      'character-monitoring-reports',
+      monthlyReportId ?? 'none',
+    ] as const,
+    queryFn: () =>
+      monthlyReportId
+        ? characterSvc.listCharacterMonitoringReports(monthlyReportId)
+        : Promise.resolve([]),
+    enabled: !!monthlyReportId,
+  })
+}
+
+export function useCharacterMonitoringReportsBatch(monthlyReportIds: string[]) {
+  return useQuery({
+    queryKey: KEYS.characterReportsBatch(monthlyReportIds),
+    queryFn: () =>
+      characterSvc.listCharacterMonitoringReportsBatch(monthlyReportIds),
+    enabled: monthlyReportIds.length > 0,
+  })
+}
+
+export function useUpsertCharacterMonitoringReport() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: characterSvc.upsertCharacterMonitoringReport,
+    onSuccess: (row) => {
+      qc.invalidateQueries({
+        queryKey: KEYS.characterReports(row.monthly_report_id),
+      })
+    },
+  })
+}
+
+// ============== Character Target Templates ==============
+
+export function useCharacterTargetTemplates() {
+  return useQuery({
+    queryKey: KEYS.characterTargetTemplates,
+    queryFn: characterTargetsSvc.listCharacterTargetTemplates,
+  })
+}
+
+export function useCharacterTargetItems(templateId: string | undefined) {
+  return useQuery({
+    queryKey: ['lupg', 'character-target-items', templateId ?? 'none'] as const,
+    queryFn: () =>
+      templateId
+        ? characterTargetsSvc.listCharacterTargetItems(templateId)
+        : Promise.resolve([]),
+    enabled: !!templateId,
+  })
+}
+
+export function useCharacterTargetItemsForMonth(
+  year: number | undefined,
+  monthIndex: number | undefined
+) {
+  return useQuery({
+    queryKey: [
+      'lupg',
+      'character-target-items',
+      year ?? 'none',
+      monthIndex ?? 'none',
+    ] as const,
+    queryFn: () =>
+      year && monthIndex
+        ? characterTargetsSvc.listActiveCharacterTargetItemsForMonth(
+            year,
+            monthIndex
+          )
+        : Promise.resolve({ template: null, templates: [], items: [] }),
+    enabled: !!year && !!monthIndex,
+  })
+}
+
+export function useCreateCharacterTargetTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: characterTargetsSvc.createCharacterTargetTemplate,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEYS.characterTargetTemplates })
+    },
+  })
+}
+
+export function useUpdateCharacterTargetTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      id: string
+      patch: Parameters<
+        typeof characterTargetsSvc.updateCharacterTargetTemplate
+      >[1]
+    }) =>
+      characterTargetsSvc.updateCharacterTargetTemplate(vars.id, vars.patch),
+    onSuccess: (row) => {
+      qc.invalidateQueries({ queryKey: KEYS.characterTargetTemplates })
+      qc.invalidateQueries({ queryKey: KEYS.characterTargetItems(row.id) })
+    },
+  })
+}
+
+export function useDeleteCharacterTargetTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: characterTargetsSvc.deleteCharacterTargetTemplate,
+    onSuccess: (_value, templateId) => {
+      qc.invalidateQueries({ queryKey: KEYS.characterTargetTemplates })
+      qc.invalidateQueries({ queryKey: KEYS.characterTargetItems(templateId) })
+      qc.invalidateQueries({ queryKey: ['lupg', 'character-target-items'] })
+      qc.invalidateQueries({ queryKey: ['lupg', 'character-target-reports'] })
+    },
+  })
+}
+
+export function useActivateCharacterTargetTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: characterTargetsSvc.activateCharacterTargetTemplate,
+    onSuccess: (row) => {
+      qc.invalidateQueries({ queryKey: KEYS.characterTargetTemplates })
+      qc.invalidateQueries({ queryKey: KEYS.characterTargetItems(row.id) })
+      qc.invalidateQueries({ queryKey: ['lupg', 'character-target-items'] })
+    },
+  })
+}
+
+export function useCreateCharacterTargetItem() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: characterTargetsSvc.createCharacterTargetItem,
+    onSuccess: (row) => {
+      qc.invalidateQueries({
+        queryKey: KEYS.characterTargetItems(row.template_id),
+      })
+      qc.invalidateQueries({ queryKey: KEYS.characterTargetTemplates })
+    },
+  })
+}
+
+export function useUpdateCharacterTargetItem() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      id: string
+      patch: Parameters<typeof characterTargetsSvc.updateCharacterTargetItem>[1]
+    }) => characterTargetsSvc.updateCharacterTargetItem(vars.id, vars.patch),
+    onSuccess: (row) => {
+      qc.invalidateQueries({
+        queryKey: KEYS.characterTargetItems(row.template_id),
+      })
+    },
+  })
+}
+
+export function useReplaceCharacterTargetItems() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      templateId: string
+      items: Parameters<
+        typeof characterTargetsSvc.replaceCharacterTargetItems
+      >[1]
+    }) =>
+      characterTargetsSvc.replaceCharacterTargetItems(
+        vars.templateId,
+        vars.items
+      ),
+    onSuccess: (_rows, vars) => {
+      qc.invalidateQueries({
+        queryKey: KEYS.characterTargetItems(vars.templateId),
+      })
+      qc.invalidateQueries({ queryKey: KEYS.characterTargetTemplates })
+    },
+  })
+}
+
+export function useCharacterTargetReports(monthlyReportId: string | undefined) {
+  return useQuery({
+    queryKey: [
+      'lupg',
+      'character-target-reports',
+      monthlyReportId ?? 'none',
+    ] as const,
+    queryFn: () =>
+      monthlyReportId
+        ? characterTargetsSvc.listCharacterTargetReports(monthlyReportId)
+        : Promise.resolve([]),
+    enabled: !!monthlyReportId,
+  })
+}
+
+export function useCharacterTargetReportsBatch(monthlyReportIds: string[]) {
+  return useQuery({
+    queryKey: KEYS.characterTargetReportsBatch(monthlyReportIds),
+    queryFn: () =>
+      characterTargetsSvc.listCharacterTargetReportsBatch(monthlyReportIds),
+    enabled: monthlyReportIds.length > 0,
+  })
+}
+
+export function useUpsertCharacterTargetReport() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: characterTargetsSvc.upsertCharacterTargetReport,
+    onSuccess: (row) => {
+      qc.invalidateQueries({
+        queryKey: KEYS.characterTargetReports(row.monthly_report_id),
+      })
+    },
+  })
+}
+
 // ============== Definitions — Admin (all, with CRUD) ==============
 
 const ADMIN_KEYS = {
@@ -445,8 +771,10 @@ export function useCreateProgram() {
 export function useUpdateProgram() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (v: { id: string; patch: Parameters<typeof defsSvc.updateProgram>[1] }) =>
-      defsSvc.updateProgram(v.id, v.patch),
+    mutationFn: (v: {
+      id: string
+      patch: Parameters<typeof defsSvc.updateProgram>[1]
+    }) => defsSvc.updateProgram(v.id, v.patch),
     onSuccess: () => invalidateDefs(qc, 'programs'),
   })
 }
@@ -470,8 +798,10 @@ export function useCreateMetric() {
 export function useUpdateMetric() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (v: { id: string; patch: Parameters<typeof defsSvc.updateMetric>[1] }) =>
-      defsSvc.updateMetric(v.id, v.patch),
+    mutationFn: (v: {
+      id: string
+      patch: Parameters<typeof defsSvc.updateMetric>[1]
+    }) => defsSvc.updateMetric(v.id, v.patch),
     onSuccess: () => invalidateDefs(qc, 'metrics'),
   })
 }
@@ -495,8 +825,10 @@ export function useCreateSarprasItem() {
 export function useUpdateSarprasItem() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (v: { id: string; patch: Parameters<typeof defsSvc.updateSarprasItem>[1] }) =>
-      defsSvc.updateSarprasItem(v.id, v.patch),
+    mutationFn: (v: {
+      id: string
+      patch: Parameters<typeof defsSvc.updateSarprasItem>[1]
+    }) => defsSvc.updateSarprasItem(v.id, v.patch),
     onSuccess: () => invalidateDefs(qc, 'sarpras'),
   })
 }
@@ -562,10 +894,7 @@ export function useYearlyProgramDataDesa(year: number) {
   })
 }
 
-export function useYearlyMetrics(
-  kelompokId: string | undefined,
-  year: number
-) {
+export function useYearlyMetrics(kelompokId: string | undefined, year: number) {
   return useQuery({
     queryKey: ['lupg', 'metrics-yearly', kelompokId ?? 'none', year] as const,
     queryFn: () =>
@@ -589,7 +918,9 @@ export function useUpsertProgramMonth() {
     mutationFn: programsSvc.upsertProgramMonth,
     onSuccess: (_row, vars) => {
       const year = parseInt(vars.month.slice(0, 4), 10)
-      qc.invalidateQueries({ queryKey: PROGRAM_YEARLY_KEY(vars.kelompok_id, year) })
+      qc.invalidateQueries({
+        queryKey: PROGRAM_YEARLY_KEY(vars.kelompok_id, year),
+      })
       qc.invalidateQueries({ queryKey: ['lupg', 'monthly-reports'] })
     },
   })
@@ -620,7 +951,9 @@ export function useUpsertMetricMonth() {
     mutationFn: matrixSvc.upsertMetricMonth,
     onSuccess: (_row, vars) => {
       const year = parseInt(vars.month.slice(0, 4), 10)
-      qc.invalidateQueries({ queryKey: MATRIX_YEARLY_KEY(vars.kelompok_id, year) })
+      qc.invalidateQueries({
+        queryKey: MATRIX_YEARLY_KEY(vars.kelompok_id, year),
+      })
       qc.invalidateQueries({ queryKey: ['lupg', 'monthly-reports'] })
     },
   })
@@ -641,6 +974,22 @@ export function useDerivedGpnSensus(kelompokId: string | undefined) {
       return (data ?? []) as DerivedGpnSensusRow[]
     },
     enabled: !!kelompokId,
+  })
+}
+
+export function useDerivedGpnSensusForKelompoks(kelompokIds: string[]) {
+  return useQuery({
+    queryKey: ['lupg', 'sensus-gpn-derived', 'desa', kelompokIds] as const,
+    queryFn: async () => {
+      if (kelompokIds.length === 0) return [] as DerivedGpnSensusRow[]
+      const { data, error } = await supabase
+        .from('lupg_sensus_gpn_derived')
+        .select('*')
+        .in('kelompok_id', kelompokIds)
+      if (error) throw error
+      return (data ?? []) as DerivedGpnSensusRow[]
+    },
+    enabled: kelompokIds.length > 0,
   })
 }
 

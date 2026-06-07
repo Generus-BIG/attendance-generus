@@ -30,6 +30,120 @@ export type MetricScope = 'kelompok' | 'desa'
 export type SensusGender = 'L' | 'P'
 export type ReportingStyle = 'monthly_series' | 'quarterly'
 
+export type CharacterMonitoringLevel = 'ACR' | 'APR' | 'AR' | 'GPN'
+export type CharacterMonitoringStatus =
+  | 'needs_discussion'
+  | 'needs_guidance'
+  | 'not_observed'
+  | 'in_progress'
+  | 'established'
+
+export type CharacterMonitoringActivityRow =
+  Tables['lupg_character_monitoring_activities']['Row'] & {
+    level_code: CharacterMonitoringLevel
+  }
+
+export type CharacterMonitoringActivityInsert = Omit<
+  Tables['lupg_character_monitoring_activities']['Insert'],
+  'level_code'
+> & {
+  level_code: CharacterMonitoringLevel
+}
+
+export type CharacterMonitoringActivityUpdate = Omit<
+  Tables['lupg_character_monitoring_activities']['Update'],
+  'level_code'
+> & {
+  level_code?: CharacterMonitoringLevel
+}
+
+export type CharacterMonitoringReportRow =
+  Tables['lupg_character_monitoring_reports']['Row'] & {
+    status: CharacterMonitoringStatus
+  }
+
+export type CharacterMonitoringReportInsert = Omit<
+  Tables['lupg_character_monitoring_reports']['Insert'],
+  'status'
+> & {
+  status?: CharacterMonitoringStatus
+}
+
+export type CharacterMonitoringReportUpdate = Omit<
+  Tables['lupg_character_monitoring_reports']['Update'],
+  'status'
+> & {
+  status?: CharacterMonitoringStatus
+}
+
+export type CharacterTargetTemplateStatus =
+  | 'draft'
+  | 'parsed'
+  | 'active'
+  | 'archived'
+  | 'failed'
+export type CharacterTargetParserMethod =
+  | 'manual'
+  | 'azure_openai'
+  | 'deterministic'
+
+export type CharacterTargetTemplateRow =
+  Tables['lupg_character_target_templates']['Row'] & {
+    level_code: CharacterMonitoringLevel
+    status: CharacterTargetTemplateStatus
+    parser_method: CharacterTargetParserMethod
+  }
+export type CharacterTargetTemplateInsert = Omit<
+  Tables['lupg_character_target_templates']['Insert'],
+  'level_code' | 'status' | 'parser_method'
+> & {
+  level_code?: CharacterMonitoringLevel
+  status?: CharacterTargetTemplateStatus
+  parser_method?: CharacterTargetParserMethod
+}
+export type CharacterTargetTemplateUpdate = Omit<
+  Tables['lupg_character_target_templates']['Update'],
+  'level_code' | 'status' | 'parser_method'
+> & {
+  level_code?: CharacterMonitoringLevel
+  status?: CharacterTargetTemplateStatus
+  parser_method?: CharacterTargetParserMethod
+}
+
+export type CharacterTargetItemRow =
+  Tables['lupg_character_target_items']['Row'] & {
+    level_code: CharacterMonitoringLevel
+  }
+export type CharacterTargetItemInsert = Omit<
+  Tables['lupg_character_target_items']['Insert'],
+  'level_code'
+> & {
+  level_code: CharacterMonitoringLevel
+}
+export type CharacterTargetItemUpdate = Omit<
+  Tables['lupg_character_target_items']['Update'],
+  'level_code'
+> & {
+  level_code?: CharacterMonitoringLevel
+}
+
+export type CharacterTargetReportRow =
+  Tables['lupg_character_target_reports']['Row'] & {
+    status: CharacterMonitoringStatus
+  }
+export type CharacterTargetReportInsert = Omit<
+  Tables['lupg_character_target_reports']['Insert'],
+  'status'
+> & {
+  status?: CharacterMonitoringStatus
+}
+export type CharacterTargetReportUpdate = Omit<
+  Tables['lupg_character_target_reports']['Update'],
+  'status'
+> & {
+  status?: CharacterMonitoringStatus
+}
+
 // ============== R2 additions ==============
 
 export interface DerivedGpnSensusRow {
