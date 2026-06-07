@@ -20,6 +20,26 @@ import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
 
+function reloadOnceAfterChunkError() {
+  const reloadKey = 'generus:chunk-reload-at'
+  const now = Date.now()
+
+  try {
+    const lastReloadAt = Number(sessionStorage.getItem(reloadKey) || 0)
+    if (now - lastReloadAt < 60_000) return
+    sessionStorage.setItem(reloadKey, String(now))
+  } catch {
+    // Ignore storage failures; a single reload is still safer than a blank shell.
+  }
+
+  window.location.reload()
+}
+
+window.addEventListener('vite:preloadError', (event) => {
+  event.preventDefault()
+  reloadOnceAfterChunkError()
+})
+
 const renderFormsSubdomainRouter = shouldRenderFormsSubdomainRouter()
 const FormsSubdomainRouter = lazy(() =>
   import('@/features/forms/components/forms-subdomain-router').then(

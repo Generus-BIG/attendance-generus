@@ -179,6 +179,269 @@ export type Database = {
         }
         Relationships: []
       }
+      lupg_character_monitoring_activities: {
+        Row: {
+          active: boolean
+          activity_code: string
+          activity_label: string
+          created_at: string
+          id: string
+          level_code: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          activity_code: string
+          activity_label: string
+          created_at?: string
+          id?: string
+          level_code: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          activity_code?: string
+          activity_label?: string
+          created_at?: string
+          id?: string
+          level_code?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lupg_character_monitoring_reports: {
+        Row: {
+          activity_id: string
+          created_at: string
+          id: string
+          monthly_report_id: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string
+          id?: string
+          monthly_report_id: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string
+          id?: string
+          monthly_report_id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lupg_character_monitoring_reports_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "lupg_character_monitoring_activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lupg_character_monitoring_reports_monthly_report_id_fkey"
+            columns: ["monthly_report_id"]
+            isOneToOne: false
+            referencedRelation: "lupg_monthly_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lupg_character_target_items: {
+        Row: {
+          active: boolean
+          category_label: string
+          created_at: string
+          detail_label: string | null
+          id: string
+          level_code: string
+          material_label: string
+          month_index: number
+          month_label: string
+          reference_from: string | null
+          reference_to: string | null
+          sort_order: number
+          source_row: number | null
+          source_sheet: string | null
+          template_id: string
+          updated_at: string
+          uses_reference: boolean
+        }
+        Insert: {
+          active?: boolean
+          category_label: string
+          created_at?: string
+          detail_label?: string | null
+          id?: string
+          level_code: string
+          material_label: string
+          month_index: number
+          month_label: string
+          reference_from?: string | null
+          reference_to?: string | null
+          sort_order?: number
+          source_row?: number | null
+          source_sheet?: string | null
+          template_id: string
+          updated_at?: string
+          uses_reference?: boolean
+        }
+        Update: {
+          active?: boolean
+          category_label?: string
+          created_at?: string
+          detail_label?: string | null
+          id?: string
+          level_code?: string
+          material_label?: string
+          month_index?: number
+          month_label?: string
+          reference_from?: string | null
+          reference_to?: string | null
+          sort_order?: number
+          source_row?: number | null
+          source_sheet?: string | null
+          template_id?: string
+          updated_at?: string
+          uses_reference?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lupg_character_target_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "lupg_character_target_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lupg_character_target_reports: {
+        Row: {
+          created_at: string
+          discussion_flag: boolean
+          id: string
+          material_gap: string | null
+          monthly_report_id: string
+          notes: string | null
+          realization_percent: number | null
+          reference_from_actual: string | null
+          reference_to_actual: string | null
+          status: string
+          target_item_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discussion_flag?: boolean
+          id?: string
+          material_gap?: string | null
+          monthly_report_id: string
+          notes?: string | null
+          realization_percent?: number | null
+          reference_from_actual?: string | null
+          reference_to_actual?: string | null
+          status?: string
+          target_item_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discussion_flag?: boolean
+          id?: string
+          material_gap?: string | null
+          monthly_report_id?: string
+          notes?: string | null
+          realization_percent?: number | null
+          reference_from_actual?: string | null
+          reference_to_actual?: string | null
+          status?: string
+          target_item_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lupg_character_target_reports_monthly_report_id_fkey"
+            columns: ["monthly_report_id"]
+            isOneToOne: false
+            referencedRelation: "lupg_monthly_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lupg_character_target_reports_target_item_id_fkey"
+            columns: ["target_item_id"]
+            isOneToOne: false
+            referencedRelation: "lupg_character_target_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lupg_character_target_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          id: string
+          level_code: string
+          mapping_json: Json
+          name: string
+          parse_confidence: number | null
+          parse_result_json: Json
+          parser_method: string
+          source_file_path: string | null
+          source_file_size: number | null
+          source_filename: string | null
+          status: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          level_code?: string
+          mapping_json?: Json
+          name: string
+          parse_confidence?: number | null
+          parse_result_json?: Json
+          parser_method?: string
+          source_file_path?: string | null
+          source_file_size?: number | null
+          source_filename?: string | null
+          status?: string
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          level_code?: string
+          mapping_json?: Json
+          name?: string
+          parse_confidence?: number | null
+          parse_result_json?: Json
+          parser_method?: string
+          source_file_path?: string | null
+          source_file_size?: number | null
+          source_filename?: string | null
+          status?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       lupg_metric_definitions: {
         Row: {
           active: boolean
