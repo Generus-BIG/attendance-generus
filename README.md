@@ -96,3 +96,5 @@ Roles stored in Supabase `app_metadata` (server-only, tamper-proof). Enforced at
 | `pnpm lint` | ESLint |
 | `pnpm format` | Prettier auto-fix |
 | `pnpm knip` | Find unused exports/dependencies |
+
+Created by Royanrosyad
