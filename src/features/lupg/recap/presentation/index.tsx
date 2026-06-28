@@ -13,6 +13,7 @@ import {
   useCharacterMonitoringReportsBatch,
   useMonthlyReports,
   useYearlyMetrics,
+  useYearlyMetricsDesa,
   useYearlyProgramData,
   useYearlyProgramDataDesa,
   useYearlyShodaqohData,
@@ -226,15 +227,34 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
     ]
   )
 
-  // Yearly metrics + shodaqoh — only needed for kelompok mode (desa mode uses
-  // current-month grouped bars). The hooks return empty arrays when kelompokId
-  // is undefined, so it's safe to wire unconditionally.
+  // Yearly metrics feed both kelompok and desa presentation slides: the 3/5
+  // month comparisons and the generus-vs-piket aggregate need historical data.
   const yearlyMetricsQ = useYearlyMetrics(kelompokFilter, year)
+  const yearlyMetricsDesaQ = useYearlyMetricsDesa(year)
   const yearlyShodaqohQ = useYearlyShodaqohData(kelompokFilter, year)
 
   const yearlyMetricReports = useMemo(
-    () => (kelompokFilter ? (yearlyMetricsQ.data?.metricReports ?? []) : []),
-    [kelompokFilter, yearlyMetricsQ.data?.metricReports]
+    () =>
+      kelompokFilter
+        ? (yearlyMetricsQ.data?.metricReports ?? [])
+        : (yearlyMetricsDesaQ.data?.metricReports ?? []),
+    [
+      kelompokFilter,
+      yearlyMetricsQ.data?.metricReports,
+      yearlyMetricsDesaQ.data?.metricReports,
+    ]
+  )
+
+  const yearlyMetricMonthlyReports = useMemo(
+    () =>
+      kelompokFilter
+        ? (yearlyMetricsQ.data?.monthlyReports ?? [])
+        : (yearlyMetricsDesaQ.data?.monthlyReports ?? []),
+    [
+      kelompokFilter,
+      yearlyMetricsQ.data?.monthlyReports,
+      yearlyMetricsDesaQ.data?.monthlyReports,
+    ]
   )
 
   const yearlyShodaqohRows = useMemo(
@@ -259,6 +279,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
     sensusQ.isLoading ||
     programsQ.isLoading ||
     metricsQ.isLoading ||
+    yearlyMetricsDesaQ.isLoading ||
     sarprasQ.isLoading ||
     shodaqohQ.isLoading ||
     mustinQ.isLoading ||
@@ -287,6 +308,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
         yearlyMonthlyReports,
         yearlyProgramReports,
         yearlyMetricReports,
+        yearlyMetricMonthlyReports,
         yearlyShodaqohRows,
       }),
     [
@@ -309,6 +331,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
       yearlyMonthlyReports,
       yearlyProgramReports,
       yearlyMetricReports,
+      yearlyMetricMonthlyReports,
       yearlyShodaqohRows,
     ]
   )

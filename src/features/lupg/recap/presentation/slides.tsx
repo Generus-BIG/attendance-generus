@@ -68,6 +68,7 @@ export interface PresentationData {
   yearlyMonthlyReports?: MonthlyReportRow[]
   yearlyProgramReports?: ProgramReportRow[]
   yearlyMetricReports?: MetricReportRow[]
+  yearlyMetricMonthlyReports?: MonthlyReportRow[]
   yearlyShodaqohRows?: ShodaqohRow[]
 }
 
@@ -115,6 +116,7 @@ export function buildSlides(data: PresentationData): Slide[] {
     yearlyMonthlyReports = [],
     yearlyProgramReports = [],
     yearlyMetricReports = [],
+    yearlyMetricMonthlyReports = [],
     yearlyShodaqohRows = [],
   } = data
 
@@ -252,7 +254,7 @@ export function buildSlides(data: PresentationData): Slide[] {
             metrics,
             reports,
             metricReports,
-            yearlyMonthlyReports,
+            yearlyMonthlyReports: yearlyMetricMonthlyReports,
             yearlyMetricReports,
             slideNumber,
             totalSlides,
@@ -272,7 +274,7 @@ export function buildSlides(data: PresentationData): Slide[] {
             monthsBack: d.monthsBack,
             titleSuffix: d.titleSuffix,
             metrics,
-            yearlyMonthlyReports,
+            yearlyMonthlyReports: yearlyMetricMonthlyReports,
             yearlyMetricReports,
             slideNumber,
             totalSlides,
@@ -289,7 +291,7 @@ export function buildSlides(data: PresentationData): Slide[] {
             isSingleKelompok,
             kelompokFilter,
             metrics,
-            yearlyMonthlyReports,
+            yearlyMonthlyReports: yearlyMetricMonthlyReports,
             yearlyMetricReports,
             slideNumber,
             totalSlides,
