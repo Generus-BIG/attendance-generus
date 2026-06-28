@@ -30,7 +30,7 @@ function StatusIcon({ fulfilled }: { fulfilled: boolean }) {
   const style = {
     color: fulfilled ? p.brandAccent : p.muted,
     fontFamily: p.fontSans,
-    fontSize: 'clamp(1rem, 1.4vw, 1.5rem)',
+    fontSize: 'clamp(0.82rem, 1vw, 1.1rem)',
     fontWeight: 700,
   } as const
   return (
@@ -59,7 +59,7 @@ function SarprasKelompokBody({
 
   const footerLineStyle = {
     fontFamily: p.fontMono,
-    fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
+    fontSize: 'clamp(0.68rem, 0.82vw, 0.95rem)',
     fontWeight: 600,
     letterSpacing: '0.1em',
     color: p.muted,
@@ -68,11 +68,13 @@ function SarprasKelompokBody({
   return (
     <div className='grid h-full grid-cols-2 gap-12 overflow-hidden'>
       <DataPane>
-        <EditorialTable headerVariant='hairline'>
+        <EditorialTable headerVariant='hairline' density='micro'>
           <EditorialTableHeader>
             <EditorialTableRow>
               <EditorialTableHead>Item</EditorialTableHead>
-              <EditorialTableHead className='text-center'>Status</EditorialTableHead>
+              <EditorialTableHead className='text-center'>
+                Status
+              </EditorialTableHead>
             </EditorialTableRow>
           </EditorialTableHeader>
           <EditorialTableBody>
@@ -80,7 +82,9 @@ function SarprasKelompokBody({
               const isFulfilled = fulfilledById.get(item.id) === true
               return (
                 <EditorialTableRow key={item.id}>
-                  <EditorialTableCell>{item.name}</EditorialTableCell>
+                  <EditorialTableCell className='leading-tight'>
+                    {item.name}
+                  </EditorialTableCell>
                   <EditorialTableCell className='text-center'>
                     <StatusIcon fulfilled={isFulfilled} />
                   </EditorialTableCell>
@@ -167,13 +171,19 @@ function SarprasDesaBody({
   return (
     <div className='grid h-full grid-cols-2 gap-12 overflow-hidden'>
       <DataPane>
-        <EditorialTable headerVariant='hairline'>
+        <EditorialTable headerVariant='hairline' density='compact'>
           <EditorialTableHeader>
             <EditorialTableRow>
               <EditorialTableHead>Kelompok</EditorialTableHead>
-              <EditorialTableHead className='text-right'>Sudah</EditorialTableHead>
-              <EditorialTableHead className='text-right'>Belum</EditorialTableHead>
-              <EditorialTableHead className='text-right'>Total</EditorialTableHead>
+              <EditorialTableHead className='text-right'>
+                Sudah
+              </EditorialTableHead>
+              <EditorialTableHead className='text-right'>
+                Belum
+              </EditorialTableHead>
+              <EditorialTableHead className='text-right'>
+                Total
+              </EditorialTableHead>
               <EditorialTableHead className='text-right'>%</EditorialTableHead>
             </EditorialTableRow>
           </EditorialTableHeader>
@@ -181,9 +191,15 @@ function SarprasDesaBody({
             {perK.map((row) => (
               <EditorialTableRow key={row.kelompokId}>
                 <EditorialTableCell>{row.kelompok}</EditorialTableCell>
-                <EditorialTableCell className='text-right'>{row.sudah}</EditorialTableCell>
-                <EditorialTableCell className='text-right'>{row.belum}</EditorialTableCell>
-                <EditorialTableCell className='text-right'>{row.total}</EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {row.sudah}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {row.belum}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {row.total}
+                </EditorialTableCell>
                 <EditorialTableCell className='text-right font-semibold'>
                   {row.pct}%
                 </EditorialTableCell>
@@ -191,10 +207,18 @@ function SarprasDesaBody({
             ))}
             <TotalRow>
               <EditorialTableCell>Total Desa</EditorialTableCell>
-              <EditorialTableCell className='text-right'>{sumSudah}</EditorialTableCell>
-              <EditorialTableCell className='text-right'>{sumBelum}</EditorialTableCell>
-              <EditorialTableCell className='text-right'>{sumTotal}</EditorialTableCell>
-              <EditorialTableCell className='text-right'>{avgPct}%</EditorialTableCell>
+              <EditorialTableCell className='text-right'>
+                {sumSudah}
+              </EditorialTableCell>
+              <EditorialTableCell className='text-right'>
+                {sumBelum}
+              </EditorialTableCell>
+              <EditorialTableCell className='text-right'>
+                {sumTotal}
+              </EditorialTableCell>
+              <EditorialTableCell className='text-right'>
+                {avgPct}%
+              </EditorialTableCell>
             </TotalRow>
           </EditorialTableBody>
         </EditorialTable>

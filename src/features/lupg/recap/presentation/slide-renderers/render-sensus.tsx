@@ -23,7 +23,13 @@ import { usePresPalette, type PresPalette } from '../use-pres-palette'
 type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR'
 
 // Display order top-to-bottom: youngest → oldest (ACR → GPN B).
-const GENERUS_DISPLAY_ORDER: GenerusCode[] = ['ACR', 'APR', 'AR', 'GPN_A', 'GPN_B']
+const GENERUS_DISPLAY_ORDER: GenerusCode[] = [
+  'ACR',
+  'APR',
+  'AR',
+  'GPN_A',
+  'GPN_B',
+]
 const GENERUS_LABELS: Record<GenerusCode, string> = {
   GPN_A: 'GPN A',
   GPN_B: 'GPN B',
@@ -95,12 +101,12 @@ function groupPillStyle(p: PresPalette) {
     background: p.primary,
     color: p.primaryFg,
     fontFamily: p.fontMono,
-    fontSize: 'clamp(0.75rem, 1vw, 1rem)',
+    fontSize: 'clamp(0.62rem, 0.78vw, 0.875rem)',
     fontWeight: 700,
     letterSpacing: '0.15em',
-    padding: '4px 8px',
+    padding: '3px 7px',
     display: 'inline-block',
-    marginBottom: 8,
+    marginBottom: 6,
   } as const
 }
 
@@ -113,11 +119,11 @@ function RatioPill({ label, ratioRight }: RatioPillProps) {
   const p = usePresPalette()
   return (
     <div
-      className='mt-4 rounded'
+      className='mt-3 rounded'
       style={{
         background: p.primary,
         color: p.primaryFg,
-        padding: '10px 16px',
+        padding: '8px 14px',
         textAlign: 'center',
       }}
     >
@@ -125,7 +131,7 @@ function RatioPill({ label, ratioRight }: RatioPillProps) {
         className='uppercase'
         style={{
           fontFamily: p.fontMono,
-          fontSize: 'clamp(0.75rem, 1vw, 1rem)',
+          fontSize: 'clamp(0.62rem, 0.78vw, 0.875rem)',
           color: p.brandAccent,
           letterSpacing: '0.2em',
         }}
@@ -136,7 +142,7 @@ function RatioPill({ label, ratioRight }: RatioPillProps) {
         <span
           style={{
             fontFamily: p.fontMono,
-            fontSize: 'clamp(1rem, 1.4vw, 1.5rem)',
+            fontSize: 'clamp(0.82rem, 1vw, 1.125rem)',
             color: p.primaryFg,
           }}
         >
@@ -145,7 +151,7 @@ function RatioPill({ label, ratioRight }: RatioPillProps) {
         <span
           style={{
             fontFamily: '"Archivo Black", Impact, sans-serif',
-            fontSize: 'clamp(2rem, 3vw, 3rem)',
+            fontSize: 'clamp(1.5rem, 2.1vw, 2.25rem)',
             color: p.primaryFg,
           }}
         >
@@ -181,19 +187,25 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
   }))
 
   return (
-    <div className='grid h-full grid-cols-2 gap-12 overflow-hidden'>
+    <div className='grid h-full grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] gap-8 overflow-hidden'>
       <DataPane>
         <div>
           <span className='uppercase' style={groupPillStyle(p)}>
             KATEGORI USIA GENERUS
           </span>
-          <EditorialTable>
+          <EditorialTable density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead>Kategori</EditorialTableHead>
-                <EditorialTableHead className='text-right'>L</EditorialTableHead>
-                <EditorialTableHead className='text-right'>P</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Jumlah</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  L
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  P
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Jumlah
+                </EditorialTableHead>
               </EditorialTableRow>
             </EditorialTableHeader>
             <EditorialTableBody>
@@ -201,9 +213,15 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
                 const row = perKelompok.generus[code]
                 return (
                   <EditorialTableRow key={code}>
-                    <EditorialTableCell>{GENERUS_LABELS[code]}</EditorialTableCell>
-                    <EditorialTableCell className='text-right'>{row.L}</EditorialTableCell>
-                    <EditorialTableCell className='text-right'>{row.P}</EditorialTableCell>
+                    <EditorialTableCell>
+                      {GENERUS_LABELS[code]}
+                    </EditorialTableCell>
+                    <EditorialTableCell className='text-right'>
+                      {row.L}
+                    </EditorialTableCell>
+                    <EditorialTableCell className='text-right'>
+                      {row.P}
+                    </EditorialTableCell>
                     <EditorialTableCell className='text-right font-semibold'>
                       {row.total}
                     </EditorialTableCell>
@@ -212,24 +230,34 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
               })}
               <TotalRow>
                 <EditorialTableCell>Total Generus</EditorialTableCell>
-                <EditorialTableCell className='text-right'>{totalL}</EditorialTableCell>
-                <EditorialTableCell className='text-right'>{totalP}</EditorialTableCell>
-                <EditorialTableCell className='text-right'>{totalAll}</EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {totalL}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {totalP}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {totalAll}
+                </EditorialTableCell>
               </TotalRow>
             </EditorialTableBody>
           </EditorialTable>
         </div>
 
-        <div className='mt-6'>
+        <div className='mt-4'>
           <span className='uppercase' style={groupPillStyle(p)}>
             SENSUS PENDIDIK
           </span>
-          <EditorialTable>
+          <EditorialTable density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead>Pendidik</EditorialTableHead>
-                <EditorialTableHead className='text-right'>MT</EditorialTableHead>
-                <EditorialTableHead className='text-right'>MS</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  MT
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  MS
+                </EditorialTableHead>
               </EditorialTableRow>
             </EditorialTableHeader>
             <EditorialTableBody>
@@ -248,7 +276,10 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
 
         <RatioPill
           label='PERBANDINGAN PENDIDIK : GENERUS'
-          ratioRight={ratioLabel(perKelompok.generusTotal, perKelompok.pendidikTotal)}
+          ratioRight={ratioLabel(
+            perKelompok.generusTotal,
+            perKelompok.pendidikTotal
+          )}
         />
       </DataPane>
       <ChartPane>
@@ -294,9 +325,9 @@ function SensusDesaBody({ effectiveKelompokList, byKey }: SensusDesaBodyProps) {
   const totalPendidik = sorted.reduce((s, e) => s + e.summary.pendidikTotal, 0)
 
   return (
-    <div className='grid h-full grid-cols-2 gap-12 overflow-hidden'>
+    <div className='grid h-full grid-cols-2 gap-10 overflow-hidden'>
       <DataPane>
-        <EditorialTable>
+        <EditorialTable density='compact'>
           <EditorialTableHeader>
             <EditorialTableRow>
               <EditorialTableHead>Kelompok</EditorialTableHead>
@@ -305,7 +336,9 @@ function SensusDesaBody({ effectiveKelompokList, byKey }: SensusDesaBodyProps) {
                   {GENERUS_LABELS[code]}
                 </EditorialTableHead>
               ))}
-              <EditorialTableHead className='text-right'>Total</EditorialTableHead>
+              <EditorialTableHead className='text-right'>
+                Total
+              </EditorialTableHead>
             </EditorialTableRow>
           </EditorialTableHeader>
           <EditorialTableBody>
@@ -329,7 +362,9 @@ function SensusDesaBody({ effectiveKelompokList, byKey }: SensusDesaBodyProps) {
                   {colSums[code]}
                 </EditorialTableCell>
               ))}
-              <EditorialTableCell className='text-right'>{grandTotal}</EditorialTableCell>
+              <EditorialTableCell className='text-right'>
+                {grandTotal}
+              </EditorialTableCell>
             </TotalRow>
           </EditorialTableBody>
         </EditorialTable>
