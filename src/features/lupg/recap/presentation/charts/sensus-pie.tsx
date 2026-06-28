@@ -30,7 +30,9 @@ interface RechartsLabelProps {
 
 function formatPct(pct: number): string {
   const rounded = Math.round(pct * 10) / 10
-  return Number.isInteger(rounded) ? `${rounded.toFixed(0)}` : `${rounded.toFixed(1)}`
+  return Number.isInteger(rounded)
+    ? `${rounded.toFixed(0)}`
+    : `${rounded.toFixed(1)}`
 }
 
 function ExternalLabel(props: RechartsLabelProps) {
@@ -51,13 +53,13 @@ function ExternalLabel(props: RechartsLabelProps) {
   const cos = Math.cos(-midAngle * RAD)
   const sx = cx + outerRadius * cos
   const sy = cy + outerRadius * sin
-  const mx = cx + (outerRadius + 12) * cos
-  const my = cy + (outerRadius + 12) * sin
-  const ex = mx + (cos >= 0 ? 1 : -1) * 18
+  const mx = cx + (outerRadius + 14) * cos
+  const my = cy + (outerRadius + 14) * sin
+  const ex = mx + (cos >= 0 ? 1 : -1) * 26
   const ey = my
   const textAnchor = cos >= 0 ? 'start' : 'end'
   const pct = (payload.total / payload._grandTotal) * 100
-  const labelText = `${payload.label} · ${payload.total} · ${formatPct(pct)}%`
+  const textX = ex + (cos >= 0 ? 6 : -6)
   return (
     <g>
       <path
@@ -68,18 +70,23 @@ function ExternalLabel(props: RechartsLabelProps) {
       />
       <circle cx={ex} cy={ey} r={2} fill={palette.muted} stroke='none' />
       <text
-        x={ex + (cos >= 0 ? 4 : -4)}
+        x={textX}
         y={ey}
         textAnchor={textAnchor}
         dominantBaseline='central'
         style={{
           fontFamily: palette.fontMono,
           fontWeight: 700,
-          fontSize: 'clamp(1rem, 1.4vw, 1.5rem)',
+          fontSize: 'clamp(0.8rem, 0.95vw, 1.05rem)',
           fill: palette.ink,
         }}
       >
-        {labelText}
+        <tspan x={textX} dy='-0.45em'>
+          {payload.label} · {payload.total}
+        </tspan>
+        <tspan x={textX} dy='1.1em' style={{ fill: palette.muted }}>
+          {formatPct(pct)}%
+        </tspan>
       </text>
     </g>
   )
@@ -131,7 +138,7 @@ export function SensusPie({ data }: SensusPieProps) {
   const enriched = data.map((d) => ({ ...d, _grandTotal: grandTotal }))
   return (
     <ResponsiveContainer width='100%' height='100%'>
-      <PieChart margin={{ top: 24, right: 80, bottom: 24, left: 80 }}>
+      <PieChart margin={{ top: 36, right: 148, bottom: 36, left: 148 }}>
         <Tooltip
           content={(p) => (
             <CustomTooltip
@@ -146,7 +153,7 @@ export function SensusPie({ data }: SensusPieProps) {
           nameKey='label'
           cx='50%'
           cy='50%'
-          outerRadius='70%'
+          outerRadius='58%'
           innerRadius={0}
           stroke={palette.bg}
           strokeWidth={1}

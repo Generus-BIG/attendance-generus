@@ -1,8 +1,8 @@
 // Sarpras donut chart (kelompok mode) — % fulfilled with center label and
 // 2-slice legend. Sudah uses palette.success, Belum uses palette.muted at 35%.
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
-import { EditorialTooltipShell } from './chart-primitives'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { EditorialTooltipShell } from './chart-primitives'
 
 export interface SarprasDonutProps {
   fulfilled: number
@@ -29,7 +29,8 @@ function CustomTooltip({ active, payload, palette }: TipProps) {
   if (!active || !payload || payload.length === 0) return null
   const datum = payload[0]?.payload
   if (!datum || datum._total == null) return null
-  const pct = datum._total > 0 ? Math.round((datum.value / datum._total) * 100) : 0
+  const pct =
+    datum._total > 0 ? Math.round((datum.value / datum._total) * 100) : 0
   return (
     <EditorialTooltipShell title={datum.name} palette={palette}>
       <div>Jumlah: {datum.value}</div>
@@ -96,15 +97,25 @@ export function SarprasDonut({ fulfilled, total }: SarprasDonutProps) {
   const pct = Math.round((safeFulfilled / total) * 100)
 
   const data: (SliceDatum & { _total: number })[] = [
-    { name: 'Sudah Tercukupi', value: safeFulfilled, fill: colorSudah, _total: total },
-    { name: 'Belum Tercukupi', value: notFulfilled, fill: colorBelum, _total: total },
+    {
+      name: 'Sudah Tercukupi',
+      value: safeFulfilled,
+      fill: colorSudah,
+      _total: total,
+    },
+    {
+      name: 'Belum Tercukupi',
+      value: notFulfilled,
+      fill: colorBelum,
+      _total: total,
+    },
   ]
 
   return (
-    <div className='flex h-full w-full flex-col'>
-      <div className='relative flex-1'>
+    <div className='flex h-full w-full flex-col overflow-hidden'>
+      <div className='relative min-h-0 flex-1'>
         <ResponsiveContainer width='100%' height='100%'>
-          <PieChart>
+          <PieChart margin={{ top: 18, right: 24, bottom: 18, left: 24 }}>
             <Tooltip
               content={(p) => (
                 <CustomTooltip
@@ -119,8 +130,8 @@ export function SarprasDonut({ fulfilled, total }: SarprasDonutProps) {
               nameKey='name'
               cx='50%'
               cy='50%'
-              innerRadius={70}
-              outerRadius={110}
+              innerRadius='34%'
+              outerRadius='52%'
               stroke={palette.bg}
               strokeWidth={1}
               isAnimationActive={false}
@@ -136,7 +147,7 @@ export function SarprasDonut({ fulfilled, total }: SarprasDonutProps) {
             style={{
               fontFamily: palette.fontMono,
               fontWeight: 700,
-              fontSize: 'clamp(2.5rem, 4vw, 4.5rem)',
+              fontSize: 'clamp(2.35rem, 4vw, 4rem)',
               lineHeight: 1,
               color: palette.ink,
             }}
@@ -144,23 +155,37 @@ export function SarprasDonut({ fulfilled, total }: SarprasDonutProps) {
             {pct}%
           </div>
           <div
-            className='uppercase'
+            className='flex flex-col items-center uppercase'
             style={{
               fontFamily: palette.fontMono,
-              fontSize: 'clamp(0.75rem, 1vw, 1rem)',
+              fontSize: 'clamp(0.58rem, 0.72vw, 0.82rem)',
               fontWeight: 600,
-              letterSpacing: '0.25em',
+              letterSpacing: '0.18em',
+              lineHeight: 1.35,
               color: palette.muted,
               marginTop: 6,
+              maxWidth: 'min(18vw, 14rem)',
+              textAlign: 'center',
             }}
           >
-            Tingkat Pengadaan
+            <span>Tingkat</span>
+            <span>Pengadaan</span>
           </div>
         </div>
       </div>
-      <div className='flex items-center justify-center gap-6 pt-3'>
-        <LegendItem color={colorSudah} label='Sudah Tercukupi' count={safeFulfilled} palette={palette} />
-        <LegendItem color={colorBelum} label='Belum Tercukupi' count={notFulfilled} palette={palette} />
+      <div className='flex flex-wrap items-center justify-center gap-x-5 gap-y-2 pt-2'>
+        <LegendItem
+          color={colorSudah}
+          label='Sudah Tercukupi'
+          count={safeFulfilled}
+          palette={palette}
+        />
+        <LegendItem
+          color={colorBelum}
+          label='Belum Tercukupi'
+          count={notFulfilled}
+          palette={palette}
+        />
       </div>
     </div>
   )
