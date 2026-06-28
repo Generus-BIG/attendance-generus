@@ -954,6 +954,12 @@ export function useUpsertMetricMonth() {
       qc.invalidateQueries({
         queryKey: MATRIX_YEARLY_KEY(vars.kelompok_id, year),
       })
+      qc.invalidateQueries({
+        queryKey: ['lupg', 'metrics-yearly', vars.kelompok_id, year],
+      })
+      qc.invalidateQueries({
+        queryKey: ['lupg', 'metrics-yearly-desa', year],
+      })
       qc.invalidateQueries({ queryKey: ['lupg', 'monthly-reports'] })
     },
   })
