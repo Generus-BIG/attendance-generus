@@ -29,7 +29,6 @@ dist-ssr
 *.claude
 *.superpowers
 *docs
-*.agents
 *skills-lock.json
 *reference-ppt
 *.impeccable.md
