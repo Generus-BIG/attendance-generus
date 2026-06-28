@@ -35,6 +35,9 @@ export interface RestrainedTopLabelProps {
   value?: number | string | null
   palette: PresPalette
   formatter?: (n: number) => string
+  hideZero?: boolean
+  xOffset?: number
+  yOffset?: number
 }
 
 export function RestrainedTopLabel({
@@ -44,6 +47,9 @@ export function RestrainedTopLabel({
   value,
   palette,
   formatter,
+  hideZero = false,
+  xOffset = 0,
+  yOffset = -6,
 }: RestrainedTopLabelProps) {
   const xNum = typeof x === 'number' ? x : Number(x)
   const yNum = typeof y === 'number' ? y : Number(y)
@@ -57,11 +63,12 @@ export function RestrainedTopLabel({
   ) {
     return null
   }
+  if (hideZero && valueNum === 0) return null
   const text = formatter ? formatter(valueNum) : String(valueNum)
   return (
     <text
-      x={xNum + widthNum / 2}
-      y={yNum - 6}
+      x={xNum + widthNum / 2 + xOffset}
+      y={yNum + yOffset}
       textAnchor='middle'
       style={{
         fontFamily: palette.fontMono,

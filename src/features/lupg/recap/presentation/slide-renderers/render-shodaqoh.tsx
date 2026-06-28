@@ -3,10 +3,7 @@ import {
   allMonthKeysForYear,
   monthNameFromKey,
 } from '../../../programs/utils/editability'
-import {
-  type MonthlyReportRow,
-  type ShodaqohRow,
-} from '../../../types'
+import { type MonthlyReportRow, type ShodaqohRow } from '../../../types'
 import { TrendBar, type TrendBarDatum } from '../charts/trend-bar'
 import { ChartPane } from '../components/chart-pane'
 import { DataPane } from '../components/data-pane'
@@ -170,7 +167,7 @@ function ShodaqohKelompokBody(props: SlideArgs) {
   const tableRows = allRows.filter((r) => r.monthKey <= monthKey)
   const chartData: TrendBarDatum[] = allRows.map((r) => ({
     label: monthNameFromKey(r.monthKey).slice(0, 3),
-    value: r.nominal,
+    value: r.monthKey > monthKey ? 0 : r.nominal,
     isHighlighted: r.monthKey === monthKey,
     isPlaceholder: r.monthKey > monthKey,
   }))
@@ -186,13 +183,19 @@ function ShodaqohKelompokBody(props: SlideArgs) {
     >
       <div className='grid h-full grid-cols-2 gap-12 overflow-hidden'>
         <DataPane>
-          <EditorialTable headerVariant='hairline'>
+          <EditorialTable headerVariant='hairline' density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead>Bulan</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Nominal (Rp)</EditorialTableHead>
-                <EditorialTableHead className='text-right'>KK</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Rata per KK</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Nominal (Rp)
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  KK
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Rata per KK
+                </EditorialTableHead>
               </EditorialTableRow>
             </EditorialTableHeader>
             <EditorialTableBody>
@@ -201,9 +204,7 @@ function ShodaqohKelompokBody(props: SlideArgs) {
                 return (
                   <EditorialTableRow
                     key={r.monthKey}
-                    style={
-                      isCurrent ? { background: p.cream } : undefined
-                    }
+                    style={isCurrent ? { background: p.cream } : undefined}
                   >
                     <EditorialTableCell>{r.monthLabel}</EditorialTableCell>
                     <EditorialTableCell className='text-right'>
@@ -268,13 +269,19 @@ function ShodaqohDesaBody(props: SlideArgs) {
     >
       <div className='grid h-full grid-cols-2 gap-12 overflow-hidden'>
         <DataPane>
-          <EditorialTable headerVariant='hairline'>
+          <EditorialTable headerVariant='hairline' density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead>Kelompok</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Nominal (Rp)</EditorialTableHead>
-                <EditorialTableHead className='text-right'>KK</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Rata per KK</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Nominal (Rp)
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  KK
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Rata per KK
+                </EditorialTableHead>
               </EditorialTableRow>
             </EditorialTableHeader>
             <EditorialTableBody>
@@ -325,6 +332,10 @@ export function renderShodaqohSlide(args: SlideArgs): Slide {
     key: 'shodaqoh',
     title: 'Shodaqoh PPG',
     render: () =>
-      args.isSingleKelompok ? <ShodaqohKelompokBody {...args} /> : <ShodaqohDesaBody {...args} />,
+      args.isSingleKelompok ? (
+        <ShodaqohKelompokBody {...args} />
+      ) : (
+        <ShodaqohDesaBody {...args} />
+      ),
   }
 }

@@ -4,7 +4,6 @@ export const CATEGORY_CODES = [
   'AR',
   'GPN_A',
   'GPN_B',
-  'JM_DEWASA',
   'PENDIDIK_MT',
   'PENDIDIK_MS',
 ] as const
@@ -17,7 +16,6 @@ export const CATEGORY_LABELS: Record<CategoryCode, string> = {
   AR: 'AR',
   GPN_A: 'GPN A (19-22 tahun)',
   GPN_B: 'GPN B (23-30 tahun)',
-  JM_DEWASA: 'JM Dewasa',
   PENDIDIK_MT: 'Pendidik MT',
   PENDIDIK_MS: 'Pendidik MS',
 }

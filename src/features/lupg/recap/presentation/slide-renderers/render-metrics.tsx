@@ -25,13 +25,14 @@ import { type Slide } from '../slides'
 
 // Kategori display + metric-code mapping
 const KATEGORI_ORDER = ['ACR', 'APR', 'AR', 'GPN_A', 'GPN_B'] as const
+type KategoriCode = (typeof KATEGORI_ORDER)[number]
 
 const KATEGORI_LABELS: Record<string, string> = {
   ACR: 'ACR',
   APR: 'APR Intensif',
   AR: 'AR',
-  GPN_A: 'GPN A (19-22)',
-  GPN_B: 'GPN B (≥23)',
+  GPN_A: 'GPN A (19-22 tahun)',
+  GPN_B: 'GPN B (23-30 tahun)',
 }
 const KATEGORI_TO_KEHADIRAN: Record<string, string> = {
   ACR: 'ATT_PCT_ACR',
@@ -152,6 +153,258 @@ function lastNMonthKeys(currentMonthKey: string, n: number): string[] {
   )
 }
 
+function buildCurrentMetricMaps(
+  reports: MonthlyReportRow[],
+  metricReports: MetricReportRow[]
+) {
+  const reportByKelompok = new Map<string, MonthlyReportRow>()
+  for (const report of reports) reportByKelompok.set(report.kelompok_id, report)
+
+  const metricByReport = new Map<string, Map<string, MetricReportRow>>()
+  for (const metricReport of metricReports) {
+    let inner = metricByReport.get(metricReport.metric_code)
+    if (!inner) {
+      inner = new Map()
+      metricByReport.set(metricReport.metric_code, inner)
+    }
+    inner.set(metricReport.monthly_report_id, metricReport)
+  }
+
+  return { reportByKelompok, metricByReport }
+}
+
+function getKelompokCurrentValue(
+  metricCode: string,
+  kelompokId: string,
+  maps: ReturnType<typeof buildCurrentMetricMaps>
+): number | null {
+  const report = maps.reportByKelompok.get(kelompokId)
+  if (!report) return null
+  const metric = maps.metricByReport.get(metricCode)?.get(report.id)
+  const value = metric?.current_value
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function getKelompokCurrentAvg(
+  metricCodes: string[],
+  kelompokId: string,
+  maps: ReturnType<typeof buildCurrentMetricMaps>
+): number | null {
+  return avgOrNull(
+    metricCodes.map((code) => getKelompokCurrentValue(code, kelompokId, maps))
+  )
+}
+
+interface DesaMetricTableRow {
+  key: string
+  label: string
+  values: Array<number | null>
+  desaAvg: number | null
+  tone: 'category' | 'piket' | 'summary'
+  startsGroup?: boolean
+}
+
+function MetricsDesaTable({
+  kelompokList,
+  reports,
+  metricReports,
+}: {
+  kelompokList: { id: string; value: string }[]
+  reports: MonthlyReportRow[]
+  metricReports: MetricReportRow[]
+}) {
+  const maps = buildCurrentMetricMaps(reports, metricReports)
+  const groups: Array<{
+    key: KategoriCode
+    attendanceRows: KategoriCode[]
+    piketCodes: string[]
+  }> = [
+    {
+      key: 'ACR',
+      attendanceRows: ['ACR'],
+      piketCodes: [KATEGORI_TO_PIKET.ACR],
+    },
+    {
+      key: 'APR',
+      attendanceRows: ['APR'],
+      piketCodes: [KATEGORI_TO_PIKET.APR],
+    },
+    { key: 'AR', attendanceRows: ['AR'], piketCodes: [KATEGORI_TO_PIKET.AR] },
+    {
+      key: 'GPN_A',
+      attendanceRows: ['GPN_A', 'GPN_B'],
+      piketCodes: [KATEGORI_TO_PIKET.GPN_A, KATEGORI_TO_PIKET.GPN_B],
+    },
+  ]
+
+  const rows: DesaMetricTableRow[] = []
+  for (const group of groups) {
+    group.attendanceRows.forEach((kat, index) => {
+      const values = kelompokList.map((k) =>
+        getKelompokCurrentValue(KATEGORI_TO_KEHADIRAN[kat], k.id, maps)
+      )
+      rows.push({
+        key: `${kat}-attendance`,
+        label: KATEGORI_LABELS[kat],
+        values,
+        desaAvg: avgOrNull(values),
+        tone: 'category',
+        startsGroup: index === 0,
+      })
+    })
+
+    const piketValues = kelompokList.map((k) =>
+      getKelompokCurrentAvg(group.piketCodes, k.id, maps)
+    )
+    rows.push({
+      key: `${group.key}-piket`,
+      label:
+        group.key === 'GPN_A'
+          ? 'Piket LUPG GPN'
+          : `Piket LUPG ${KATEGORI_LABELS[group.key].replace(' Intensif', '')}`,
+      values: piketValues,
+      desaAvg: avgOrNull(piketValues),
+      tone: 'piket',
+    })
+  }
+
+  const summaryGenerus = kelompokList.map((k) =>
+    avgOrNull(
+      KATEGORI_ORDER.map((kat) =>
+        getKelompokCurrentValue(KATEGORI_TO_KEHADIRAN[kat], k.id, maps)
+      )
+    )
+  )
+  const summaryPiket = kelompokList.map((k) =>
+    avgOrNull(
+      KATEGORI_ORDER.map((kat) =>
+        getKelompokCurrentValue(KATEGORI_TO_PIKET[kat], k.id, maps)
+      )
+    )
+  )
+
+  rows.push({
+    key: 'summary-generus',
+    label: 'RATA² KEHADIRAN GENERUS',
+    values: summaryGenerus,
+    desaAvg: avgOrNull(summaryGenerus),
+    tone: 'summary',
+    startsGroup: true,
+  })
+  rows.push({
+    key: 'summary-piket',
+    label: 'RATA² KEHADIRAN LUPG',
+    values: summaryPiket,
+    desaAvg: avgOrNull(summaryPiket),
+    tone: 'summary',
+  })
+
+  const headerStyle = {
+    background: '#36328f',
+    color: '#f8fafc',
+    fontFamily: 'Montserrat, sans-serif',
+    fontSize: 'clamp(0.62rem, 0.82vw, 0.95rem)',
+    fontWeight: 800,
+    letterSpacing: '0.02em',
+    lineHeight: 1.15,
+  } as const
+
+  return (
+    <div className='h-full overflow-hidden'>
+      <table className='h-full w-full table-fixed border-collapse tabular-nums'>
+        <thead>
+          <tr>
+            <th
+              rowSpan={2}
+              className='w-[18%] px-2 py-2 text-left'
+              style={headerStyle}
+            >
+              KATEGORI
+            </th>
+            <th
+              colSpan={kelompokList.length}
+              className='px-2 py-1.5 text-center'
+              style={headerStyle}
+            >
+              RATA-RATA KEHADIRAN SEBULAN %
+            </th>
+            <th
+              rowSpan={2}
+              className='w-[12%] px-2 py-2 text-center'
+              style={headerStyle}
+            >
+              RATA² SE-DESA %
+            </th>
+          </tr>
+          <tr>
+            {kelompokList.map((k) => (
+              <th
+                key={k.id}
+                className='px-2 py-1.5 text-center'
+                style={headerStyle}
+              >
+                {k.value.replace(/^kel\.?\s*/i, '').toUpperCase()}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => {
+            const rowBg =
+              row.tone === 'summary'
+                ? '#d9e9f7'
+                : row.tone === 'piket'
+                  ? '#ececf4'
+                  : '#f7f8ff'
+            return (
+              <tr
+                key={row.key}
+                style={{
+                  background: rowBg,
+                  borderTop:
+                    row.startsGroup && row.key !== 'ACR-attendance'
+                      ? 'clamp(0.6rem, 1.4vh, 1.25rem) solid #83a6d8'
+                      : undefined,
+                  color: row.tone === 'category' ? '#0f172a' : '#211c8b',
+                  fontSize: 'clamp(0.62rem, 0.82vw, 0.96rem)',
+                  fontWeight: row.tone === 'summary' ? 800 : 600,
+                  lineHeight: 1.18,
+                }}
+              >
+                <td
+                  className='px-2 py-1.5'
+                  style={{
+                    background: row.tone === 'summary' ? '#d3d0d0' : undefined,
+                  }}
+                >
+                  {row.label}
+                </td>
+                {row.values.map((value, index) => (
+                  <td
+                    key={`${row.key}-${kelompokList[index]?.id ?? index}`}
+                    className='px-2 py-1.5 text-center'
+                  >
+                    {formatPct(value)}
+                  </td>
+                ))}
+                <td
+                  className='px-2 py-1.5 text-center'
+                  style={{
+                    background: row.tone === 'summary' ? '#2f7fbd' : undefined,
+                    color: row.tone === 'summary' ? '#f8fafc' : undefined,
+                  }}
+                >
+                  {formatPct(row.desaAvg)}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 // ---------- Metrics Table Slide ----------
 
 interface RenderMetricsTableArgs {
@@ -177,11 +430,38 @@ export function renderMetricsTableSlide(args: RenderMetricsTableArgs): Slide {
     scope,
     isSingleKelompok,
     kelompokFilter,
+    effectiveKelompokList,
+    reports,
+    metricReports,
     yearlyMonthlyReports,
     yearlyMetricReports,
     slideNumber,
     totalSlides,
   } = args
+
+  if (!isSingleKelompok) {
+    return {
+      key: 'metrics-table',
+      title: 'Metrik Kehadiran · Tabel',
+      render: () => (
+        <SlideFrame
+          eyebrow='METRIK KEHADIRAN'
+          title='Tabel Rata-rata Kehadiran'
+          meta={monthLabel}
+          scope={scope}
+          slideNumber={slideNumber}
+          totalSlides={totalSlides}
+        >
+          <MetricsDesaTable
+            kelompokList={effectiveKelompokList}
+            reports={reports}
+            metricReports={metricReports}
+          />
+        </SlideFrame>
+      ),
+    }
+  }
+
   const year = parseInt(monthKey.slice(0, 4), 10)
   const monthKeys = allMonthKeysForYear(year)
   const lookups = buildLookups(yearlyMonthlyReports, yearlyMetricReports)
@@ -198,7 +478,13 @@ export function renderMetricsTableSlide(args: RenderMetricsTableArgs): Slide {
     const kehadiranCode = KATEGORI_TO_KEHADIRAN[kat]
     const piketCode = KATEGORI_TO_PIKET[kat]
     const kehadiranMonthly = monthKeys.map((mk) =>
-      getMonthValue(kehadiranCode, mk, isSingleKelompok, kelompokFilter, lookups)
+      getMonthValue(
+        kehadiranCode,
+        mk,
+        isSingleKelompok,
+        kelompokFilter,
+        lookups
+      )
     )
     const piketMonthly = monthKeys.map((mk) =>
       getMonthValue(piketCode, mk, isSingleKelompok, kelompokFilter, lookups)
@@ -264,8 +550,10 @@ export function renderMetricsTableSlide(args: RenderMetricsTableArgs): Slide {
                     }
                   >
                     <EditorialTableCell>
-                      <span className='font-semibold'>{g.kehadiranRow.label}</span>
-                      <span className='ml-2 text-[9px] uppercase tracking-wider opacity-70'>
+                      <span className='font-semibold'>
+                        {g.kehadiranRow.label}
+                      </span>
+                      <span className='ml-2 text-[9px] tracking-wider uppercase opacity-70'>
                         Kehadiran
                       </span>
                     </EditorialTableCell>
@@ -283,7 +571,7 @@ export function renderMetricsTableSlide(args: RenderMetricsTableArgs): Slide {
                   </EditorialTableRow>,
                   <EditorialTableRow key={`${g.kat}-piket`}>
                     <EditorialTableCell>
-                      <span className='text-[9px] uppercase tracking-wider opacity-70'>
+                      <span className='text-[9px] tracking-wider uppercase opacity-70'>
                         Piket LUPG
                       </span>
                     </EditorialTableCell>

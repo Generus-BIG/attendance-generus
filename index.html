@@ -82,6 +82,47 @@
     </noscript>
 
     <meta name="theme-color" content="#fff" />
+    <script>
+      ;(() => {
+        const reloadKey = 'generus:asset-reload-at'
+        const reload = () => {
+          const now = Date.now()
+
+          try {
+            const lastReloadAt = Number(sessionStorage.getItem(reloadKey) || 0)
+            if (now - lastReloadAt < 60_000) return
+            sessionStorage.setItem(reloadKey, String(now))
+          } catch {
+            // Ignore storage failures; a single reload is still safer than a blank shell.
+          }
+
+          window.location.reload()
+        }
+
+        window.addEventListener(
+          'error',
+          (event) => {
+            const target = event.target
+            if (!(target instanceof HTMLElement)) return
+
+            const assetUrl =
+              target instanceof HTMLScriptElement || target instanceof HTMLImageElement
+                ? target.src
+                : target instanceof HTMLLinkElement
+                  ? target.href
+                  : ''
+
+            if (assetUrl.includes('/assets/')) reload()
+          },
+          true
+        )
+
+        window.addEventListener('vite:preloadError', (event) => {
+          event.preventDefault()
+          reload()
+        })
+      })()
+    </script>
   </head>
 
   <body>

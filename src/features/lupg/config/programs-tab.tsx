@@ -1,9 +1,9 @@
 import { useState } from 'react'
+import { z } from 'zod'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
-import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { z } from 'zod'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,13 +14,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -85,55 +80,85 @@ export function ProgramsConfigTab() {
   }
 
   return (
-    <Card>
-      <CardHeader className='flex flex-row items-center justify-between'>
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between gap-3'>
         <div>
-          <CardTitle>Programs</CardTitle>
+          <h3 className='text-lg font-bold tracking-tight'>Programs</h3>
+          <p className='mt-0.5 text-xs text-muted-foreground'>
+            Definisi program bulanan kelompok untuk pelaporan.
+          </p>
         </div>
-        <Button onClick={handleNew}>
-          <Plus className='mr-2 h-4 w-4' />
-          Tambah
+        <Button onClick={handleNew} size='sm'>
+          <Plus className='mr-1.5 h-4 w-4' />
+          Tambah Program
         </Button>
-      </CardHeader>
-      <CardContent className='overflow-x-auto'>
-        {isLoading ? (
-          <div className='text-muted-foreground flex items-center justify-center py-8'>
-            <Loader2 className='mr-2 h-5 w-5 animate-spin' />
-            Memuat...
-          </div>
-        ) : items.length === 0 ? (
-          <div className='text-muted-foreground rounded-md border border-dashed p-6 text-center text-sm'>
-            Belum ada program.
-          </div>
-        ) : (
+      </div>
+
+      {isLoading ? (
+        <div className='flex items-center justify-center rounded-md border py-12 text-muted-foreground'>
+          <Loader2 className='mr-2 h-5 w-5 animate-spin' />
+          Memuat...
+        </div>
+      ) : items.length === 0 ? (
+        <div className='rounded-md border border-dashed bg-muted/10 p-12 text-center text-sm text-muted-foreground'>
+          Belum ada program. Klik "Tambah Program" untuk memulai.
+        </div>
+      ) : (
+        <div className='overflow-hidden rounded-md border border-border/70 bg-card shadow-sm'>
           <Table>
-            <TableHeader>
+            <TableHeader className='bg-muted/30'>
               <TableRow>
-                <TableHead>Code</TableHead>
+                <TableHead className='w-[150px]'>Code</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Denominator</TableHead>
                 <TableHead>Count Label</TableHead>
-                <TableHead className='text-center'>Cumulative</TableHead>
-                <TableHead className='text-center'>Sort</TableHead>
-                <TableHead className='text-center'>Active</TableHead>
-                <TableHead></TableHead>
+                <TableHead className='w-[120px] text-center'>
+                  Cumulative
+                </TableHead>
+                <TableHead className='w-[100px] text-center'>Sort</TableHead>
+                <TableHead className='w-[100px] text-center'>Active</TableHead>
+                <TableHead className='w-[80px]'></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {items.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className='font-mono text-xs'>{r.code}</TableCell>
+                  <TableCell className='font-mono text-xs text-muted-foreground'>
+                    {r.code}
+                  </TableCell>
                   <TableCell className='font-medium'>{r.name}</TableCell>
                   <TableCell>{r.denominator_label}</TableCell>
                   <TableCell>{r.count_label}</TableCell>
                   <TableCell className='text-center'>
-                    {r.is_cumulative ? '✓' : '-'}
+                    {r.is_cumulative ? (
+                      <span className='inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary'>
+                        Cumulative
+                      </span>
+                    ) : (
+                      <span className='text-xs text-muted-foreground/60'>
+                        -
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell className='text-center tabular-nums'>
                     {r.sort_order}
                   </TableCell>
                   <TableCell className='text-center'>
-                    {r.active ? '✓' : '-'}
+                    {r.active ? (
+                      <Badge
+                        variant='outline'
+                        className='rounded-md border-success/20 bg-success/10 px-2 py-0.5 text-xs font-semibold tracking-wider text-success uppercase hover:bg-success/10 hover:text-success'
+                      >
+                        Aktif
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant='outline'
+                        className='rounded-md border-muted-foreground/10 bg-muted/30 px-2 py-0.5 text-xs font-medium tracking-wider text-muted-foreground uppercase'
+                      >
+                        Nonaktif
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell className='text-right'>
                     <div className='flex justify-end gap-1'>
@@ -148,7 +173,7 @@ export function ProgramsConfigTab() {
                       <Button
                         variant='ghost'
                         size='icon'
-                        className='h-8 w-8'
+                        className='h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive'
                         onClick={() => setDeleting(r)}
                       >
                         <Trash2 className='h-4 w-4' />
@@ -159,8 +184,8 @@ export function ProgramsConfigTab() {
               ))}
             </TableBody>
           </Table>
-        )}
-      </CardContent>
+        </div>
+      )}
 
       <ProgramFormDialog
         open={editOpen}
@@ -177,8 +202,8 @@ export function ProgramsConfigTab() {
             <AlertDialogTitle>Hapus program?</AlertDialogTitle>
             <AlertDialogDescription>
               Program <strong>{deleting?.name}</strong> akan dihapus. Laporan
-              bulanan yang sudah ada untuk program ini akan tetap tersimpan
-              tapi tidak bisa diisi ulang.
+              bulanan yang sudah ada untuk program ini akan tetap tersimpan tapi
+              tidak bisa diisi ulang.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -190,7 +215,7 @@ export function ProgramsConfigTab() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </div>
   )
 }
 
@@ -217,9 +242,7 @@ function DeleteProgramButton({
         })
       }
     >
-      {del.isPending ? (
-        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-      ) : null}
+      {del.isPending ? <Loader2 className='mr-2 h-4 w-4 animate-spin' /> : null}
       Hapus
     </AlertDialogAction>
   )
@@ -421,9 +444,7 @@ function ProgramFormDialog({ open, onOpenChange, editing }: FormDialogProps) {
                 Batal
               </Button>
               <Button type='submit' disabled={isPending}>
-                {isPending && (
-                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                )}
+                {isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
                 Simpan
               </Button>
             </DialogFooter>

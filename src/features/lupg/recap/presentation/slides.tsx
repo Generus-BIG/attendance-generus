@@ -2,6 +2,8 @@
 // Each renderer lives in `./slide-renderers/render-*.tsx`.
 import { type ReactNode } from 'react'
 import {
+  type CharacterMonitoringActivityRow,
+  type CharacterMonitoringReportRow,
   type MetricDefinitionRow,
   type MetricReportRow,
   type MonthlyReportRow,
@@ -15,6 +17,10 @@ import {
   type ShodaqohRow,
 } from '../../types'
 import { formatMonthLabel } from '../../utils/month-utils'
+import {
+  renderCharacterAgendaSlide,
+  renderCharacterSummarySlide,
+} from './slide-renderers/render-character-monitoring'
 import { renderClosingSlide } from './slide-renderers/render-closing'
 import { renderCoverSlide } from './slide-renderers/render-cover'
 import {
@@ -54,12 +60,15 @@ export interface PresentationData {
   shodaqohRows: ShodaqohRow[]
   mustinRows: MustinNoteRow[]
   mustinTemplates?: MustinTemplateRow[]
+  characterActivities?: CharacterMonitoringActivityRow[]
+  characterReports?: CharacterMonitoringReportRow[]
   kelompokFilter?: string
 
   // Yearly trend data (kelompok mode):
   yearlyMonthlyReports?: MonthlyReportRow[]
   yearlyProgramReports?: ProgramReportRow[]
   yearlyMetricReports?: MetricReportRow[]
+  yearlyMetricMonthlyReports?: MonthlyReportRow[]
   yearlyShodaqohRows?: ShodaqohRow[]
 }
 
@@ -74,7 +83,9 @@ const PROGRAM_ORDER = [
   'SHOLAT_ACR',
 ] as const
 
-function orderPrograms(programs: ProgramDefinitionRow[]): ProgramDefinitionRow[] {
+function orderPrograms(
+  programs: ProgramDefinitionRow[]
+): ProgramDefinitionRow[] {
   const byCode = new Map(programs.map((p) => [p.code, p]))
   const ordered: ProgramDefinitionRow[] = []
   for (const code of PROGRAM_ORDER) {
@@ -99,10 +110,13 @@ export function buildSlides(data: PresentationData): Slide[] {
     shodaqohRows,
     mustinRows,
     mustinTemplates = [],
+    characterActivities = [],
+    characterReports = [],
     kelompokFilter,
     yearlyMonthlyReports = [],
     yearlyProgramReports = [],
     yearlyMetricReports = [],
+    yearlyMetricMonthlyReports = [],
     yearlyShodaqohRows = [],
   } = data
 
@@ -133,11 +147,18 @@ export function buildSlides(data: PresentationData): Slide[] {
     | { kind: 'status' }
     | { kind: 'sensus' }
     | { kind: 'metrics-table' }
-    | { kind: 'metrics-compare'; codes: readonly string[]; monthsBack: number; titleSuffix: string }
+    | {
+        kind: 'metrics-compare'
+        codes: readonly string[]
+        monthsBack: number
+        titleSuffix: string
+      }
     | { kind: 'metrics-aggregate' }
     | { kind: 'sarpras' }
     | { kind: 'shodaqoh' }
     | { kind: 'program'; program: ProgramDefinitionRow }
+    | { kind: 'character-agenda' }
+    | { kind: 'character-summary' }
     | { kind: 'mustin' }
     | { kind: 'closing' }
 
@@ -166,6 +187,8 @@ export function buildSlides(data: PresentationData): Slide[] {
   for (const program of orderedPrograms) {
     descriptors.push({ kind: 'program', program })
   }
+  descriptors.push({ kind: 'character-agenda' })
+  descriptors.push({ kind: 'character-summary' })
   descriptors.push({ kind: 'mustin' })
   descriptors.push({ kind: 'closing' })
 
@@ -231,7 +254,7 @@ export function buildSlides(data: PresentationData): Slide[] {
             metrics,
             reports,
             metricReports,
-            yearlyMonthlyReports,
+            yearlyMonthlyReports: yearlyMetricMonthlyReports,
             yearlyMetricReports,
             slideNumber,
             totalSlides,
@@ -251,7 +274,7 @@ export function buildSlides(data: PresentationData): Slide[] {
             monthsBack: d.monthsBack,
             titleSuffix: d.titleSuffix,
             metrics,
-            yearlyMonthlyReports,
+            yearlyMonthlyReports: yearlyMetricMonthlyReports,
             yearlyMetricReports,
             slideNumber,
             totalSlides,
@@ -268,7 +291,7 @@ export function buildSlides(data: PresentationData): Slide[] {
             isSingleKelompok,
             kelompokFilter,
             metrics,
-            yearlyMonthlyReports,
+            yearlyMonthlyReports: yearlyMetricMonthlyReports,
             yearlyMetricReports,
             slideNumber,
             totalSlides,
@@ -325,6 +348,36 @@ export function buildSlides(data: PresentationData): Slide[] {
             programReports,
             yearlyMonthlyReports,
             yearlyProgramReports,
+            slideNumber,
+            totalSlides,
+          })
+        )
+        break
+      }
+      case 'character-agenda': {
+        slides.push(
+          renderCharacterAgendaSlide({
+            monthLabel,
+            scope,
+            effectiveKelompokList,
+            reports,
+            activities: characterActivities,
+            characterReports,
+            slideNumber,
+            totalSlides,
+          })
+        )
+        break
+      }
+      case 'character-summary': {
+        slides.push(
+          renderCharacterSummarySlide({
+            monthLabel,
+            scope,
+            effectiveKelompokList,
+            reports,
+            activities: characterActivities,
+            characterReports,
             slideNumber,
             totalSlides,
           })

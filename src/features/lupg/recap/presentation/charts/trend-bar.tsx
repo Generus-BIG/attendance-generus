@@ -12,13 +12,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import {
   EditorialTooltipShell,
   hairlineAxisProps,
   RestrainedTopLabel,
   type RestrainedTopLabelProps,
 } from './chart-primitives'
-import { usePresPalette, type PresPalette } from '../use-pres-palette'
 
 export interface TrendBarDatum {
   label: string
@@ -49,7 +49,13 @@ interface TipProps {
   palette: PresPalette
 }
 
-function CustomTooltip({ active, payload, label, labelFormatter, palette }: TipProps) {
+function CustomTooltip({
+  active,
+  payload,
+  label,
+  labelFormatter,
+  palette,
+}: TipProps) {
   if (!active || !payload || payload.length === 0) return null
   const datum = payload[0]?.payload
   if (!datum) return null
@@ -72,6 +78,7 @@ export function TrendBar({
   labelFormatter,
 }: TrendBarProps) {
   const palette = usePresPalette()
+  const yAxisWidth = valueFormatter ? 74 : 44
   const axisTitleStyle = {
     fontFamily: palette.fontMono,
     fontSize: 'clamp(0.75rem, 1vw, 1rem)',
@@ -82,7 +89,10 @@ export function TrendBar({
   const placeholderFill = `color-mix(in oklch, ${palette.muted} 25%, ${palette.bg})`
   return (
     <ResponsiveContainer width='100%' height='100%'>
-      <BarChart data={data} margin={{ top: 28, right: 24, bottom: 36, left: 36 }}>
+      <BarChart
+        data={data}
+        margin={{ top: 46, right: 24, bottom: 36, left: 18 }}
+      >
         <CartesianGrid
           strokeDasharray='3 3'
           vertical={false}
@@ -106,6 +116,7 @@ export function TrendBar({
         <YAxis
           domain={valueDomain}
           tickFormatter={valueFormatter}
+          width={yAxisWidth}
           {...hairlineAxisProps(palette, 'y')}
           label={
             yAxisTitle
@@ -123,7 +134,10 @@ export function TrendBar({
           cursor={{ fill: palette.muted, fillOpacity: 0.08 }}
           content={(p) => (
             <CustomTooltip
-              {...(p as unknown as Omit<TipProps, 'palette' | 'labelFormatter'>)}
+              {...(p as unknown as Omit<
+                TipProps,
+                'palette' | 'labelFormatter'
+              >)}
               labelFormatter={labelFormatter}
               palette={palette}
             />
@@ -142,8 +156,12 @@ export function TrendBar({
             dataKey='value'
             content={(p) => (
               <RestrainedTopLabel
-                {...(p as Omit<RestrainedTopLabelProps, 'palette' | 'formatter'>)}
+                {...(p as Omit<
+                  RestrainedTopLabelProps,
+                  'palette' | 'formatter'
+                >)}
                 formatter={labelFormatter}
+                hideZero
                 palette={palette}
               />
             )}

@@ -1,22 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
 import { useQueries, useQuery } from '@tanstack/react-query'
-import {
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  Maximize2,
-  X,
-} from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
+import { ChevronLeft, ChevronRight, Loader2, Maximize2, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
+  useActiveCharacterMonitoringActivities,
   useActiveMetrics,
   useActiveMustinTemplates,
   useActiveSarprasItems,
   useAllPrograms,
+  useCharacterMonitoringReportsBatch,
   useMonthlyReports,
   useYearlyMetrics,
+  useYearlyMetricsDesa,
   useYearlyProgramData,
   useYearlyProgramDataDesa,
   useYearlyShodaqohData,
@@ -76,7 +73,14 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
     useQueries({
       queries: [
         {
-          queryKey: ['lupg', 'present', 'sensus', monthKey, reportIdsKey, reportIds] as const,
+          queryKey: [
+            'lupg',
+            'present',
+            'sensus',
+            monthKey,
+            reportIdsKey,
+            reportIds,
+          ] as const,
           queryFn: async () => {
             if (reportIds.length === 0) return [] as SensusSnapshotRow[]
             const { data, error } = await supabase
@@ -89,7 +93,14 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'present', 'programs', monthKey, reportIdsKey, reportIds] as const,
+          queryKey: [
+            'lupg',
+            'present',
+            'programs',
+            monthKey,
+            reportIdsKey,
+            reportIds,
+          ] as const,
           queryFn: async () => {
             if (reportIds.length === 0) return [] as ProgramReportRow[]
             const { data, error } = await supabase
@@ -102,7 +113,14 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'present', 'metrics', monthKey, reportIdsKey, reportIds] as const,
+          queryKey: [
+            'lupg',
+            'present',
+            'metrics',
+            monthKey,
+            reportIdsKey,
+            reportIds,
+          ] as const,
           queryFn: async () => {
             if (reportIds.length === 0) return [] as MetricReportRow[]
             const { data, error } = await supabase
@@ -115,7 +133,14 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'present', 'sarpras', monthKey, reportIdsKey, reportIds] as const,
+          queryKey: [
+            'lupg',
+            'present',
+            'sarpras',
+            monthKey,
+            reportIdsKey,
+            reportIds,
+          ] as const,
           queryFn: async () => {
             if (reportIds.length === 0) return [] as SarprasReportRow[]
             const { data, error } = await supabase
@@ -128,7 +153,14 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'present', 'shodaqoh', monthKey, reportIdsKey, reportIds] as const,
+          queryKey: [
+            'lupg',
+            'present',
+            'shodaqoh',
+            monthKey,
+            reportIdsKey,
+            reportIds,
+          ] as const,
           queryFn: async () => {
             if (reportIds.length === 0) return [] as ShodaqohRow[]
             const { data, error } = await supabase
@@ -141,7 +173,14 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
           enabled: reportIds.length > 0,
         },
         {
-          queryKey: ['lupg', 'present', 'mustin', monthKey, reportIdsKey, reportIds] as const,
+          queryKey: [
+            'lupg',
+            'present',
+            'mustin',
+            monthKey,
+            reportIdsKey,
+            reportIds,
+          ] as const,
           queryFn: async () => {
             if (reportIds.length === 0) return [] as MustinNoteRow[]
             const { data, error } = await supabase
@@ -188,21 +227,38 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
     ]
   )
 
-  // Yearly metrics + shodaqoh — only needed for kelompok mode (desa mode uses
-  // current-month grouped bars). The hooks return empty arrays when kelompokId
-  // is undefined, so it's safe to wire unconditionally.
+  // Yearly metrics feed both kelompok and desa presentation slides: the 3/5
+  // month comparisons and the generus-vs-piket aggregate need historical data.
   const yearlyMetricsQ = useYearlyMetrics(kelompokFilter, year)
+  const yearlyMetricsDesaQ = useYearlyMetricsDesa(year)
   const yearlyShodaqohQ = useYearlyShodaqohData(kelompokFilter, year)
 
   const yearlyMetricReports = useMemo(
     () =>
-      kelompokFilter ? (yearlyMetricsQ.data?.metricReports ?? []) : [],
-    [kelompokFilter, yearlyMetricsQ.data?.metricReports]
+      kelompokFilter
+        ? (yearlyMetricsQ.data?.metricReports ?? [])
+        : (yearlyMetricsDesaQ.data?.metricReports ?? []),
+    [
+      kelompokFilter,
+      yearlyMetricsQ.data?.metricReports,
+      yearlyMetricsDesaQ.data?.metricReports,
+    ]
+  )
+
+  const yearlyMetricMonthlyReports = useMemo(
+    () =>
+      kelompokFilter
+        ? (yearlyMetricsQ.data?.monthlyReports ?? [])
+        : (yearlyMetricsDesaQ.data?.monthlyReports ?? []),
+    [
+      kelompokFilter,
+      yearlyMetricsQ.data?.monthlyReports,
+      yearlyMetricsDesaQ.data?.monthlyReports,
+    ]
   )
 
   const yearlyShodaqohRows = useMemo(
-    () =>
-      kelompokFilter ? (yearlyShodaqohQ.data?.shodaqohRows ?? []) : [],
+    () => (kelompokFilter ? (yearlyShodaqohQ.data?.shodaqohRows ?? []) : []),
     [kelompokFilter, yearlyShodaqohQ.data?.shodaqohRows]
   )
 
@@ -212,14 +268,23 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
   const { data: metrics = [] } = useActiveMetrics()
   const { data: sarprasItems = [] } = useActiveSarprasItems()
   const { data: mustinTemplates = [] } = useActiveMustinTemplates()
+  const {
+    data: characterActivities = [],
+    isLoading: characterActivitiesLoading,
+  } = useActiveCharacterMonitoringActivities()
+  const { data: characterReports = [], isLoading: characterReportsLoading } =
+    useCharacterMonitoringReportsBatch(reportIds)
 
   const isLoading =
     sensusQ.isLoading ||
     programsQ.isLoading ||
     metricsQ.isLoading ||
+    yearlyMetricsDesaQ.isLoading ||
     sarprasQ.isLoading ||
     shodaqohQ.isLoading ||
-    mustinQ.isLoading
+    mustinQ.isLoading ||
+    characterActivitiesLoading ||
+    characterReportsLoading
 
   const slides = useMemo(
     () =>
@@ -237,10 +302,13 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
         shodaqohRows: shodaqohQ.data ?? [],
         mustinRows: mustinQ.data ?? [],
         mustinTemplates,
+        characterActivities,
+        characterReports,
         kelompokFilter,
         yearlyMonthlyReports,
         yearlyProgramReports,
         yearlyMetricReports,
+        yearlyMetricMonthlyReports,
         yearlyShodaqohRows,
       }),
     [
@@ -257,10 +325,13 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
       shodaqohQ.data,
       mustinQ.data,
       mustinTemplates,
+      characterActivities,
+      characterReports,
       kelompokFilter,
       yearlyMonthlyReports,
       yearlyProgramReports,
       yearlyMetricReports,
+      yearlyMetricMonthlyReports,
       yearlyShodaqohRows,
     ]
   )
@@ -311,11 +382,11 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
   return (
     <div
       ref={containerRef}
-      className='bg-background fixed inset-0 z-50 flex flex-col'
+      className='fixed inset-0 z-50 flex flex-col bg-background'
     >
       {!isFullscreen && (
         <div className='flex items-center justify-between border-b px-6 py-3'>
-          <div className='text-muted-foreground text-sm'>
+          <div className='text-sm text-muted-foreground'>
             {formatMonthLabel(monthKey)} · {currentSlide?.title ?? ''}
           </div>
           <div className='flex items-center gap-2'>
@@ -344,7 +415,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
         </Button>
         <div className='flex-1 overflow-hidden'>
           {isLoading || !currentSlide ? (
-            <div className='text-muted-foreground flex h-full items-center justify-center'>
+            <div className='flex h-full items-center justify-center text-muted-foreground'>
               <Loader2 className='mr-2 h-6 w-6 animate-spin' />
               Memuat...
             </div>
@@ -368,7 +439,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
 
       <div className='border-t'>
         <div
-          className='bg-primary h-1 transition-all'
+          className='h-1 bg-primary transition-all'
           style={{
             width:
               slides.length > 0
@@ -376,7 +447,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
                 : '0%',
           }}
         />
-        <div className='text-muted-foreground px-6 py-2 text-xs'>
+        <div className='px-6 py-2 text-xs text-muted-foreground'>
           Slide {clampedIndex + 1} / {slides.length} · Gunakan ←/→ atau Space
           untuk navigasi · Esc untuk keluar
         </div>

@@ -29,9 +29,16 @@ dist-ssr
 *.claude
 *.superpowers
 *docs
-*.agents
 *skills-lock.json
 *reference-ppt
 *.impeccable.md
 *copilot-instructions.md
 *opencode.json
+*Example Worksheet GPN.xlsx
+*Target_29_Karakter Brief.pdf
+.vercel
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.template
