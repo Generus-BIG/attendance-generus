@@ -1,6 +1,7 @@
 import { AttendanceActionDialog } from './attendance-action-dialog'
 import { AttendanceDeleteDialog } from './attendance-delete-dialog'
 import { AttendanceEditDateDialog } from './attendance-edit-date-dialog'
+import { ExportAttendanceDialog } from './export-attendance-dialog'
 import { useAttendance } from './attendance-provider'
 
 export function AttendanceDialogs() {
@@ -13,6 +14,8 @@ export function AttendanceDialogs() {
         open={open === 'add'}
         onOpenChange={(nextOpen) => setOpen(nextOpen ? 'add' : null)}
       />
+
+      <ExportAttendanceDialog />
 
       {currentRow && (
         <>

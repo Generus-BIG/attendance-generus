@@ -125,6 +125,26 @@ export const attendanceColumns: ColumnDef<AttendanceWithParticipant>[] = [
     },
   },
   {
+    id: 'kategori',
+    accessorFn: (row) => row.participant?.kategori || row.tempKategori || '-',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Kategori' />
+    ),
+    cell: ({ row }) => {
+      const kategori = row.original.participant?.kategori || row.original.tempKategori
+      if (!kategori || (kategori as string) === '-') return <span>-</span>
+      return (
+        <Badge variant='outline'>
+          {kategori === 'A' ? 'GPN A' : kategori === 'B' ? 'GPN B' : kategori}
+        </Badge>
+      )
+    },
+    filterFn: (row, _id, value) => {
+      const kategori = row.original.participant?.kategori || row.original.tempKategori
+      return Array.isArray(value) && value.includes(kategori)
+    },
+  },
+  {
     accessorKey: 'status',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Status' />

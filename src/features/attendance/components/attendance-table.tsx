@@ -28,7 +28,7 @@ import {
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { TableSkeleton } from '@/components/data-table/table-skeleton'
 import { DatePicker } from '@/components/date-picker'
-import { kelompokOptions } from '@/features/participants/data/data'
+import { kelompokOptions, kategoriOptions } from '@/features/participants/data/data'
 import { attendanceStatusOptions } from '../data/data'
 import { getAttendanceList } from '../services'
 import {
@@ -135,6 +135,7 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
     columnFilters: [
       { columnId: 'participantName', searchKey: 'name', type: 'string' },
       { columnId: 'kelompok', searchKey: 'kelompok', type: 'array' },
+      { columnId: 'kategori', searchKey: 'kategori', type: 'array' },
       { columnId: 'status', searchKey: 'status', type: 'array' },
       { columnId: 'formTitle', searchKey: 'form', type: 'array' },
     ],
@@ -255,6 +256,14 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
                 },
               ]
             : []),
+          {
+            columnId: 'kategori',
+            title: 'Kategori',
+            options: kategoriOptions.map((k) => ({
+              label: k.label,
+              value: k.value,
+            })),
+          },
           {
             columnId: 'status',
             title: 'Status',
