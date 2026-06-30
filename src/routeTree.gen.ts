@@ -34,10 +34,12 @@ import { Route as AdminParticipantsIndexRouteImport } from './routes/admin/parti
 import { Route as AdminManageRoleIndexRouteImport } from './routes/admin/manage-role/index'
 import { Route as AdminHelpCenterIndexRouteImport } from './routes/admin/help-center/index'
 import { Route as AdminFormsIndexRouteImport } from './routes/admin/forms/index'
+import { Route as AdminDashboardSharingIndexRouteImport } from './routes/admin/dashboard-sharing/index'
 import { Route as AdminChatsIndexRouteImport } from './routes/admin/chats/index'
 import { Route as AdminAttendanceIndexRouteImport } from './routes/admin/attendance/index'
 import { Route as AdminAppsIndexRouteImport } from './routes/admin/apps/index'
 import { Route as AdminApprovalsIndexRouteImport } from './routes/admin/approvals/index'
+import { Route as ShareDashboardTokenRouteImport } from './routes/share/dashboard/$token'
 import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/settings/notifications'
 import { Route as AdminSettingsAppearanceRouteImport } from './routes/admin/settings/appearance'
 import { Route as AdminSettingsAccountRouteImport } from './routes/admin/settings/account'
@@ -179,6 +181,12 @@ const AdminFormsIndexRoute = AdminFormsIndexRouteImport.update({
   path: '/forms/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminDashboardSharingIndexRoute =
+  AdminDashboardSharingIndexRouteImport.update({
+    id: '/dashboard-sharing/',
+    path: '/dashboard-sharing/',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
 const AdminChatsIndexRoute = AdminChatsIndexRouteImport.update({
   id: '/chats/',
   path: '/chats/',
@@ -198,6 +206,11 @@ const AdminApprovalsIndexRoute = AdminApprovalsIndexRouteImport.update({
   id: '/approvals/',
   path: '/approvals/',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const ShareDashboardTokenRoute = ShareDashboardTokenRouteImport.update({
+  id: '/share/dashboard/$token',
+  path: '/share/dashboard/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSettingsNotificationsRoute =
   AdminSettingsNotificationsRouteImport.update({
@@ -304,10 +317,12 @@ export interface FileRoutesByFullPath {
   '/admin/settings/account': typeof AdminSettingsAccountRoute
   '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
+  '/share/dashboard/$token': typeof ShareDashboardTokenRoute
   '/admin/approvals': typeof AdminApprovalsIndexRoute
   '/admin/apps': typeof AdminAppsIndexRoute
   '/admin/attendance': typeof AdminAttendanceIndexRoute
   '/admin/chats': typeof AdminChatsIndexRoute
+  '/admin/dashboard-sharing': typeof AdminDashboardSharingIndexRoute
   '/admin/forms': typeof AdminFormsIndexRoute
   '/admin/help-center': typeof AdminHelpCenterIndexRoute
   '/admin/manage-role': typeof AdminManageRoleIndexRoute
@@ -349,10 +364,12 @@ export interface FileRoutesByTo {
   '/admin/settings/account': typeof AdminSettingsAccountRoute
   '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
+  '/share/dashboard/$token': typeof ShareDashboardTokenRoute
   '/admin/approvals': typeof AdminApprovalsIndexRoute
   '/admin/apps': typeof AdminAppsIndexRoute
   '/admin/attendance': typeof AdminAttendanceIndexRoute
   '/admin/chats': typeof AdminChatsIndexRoute
+  '/admin/dashboard-sharing': typeof AdminDashboardSharingIndexRoute
   '/admin/forms': typeof AdminFormsIndexRoute
   '/admin/help-center': typeof AdminHelpCenterIndexRoute
   '/admin/manage-role': typeof AdminManageRoleIndexRoute
@@ -396,10 +413,12 @@ export interface FileRoutesById {
   '/admin/settings/account': typeof AdminSettingsAccountRoute
   '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
+  '/share/dashboard/$token': typeof ShareDashboardTokenRoute
   '/admin/approvals/': typeof AdminApprovalsIndexRoute
   '/admin/apps/': typeof AdminAppsIndexRoute
   '/admin/attendance/': typeof AdminAttendanceIndexRoute
   '/admin/chats/': typeof AdminChatsIndexRoute
+  '/admin/dashboard-sharing/': typeof AdminDashboardSharingIndexRoute
   '/admin/forms/': typeof AdminFormsIndexRoute
   '/admin/help-center/': typeof AdminHelpCenterIndexRoute
   '/admin/manage-role/': typeof AdminManageRoleIndexRoute
@@ -444,10 +463,12 @@ export interface FileRouteTypes {
     | '/admin/settings/account'
     | '/admin/settings/appearance'
     | '/admin/settings/notifications'
+    | '/share/dashboard/$token'
     | '/admin/approvals'
     | '/admin/apps'
     | '/admin/attendance'
     | '/admin/chats'
+    | '/admin/dashboard-sharing'
     | '/admin/forms'
     | '/admin/help-center'
     | '/admin/manage-role'
@@ -489,10 +510,12 @@ export interface FileRouteTypes {
     | '/admin/settings/account'
     | '/admin/settings/appearance'
     | '/admin/settings/notifications'
+    | '/share/dashboard/$token'
     | '/admin/approvals'
     | '/admin/apps'
     | '/admin/attendance'
     | '/admin/chats'
+    | '/admin/dashboard-sharing'
     | '/admin/forms'
     | '/admin/help-center'
     | '/admin/manage-role'
@@ -535,10 +558,12 @@ export interface FileRouteTypes {
     | '/admin/settings/account'
     | '/admin/settings/appearance'
     | '/admin/settings/notifications'
+    | '/share/dashboard/$token'
     | '/admin/approvals/'
     | '/admin/apps/'
     | '/admin/attendance/'
     | '/admin/chats/'
+    | '/admin/dashboard-sharing/'
     | '/admin/forms/'
     | '/admin/help-center/'
     | '/admin/manage-role/'
@@ -572,6 +597,7 @@ export interface RootRouteChildren {
   FormsSlugRoute: typeof FormsSlugRoute
   RegisterAddParticipantRoute: typeof RegisterAddParticipantRoute
   FormsIndexRoute: typeof FormsIndexRoute
+  ShareDashboardTokenRoute: typeof ShareDashboardTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -751,6 +777,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminFormsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/dashboard-sharing/': {
+      id: '/admin/dashboard-sharing/'
+      path: '/dashboard-sharing'
+      fullPath: '/admin/dashboard-sharing'
+      preLoaderRoute: typeof AdminDashboardSharingIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/chats/': {
       id: '/admin/chats/'
       path: '/chats'
@@ -778,6 +811,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/approvals'
       preLoaderRoute: typeof AdminApprovalsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/share/dashboard/$token': {
+      id: '/share/dashboard/$token'
+      path: '/share/dashboard/$token'
+      fullPath: '/share/dashboard/$token'
+      preLoaderRoute: typeof ShareDashboardTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/settings/notifications': {
       id: '/admin/settings/notifications'
@@ -945,6 +985,7 @@ interface AdminRouteRouteChildren {
   AdminAppsIndexRoute: typeof AdminAppsIndexRoute
   AdminAttendanceIndexRoute: typeof AdminAttendanceIndexRoute
   AdminChatsIndexRoute: typeof AdminChatsIndexRoute
+  AdminDashboardSharingIndexRoute: typeof AdminDashboardSharingIndexRoute
   AdminFormsIndexRoute: typeof AdminFormsIndexRoute
   AdminHelpCenterIndexRoute: typeof AdminHelpCenterIndexRoute
   AdminManageRoleIndexRoute: typeof AdminManageRoleIndexRoute
@@ -963,6 +1004,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAppsIndexRoute: AdminAppsIndexRoute,
   AdminAttendanceIndexRoute: AdminAttendanceIndexRoute,
   AdminChatsIndexRoute: AdminChatsIndexRoute,
+  AdminDashboardSharingIndexRoute: AdminDashboardSharingIndexRoute,
   AdminFormsIndexRoute: AdminFormsIndexRoute,
   AdminHelpCenterIndexRoute: AdminHelpCenterIndexRoute,
   AdminManageRoleIndexRoute: AdminManageRoleIndexRoute,
@@ -990,6 +1032,7 @@ const rootRouteChildren: RootRouteChildren = {
   FormsSlugRoute: FormsSlugRoute,
   RegisterAddParticipantRoute: RegisterAddParticipantRoute,
   FormsIndexRoute: FormsIndexRoute,
+  ShareDashboardTokenRoute: ShareDashboardTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
