@@ -6,6 +6,29 @@ import {
 } from '@/lib/schema'
 import { supabase } from '../../lib/supabase'
 
+export type SubmitPendingAttendanceResult =
+  | {
+      outcome: 'created'
+      attendanceId: string
+      pendingParticipantId: string
+    }
+  | {
+      outcome: 'appended'
+      attendanceId: string
+      pendingParticipantId: string
+    }
+  | {
+      outcome: 'duplicate_same_form'
+      attendanceId: null
+      pendingParticipantId: string
+    }
+
+type PendingAttendanceRpcRow = {
+  outcome: 'created' | 'appended' | 'duplicate_same_form'
+  attendance_id: string | null
+  pending_participant_id: string
+}
+
 export async function getFormBySlug(
   slug: string
 ): Promise<AttendanceFormConfig | null> {
@@ -157,51 +180,52 @@ export async function submitPendingAttendance(
     birthPlace: string
     birthDate: Date
   }
-) {
+): Promise<SubmitPendingAttendanceResult> {
   await assertAttendanceMatchesFormScope(formId, {
     tempKelompok: data.tempKelompok,
     tempKategori: data.tempKategori,
   })
 
-  // 1. Insert into attendance table with temp fields
-  const attendancePayload = {
-    form_id: formId,
-    participant_id: null,
-    status: data.status.toUpperCase(),
-    permission_reason: data.permissionReason || null,
-    permission_description: data.notes || null,
-    temp_name: data.tempName,
-    temp_group: data.tempKelompok,
-    temp_category: data.tempKategori,
-    temp_gender: data.tempGender,
-    timestamp: new Date().toISOString(),
+  const { data: rpcRows, error } = await supabase.rpc(
+    'submit_pending_attendance_guarded',
+    {
+      p_form_id: formId,
+      p_status: data.status,
+      p_permission_reason: data.permissionReason ?? null,
+      p_permission_description: data.notes ?? null,
+      p_temp_name: data.tempName,
+      p_temp_group: data.tempKelompok,
+      p_temp_category: data.tempKategori,
+      p_temp_gender: data.tempGender,
+      p_birth_place: data.birthPlace,
+      p_birth_date: format(data.birthDate, 'yyyy-MM-dd'),
+    }
+  )
+
+  if (error) throw error
+
+  const row = (rpcRows as PendingAttendanceRpcRow[] | null)?.[0]
+  if (!row) {
+    throw new Error('Respons pendaftaran kosong')
   }
 
-  const { data: attendanceData, error: attendanceError } = await supabase
-    .from('attendance')
-    .insert(attendancePayload)
-    .select()
-    .single()
-
-  if (attendanceError) throw attendanceError
-
-  // 2. Insert into pending_participants
-  const pendingPayload = {
-    name: data.tempName,
-    suggested_group: data.tempKelompok,
-    suggested_gender: data.tempGender,
-    suggested_category: data.tempKategori,
-    attendance_ref_ids: [attendanceData.id],
-    status: 'pending',
-    birth_place: data.birthPlace,
-    birth_date: format(data.birthDate, 'yyyy-MM-dd'),
+  if (row.outcome === 'duplicate_same_form') {
+    return {
+      outcome: row.outcome,
+      attendanceId: null,
+      pendingParticipantId: row.pending_participant_id,
+    }
   }
 
-  const { error: pendingError } = await supabase
-    .from('pending_participants')
-    .insert(pendingPayload)
+  if (!row.attendance_id) {
+    throw new Error('Respons absensi tidak lengkap')
+  }
 
-  if (pendingError) throw pendingError
+  return {
+    outcome: row.outcome,
+    attendanceId: row.attendance_id,
+    pendingParticipantId: row.pending_participant_id,
+  }
 }
 
 interface ParticipantSearchResult {

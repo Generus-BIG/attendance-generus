@@ -1,0 +1,72 @@
+import { parseISO } from 'date-fns'
+import { supabase } from '@/lib/supabase'
+import {
+  DEFAULT_PUBLIC_DASHBOARD_SECTIONS,
+  type PublicDashboardVisibleSections,
+} from '@/features/dashboard-sharing/types'
+import {
+  aggregateMonthlyRecap,
+  type CensusParticipant,
+} from '@/features/dashboard/services/dashboard-recap.service'
+import { type AttendanceRecord } from '@/features/dashboard/types'
+import { type PublicDashboardPayload } from './types'
+
+type RpcPayload = {
+  status: 'ok' | 'unavailable'
+  share?: {
+    id: string
+    name: string
+    token: string
+    visibleSections?: Partial<PublicDashboardVisibleSections>
+    formMode: 'all' | 'selected'
+    formIds?: string[]
+  }
+  forms?: Array<{ id: string; title: string; date: string }>
+  records?: AttendanceRecord[]
+  censusParticipants?: CensusParticipant[]
+}
+
+export async function fetchPublicDashboardPayload(
+  token: string,
+  monthKey: string
+): Promise<PublicDashboardPayload> {
+  const { data, error } = await supabase.rpc('get_public_dashboard_payload', {
+    p_token: token,
+    p_month: monthKey,
+  })
+
+  if (error) throw error
+
+  const payload = data as RpcPayload | null
+  if (!payload || payload.status !== 'ok' || !payload.share) {
+    return { status: 'unavailable' }
+  }
+
+  const visibleSections = {
+    ...DEFAULT_PUBLIC_DASHBOARD_SECTIONS,
+    ...(payload.share.visibleSections ?? {}),
+  }
+  const records = payload.records ?? []
+  const censusParticipants = payload.censusParticipants ?? []
+  const recap = aggregateMonthlyRecap(
+    records,
+    parseISO(`${monthKey}-01`),
+    censusParticipants
+  )
+
+  return {
+    status: 'ok',
+    share: {
+      id: payload.share.id,
+      name: payload.share.name,
+      token: payload.share.token,
+      visibleSections,
+      formMode: payload.share.formMode,
+      formIds: payload.share.formIds ?? [],
+    },
+    forms: payload.forms ?? [],
+    records,
+    censusParticipants,
+    recap,
+  }
+}

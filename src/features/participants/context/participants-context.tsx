@@ -88,6 +88,14 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
   const { data: participants = [], isLoading } = useQuery({
     queryKey: ['participants', role, userKelompok],
     queryFn: async () => {
+      // Automatically promote eligible GPN A -> GPN B in the database
+      try {
+        await supabase.rpc('promote_eligible_gpn')
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to run promote_eligible_gpn:', err)
+      }
+
       let query = supabase
         .from('participants')
         .select(`

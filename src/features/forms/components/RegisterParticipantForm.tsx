@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CheckCircle2, Loader2, ArrowLeft } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Loader2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   KELOMPOK,
@@ -79,7 +79,9 @@ interface RegisterParticipantFormProps {
 export function RegisterParticipantForm({
   formConfig,
 }: RegisterParticipantFormProps) {
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [submitState, setSubmitState] = useState<
+    'idle' | 'success' | 'duplicate'
+  >('idle')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<RegisterFormValues>({
@@ -106,7 +108,7 @@ export function RegisterParticipantForm({
   async function onSubmit(data: RegisterFormValues) {
     setIsSubmitting(true)
     try {
-      await submitPendingAttendance(formConfig.id, {
+      const result = await submitPendingAttendance(formConfig.id, {
         status: data.status,
         permissionReason: data.permissionReason ?? undefined,
         notes: data.notes ?? undefined,
@@ -117,9 +119,20 @@ export function RegisterParticipantForm({
         birthPlace: data.birthPlace,
         birthDate: data.birthDate,
       })
-      setIsSubmitted(true)
+
+      if (result.outcome === 'duplicate_same_form') {
+        setSubmitState('duplicate')
+        toast.warning(
+          'Data Anda sudah tersimpan di database. Silakan absen melalui form awal.'
+        )
+        return
+      }
+
+      setSubmitState('success')
       toast.success(
-        'Pendaftaran dan Absensi berhasil dikirim! Menunggu persetujuan admin.'
+        result.outcome === 'appended'
+          ? 'Absensi berhasil ditambahkan ke pengajuan Anda.'
+          : 'Pendaftaran dan Absensi berhasil dikirim! Menunggu persetujuan admin.'
       )
     } catch (_error) {
       toast.error('Gagal mengirim data. Silakan coba lagi.')
@@ -128,7 +141,37 @@ export function RegisterParticipantForm({
     }
   }
 
-  if (isSubmitted) {
+  if (submitState === 'duplicate') {
+    return (
+      <Card className='mx-auto w-full max-w-md border-0 bg-background shadow-none sm:rounded-xl sm:border sm:border-border/40 sm:shadow-xl'>
+        <CardHeader className='space-y-6 px-6 pt-10 text-center sm:px-8'>
+          <div className='flex justify-center'>
+            <div className='rounded-full bg-amber-50 p-4 ring-8 ring-amber-50/50 dark:bg-amber-500/10 dark:ring-amber-500/5'>
+              <AlertTriangle className='h-12 w-12 text-amber-600 dark:text-amber-500' />
+            </div>
+          </div>
+          <CardTitle className='text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100'>
+            Data sudah tersimpan
+          </CardTitle>
+          <CardDescription className='px-2 text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-400'>
+            Data Anda sudah tersimpan di database. Silakan absen melalui form
+            awal.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter className='flex flex-col justify-center gap-4 px-6 pb-10 sm:px-8'>
+          <Button
+            asChild
+            variant='outline'
+            className='h-11 w-full rounded-xl border-zinc-200 px-8 font-semibold transition-colors hover:bg-zinc-50 sm:w-auto dark:border-zinc-800 dark:hover:bg-zinc-900'
+          >
+            <a href={publicFormUrl}>Kembali ke Form Utama</a>
+          </Button>
+        </CardFooter>
+      </Card>
+    )
+  }
+
+  if (submitState === 'success') {
     return (
       <Card className='mx-auto w-full max-w-md border-0 bg-background shadow-none sm:rounded-xl sm:border sm:border-border/40 sm:shadow-xl'>
         <CardHeader className='space-y-6 px-6 pt-10 text-center sm:px-8'>
@@ -169,7 +212,7 @@ export function RegisterParticipantForm({
                   permissionReason: undefined,
                   notes: '',
                 })
-                setIsSubmitted(false)
+                setSubmitState('idle')
               }}
             >
               Kembali ke Form Utama

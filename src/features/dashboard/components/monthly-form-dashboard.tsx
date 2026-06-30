@@ -1,9 +1,11 @@
 import { lazy, Suspense } from 'react'
 import { AlertCircle, RefreshCcw } from 'lucide-react'
+import { type Role } from '@/lib/rbac'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { type Role } from '@/lib/rbac'
+import { type PublicDashboardVisibleSections } from '@/features/dashboard-sharing/types'
 import { useMonthlyFormRecap } from '../hooks/use-monthly-form-recap'
+import { type MonthlyFormRecap } from '../types'
 import { DashboardEmptyState } from './dashboard-empty-state'
 import { DashboardSkeleton } from './dashboard-skeleton'
 import { FollowUpTable } from './follow-up-table'
@@ -48,6 +50,10 @@ interface Props {
   onFGroupChange: (value: string[] | undefined) => void
   onFCategoryChange: (value: string[] | undefined) => void
   role: Role
+  visibleSections?: PublicDashboardVisibleSections
+  readOnly?: boolean
+  providedRecap?: MonthlyFormRecap
+  providedPrevRecap?: MonthlyFormRecap
 }
 
 export function MonthlyFormDashboard({
@@ -63,19 +69,39 @@ export function MonthlyFormDashboard({
   onFGroupChange,
   onFCategoryChange,
   role,
+  visibleSections,
+  readOnly = false,
+  providedRecap,
+  providedPrevRecap,
 }: Props) {
-  const { data, isLoading, error, refetch } = useMonthlyFormRecap({
+  const currentQuery = useMonthlyFormRecap({
     formIds,
     month,
     kelompokId,
+    enabled: !providedRecap,
   })
-  const { data: prevData } = useMonthlyFormRecap({
+  const previousQuery = useMonthlyFormRecap({
     formIds,
     month: prevMonth,
     kelompokId,
+    enabled: !providedRecap && !providedPrevRecap,
   })
 
+  const data = providedRecap ?? currentQuery.data
+  const prevData = providedPrevRecap ?? previousQuery.data
+  const isLoading = providedRecap ? false : currentQuery.isLoading
+  const error = providedRecap ? null : currentQuery.error
+  const refetch = currentQuery.refetch
   const isDesa = viewMode === 'desa'
+  const sections = visibleSections ?? {
+    statCards: true,
+    groupChart: true,
+    calendar: true,
+    categoryChart: true,
+    genderChart: true,
+    attendanceDistribution: true,
+    followUp: true,
+  }
 
   if (isLoading && !data) {
     return <DashboardSkeleton viewMode={viewMode} />
@@ -101,11 +127,13 @@ export function MonthlyFormDashboard({
 
   return (
     <div className='flex flex-col gap-5'>
-      <MonthlyFormStatCards
-        recap={data}
-        prevRecap={prevData}
-        isLoading={isLoading}
-      />
+      {sections.statCards && (
+        <MonthlyFormStatCards
+          recap={data}
+          prevRecap={prevData}
+          isLoading={isLoading}
+        />
+      )}
 
       {/* Hero row.
           Desa: Per-Kelompok (2/3, hero — most actionable chart) + Calendar (1/3,
@@ -115,66 +143,86 @@ export function MonthlyFormDashboard({
             redundant in single-kelompok view) + Kategori/Gender pies stacked
             on the 1/3 right column. Pie heights together balance the
             calendar's natural height. */}
-      <Suspense fallback={<Skeleton className='h-80 w-full rounded-lg' />}>
-        {isDesa ? (
-          <div className='grid min-h-80 gap-4 lg:grid-cols-3'>
-            <div className='lg:col-span-2'>
-              <AttendanceByGroupRowChart recap={data} isLoading={isLoading} />
+      {(sections.groupChart || sections.calendar) && (
+        <Suspense fallback={<Skeleton className='h-80 w-full rounded-lg' />}>
+          {isDesa ? (
+            <div className='grid min-h-80 gap-4 lg:grid-cols-3'>
+              {sections.groupChart && (
+                <div
+                  className={
+                    sections.calendar ? 'lg:col-span-2' : 'lg:col-span-3'
+                  }
+                >
+                  <AttendanceByGroupRowChart
+                    recap={data}
+                    isLoading={isLoading}
+                  />
+                </div>
+              )}
+              {sections.calendar && (
+                <AttendanceCalendarHeatmap
+                  recap={data}
+                  monthDate={month}
+                  isLoading={isLoading}
+                />
+              )}
             </div>
-            <AttendanceCalendarHeatmap
-              recap={data}
-              monthDate={month}
-              isLoading={isLoading}
-            />
-          </div>
-        ) : (
-          <div className='grid min-h-80 gap-4 lg:grid-cols-3'>
-            <div className='lg:col-span-2'>
-              <AttendanceCalendarHeatmap
-                recap={data}
-                monthDate={month}
-                isLoading={isLoading}
-              />
+          ) : (
+            <div className='grid min-h-80 gap-4 lg:grid-cols-3'>
+              <div className='lg:col-span-2'>
+                <AttendanceCalendarHeatmap
+                  recap={data}
+                  monthDate={month}
+                  isLoading={isLoading}
+                />
+              </div>
+              <div className='flex flex-col gap-4'>
+                <CategoryDistributionBar data={data?.byCategory ?? []} />
+                <GenderDistributionPie data={data?.byGender ?? []} />
+              </div>
             </div>
-            <div className='flex flex-col gap-4'>
-              <CategoryDistributionBar data={data?.byCategory ?? []} />
-              <GenderDistributionPie data={data?.byGender ?? []} />
-            </div>
-          </div>
-        )}
-      </Suspense>
-
-      {isDesa && (
-        <Suspense fallback={<Skeleton className='h-52 w-full rounded-lg' />}>
-          <div className='grid grid-cols-2 gap-4 lg:grid-cols-3'>
-            <div className='col-span-2 lg:col-span-1'>
-              <CategoryDistributionBar data={data?.byCategory ?? []} />
-            </div>
-            <GenderDistributionPie data={data?.byGender ?? []} />
-            <AbsenceReasonDonut data={data?.byAbsenceReason ?? []} />
-          </div>
+          )}
         </Suspense>
       )}
 
-      <FollowUpTable
-        recap={data}
-        isLoading={isLoading}
-        month={month}
-        q={q}
-        fGroup={fGroup}
-        fCategory={fCategory}
-        onQChange={onQChange}
-        onFGroupChange={onFGroupChange}
-        onFCategoryChange={onFCategoryChange}
-      />
+      {isDesa &&
+        (sections.categoryChart ||
+          sections.genderChart ||
+          sections.attendanceDistribution) && (
+          <Suspense fallback={<Skeleton className='h-52 w-full rounded-lg' />}>
+            <div className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
+              {sections.categoryChart && (
+                <CategoryDistributionBar data={data?.byCategory ?? []} />
+              )}
+              {sections.genderChart && (
+                <GenderDistributionPie data={data?.byGender ?? []} />
+              )}
+              {sections.attendanceDistribution && (
+                <AbsenceReasonDonut data={data?.byAbsenceReason ?? []} />
+              )}
+            </div>
+          </Suspense>
+        )}
+
+      {sections.followUp && (
+        <FollowUpTable
+          recap={data}
+          isLoading={isLoading}
+          month={month}
+          q={readOnly ? undefined : q}
+          fGroup={readOnly ? undefined : fGroup}
+          fCategory={readOnly ? undefined : fCategory}
+          onQChange={readOnly ? () => undefined : onQChange}
+          onFGroupChange={readOnly ? () => undefined : onFGroupChange}
+          onFCategoryChange={readOnly ? () => undefined : onFCategoryChange}
+        />
+      )}
 
       {error && (
-        <div className='border-destructive/40 bg-destructive/5 flex items-center justify-between gap-3 rounded-md border px-4 py-3'>
-          <div className='text-destructive flex items-center gap-2 text-sm'>
+        <div className='flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-3'>
+          <div className='flex items-center gap-2 text-sm text-destructive'>
             <AlertCircle className='h-4 w-4 shrink-0' />
-            <span>
-              Gagal memuat data. Periksa koneksi lalu coba lagi.
-            </span>
+            <span>Gagal memuat data. Periksa koneksi lalu coba lagi.</span>
           </div>
           <Button
             variant='outline'
