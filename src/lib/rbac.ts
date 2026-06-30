@@ -96,6 +96,7 @@ export interface Permissions {
 export const ROUTE_ACCESS: Record<string, Role[]> = {
   '/admin/manage-role': ['super_admin', 'admin'],
   '/admin/forms/create': ['super_admin', 'admin'],
+  '/admin/dashboard-sharing': ['super_admin', 'admin'],
   '/admin/lupg/dashboard': ['super_admin', 'admin'],
   // Note: /admin/lupg/reports (the list) redirects admin/super_admin to the dashboard
   // at the route-component level (see routes/admin/lupg/reports/index.tsx beforeLoad).

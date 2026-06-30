@@ -4,6 +4,7 @@ import {
   CalendarCheck,
   UserCheck,
   FileSpreadsheet,
+  Share2,
   ShieldCheck,
   Settings,
   UserCog,
@@ -46,6 +47,14 @@ export function getAbsensiNavGroups(role: Role): NavGroup[] {
     url: '/admin/forms',
     icon: FileSpreadsheet,
   })
+
+  if (role === 'super_admin' || role === 'admin') {
+    generalItems.push({
+      title: 'Dashboard Sharing',
+      url: '/admin/dashboard-sharing',
+      icon: Share2,
+    })
+  }
 
   if (role === 'super_admin') {
     generalItems.push({
