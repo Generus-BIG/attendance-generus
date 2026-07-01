@@ -59,12 +59,15 @@ export function CategoryDistributionBar({ data }: Props) {
   const chartData = [...data].sort((a, b) => b.percentage - a.percentage)
 
   return (
-    <Card data-print-card>
-      <CardHeader className='px-3 pt-4 pb-2 sm:px-6 sm:pt-6 sm:pb-3'>
-        <CardTitle className='text-base text-balance sm:text-lg'>
+    <Card
+      className='min-w-0 overflow-hidden border-border/50 shadow-xs'
+      data-print-card
+    >
+      <CardHeader className='px-4 pt-4 pb-2 sm:px-6 sm:pt-5 sm:pb-3'>
+        <CardTitle className='text-base font-semibold tracking-tight text-balance sm:text-lg'>
           Persentase Per Kategori
         </CardTitle>
-        <CardDescription className='hidden text-pretty sm:block'>
+        <CardDescription className='text-xs text-pretty'>
           Tingkat kehadiran rata-rata per kategori sensus.
         </CardDescription>
       </CardHeader>
