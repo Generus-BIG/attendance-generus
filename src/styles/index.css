@@ -85,3 +85,28 @@
     height: 0;
   }
 }
+
+/* ─── Dashboard card elevation ─────────────────────────────────────────────
+ * Dashboard cards are tagged `data-print-card`; that attribute is used
+ * exclusively by the Absensi dashboard components, so it doubles as the hook
+ * for screen elevation. Layered drop shadows add calm depth over the existing
+ * hairline border, with a gentle lift on hover. Written unlayered so it wins
+ * over Tailwind's `shadow-sm` utility. Print resets box-shadow (see print.css),
+ * so this is screen-only by construction. */
+[data-print-card] {
+  box-shadow: var(--shadow-card);
+  transition-property: box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+}
+
+[data-print-card]:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Never animate the header reveal into a print snapshot. */
+@media print {
+  [data-reveal] {
+    animation: none !important;
+  }
+}

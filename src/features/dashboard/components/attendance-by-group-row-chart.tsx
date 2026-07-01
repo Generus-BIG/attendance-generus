@@ -1,4 +1,5 @@
 import { Bar, BarChart, Cell, LabelList, XAxis, YAxis } from 'recharts'
+import { useIsMobile } from '@/hooks/use-mobile'
 import {
   Card,
   CardContent,
@@ -12,7 +13,6 @@ import {
   ChartTooltip,
 } from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useIsMobile } from '@/hooks/use-mobile'
 import type { GroupGenderBreakdownRow, MonthlyFormRecap } from '../types'
 import { ChartSegmentTooltip } from './chart-segment-tooltip'
 
@@ -32,7 +32,9 @@ const CHART_TOKENS = [
 // Stable per-kelompok color across renders. We sort the kelompok names
 // alphabetically once and assign chart-N by sorted index so the same kelompok
 // always gets the same hue, regardless of the row order returned by recap.
-function buildGroupColorMap(rows: GroupGenderBreakdownRow[]): Map<string, string> {
+function buildGroupColorMap(
+  rows: GroupGenderBreakdownRow[]
+): Map<string, string> {
   const sorted = [...new Set(rows.map((r) => r.group))].sort((a, b) =>
     a.localeCompare(b, 'id')
   )
@@ -47,7 +49,9 @@ const chartConfig = {
   percentage: { label: 'Persentase', color: 'var(--chart-1)' },
 } satisfies ChartConfig
 
-function formatRow(row: GroupGenderBreakdownRow): { label: string; value: string }[] {
+function formatRow(
+  row: GroupGenderBreakdownRow
+): { label: string; value: string }[] {
   return [
     { label: 'Hadir Laki-laki', value: row.hadirL.toLocaleString('id-ID') },
     { label: 'Hadir Perempuan', value: row.hadirP.toLocaleString('id-ID') },
@@ -68,8 +72,8 @@ export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
   return (
     <Card data-print-card>
       <CardHeader className='px-4 sm:px-6'>
-        <CardTitle>Persentase Per Kelompok</CardTitle>
-        <CardDescription>
+        <CardTitle className='text-balance'>Persentase Per Kelompok</CardTitle>
+        <CardDescription className='text-pretty'>
           Tingkat kehadiran rata-rata per kelompok bulan ini.
         </CardDescription>
       </CardHeader>
@@ -77,14 +81,16 @@ export function AttendanceByGroupRowChart({ recap, isLoading }: Props) {
         {isLoading ? (
           <Skeleton className='h-64 w-full' />
         ) : !hasData ? (
-          <div className='text-muted-foreground flex h-60 items-center justify-center text-sm'>
+          <div className='flex h-60 items-center justify-center text-sm text-muted-foreground'>
             Belum ada data kelompok bulan ini.
           </div>
         ) : (
           <ChartContainer
             config={chartConfig}
             className='w-full'
-            style={{ height: Math.max(200, data.length * (isMobile ? 32 : 40)) }}
+            style={{
+              height: Math.max(200, data.length * (isMobile ? 32 : 40)),
+            }}
           >
             <BarChart
               accessibilityLayer

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Cell, Legend, Pie, PieChart } from 'recharts'
+import { useIsMobile } from '@/hooks/use-mobile'
 import {
   Card,
   CardContent,
@@ -12,7 +13,6 @@ import {
   ChartContainer,
   ChartTooltip,
 } from '@/components/ui/chart'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { PIE_LABEL_MIN_FRACTION } from '../constants'
 import type { GenderBreakdownRow } from '../types'
 import { ChartSegmentTooltip } from './chart-segment-tooltip'
@@ -78,16 +78,16 @@ export function GenderDistributionPie({ data }: Props) {
   return (
     <Card data-print-card>
       <CardHeader className='px-3 pt-4 pb-2 sm:px-6 sm:pt-6 sm:pb-3'>
-        <CardTitle className='text-base sm:text-lg'>
+        <CardTitle className='text-base text-balance sm:text-lg'>
           Distribusi Gender
         </CardTitle>
-        <CardDescription className='hidden sm:block'>
+        <CardDescription className='hidden text-pretty sm:block'>
           Rasio kehadiran Laki-laki dan Perempuan.
         </CardDescription>
       </CardHeader>
       <CardContent className='px-2 pb-4 sm:px-6 sm:pb-6'>
         {!hasData ? (
-          <div className='text-muted-foreground flex h-60 items-center justify-center text-sm'>
+          <div className='flex h-60 items-center justify-center text-sm text-muted-foreground'>
             Belum ada data kehadiran bulan ini.
           </div>
         ) : (
@@ -130,8 +130,20 @@ export function GenderDistributionPie({ data }: Props) {
                   outerRadius={isMobile ? 60 : 100}
                   paddingAngle={2}
                   label={(props) => {
-                    const { cx, cy, midAngle, innerRadius, outerRadius, percent, payload } = props
-                    if (typeof percent !== 'number' || percent < PIE_LABEL_MIN_FRACTION) return null
+                    const {
+                      cx,
+                      cy,
+                      midAngle,
+                      innerRadius,
+                      outerRadius,
+                      percent,
+                      payload,
+                    } = props
+                    if (
+                      typeof percent !== 'number' ||
+                      percent < PIE_LABEL_MIN_FRACTION
+                    )
+                      return null
                     if (typeof midAngle !== 'number') return null
                     const RADIAN = Math.PI / 180
                     const r =
@@ -141,7 +153,8 @@ export function GenderDistributionPie({ data }: Props) {
                     // sharePct = hadirCount / totalHadir × 100, summing to 100%
                     // across genders. Matches the slice size by design.
                     const pct =
-                      typeof (payload as GenderChartRow | undefined)?.sharePct === 'number'
+                      typeof (payload as GenderChartRow | undefined)
+                        ?.sharePct === 'number'
                         ? (payload as GenderChartRow).sharePct
                         : percent * 100
                     return (

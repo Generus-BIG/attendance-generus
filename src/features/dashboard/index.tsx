@@ -9,23 +9,23 @@ import { Kbd } from '@/components/ui/kbd'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ConfigDrawer } from '@/components/config-drawer'
+import { FreshnessPill } from '@/components/freshness-pill'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { FreshnessPill } from '@/components/freshness-pill'
 import { FormSelectorDropdown } from './components/form-selector-dropdown'
 import { KelompokPills } from './components/kelompok-pills'
 import { MonthlyFormDashboard } from './components/monthly-form-dashboard'
 import { useDashboardState } from './hooks/use-dashboard-state'
 import { useDashboardShortcuts } from './hooks/use-keyboard-shortcuts'
 import { useMonthlyFormRecap } from './hooks/use-monthly-form-recap'
+import './print.css'
 import {
   fetchFormsByType,
   fetchKelompokOptions,
 } from './services/dashboard-forms.service'
-import './print.css'
 
 export function Dashboard() {
   const { role, kelompok } = usePermissions()
@@ -103,8 +103,7 @@ export function Dashboard() {
   const kelompokFormIds = kelompokForms.map((f) => f.id)
 
   const activeFormIds = tab === 'desa' ? desaFormIds : kelompokFormIds
-  const activeKelompokId =
-    tab === 'kelompok' ? resolvedKelompokId : undefined
+  const activeKelompokId = tab === 'kelompok' ? resolvedKelompokId : undefined
 
   // Read freshness only — full data is fetched inside MonthlyFormDashboard.
   // Same query key dedupes the request.
@@ -135,8 +134,7 @@ export function Dashboard() {
       <div className='print-only-header' aria-hidden>
         <h1 className='text-2xl font-semibold'>Dashboard Absensi</h1>
         <p className='text-sm text-muted-foreground'>
-          {scopeLabel} ·{' '}
-          {format(monthDate, 'MMMM yyyy', { locale: idLocale })}
+          {scopeLabel} · {format(monthDate, 'MMMM yyyy', { locale: idLocale })}
         </p>
       </div>
       {/* ===== Top Heading ===== */}
@@ -151,23 +149,35 @@ export function Dashboard() {
 
       {/* ===== Main Content ===== */}
       <TooltipProvider delayDuration={120}>
-        <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+        <Main className='flex flex-1 flex-col gap-4 antialiased sm:gap-6'>
           {/* Page header + month slider */}
           <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
             <div className='flex flex-col gap-1'>
-              <span className='text-[0.6875rem] font-medium tracking-[0.14em] text-muted-foreground uppercase'>
+              <span
+                data-reveal='1'
+                className='text-[0.6875rem] font-medium tracking-[0.14em] text-muted-foreground uppercase'
+              >
                 Dashboard Absensi
               </span>
-              <h2 className='text-3xl font-semibold tracking-tight text-foreground sm:text-[2rem]'>
+              <h2
+                data-reveal='2'
+                className='text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-[2rem]'
+              >
                 {format(monthDate, 'MMMM yyyy', { locale: idLocale })}
               </h2>
-              <p className='text-sm text-muted-foreground'>
+              <p
+                data-reveal='3'
+                className='text-sm text-pretty text-muted-foreground'
+              >
                 Rekap kehadiran bulanan per pertemuan.
               </p>
             </div>
 
             {/* Month Slider + Export */}
-            <div className='flex flex-wrap items-center gap-2 print:hidden'>
+            <div
+              data-reveal='4'
+              className='flex flex-wrap items-center gap-2 print:hidden'
+            >
               <span
                 className='hidden items-center gap-1 text-[0.6875rem] tracking-[0.12em] text-muted-foreground uppercase md:inline-flex'
                 aria-hidden='true'
@@ -180,7 +190,7 @@ export function Dashboard() {
                 <Button
                   variant='outline'
                   size='icon'
-                  className='h-11 w-11'
+                  className='h-11 w-11 transition-transform active:scale-[0.96]'
                   onClick={prevMonth}
                   aria-label='Bulan sebelumnya'
                   aria-keyshortcuts='ArrowLeft'
@@ -197,7 +207,7 @@ export function Dashboard() {
                 <Button
                   variant='outline'
                   size='icon'
-                  className='h-11 w-11'
+                  className='h-11 w-11 transition-transform active:scale-[0.96]'
                   onClick={nextMonth}
                   aria-label='Bulan berikutnya'
                   aria-keyshortcuts='ArrowRight'
@@ -210,7 +220,12 @@ export function Dashboard() {
                 aria-hidden='true'
                 className='hidden h-6 w-px bg-border sm:inline-block'
               />
-              <Button variant='outline' size='sm' onClick={handleExport}>
+              <Button
+                variant='outline'
+                size='sm'
+                className='transition-transform active:scale-[0.96]'
+                onClick={handleExport}
+              >
                 <FileDown className='mr-2 h-4 w-4' />
                 Export PDF
               </Button>

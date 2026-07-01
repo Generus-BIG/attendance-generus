@@ -36,6 +36,11 @@ const AbsenceReasonDonut = lazy(() =>
     default: m.AbsenceReasonDonut,
   }))
 )
+const EventTimelineStrip = lazy(() =>
+  import('./event-timeline-strip').then((m) => ({
+    default: m.EventTimelineStrip,
+  }))
+)
 
 interface Props {
   formIds: string[]
@@ -55,6 +60,9 @@ interface Props {
   providedRecap?: MonthlyFormRecap
   providedPrevRecap?: MonthlyFormRecap
   showKpiDelta?: boolean
+  timelineForms?: Array<{ id: string; date: string; title: string }>
+  activeMonth?: string
+  onSelectMonth?: (month: string) => void
 }
 
 export function MonthlyFormDashboard({
@@ -75,6 +83,9 @@ export function MonthlyFormDashboard({
   providedRecap,
   providedPrevRecap,
   showKpiDelta = true,
+  timelineForms,
+  activeMonth,
+  onSelectMonth,
 }: Props) {
   const currentQuery = useMonthlyFormRecap({
     formIds,
@@ -163,21 +174,41 @@ export function MonthlyFormDashboard({
                 </div>
               )}
               {sections.calendar && (
-                <AttendanceCalendarHeatmap
-                  recap={data}
-                  monthDate={month}
-                  isLoading={isLoading}
-                />
+                <div className='flex flex-col gap-4'>
+                  <AttendanceCalendarHeatmap
+                    recap={data}
+                    monthDate={month}
+                    isLoading={isLoading}
+                  />
+                  {timelineForms && activeMonth && onSelectMonth && data?.meetings && data.meetings.length > 0 && (
+                    <EventTimelineStrip
+                      meetings={data.meetings}
+                      totalCensus={data.totals.totalCensus}
+                      activeMonth={activeMonth}
+                      onSelectMonth={onSelectMonth}
+                      forms={timelineForms}
+                    />
+                  )}
+                </div>
               )}
             </div>
           ) : (
             <div className='grid min-h-80 gap-4 lg:grid-cols-3'>
-              <div className='lg:col-span-2'>
+              <div className='lg:col-span-2 flex flex-col gap-4'>
                 <AttendanceCalendarHeatmap
                   recap={data}
                   monthDate={month}
                   isLoading={isLoading}
                 />
+                {timelineForms && activeMonth && onSelectMonth && data?.meetings && data.meetings.length > 0 && (
+                  <EventTimelineStrip
+                    meetings={data.meetings}
+                    totalCensus={data.totals.totalCensus}
+                    activeMonth={activeMonth}
+                    onSelectMonth={onSelectMonth}
+                    forms={timelineForms}
+                  />
+                )}
               </div>
               <div className='flex flex-col gap-4'>
                 <CategoryDistributionBar data={data?.byCategory ?? []} />
