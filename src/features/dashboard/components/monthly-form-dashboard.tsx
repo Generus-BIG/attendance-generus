@@ -180,7 +180,35 @@ export function MonthlyFormDashboard({
                     monthDate={month}
                     isLoading={isLoading}
                   />
-                  {timelineForms && activeMonth && onSelectMonth && data?.meetings && data.meetings.length > 0 && (
+                  {timelineForms &&
+                    activeMonth &&
+                    onSelectMonth &&
+                    data?.meetings &&
+                    data.meetings.length > 0 && (
+                      <EventTimelineStrip
+                        meetings={data.meetings}
+                        totalCensus={data.totals.totalCensus}
+                        activeMonth={activeMonth}
+                        onSelectMonth={onSelectMonth}
+                        forms={timelineForms}
+                      />
+                    )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className='grid min-h-80 gap-4 lg:grid-cols-3'>
+              <div className='flex flex-col gap-4 lg:col-span-2'>
+                <AttendanceCalendarHeatmap
+                  recap={data}
+                  monthDate={month}
+                  isLoading={isLoading}
+                />
+                {timelineForms &&
+                  activeMonth &&
+                  onSelectMonth &&
+                  data?.meetings &&
+                  data.meetings.length > 0 && (
                     <EventTimelineStrip
                       meetings={data.meetings}
                       totalCensus={data.totals.totalCensus}
@@ -189,26 +217,6 @@ export function MonthlyFormDashboard({
                       forms={timelineForms}
                     />
                   )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className='grid min-h-80 gap-4 lg:grid-cols-3'>
-              <div className='lg:col-span-2 flex flex-col gap-4'>
-                <AttendanceCalendarHeatmap
-                  recap={data}
-                  monthDate={month}
-                  isLoading={isLoading}
-                />
-                {timelineForms && activeMonth && onSelectMonth && data?.meetings && data.meetings.length > 0 && (
-                  <EventTimelineStrip
-                    meetings={data.meetings}
-                    totalCensus={data.totals.totalCensus}
-                    activeMonth={activeMonth}
-                    onSelectMonth={onSelectMonth}
-                    forms={timelineForms}
-                  />
-                )}
               </div>
               <div className='flex flex-col gap-4'>
                 <CategoryDistributionBar data={data?.byCategory ?? []} />
