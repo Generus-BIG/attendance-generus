@@ -403,8 +403,8 @@ export default async function handler(
   }
 
   const supabase = createClient(supabaseUrl, supabaseKey)
-  const { data, error } = await supabase.auth.getUser(token)
-  const role = data.user?.app_metadata?.role as Role | undefined
+  const { data, error } = await (supabase.auth as any).getUser(token)
+  const role = data?.user?.app_metadata?.role as Role | undefined
   if (error || !role) {
     sendJson(res, 401, { error: 'Session tidak valid' })
     return
