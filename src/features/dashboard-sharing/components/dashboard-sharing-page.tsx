@@ -82,6 +82,16 @@ export function DashboardSharingPage() {
               <CardHeader className='flex flex-row items-start justify-between gap-3 space-y-0'>
                 <div>
                   <CardTitle className='text-base'>{share.name}</CardTitle>
+                  <div className='mt-2 flex flex-wrap gap-2'>
+                    <Badge variant='outline'>
+                      {share.displayMode === 'forms'
+                        ? 'Fixed Forms'
+                        : 'Bulanan'}
+                    </Badge>
+                    <Badge variant={share.isActive ? 'default' : 'secondary'}>
+                      {share.isActive ? 'Aktif' : 'Nonaktif'}
+                    </Badge>
+                  </div>
                   <p className='mt-1 text-sm text-muted-foreground'>
                     {share.formMode === 'all'
                       ? 'Semua Form Desa'
@@ -93,9 +103,6 @@ export function DashboardSharingPage() {
                           .join(', ')}
                   </p>
                 </div>
-                <Badge variant={share.isActive ? 'default' : 'secondary'}>
-                  {share.isActive ? 'Aktif' : 'Nonaktif'}
-                </Badge>
               </CardHeader>
               <CardContent className='flex flex-wrap items-center justify-between gap-2'>
                 <code className='rounded bg-muted px-2 py-1 text-xs'>

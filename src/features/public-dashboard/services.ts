@@ -18,6 +18,7 @@ type RpcPayload = {
     name: string
     token: string
     visibleSections?: Partial<PublicDashboardVisibleSections>
+    displayMode?: 'monthly' | 'forms'
     formMode: 'all' | 'selected'
     formIds?: string[]
   }
@@ -48,6 +49,8 @@ export async function fetchPublicDashboardPayload(
   }
   const records = payload.records ?? []
   const censusParticipants = payload.censusParticipants ?? []
+  const forms = payload.forms ?? []
+  const displayMode = payload.share.displayMode ?? 'monthly'
   const recap = aggregateMonthlyRecap(
     records,
     parseISO(`${monthKey}-01`),
@@ -61,10 +64,11 @@ export async function fetchPublicDashboardPayload(
       name: payload.share.name,
       token: payload.share.token,
       visibleSections,
+      displayMode,
       formMode: payload.share.formMode,
       formIds: payload.share.formIds ?? [],
     },
-    forms: payload.forms ?? [],
+    forms,
     records,
     censusParticipants,
     recap,

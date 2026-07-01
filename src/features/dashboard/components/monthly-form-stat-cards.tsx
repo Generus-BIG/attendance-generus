@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, Info, Minus } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -6,7 +7,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
 import { KPI_DELTA_THRESHOLDS } from '../constants'
 import type { MonthlyFormRecap } from '../types'
 
@@ -14,6 +14,7 @@ type Props = {
   recap: MonthlyFormRecap | undefined
   prevRecap?: MonthlyFormRecap | undefined
   isLoading: boolean
+  showDelta?: boolean
 }
 
 type KpiDef = {
@@ -44,8 +45,7 @@ const KPIS: KpiDef[] = [
     key: 'avg-hadir',
     label: 'Rata-rata Hadir',
     description: 'Peserta hadir per pertemuan',
-    tooltip:
-      'Rata-rata jumlah peserta yang hadir dalam setiap pertemuan.',
+    tooltip: 'Rata-rata jumlah peserta yang hadir dalam setiap pertemuan.',
     format: (t) => ({
       display: t.avgHadirPerMeeting.toFixed(1),
       numeric: t.avgHadirPerMeeting,
@@ -100,7 +100,12 @@ function formatDelta(
   }
 }
 
-export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
+export function MonthlyFormStatCards({
+  recap,
+  prevRecap,
+  isLoading,
+  showDelta = true,
+}: Props) {
   if (isLoading) {
     return (
       <div className='grid min-h-28 grid-cols-2 gap-2 md:grid-cols-4'>
@@ -126,7 +131,7 @@ export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
         const current = t ? k.format(t) : { display: '—', numeric: null }
         const prev = pt ? k.format(pt) : { display: '—', numeric: null }
         const delta =
-          current.numeric != null && prev.numeric != null
+          showDelta && current.numeric != null && prev.numeric != null
             ? current.numeric - prev.numeric
             : null
         const { label: deltaLabel, kind } = formatDelta(delta, k.deltaUnit)
@@ -153,7 +158,7 @@ export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
           <Card key={k.key} data-print-card>
             <CardContent className='flex flex-col p-3 sm:p-4'>
               <div className='flex items-center gap-1'>
-                <span className='text-muted-foreground truncate text-[0.625rem] font-medium uppercase tracking-widest sm:text-[0.6875rem] sm:tracking-widest'>
+                <span className='truncate text-[0.625rem] font-medium tracking-widest text-muted-foreground uppercase sm:text-[0.6875rem] sm:tracking-widest'>
                   {k.label}
                 </span>
                 <Tooltip>
@@ -161,7 +166,7 @@ export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
                     <button
                       type='button'
                       aria-label={`Tentang ${k.label}`}
-                      className='text-muted-foreground/60 hover:text-muted-foreground rounded-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+                      className='rounded-full text-muted-foreground/60 hover:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none'
                     >
                       <Info className='h-3 w-3' />
                     </button>
@@ -172,27 +177,32 @@ export function MonthlyFormStatCards({ recap, prevRecap, isLoading }: Props) {
                 </Tooltip>
               </div>
               <div className='mt-1.5 flex items-baseline gap-1.5'>
-                <span className='text-2xl font-semibold leading-none tabular-nums sm:text-[2.25rem]'>
+                <span className='text-2xl leading-none font-semibold tabular-nums sm:text-[2.25rem]'>
                   {current.display}
                 </span>
               </div>
-              <div className='mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.6875rem] sm:text-xs'>
-                <span
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium tabular-nums',
-                    deltaTone
-                  )}
-                >
-                  <Arrow className='h-3 w-3 sm:h-3.5 sm:w-3.5' strokeWidth={2.25} />
-                  {deltaLabel}
-                </span>
-                {kind !== 'none' && kind !== 'flat' && (
-                  <span className='text-muted-foreground hidden sm:inline'>
-                    vs bulan lalu
+              {showDelta && (
+                <div className='mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.6875rem] sm:text-xs'>
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium tabular-nums',
+                      deltaTone
+                    )}
+                  >
+                    <Arrow
+                      className='h-3 w-3 sm:h-3.5 sm:w-3.5'
+                      strokeWidth={2.25}
+                    />
+                    {deltaLabel}
                   </span>
-                )}
-              </div>
-              <div className='text-muted-foreground mt-1.5 text-[0.6875rem] sm:text-xs'>
+                  {kind !== 'none' && kind !== 'flat' && (
+                    <span className='hidden text-muted-foreground sm:inline'>
+                      vs bulan lalu
+                    </span>
+                  )}
+                </div>
+              )}
+              <div className='mt-1.5 text-[0.6875rem] text-muted-foreground sm:text-xs'>
                 {k.description}
               </div>
             </CardContent>

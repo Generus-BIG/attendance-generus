@@ -9,6 +9,7 @@ const searchSchema = z.object({
     .regex(/^\d{4}-\d{2}$/)
     .optional()
     .catch(undefined),
+  formId: z.string().uuid().optional().catch(undefined),
 })
 
 export const Route = createFileRoute('/share/dashboard/$token')({

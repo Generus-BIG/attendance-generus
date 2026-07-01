@@ -33,6 +33,7 @@ import { KelompokSelector } from '../components/kelompok-selector'
 import {
   CATEGORY_CODES,
   CATEGORY_LABELS,
+  DERIVED_SENSUS_CATEGORIES,
   type CategoryCode,
 } from '../constants'
 import {
@@ -204,7 +205,7 @@ export function SensusMaster() {
                   </TableHeader>
                   <TableBody>
                     {CATEGORY_CODES.map((code) => {
-                      const isDerived = code === 'GPN_A' || code === 'GPN_B'
+                      const isDerived = DERIVED_SENSUS_CATEGORIES.has(code)
                       const l = isDerived
                         ? (derivedByKey.get(`${code}__L`) ?? 0)
                         : (byCell[`${code}_L`] ?? 0)
@@ -306,7 +307,7 @@ function SensusDesaChart({
 }) {
   const chartRows = useMemo(() => {
     const rawRows = CATEGORY_CODES.map((code) => {
-      const isDerived = code === 'GPN_A' || code === 'GPN_B'
+      const isDerived = DERIVED_SENSUS_CATEGORIES.has(code)
       const l = isDerived
         ? (derivedByKey.get(`${code}__L`) ?? 0)
         : (byCell[`${code}_L`] ?? 0)
@@ -610,7 +611,7 @@ function SensusCell({ kelompokId, categoryCode, gender, initial }: CellProps) {
   }, [initial])
 
   const save = () => {
-    if (categoryCode === 'GPN_A' || categoryCode === 'GPN_B') return
+    if (DERIVED_SENSUS_CATEGORIES.has(categoryCode)) return
     const n = parseInt(value, 10)
     if (isNaN(n) || n < 0) {
       setValue(initial.toString())

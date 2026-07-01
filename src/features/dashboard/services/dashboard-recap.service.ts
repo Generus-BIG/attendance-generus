@@ -174,7 +174,10 @@ function computeCategoryBreakdown(
   const censusByCategory = new Map<string, number>()
   for (const p of census) {
     if (!p.category) continue
-    censusByCategory.set(p.category, (censusByCategory.get(p.category) ?? 0) + 1)
+    censusByCategory.set(
+      p.category,
+      (censusByCategory.get(p.category) ?? 0) + 1
+    )
   }
 
   const hadirByCategory = new Map<string, number>()
@@ -231,7 +234,10 @@ function computeGenderBreakdown(
       const percentage = denom > 0 ? (hadirCount / denom) * 100 : 0
       return { gender, hadirCount, totalSensus, percentage }
     })
-    .filter((r) => !(r.gender === 'Unknown' && r.hadirCount === 0 && r.totalSensus === 0))
+    .filter(
+      (r) =>
+        !(r.gender === 'Unknown' && r.hadirCount === 0 && r.totalSensus === 0)
+    )
 }
 
 function computeAbsenceReasonBreakdown(
@@ -272,7 +278,11 @@ function computeAbsenceReasonBreakdown(
     { reason: 'Hadir', count: totalHadir, percentage: pct(totalHadir) },
     { reason: 'Sakit', count: counts.Sakit, percentage: pct(counts.Sakit) },
     { reason: 'Kerja', count: counts.Kerja, percentage: pct(counts.Kerja) },
-    { reason: 'Lainnya', count: counts.Lainnya, percentage: pct(counts.Lainnya) },
+    {
+      reason: 'Lainnya',
+      count: counts.Lainnya,
+      percentage: pct(counts.Lainnya),
+    },
     { reason: 'Alpa', count: alpa, percentage: pct(alpa) },
   ]
 }
@@ -339,7 +349,8 @@ function computeByGroupGender(
 export function aggregateMonthlyRecap(
   records: AttendanceRecord[],
   month: Date,
-  censusParticipants: CensusParticipant[] = []
+  censusParticipants: CensusParticipant[] = [],
+  options: { totalMeetings?: number } = {}
 ): MonthlyFormRecap {
   const monthKey = format(month, 'yyyy-MM')
   const totalCensus = censusParticipants.length
@@ -357,17 +368,30 @@ export function aggregateMonthlyRecap(
   }
 
   if (records.length === 0) {
+    const totalMeetings = options.totalMeetings ?? 0
     return {
       monthKey,
       meetings: [],
       participants: [],
       censusByGroup,
-      byCategory: computeCategoryBreakdown([], censusParticipants, 0),
-      byGender: computeGenderBreakdown([], censusParticipants, 0),
-      byAbsenceReason: computeAbsenceReasonBreakdown([], totalCensus, 0),
-      byGroupGender: computeByGroupGender([], censusParticipants, 0),
+      byCategory: computeCategoryBreakdown(
+        [],
+        censusParticipants,
+        totalMeetings
+      ),
+      byGender: computeGenderBreakdown([], censusParticipants, totalMeetings),
+      byAbsenceReason: computeAbsenceReasonBreakdown(
+        [],
+        totalCensus,
+        totalMeetings
+      ),
+      byGroupGender: computeByGroupGender(
+        [],
+        censusParticipants,
+        totalMeetings
+      ),
       totals: {
-        totalMeetings: 0,
+        totalMeetings,
         totalHadir: 0,
         totalIzin: 0,
         totalSubmissions: 0,
@@ -403,7 +427,7 @@ export function aggregateMonthlyRecap(
   }
   meetings.sort((a, b) => a.date.localeCompare(b.date))
 
-  const totalMeetings = meetings.length
+  const totalMeetings = options.totalMeetings ?? meetings.length
 
   // Group by participant
   const byParticipant = new Map<
@@ -477,10 +501,26 @@ export function aggregateMonthlyRecap(
     meetings,
     participants,
     censusByGroup,
-    byCategory: computeCategoryBreakdown(records, censusParticipants, totalMeetings),
-    byGender: computeGenderBreakdown(records, censusParticipants, totalMeetings),
-    byAbsenceReason: computeAbsenceReasonBreakdown(records, totalCensus, totalMeetings),
-    byGroupGender: computeByGroupGender(records, censusParticipants, totalMeetings),
+    byCategory: computeCategoryBreakdown(
+      records,
+      censusParticipants,
+      totalMeetings
+    ),
+    byGender: computeGenderBreakdown(
+      records,
+      censusParticipants,
+      totalMeetings
+    ),
+    byAbsenceReason: computeAbsenceReasonBreakdown(
+      records,
+      totalCensus,
+      totalMeetings
+    ),
+    byGroupGender: computeByGroupGender(
+      records,
+      censusParticipants,
+      totalMeetings
+    ),
     totals: {
       totalMeetings,
       totalHadir,
