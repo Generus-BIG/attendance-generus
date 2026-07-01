@@ -23,6 +23,10 @@
       "destination": "/api/register/add-participant"
     },
     {
+      "source": "/share/dashboard/:token",
+      "destination": "/api/share/dashboard/:token"
+    },
+    {
       "source": "/((?!api/|assets/|images/|favicon.ico|robots.txt|manifest.webmanifest).*)",
       "destination": "/index.html"
     }

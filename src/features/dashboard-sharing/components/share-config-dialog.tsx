@@ -25,6 +25,7 @@ import { useUpsertDashboardShare } from '../hooks'
 import {
   DEFAULT_PUBLIC_DASHBOARD_SECTIONS,
   type DashboardShareConfig,
+  type DashboardShareDisplayMode,
   type PublicDashboardVisibleSections,
 } from '../types'
 import { ShareSectionsControl } from './share-sections-control'
@@ -70,6 +71,9 @@ function ShareConfigDialogContent({
   const mutation = useUpsertDashboardShare()
   const [name, setName] = useState(share?.name ?? '')
   const [isActive, setIsActive] = useState(share?.isActive ?? true)
+  const [displayMode, setDisplayMode] = useState<DashboardShareDisplayMode>(
+    share?.displayMode ?? 'monthly'
+  )
   const [formMode, setFormMode] = useState<'all' | 'selected'>(
     share?.formMode ?? 'all'
   )
@@ -84,8 +88,10 @@ function ShareConfigDialogContent({
     return `${window.location.origin}/share/dashboard/${share.token}`
   }, [share?.token])
 
+  const effectiveFormMode = displayMode === 'forms' ? 'selected' : formMode
   const canSubmit =
-    name.trim().length >= 2 && (formMode === 'all' || formIds.length > 0)
+    name.trim().length >= 2 &&
+    (effectiveFormMode === 'all' || formIds.length > 0)
 
   async function handleSubmit() {
     if (!canSubmit) return
@@ -94,7 +100,8 @@ function ShareConfigDialogContent({
       id: share?.id,
       name: name.trim(),
       isActive,
-      formMode,
+      displayMode,
+      formMode: effectiveFormMode,
       formIds,
       visibleSections,
     })
@@ -145,10 +152,37 @@ function ShareConfigDialogContent({
         </label>
 
         <div className='grid gap-2'>
+          <Label>Tampilan public dashboard</Label>
+          <Select
+            value={displayMode}
+            onValueChange={(value) => {
+              const nextMode = value as DashboardShareDisplayMode
+              setDisplayMode(nextMode)
+              if (nextMode === 'forms') {
+                setFormMode('selected')
+              }
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='monthly'>Bulanan</SelectItem>
+              <SelectItem value='forms'>Fixed Forms / Event</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className='text-xs text-muted-foreground'>
+            Bulanan mengikuti switch bulan. Fixed Forms hanya menghitung form
+            yang dipilih dan cocok untuk kegiatan sesekali.
+          </p>
+        </div>
+
+        <div className='grid gap-2'>
           <Label>Form yang dishare</Label>
           <Select
-            value={formMode}
+            value={effectiveFormMode}
             onValueChange={(value) => setFormMode(value as 'all' | 'selected')}
+            disabled={displayMode === 'forms'}
           >
             <SelectTrigger>
               <SelectValue />
@@ -160,7 +194,7 @@ function ShareConfigDialogContent({
           </Select>
         </div>
 
-        {formMode === 'selected' && (
+        {effectiveFormMode === 'selected' && (
           <div className='max-h-48 space-y-2 overflow-y-auto rounded-md border p-3'>
             {forms.map((form) => (
               <label key={form.id} className='flex items-center gap-2 text-sm'>

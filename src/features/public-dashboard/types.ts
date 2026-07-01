@@ -15,6 +15,7 @@ export type PublicDashboardPayload =
         name: string
         token: string
         visibleSections: PublicDashboardVisibleSections
+        displayMode: 'monthly' | 'forms'
         formMode: 'all' | 'selected'
         formIds: string[]
       }

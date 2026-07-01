@@ -1061,6 +1061,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          display_mode: string
           form_ids: string[]
           form_mode: string
           id: string
@@ -1074,6 +1075,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          display_mode?: string
           form_ids?: string[]
           form_mode?: string
           id?: string
@@ -1087,6 +1089,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          display_mode?: string
           form_ids?: string[]
           form_mode?: string
           id?: string
@@ -1101,7 +1104,7 @@ export type Database = {
       }
     }
     Views: {
-      lupg_sensus_gpn_derived: {
+      lupg_sensus_participant_derived: {
         Row: {
           category_code: string | null
           count: number | null

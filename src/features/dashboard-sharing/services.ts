@@ -12,6 +12,7 @@ type DashboardShareRow = {
   token: string
   is_active: boolean
   scope: 'desa'
+  display_mode: 'monthly' | 'forms'
   form_mode: 'all' | 'selected'
   form_ids: string[] | null
   visible_sections: Partial<PublicDashboardVisibleSections> | null
@@ -26,6 +27,7 @@ function mapRow(row: DashboardShareRow): DashboardShareConfig {
     token: row.token,
     isActive: row.is_active,
     scope: row.scope,
+    displayMode: row.display_mode ?? 'monthly',
     formMode: row.form_mode,
     formIds: row.form_ids ?? [],
     visibleSections: {
@@ -56,8 +58,12 @@ export async function upsertDashboardShare(
     name: input.name,
     is_active: input.isActive,
     scope: 'desa',
-    form_mode: input.formMode,
-    form_ids: input.formMode === 'selected' ? input.formIds : [],
+    display_mode: input.displayMode,
+    form_mode: input.displayMode === 'forms' ? 'selected' : input.formMode,
+    form_ids:
+      input.displayMode === 'forms' || input.formMode === 'selected'
+        ? input.formIds
+        : [],
     visible_sections: input.visibleSections,
   }
 

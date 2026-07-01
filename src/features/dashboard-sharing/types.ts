@@ -16,6 +16,8 @@ export type PublicDashboardVisibleSections = Record<
   boolean
 >
 
+export type DashboardShareDisplayMode = 'monthly' | 'forms'
+
 export const DEFAULT_PUBLIC_DASHBOARD_SECTIONS: PublicDashboardVisibleSections =
   {
     statCards: true,
@@ -33,6 +35,7 @@ export type DashboardShareConfig = {
   token: string
   isActive: boolean
   scope: 'desa'
+  displayMode: DashboardShareDisplayMode
   formMode: 'all' | 'selected'
   formIds: string[]
   visibleSections: PublicDashboardVisibleSections
@@ -44,6 +47,7 @@ export type UpsertDashboardShareInput = {
   id?: string
   name: string
   isActive: boolean
+  displayMode: DashboardShareDisplayMode
   formMode: 'all' | 'selected'
   formIds: string[]
   visibleSections: PublicDashboardVisibleSections

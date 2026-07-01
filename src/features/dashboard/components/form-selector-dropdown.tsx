@@ -1,3 +1,6 @@
+import { format, parseISO } from 'date-fns'
+import { id as idLocale } from 'date-fns/locale'
+import { cn } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -5,9 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { cn } from '@/lib/utils'
-import { format, parseISO } from 'date-fns'
-import { id as idLocale } from 'date-fns/locale'
 
 interface DashboardFormItem {
   id: string
@@ -20,12 +20,14 @@ interface FormSelectorDropdownProps {
   forms: DashboardFormItem[]
   selectedFormId: string | undefined
   onSelect: (formId: string | undefined) => void
+  allLabel?: string
 }
 
 export function FormSelectorDropdown({
   forms,
   selectedFormId,
   onSelect,
+  allLabel = 'Semua Form Desa',
 }: FormSelectorDropdownProps) {
   return (
     <Select
@@ -36,7 +38,7 @@ export function FormSelectorDropdown({
         <SelectValue placeholder='Pilih form...' />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value='__all__'>Semua Form Desa</SelectItem>
+        <SelectItem value='__all__'>{allLabel}</SelectItem>
         {forms.map((f) => (
           <SelectItem key={f.id} value={f.id}>
             <span className='flex items-center gap-2'>

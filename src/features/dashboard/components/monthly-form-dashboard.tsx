@@ -54,6 +54,7 @@ interface Props {
   readOnly?: boolean
   providedRecap?: MonthlyFormRecap
   providedPrevRecap?: MonthlyFormRecap
+  showKpiDelta?: boolean
 }
 
 export function MonthlyFormDashboard({
@@ -73,6 +74,7 @@ export function MonthlyFormDashboard({
   readOnly = false,
   providedRecap,
   providedPrevRecap,
+  showKpiDelta = true,
 }: Props) {
   const currentQuery = useMonthlyFormRecap({
     formIds,
@@ -132,6 +134,7 @@ export function MonthlyFormDashboard({
           recap={data}
           prevRecap={prevData}
           isLoading={isLoading}
+          showDelta={showKpiDelta}
         />
       )}
 
