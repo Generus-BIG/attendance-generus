@@ -6,6 +6,7 @@ export const PUBLIC_DASHBOARD_SECTION_LABELS = {
   genderChart: 'Distribusi Gender',
   attendanceDistribution: 'Distribusi Kehadiran',
   followUp: 'Tindak Lanjut Peserta',
+  realtimeLog: 'Activity Log Kehadiran',
 } as const
 
 export type PublicDashboardSectionKey =
@@ -27,6 +28,7 @@ export const DEFAULT_PUBLIC_DASHBOARD_SECTIONS: PublicDashboardVisibleSections =
     genderChart: true,
     attendanceDistribution: true,
     followUp: false,
+    realtimeLog: false,
   }
 
 export type DashboardShareConfig = {

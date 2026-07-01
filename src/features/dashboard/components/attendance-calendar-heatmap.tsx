@@ -1,18 +1,25 @@
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
-import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { type MonthlyFormRecap } from '../types'
 import {
   buildCalendarCells,
@@ -29,11 +36,12 @@ type Props = {
   isLoading: boolean
 }
 
-export function AttendanceCalendarHeatmap({ recap, monthDate, isLoading }: Props) {
-  if (isLoading) {
-    return <Skeleton className='h-64 w-full' />
-  }
-
+export function AttendanceCalendarHeatmap({
+  recap,
+  monthDate,
+  isLoading,
+}: Props) {
+  const monthLabel = format(monthDate, 'MMMM yyyy', { locale: idLocale })
   const totalCensus = recap?.totals.totalCensus ?? 0
   const cells = buildCalendarCells({
     monthDate,
@@ -44,35 +52,41 @@ export function AttendanceCalendarHeatmap({ recap, monthDate, isLoading }: Props
   const hasAnyMeeting = (recap?.meetings.length ?? 0) > 0
 
   return (
-    <div className='flex w-full min-w-0 flex-col gap-3'>
-      <div className='text-muted-foreground text-[0.625rem] font-medium uppercase tracking-[0.1em] sm:text-[0.6875rem] sm:tracking-[0.12em]'>
-        Kalender kehadiran — {format(monthDate, 'MMMM yyyy', { locale: idLocale })}
-      </div>
-
-      {!hasAnyMeeting ? (
-        <div className='border-border/60 text-muted-foreground flex h-48 items-center justify-center rounded-md border border-dashed text-sm'>
-          Belum ada pertemuan tercatat di bulan ini.
-        </div>
-      ) : (
-        <>
-          <div className='flex flex-col gap-1 sm:gap-1.5'>
-            <div className='text-muted-foreground grid grid-cols-7 gap-0.5 text-center text-[0.5625rem] font-medium uppercase tracking-[0.06em] sm:gap-1 sm:text-[0.625rem] sm:tracking-[0.08em]'>
-              {WEEKDAY_LABELS.map((l) => (
-                <div key={l}>{l}</div>
-              ))}
+    <Card data-print-card>
+      <CardHeader className='px-4 sm:px-6'>
+        <CardTitle className='text-balance'>Kalender Kehadiran</CardTitle>
+        <CardDescription className='text-pretty'>
+          Tingkat kehadiran harian sepanjang {monthLabel}.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className='px-4 sm:px-6'>
+        {isLoading ? (
+          <Skeleton className='h-64 w-full' />
+        ) : !hasAnyMeeting ? (
+          <div className='flex h-48 items-center justify-center rounded-md border border-dashed border-border/60 text-center text-sm text-pretty text-muted-foreground'>
+            Belum ada pertemuan tercatat di bulan ini.
+          </div>
+        ) : (
+          <div className='flex w-full min-w-0 flex-col gap-3'>
+            <div className='flex flex-col gap-1 sm:gap-1.5'>
+              <div className='grid grid-cols-7 gap-0.5 text-center text-[0.5625rem] font-medium tracking-[0.06em] text-muted-foreground uppercase sm:gap-1 sm:text-[0.625rem] sm:tracking-[0.08em]'>
+                {WEEKDAY_LABELS.map((l) => (
+                  <div key={l}>{l}</div>
+                ))}
+              </div>
+              <div className='grid grid-cols-7 gap-0.5 sm:gap-1'>
+                {cells.map((cell) => (
+                  <HeatmapCell key={cell.date.getTime()} cell={cell} />
+                ))}
+              </div>
             </div>
-            <div className='grid grid-cols-7 gap-0.5 sm:gap-1'>
-              {cells.map((cell) => (
-                <HeatmapCell key={cell.date.getTime()} cell={cell} />
-              ))}
+            <div className='flex justify-center pt-1'>
+              <HeatmapLegend />
             </div>
           </div>
-          <div className='flex justify-center pt-1'>
-            <HeatmapLegend />
-          </div>
-        </>
-      )}
-    </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 
@@ -122,7 +136,7 @@ function HeatmapCell({ cell }: { cell: DayCell }) {
       className={cn(
         baseClasses,
         stateClasses,
-        'hover:ring-foreground/40 focus-visible:ring-foreground focus-visible:outline-none hover:ring-1 focus-visible:ring-2'
+        'hover:ring-1 hover:ring-foreground/40 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-none'
       )}
       aria-label={`${dateLabel} — kehadiran ${Math.round(ratePct ?? 0)}%`}
     >
@@ -180,7 +194,7 @@ function HeatmapLegend() {
     { label: '≥75%', swatch: 'bg-[var(--heatmap-4)]' },
   ]
   return (
-    <div className='flex items-center gap-2 text-[0.625rem] font-medium uppercase tracking-[0.08em]'>
+    <div className='flex items-center gap-2 text-[0.625rem] font-medium tracking-[0.08em] uppercase'>
       <span className='text-muted-foreground'>Rendah</span>
       <div className='flex items-center gap-0.5'>
         {items.map((it) => (

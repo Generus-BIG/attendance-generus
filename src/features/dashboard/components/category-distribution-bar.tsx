@@ -1,4 +1,5 @@
 import { Bar, BarChart, Cell, LabelList, XAxis, YAxis } from 'recharts'
+import { useIsMobile } from '@/hooks/use-mobile'
 import {
   Card,
   CardContent,
@@ -11,7 +12,6 @@ import {
   ChartContainer,
   ChartTooltip,
 } from '@/components/ui/chart'
-import { useIsMobile } from '@/hooks/use-mobile'
 import type { CategoryBreakdownRow } from '../types'
 import { ChartSegmentTooltip } from './chart-segment-tooltip'
 
@@ -42,7 +42,9 @@ const chartConfig = {
   percentage: { label: 'Persentase', color: FALLBACK_COLOR },
 } satisfies ChartConfig
 
-function formatRow(row: CategoryBreakdownRow): { label: string; value: string }[] {
+function formatRow(
+  row: CategoryBreakdownRow
+): { label: string; value: string }[] {
   return [
     { label: 'Hadir', value: row.hadirCount.toLocaleString('id-ID') },
     { label: 'Total Sensus', value: row.totalSensus.toLocaleString('id-ID') },
@@ -59,16 +61,16 @@ export function CategoryDistributionBar({ data }: Props) {
   return (
     <Card data-print-card>
       <CardHeader className='px-3 pt-4 pb-2 sm:px-6 sm:pt-6 sm:pb-3'>
-        <CardTitle className='text-base sm:text-lg'>
+        <CardTitle className='text-base text-balance sm:text-lg'>
           Persentase Per Kategori
         </CardTitle>
-        <CardDescription className='hidden sm:block'>
+        <CardDescription className='hidden text-pretty sm:block'>
           Tingkat kehadiran rata-rata per kategori sensus.
         </CardDescription>
       </CardHeader>
       <CardContent className='px-2 pb-4 sm:px-6 sm:pb-6'>
         {!hasData ? (
-          <div className='text-muted-foreground flex h-60 items-center justify-center text-sm'>
+          <div className='flex h-60 items-center justify-center text-sm text-muted-foreground'>
             Belum ada data kehadiran bulan ini.
           </div>
         ) : (

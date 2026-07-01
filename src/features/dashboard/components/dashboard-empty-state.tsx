@@ -23,8 +23,10 @@ export function DashboardEmptyState({
   return (
     <Card className='border-dashed' data-print-card>
       <CardContent className='flex flex-col items-center gap-3 py-12 text-center'>
-        <h3 className='text-lg font-semibold'>{title}</h3>
-        <p className='text-muted-foreground max-w-md text-sm'>{description}</p>
+        <h3 className='text-lg font-semibold text-balance'>{title}</h3>
+        <p className='max-w-md text-sm text-pretty text-muted-foreground'>
+          {description}
+        </p>
         {showAction && primaryAction && (
           <Button asChild className='mt-2'>
             <Link to={primaryAction.to}>{primaryAction.label}</Link>

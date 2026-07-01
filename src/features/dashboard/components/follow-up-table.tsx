@@ -9,7 +9,6 @@ import {
   type ColumnFiltersState,
   type Updater,
 } from '@tanstack/react-table'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   Card,
   CardContent,
@@ -18,6 +17,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -26,7 +26,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { DataTablePagination, DataTableFacetedFilter } from '@/components/data-table'
+import {
+  DataTablePagination,
+  DataTableFacetedFilter,
+} from '@/components/data-table'
 import type { MonthlyFormRecap, ParticipantMonthlyRecap } from '../types'
 import { RateBarCell } from './rate-bar-cell'
 
@@ -84,7 +87,7 @@ export function FollowUpTable({
         accessorKey: 'participantName',
         header: 'Peserta',
         cell: ({ row }) => (
-          <div className='font-medium truncate max-w-[200px]'>
+          <div className='max-w-[200px] truncate font-medium'>
             {row.original.participantName}
           </div>
         ),
@@ -159,7 +162,9 @@ export function FollowUpTable({
     const categoryFilter = next.find((f) => f.id === 'participantCategory')
       ?.value as string[] | undefined
     onQChange(nameFilter && nameFilter.length > 0 ? nameFilter : undefined)
-    onFGroupChange(groupFilter && groupFilter.length > 0 ? groupFilter : undefined)
+    onFGroupChange(
+      groupFilter && groupFilter.length > 0 ? groupFilter : undefined
+    )
     onFCategoryChange(
       categoryFilter && categoryFilter.length > 0 ? categoryFilter : undefined
     )
@@ -187,7 +192,7 @@ export function FollowUpTable({
       <Card data-print-card>
         <CardHeader>
           <CardTitle>Tindak Lanjut Peserta</CardTitle>
-          <CardDescription>
+          <CardDescription className='text-pretty'>
             Daftar peserta dengan rincian kehadiran bulan ini.
           </CardDescription>
         </CardHeader>
@@ -214,12 +219,12 @@ export function FollowUpTable({
       <Card data-print-card>
         <CardHeader>
           <CardTitle>Tindak Lanjut Peserta</CardTitle>
-          <CardDescription>
+          <CardDescription className='text-pretty'>
             Daftar peserta dengan rincian kehadiran bulan ini.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className='flex h-32 items-center justify-center text-muted-foreground text-sm'>
+          <div className='flex h-32 items-center justify-center text-sm text-muted-foreground'>
             Belum ada data peserta bulan ini.
           </div>
         </CardContent>
@@ -231,7 +236,7 @@ export function FollowUpTable({
     <Card data-print-card>
       <CardHeader>
         <CardTitle>Tindak Lanjut Peserta</CardTitle>
-        <CardDescription>
+        <CardDescription className='text-pretty'>
           Daftar peserta dengan rincian kehadiran bulan ini. Filter dan cari
           untuk fokus pada peserta yang perlu ditindaklanjuti.
         </CardDescription>

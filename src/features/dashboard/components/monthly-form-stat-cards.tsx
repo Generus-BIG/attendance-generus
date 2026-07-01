@@ -166,7 +166,7 @@ export function MonthlyFormStatCards({
                     <button
                       type='button'
                       aria-label={`Tentang ${k.label}`}
-                      className='rounded-full text-muted-foreground/60 hover:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none'
+                      className="relative rounded-full text-muted-foreground/60 transition-colors after:absolute after:top-1/2 after:left-1/2 after:size-10 after:-translate-x-1/2 after:-translate-y-1/2 after:content-[''] hover:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
                     >
                       <Info className='h-3 w-3' />
                     </button>
@@ -202,7 +202,7 @@ export function MonthlyFormStatCards({
                   )}
                 </div>
               )}
-              <div className='mt-1.5 text-[0.6875rem] text-muted-foreground sm:text-xs'>
+              <div className='mt-1.5 text-[0.6875rem] text-pretty text-muted-foreground sm:text-xs'>
                 {k.description}
               </div>
             </CardContent>
