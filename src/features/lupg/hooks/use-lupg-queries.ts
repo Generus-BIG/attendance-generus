@@ -973,7 +973,7 @@ export function useDerivedGpnSensus(kelompokId: string | undefined) {
     queryFn: async () => {
       if (!kelompokId) return [] as DerivedGpnSensusRow[]
       const { data, error } = await supabase
-        .from('lupg_sensus_gpn_derived')
+        .from('lupg_sensus_participant_derived')
         .select('*')
         .eq('kelompok_id', kelompokId)
       if (error) throw error
@@ -989,7 +989,7 @@ export function useDerivedGpnSensusForKelompoks(kelompokIds: string[]) {
     queryFn: async () => {
       if (kelompokIds.length === 0) return [] as DerivedGpnSensusRow[]
       const { data, error } = await supabase
-        .from('lupg_sensus_gpn_derived')
+        .from('lupg_sensus_participant_derived')
         .select('*')
         .in('kelompok_id', kelompokIds)
       if (error) throw error

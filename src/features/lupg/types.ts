@@ -148,7 +148,7 @@ export type CharacterTargetReportUpdate = Omit<
 
 export interface DerivedGpnSensusRow {
   kelompok_id: string
-  category_code: 'GPN_A' | 'GPN_B'
+  category_code: 'GPN_A' | 'GPN_B' | 'AR' | 'APR'
   gender: 'L' | 'P'
   count: number
 }

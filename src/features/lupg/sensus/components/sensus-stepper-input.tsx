@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { useUpsertSensusCell } from '../../hooks/use-lupg-queries'
-import { type CategoryCode } from '../../constants'
+import { DERIVED_SENSUS_CATEGORIES, type CategoryCode } from '../../constants'
 import { type SensusGender } from '../../types'
 
 interface Props {
@@ -35,6 +35,7 @@ export function SensusStepperInput({
   }, [initial])
 
   const commit = (next: number) => {
+    if (DERIVED_SENSUS_CATEGORIES.has(categoryCode)) return
     if (next < 0) return
     if (next === initial) return
     upsert.mutate(

@@ -108,7 +108,7 @@ async function fetchSensusMasterBatch(kelompokIds: string[]) {
 async function fetchDerivedGpnSensusBatch(kelompokIds: string[]) {
   if (kelompokIds.length === 0) return []
   const { data, error } = await supabase
-    .from('lupg_sensus_gpn_derived')
+    .from('lupg_sensus_participant_derived')
     .select('*')
     .in('kelompok_id', kelompokIds)
     .order('category_code')

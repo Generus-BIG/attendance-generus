@@ -20,6 +20,13 @@ export const CATEGORY_LABELS: Record<CategoryCode, string> = {
   PENDIDIK_MS: 'Pendidik MS',
 }
 
+export const DERIVED_SENSUS_CATEGORIES: ReadonlySet<CategoryCode> = new Set([
+  'GPN_A',
+  'GPN_B',
+  'AR',
+  'APR',
+])
+
 export const PROGRAM_CODES = [
   'TURBA_GPN',
   'GOMA',

@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils'
 import {
   CATEGORY_CODES,
   CATEGORY_LABELS,
+  DERIVED_SENSUS_CATEGORIES,
   type CategoryCode,
 } from '../../constants'
 import { SensusStepperInput } from './sensus-stepper-input'
@@ -26,7 +27,7 @@ export function SensusCardList({
   return (
     <div className='flex flex-col gap-3'>
       {CATEGORY_CODES.map((code) => {
-        const isDerived = code === 'GPN_A' || code === 'GPN_B'
+        const isDerived = DERIVED_SENSUS_CATEGORIES.has(code)
         const isReadOnly = readOnly || isDerived || !kelompokId
         const l = isDerived
           ? (derivedByKey.get(`${code}__L`) ?? 0)
