@@ -18,6 +18,7 @@ import {
   type RestrainedTopLabelProps,
 } from './chart-primitives'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { usePresentationAnimation } from '../context/animation-context'
 
 export interface PairedMonthBarsProps {
   title: string
@@ -90,6 +91,7 @@ export function PairedMonthBars({
   piket,
 }: PairedMonthBarsProps) {
   const palette = usePresPalette()
+  const { durationScale } = usePresentationAnimation()
   const colorKehadiran = palette.chart[0]
   const colorPiket = palette.chart[1]
 
@@ -173,7 +175,8 @@ export function PairedMonthBars({
                 dataKey='kehadiran'
                 name='Kehadiran'
                 fill={colorKehadiran}
-                isAnimationActive={false}
+                isAnimationActive={true}
+                animationDuration={Math.round(800 * durationScale)}
               >
                 <LabelList
                   dataKey='kehadiran'
@@ -189,7 +192,8 @@ export function PairedMonthBars({
                 dataKey='piket'
                 name='Piket LUPG'
                 fill={colorPiket}
-                isAnimationActive={false}
+                isAnimationActive={true}
+                animationDuration={Math.round(800 * durationScale)}
               >
                 <LabelList
                   dataKey='piket'

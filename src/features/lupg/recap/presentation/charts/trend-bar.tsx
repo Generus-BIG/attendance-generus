@@ -13,6 +13,7 @@ import {
   YAxis,
 } from 'recharts'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { usePresentationAnimation } from '../context/animation-context'
 import {
   EditorialTooltipShell,
   hairlineAxisProps,
@@ -78,6 +79,7 @@ export function TrendBar({
   labelFormatter,
 }: TrendBarProps) {
   const palette = usePresPalette()
+  const { durationScale } = usePresentationAnimation()
   const yAxisWidth = valueFormatter ? 74 : 44
   const axisTitleStyle = {
     fontFamily: palette.fontMono,
@@ -143,7 +145,11 @@ export function TrendBar({
             />
           )}
         />
-        <Bar dataKey='value' isAnimationActive={false}>
+        <Bar
+          dataKey='value'
+          isAnimationActive={true}
+          animationDuration={Math.round(800 * durationScale)}
+        >
           {data.map((d, idx) => {
             const fill = d.isHighlighted
               ? palette.chart[1]

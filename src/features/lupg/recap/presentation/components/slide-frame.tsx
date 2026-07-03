@@ -1,8 +1,6 @@
-// Shared chrome for content slides — minimal editorial header + breathable body
-// + small page indicator. Palette + type scale resolve at runtime per active
-// `data-palette` and `.dark` state.
 import { type ReactNode } from 'react'
 import { usePresPalette } from '../use-pres-palette'
+import { AnimateContainer, AnimateItem } from './animate-element'
 
 export interface SlideFrameProps {
   eyebrow: string
@@ -72,56 +70,61 @@ export function SlideFrame({
         fontFamily: p.fontSans,
       }}
     >
-      <header
-        className='flex items-end justify-between'
-        style={{
-          borderBottom: `1px solid ${p.rule}`,
-          padding:
-            'clamp(1.25rem, 3vh, 2.5rem) clamp(2rem, 4vw, 4rem) clamp(0.75rem, 1.7vh, 1.25rem)',
-        }}
-      >
-        <div className='flex flex-col gap-2'>
-          <div className='flex items-center gap-3'>
-            <span
-              aria-hidden
-              style={{ width: 48, height: 3, background: p.brandAccent }}
-            />
-            <span className='uppercase' style={eyebrowStyle}>
-              {eyebrow}
-            </span>
+      <AnimateContainer className='flex h-full flex-col'>
+        <header
+          className='flex items-end justify-between'
+          style={{
+            borderBottom: `1px solid ${p.rule}`,
+            padding:
+              'clamp(1.25rem, 3vh, 2.5rem) clamp(2rem, 4vw, 4rem) clamp(0.75rem, 1.7vh, 1.25rem)',
+          }}
+        >
+          <div className='flex flex-col gap-2'>
+            <AnimateItem className='flex items-center gap-3'>
+              <span
+                aria-hidden
+                style={{ width: 48, height: 3, background: p.brandAccent }}
+              />
+              <span className='uppercase' style={eyebrowStyle}>
+                {eyebrow}
+              </span>
+            </AnimateItem>
+            <AnimateItem>
+              <h1 style={titleStyle}>{title}</h1>
+            </AnimateItem>
           </div>
-          <h1 style={titleStyle}>{title}</h1>
+          {meta ? (
+            <AnimateItem className='uppercase' style={metaStyle}>
+              {meta}
+            </AnimateItem>
+          ) : null}
+        </header>
+
+        <div
+          className='flex-1 overflow-hidden'
+          style={{
+            padding: 'clamp(1.25rem, 2.8vh, 2.5rem) clamp(2rem, 4vw, 4rem)',
+          }}
+        >
+          {children}
         </div>
-        {meta ? (
-          <div className='uppercase' style={metaStyle}>
-            {meta}
-          </div>
-        ) : null}
-      </header>
 
-      <div
-        className='flex-1 overflow-hidden'
-        style={{
-          padding: 'clamp(1.25rem, 2.8vh, 2.5rem) clamp(2rem, 4vw, 4rem)',
-        }}
-      >
-        {children}
-      </div>
-
-      <footer
-        className='flex items-center justify-between'
-        style={{
-          padding: '0 clamp(2rem, 4vw, 4rem) clamp(0.9rem, 2vh, 1.5rem)',
-        }}
-      >
-        <span className='uppercase' style={scopeStyle}>
-          {scope}
-        </span>
-        <span style={pageIndicatorStyle}>
-          {String(slideNumber).padStart(2, '0')} —{' '}
-          {String(totalSlides).padStart(2, '0')}
-        </span>
-      </footer>
+        <footer
+          className='flex items-center justify-between'
+          style={{
+            padding: '0 clamp(2rem, 4vw, 4rem) clamp(0.9rem, 2vh, 1.5rem)',
+          }}
+        >
+          <AnimateItem className='uppercase' style={scopeStyle}>
+            {scope}
+          </AnimateItem>
+          <AnimateItem style={pageIndicatorStyle}>
+            {String(slideNumber).padStart(2, '0')} —{' '}
+            {String(totalSlides).padStart(2, '0')}
+          </AnimateItem>
+        </footer>
+      </AnimateContainer>
     </div>
   )
 }
+

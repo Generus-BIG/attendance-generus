@@ -2,6 +2,7 @@
 // 2-slice legend. Sudah uses palette.success, Belum uses palette.muted at 35%.
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { usePresentationAnimation } from '../context/animation-context'
 import { EditorialTooltipShell } from './chart-primitives'
 
 export interface SarprasDonutProps {
@@ -75,6 +76,7 @@ function LegendItem({ color, label, count, palette }: LegendItemProps) {
 
 export function SarprasDonut({ fulfilled, total }: SarprasDonutProps) {
   const palette = usePresPalette()
+  const { durationScale } = usePresentationAnimation()
   const colorSudah = palette.success
   const colorBelum = `color-mix(in oklch, ${palette.muted} 35%, ${palette.bg})`
   if (total <= 0) {
@@ -134,7 +136,8 @@ export function SarprasDonut({ fulfilled, total }: SarprasDonutProps) {
               outerRadius='52%'
               stroke={palette.bg}
               strokeWidth={1}
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationDuration={Math.round(800 * durationScale)}
             >
               {data.map((d) => (
                 <Cell key={d.name} fill={d.fill} />

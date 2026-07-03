@@ -133,7 +133,7 @@ Categories `ACR`, `PENDIDIK_MT`, `PENDIDIK_MS` remain **manual entry** (no corre
 
 - **`tg_lupg_monthly_report_submit` + `tg_lupg_monthly_report_snapshot`** on `lupg_monthly_reports`: enforce lock + `submitted_at`/`submitted_by` on `draft → submitted`; snapshot master sensus into `lupg_sensus_snapshots`; block team_manager from `submitted → draft` (admin unlock path).
 - **`tg_participants_auto_promote_gpn`** on `participants` (BEFORE INSERT OR UPDATE OF birth_date, category_id): rewrites `category_id` from GPN A → GPN B when `calculate_age(NEW.birth_date) >= 23`. `SECURITY INVOKER` + `SET search_path = public, pg_temp`.
-- **`tg_participants_sync_sensus`** on `participants` (AFTER INSERT OR UPDATE OF status_active, category_id, group_id, gender OR DELETE): auto-syncs `lupg_sensus` from participant data for GPN_A, GPN_B, AR, APR via `lupg_sync_derived_sensus()`. `SECURITY INVOKER` + `SET search_path = public, pg_temp`.
+- **`tg_participants_sync_sensus`** on `participants` (AFTER INSERT OR UPDATE OF status_active, category_id, group_id, gender OR DELETE): auto-syncs `lupg_sensus` from participant data for GPN_A, GPN_B, AR, APR via `lupg_sync_derived_sensus()`. The trigger wrapper `fn_participants_sync_sensus()` is `SECURITY DEFINER` + `SET search_path = public, pg_temp` so authenticated participant writes can sync derived counts without granting direct RPC access to `lupg_sync_derived_sensus()`.
 - **`calculate_age(DATE) RETURNS INT`** — day-accurate age helper, IMMUTABLE SQL. Used by the auto-promote trigger.
 
 **When adding new Postgres functions**: always set a fixed `search_path` (`SET search_path = public, pg_temp` or empty string) to satisfy the `function_search_path_mutable` advisor. Prefer `SECURITY INVOKER`. Only use `SECURITY DEFINER` when cross-role access is required, and document the reason.
@@ -238,6 +238,7 @@ Schema changes are tracked in `supabase/migrations/` as timestamped `.sql` files
 
 - `20260629000000_public_dashboard_shares.sql` — `public_dashboard_shares` table, constraints, RLS, RPC `get_public_dashboard_payload`
 - `20260701000000_sensus_participant_auto_sync.sql` — view `lupg_sensus_participant_derived`, sync function, participant trigger
+- `20260703042233_harden_participant_sensus_sync_trigger.sql` — runs participant sensus sync trigger wrapper as `SECURITY DEFINER` and keeps the sync helper non-callable by anon/authenticated roles
 
 ## Known Debt / Future Improvements
 
@@ -246,9 +247,7 @@ These are acknowledged gaps worth folding into future work rather than silent su
 - **Centralize kategori DB-value mappings.** `'GPN A' | 'GPN B' | 'AR' | 'APR'` (DB) vs `'A' | 'B' | 'AR' | 'APR'` (app) strings are inlined across `participants-context.tsx`, `approvals/services.ts`, `forms/services.ts`, `lib/storage.ts`, `seed-data.ts`, `RegisterParticipantForm.tsx`, `PublicAttendanceForm.tsx`, dashboard-recap service. A single `KATEGORI_DB_VALUES` map in [src/lib/schema.ts](src/lib/schema.ts) would prevent the "forgot to add APR to mapper X" class of bug that recurs when new categories are introduced.
 - **Extract `toDateOnly` / `fromDateOnly` helpers to `src/lib/utils.ts`.** Currently scoped inside `participants-context.tsx`; `approvals/services.ts` open-codes the same `format(..., 'yyyy-MM-dd')` pattern.
 - **Legacy `src/lib/storage.ts`** still hardcodes `kategori: 'A' | 'B' | 'AR'` (no APR). Not breaking because Supabase is authoritative — consider deleting.
-- **Pre-existing `SECURITY DEFINER` advisor WARNs** on `lupg_get_submitter_display`, `get_public_dashboard_payload`, `promote_eligible_gpn`, `submit_pending_attendance_guarded`. These are intentional (public link RPC + admin functions), but tighten `search_path` or document justification when feasible. Newer functions (`calculate_age`, `fn_participants_auto_promote_gpn`, `fn_participants_sync_sensus`) are already hardened — use that as the pattern.
+- **Pre-existing `SECURITY DEFINER` advisor WARNs** on `lupg_get_submitter_display`, `get_public_dashboard_payload`, `promote_eligible_gpn`, `submit_pending_attendance_guarded`. These are intentional (public link RPC + admin functions), but tighten `search_path` or document justification when feasible. Newer functions (`calculate_age`, `fn_participants_auto_promote_gpn`, `fn_participants_sync_sensus`) are hardened with fixed `search_path`; for trigger-only definer wrappers, revoke direct anon/authenticated execute where possible.
 - **No scheduled job for daily re-evaluation.** GPN A → GPN B promotion is lazy (only fires when a participant row is inserted or its `birth_date` / `category_id` is updated). Participants who cross the 23-year threshold without being edited stay GPN A until a TM touches them. A nightly pg_cron job is the natural follow-up.
 - **Absensi → `/admin/absensi/*` URL migration** was scoped in Phase 1a but deferred. Sidebar entries still point at `/admin/*`. If/when migrated, update `ROUTE_ACCESS` keys (prefix-matched) and sidebar-data-absensi in lockstep.
 - **`accordion` shadcn primitive not installed** — Rekap Desa Mustin falls back to a flat grouped list. Install if you need collapsible groups.
-
-

@@ -9,6 +9,7 @@ import {
   YAxis,
 } from 'recharts'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { usePresentationAnimation } from '../context/animation-context'
 import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
 
 export interface TrendLineSeries {
@@ -159,6 +160,7 @@ export function TrendLine({
   yAxisTitle,
 }: TrendLineProps) {
   const palette = usePresPalette()
+  const { durationScale } = usePresentationAnimation()
   const axisTitleStyle = {
     fontFamily: palette.fontMono,
     fontSize: 'clamp(0.75rem, 1vw, 1rem)',
@@ -266,7 +268,8 @@ export function TrendLine({
                   stroke={stroke}
                   strokeWidth={2.5}
                   connectNulls={false}
-                  isAnimationActive={false}
+                  isAnimationActive={true}
+                  animationDuration={Math.round(800 * durationScale)}
                   dot={(p) => (
                     <LastPointDot
                       key={`dot-${s.code}-${(p as { index?: number }).index ?? 0}`}

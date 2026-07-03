@@ -24,6 +24,10 @@ import {
 import { renderClosingSlide } from './slide-renderers/render-closing'
 import { renderCoverSlide } from './slide-renderers/render-cover'
 import {
+  renderDokumentasiSlides,
+  type ActivityPhotoWithUrl,
+} from './slide-renderers/render-dokumentasi'
+import {
   renderMetricsAggregateSlide,
   renderMetricsCompareSlide,
   renderMetricsTableSlide,
@@ -63,6 +67,7 @@ export interface PresentationData {
   characterActivities?: CharacterMonitoringActivityRow[]
   characterReports?: CharacterMonitoringReportRow[]
   kelompokFilter?: string
+  activityPhotos?: ActivityPhotoWithUrl[]
 
   // Yearly trend data (kelompok mode):
   yearlyMonthlyReports?: MonthlyReportRow[]
@@ -160,6 +165,7 @@ export function buildSlides(data: PresentationData): Slide[] {
     | { kind: 'character-agenda' }
     | { kind: 'character-summary' }
     | { kind: 'mustin' }
+    | { kind: 'dokumentasi' }
     | { kind: 'closing' }
 
   const descriptors: Descriptor[] = []
@@ -190,6 +196,9 @@ export function buildSlides(data: PresentationData): Slide[] {
   descriptors.push({ kind: 'character-agenda' })
   descriptors.push({ kind: 'character-summary' })
   descriptors.push({ kind: 'mustin' })
+  if ((data.activityPhotos ?? []).length > 0) {
+    descriptors.push({ kind: 'dokumentasi' })
+  }
   descriptors.push({ kind: 'closing' })
 
   const totalSlides = descriptors.length
@@ -398,6 +407,17 @@ export function buildSlides(data: PresentationData): Slide[] {
             totalSlides,
           })
         )
+        break
+      }
+      case 'dokumentasi': {
+        const docSlides = renderDokumentasiSlides({
+          monthLabel,
+          scope,
+          photos: data.activityPhotos ?? [],
+          slideNumber,
+          totalSlides,
+        })
+        slides.push(...docSlides)
         break
       }
       case 'closing': {

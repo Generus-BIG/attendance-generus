@@ -15,6 +15,7 @@ import {
 } from 'recharts'
 import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { usePresentationAnimation } from '../context/animation-context'
 
 export interface SarprasStackedBarDatum {
   kelompok: string
@@ -134,6 +135,7 @@ function CustomLegend({ payload, palette }: CustomLegendProps) {
 
 export function SarprasStackedBar({ data, totalItems }: SarprasStackedBarProps) {
   const palette = usePresPalette()
+  const { durationScale } = usePresentationAnimation()
   const colorSudah = palette.success
   const colorBelum = `color-mix(in oklch, ${palette.muted} 35%, ${palette.bg})`
   if (totalItems <= 0 || data.length === 0) {
@@ -184,14 +186,16 @@ export function SarprasStackedBar({ data, totalItems }: SarprasStackedBarProps) 
           stackId='s'
           fill={colorSudah}
           name='Sudah'
-          isAnimationActive={false}
+          isAnimationActive={true}
+          animationDuration={Math.round(800 * durationScale)}
         />
         <Bar
           dataKey='belum'
           stackId='s'
           fill={colorBelum}
           name='Belum'
-          isAnimationActive={false}
+          isAnimationActive={true}
+          animationDuration={Math.round(800 * durationScale)}
         >
           <LabelList
             content={(p) => (

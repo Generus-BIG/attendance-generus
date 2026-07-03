@@ -64,21 +64,38 @@ interface PublicDashboardPageProps {
 
 function formatFormsMeta(
   forms: Array<{ date: string }>,
+  records: AttendanceRecord[],
   locale: Locale
 ): string {
-  if (forms.length === 0) return 'Tidak ada form terpilih'
+  if (forms.length === 0) return 'Tidak ada form'
 
-  const dates = forms
-    .map((form) => parseISO(form.date))
+  const formLabel = `${forms.length} form`
+  const attendanceDates = records
+    .filter((record) => !record.is_pending && record.timestamp)
+    .map((record) => new Date(record.timestamp))
+    .filter((date) => !Number.isNaN(date.getTime()))
     .sort((a, b) => a.getTime() - b.getTime())
-  const first = dates[0]
-  const last = dates[dates.length - 1]
-  const dateLabel =
-    first && last && first.getTime() !== last.getTime()
-      ? `${format(first, 'dd MMM yyyy', { locale })} - ${format(last, 'dd MMM yyyy', { locale })}`
-      : format(first ?? new Date(), 'dd MMM yyyy', { locale })
 
-  return `${forms.length} form terpilih · ${dateLabel}`
+  if (attendanceDates.length === 0) return `${formLabel} · Belum ada absensi`
+
+  const first = attendanceDates[0]
+  const last = attendanceDates[attendanceDates.length - 1]
+  if (!first || !last) return `${formLabel} · Belum ada absensi`
+
+  if (first.getTime() === last.getTime()) {
+    return `${formLabel} · ${format(first, 'd MMMM yyyy', { locale })}`
+  }
+
+  const sameYear = first.getFullYear() === last.getFullYear()
+  const sameMonth = sameYear && first.getMonth() === last.getMonth()
+  const firstLabel = sameMonth
+    ? format(first, 'd', { locale })
+    : sameYear
+      ? format(first, 'd MMMM', { locale })
+      : format(first, 'd MMMM yyyy', { locale })
+  const lastLabel = format(last, 'd MMMM yyyy', { locale })
+
+  return `${formLabel} · ${firstLabel} - ${lastLabel}`
 }
 
 function setMetaByName(name: string, content: string) {
@@ -287,7 +304,7 @@ export function PublicDashboardPage({
     : data.share.name
   const headerDescription = isMonthlyMode
     ? data.share.name
-    : formatFormsMeta(scopedForms, idLocale)
+    : formatFormsMeta(scopedForms, selectedRecords, idLocale)
 
   return (
     <main className='min-h-screen bg-background px-4 py-6 antialiased sm:px-8 print:px-0'>
