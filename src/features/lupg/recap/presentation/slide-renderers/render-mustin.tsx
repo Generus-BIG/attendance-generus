@@ -11,6 +11,7 @@ import {
 import { SlideFrame } from '../components/slide-frame'
 import { type Slide } from '../slides'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { AnimateItem } from '../components/animate-element'
 
 interface SlideArgs {
   monthLabel: string
@@ -71,7 +72,7 @@ function NoteItem({ note, index }: NoteItemProps) {
   const status = note.status as MustinStatus
   const { background, color, fontWeight } = pillStyle(status, p)
   return (
-    <div className='flex gap-3'>
+    <AnimateItem className='flex gap-3'>
       <div
         className='shrink-0 pt-px'
         style={{
@@ -121,7 +122,7 @@ function NoteItem({ note, index }: NoteItemProps) {
           {note.keputusan_rencana || '(kosong)'}
         </div>
       </div>
-    </div>
+    </AnimateItem>
   )
 }
 

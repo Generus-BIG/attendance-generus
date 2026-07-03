@@ -1,9 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { ChevronLeft, ChevronRight, Loader2, Maximize2, X } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronLeft, ChevronRight, Loader2, Maximize2, SlidersHorizontal, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import {
+  AnimationProvider,
+  usePresentationAnimation,
+} from './context/animation-context'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   useActiveCharacterMonitoringActivities,
   useActiveMetrics,
@@ -28,16 +35,139 @@ import {
 } from '../../types'
 import { firstDayOfMonth, formatMonthLabel } from '../../utils/month-utils'
 import { buildSlides, type Kelompok } from './slides'
+import { type ActivityPhotoWithUrl } from './slide-renderers/render-dokumentasi'
 
 interface Props {
   monthKey: string
   kelompokFilter?: string
 }
 
-export function Presentation({ monthKey, kelompokFilter }: Props) {
+export function Presentation(props: Props) {
+  return (
+    <AnimationProvider>
+      <PresentationInner {...props} />
+    </AnimationProvider>
+  )
+}
+
+function AnimationControls() {
+  const {
+    preset,
+    setPreset,
+    trigger,
+    setTrigger,
+    speed,
+    setSpeed,
+  } = usePresentationAnimation()
+
+  const percent = ((speed - 0.25) / 2.75) * 100
+
+  return (
+    <div className='flex flex-col gap-4 text-xs select-none'>
+      {/* Transition Selector */}
+      <div className='space-y-1.5'>
+        <span className='text-[10px] font-bold uppercase tracking-wider text-muted-foreground'>Transition</span>
+        <div className='flex gap-x-4 text-xs font-semibold'>
+          {(['simple', 'sleek', 'corporate', 'chill'] as const).map((p) => {
+            const isActive = preset === p
+            const label = p === 'simple' ? 'Simple' : p === 'sleek' ? 'Sleek' : p === 'corporate' ? 'Corporate' : 'Chill'
+            return (
+              <button
+                key={p}
+                onClick={() => setPreset(p)}
+                className='relative transition-colors duration-150 cursor-pointer py-1.5 outline-hidden'
+              >
+                <span
+                  className={cn(
+                    'transition-colors duration-150',
+                    isActive ? 'text-foreground font-bold' : 'text-muted-foreground hover:text-foreground font-medium'
+                  )}
+                >
+                  {label}
+                </span>
+                {isActive && (
+                  <motion.span
+                    layoutId='activePreset'
+                    className='absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full'
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Animate Trigger Selector */}
+      <div className='space-y-1.5 border-t border-border/30 pt-3'>
+        <span className='text-[10px] font-bold uppercase tracking-wider text-muted-foreground'>Animate</span>
+        <div className='flex gap-x-4 text-xs font-semibold'>
+          {(['both', 'enter', 'exit'] as const).map((t) => {
+            const isActive = trigger === t
+            const label = t === 'both' ? 'Both' : t === 'enter' ? 'On Enter' : 'On Exit'
+            return (
+              <button
+                key={t}
+                onClick={() => setTrigger(t)}
+                className='relative transition-colors duration-150 cursor-pointer py-1.5 outline-hidden'
+              >
+                <span
+                  className={cn(
+                    'transition-colors duration-150',
+                    isActive ? 'text-foreground font-bold' : 'text-muted-foreground hover:text-foreground font-medium'
+                  )}
+                >
+                  {label}
+                </span>
+                {isActive && (
+                  <motion.span
+                    layoutId='activeTrigger'
+                    className='absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full'
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Speed Slider (corrected logic: left = slow, right = fast) */}
+      <div className='space-y-2 border-t border-border/30 pt-3'>
+        <div className='flex items-center justify-between'>
+          <label className='text-[10px] font-bold uppercase tracking-wider text-muted-foreground'>
+            Speed
+          </label>
+          <span className='text-xs font-mono font-bold text-primary bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10'>
+            {speed.toFixed(2)}x
+          </span>
+        </div>
+        <div className='flex items-center gap-3'>
+          <span className='text-[10px] text-muted-foreground font-semibold'>Slow</span>
+          <input
+            type='range'
+            min='0.25'
+            max='3.00'
+            step='0.25'
+            value={speed}
+            onChange={(e) => setSpeed(Number(e.target.value))}
+            className='flex-1 appearance-none h-0.5 rounded-lg outline-hidden [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-none [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:duration-100 [&::-webkit-slider-thumb]:hover:scale-125 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-none [&::-moz-range-thumb]:transition-transform [&::-moz-range-thumb]:duration-100 [&::-moz-range-thumb]:hover:scale-125 cursor-pointer'
+            style={{
+              background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${percent}%, var(--border) ${percent}%, var(--border) 100%)`,
+            }}
+          />
+          <span className='text-[10px] text-muted-foreground font-semibold'>Fast</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PresentationInner({ monthKey, kelompokFilter }: Props) {
   const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
   const [slideIndex, setSlideIndex] = useState(0)
+  const [direction, setDirection] = useState(1) // 1 = next, -1 = prev
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
@@ -275,6 +405,53 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
   const { data: characterReports = [], isLoading: characterReportsLoading } =
     useCharacterMonitoringReportsBatch(reportIds)
 
+  // Activity photos for dokumentasi slide
+  const activityPhotosQ = useQuery({
+    queryKey: [
+      'lupg',
+      'present',
+      'activity-photos',
+      monthKey,
+      reportIdsKey,
+      reportIds,
+    ] as const,
+    queryFn: async (): Promise<ActivityPhotoWithUrl[]> => {
+      if (reportIds.length === 0) return []
+      const { data: rows, error } = await supabase
+        .from('lupg_activity_photos')
+        .select('*')
+        .in('report_id', reportIds)
+        .order('sort_order')
+      if (error) throw error
+      if (!rows || rows.length === 0) return []
+
+      const paths = rows.map(
+        (r: { storage_path: string }) => r.storage_path
+      )
+      const { data: urls } = await supabase.storage
+        .from('lupg-activity-photos')
+        .createSignedUrls(paths, 3600)
+
+      const urlMap = new Map<string, string>()
+      for (const u of urls ?? []) {
+        if (u.path && u.signedUrl) urlMap.set(u.path, u.signedUrl)
+      }
+
+      return rows.map(
+        (r: {
+          id: string
+          caption: string | null
+          storage_path: string
+        }) => ({
+          id: r.id,
+          caption: r.caption,
+          signedUrl: urlMap.get(r.storage_path) ?? '',
+        })
+      )
+    },
+    enabled: reportIds.length > 0,
+  })
+
   const isLoading =
     sensusQ.isLoading ||
     programsQ.isLoading ||
@@ -284,7 +461,8 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
     shodaqohQ.isLoading ||
     mustinQ.isLoading ||
     characterActivitiesLoading ||
-    characterReportsLoading
+    characterReportsLoading ||
+    activityPhotosQ.isLoading
 
   const slides = useMemo(
     () =>
@@ -310,6 +488,7 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
         yearlyMetricReports,
         yearlyMetricMonthlyReports,
         yearlyShodaqohRows,
+        activityPhotos: activityPhotosQ.data ?? [],
       }),
     [
       monthKey,
@@ -333,8 +512,23 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
       yearlyMetricReports,
       yearlyMetricMonthlyReports,
       yearlyShodaqohRows,
+      activityPhotosQ.data,
     ]
   )
+
+  const handleNext = useCallback(() => {
+    if (slideIndex < slides.length - 1) {
+      setDirection(1)
+      setSlideIndex((i) => i + 1)
+    }
+  }, [slideIndex, slides.length])
+
+  const handlePrev = useCallback(() => {
+    if (slideIndex > 0) {
+      setDirection(-1)
+      setSlideIndex((i) => i - 1)
+    }
+  }, [slideIndex])
 
   const clampedIndex = Math.min(slideIndex, Math.max(slides.length - 1, 0))
   const currentSlide = slides[clampedIndex]
@@ -353,25 +547,26 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         e.preventDefault()
-        setSlideIndex((i) => Math.min(slides.length - 1, i + 1))
+        handleNext()
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
         e.preventDefault()
-        setSlideIndex((i) => Math.max(0, i - 1))
+        handlePrev()
       } else if (e.key === 'Escape') {
         e.preventDefault()
         exit()
       } else if (e.key === 'Home') {
         e.preventDefault()
+        setDirection(-1)
         setSlideIndex(0)
       } else if (e.key === 'End') {
         e.preventDefault()
+        setDirection(1)
         setSlideIndex(Math.max(slides.length - 1, 0))
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slides.length])
+  }, [slides.length, handleNext, handlePrev])
 
   const requestFullscreen = () => {
     if (!document.fullscreenElement && containerRef.current) {
@@ -390,6 +585,18 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
             {formatMonthLabel(monthKey)} · {currentSlide?.title ?? ''}
           </div>
           <div className='flex items-center gap-2'>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant='ghost' size='sm'>
+                  <SlidersHorizontal className='mr-2 h-4 w-4' />
+                  Setting
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align='end' className='w-60 p-4'>
+                <AnimationControls />
+              </PopoverContent>
+            </Popover>
+
             <Button variant='ghost' size='sm' onClick={requestFullscreen}>
               <Maximize2 className='mr-2 h-4 w-4' />
               Fullscreen
@@ -407,29 +614,56 @@ export function Presentation({ monthKey, kelompokFilter }: Props) {
           variant='ghost'
           size='icon'
           className='h-auto w-16 rounded-none'
-          onClick={() => setSlideIndex((i) => Math.max(0, i - 1))}
+          onClick={handlePrev}
           disabled={clampedIndex === 0}
           aria-label='Slide sebelumnya'
         >
           <ChevronLeft className='h-6 w-6' />
         </Button>
-        <div className='flex-1 overflow-hidden'>
+        <div className='flex-1 overflow-hidden relative'>
           {isLoading || !currentSlide ? (
             <div className='flex h-full items-center justify-center text-muted-foreground'>
               <Loader2 className='mr-2 h-6 w-6 animate-spin' />
               Memuat...
             </div>
           ) : (
-            currentSlide.render()
+            <AnimatePresence mode='wait' custom={direction}>
+              <motion.div
+                key={clampedIndex}
+                custom={direction}
+                variants={{
+                  enter: (dir: number) => ({
+                    x: dir > 0 ? '5vw' : '-5vw',
+                    opacity: 0,
+                  }),
+                  center: {
+                    x: 0,
+                    opacity: 1,
+                  },
+                  exit: (dir: number) => ({
+                    x: dir > 0 ? '-5vw' : '5vw',
+                    opacity: 0,
+                  }),
+                }}
+                initial='enter'
+                animate='center'
+                exit='exit'
+                transition={{
+                  x: { type: 'spring', stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.15 },
+                }}
+                className='h-full w-full'
+              >
+                {currentSlide.render()}
+              </motion.div>
+            </AnimatePresence>
           )}
         </div>
         <Button
           variant='ghost'
           size='icon'
           className='h-auto w-16 rounded-none'
-          onClick={() =>
-            setSlideIndex((i) => Math.min(slides.length - 1, i + 1))
-          }
+          onClick={handleNext}
           disabled={clampedIndex >= slides.length - 1}
           aria-label='Slide berikutnya'
         >

@@ -18,7 +18,6 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
 } from '@/components/ui/table'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
 
@@ -80,13 +79,16 @@ export function EditorialTableBody(props: ComponentProps<'tbody'>) {
   return <TableBody {...props} />
 }
 
+import { AnimateTableRow } from './animate-element'
+import { type HTMLMotionProps } from 'framer-motion'
+
 export function EditorialTableRow({
   className,
   ...props
-}: ComponentProps<'tr'>) {
+}: HTMLMotionProps<'tr'>) {
   const p = usePresPalette()
   return (
-    <TableRow
+    <AnimateTableRow
       className={cn('hover:bg-transparent', className)}
       style={{ borderColor: p.rule }}
       {...props}
@@ -165,12 +167,12 @@ export interface TotalRowProps {
 export function TotalRow({ children }: TotalRowProps) {
   const p = usePresPalette()
   return (
-    <TableRow
+    <AnimateTableRow
       className='font-semibold hover:bg-transparent'
       style={{ background: p.cream, borderColor: p.rule }}
     >
       {children}
-    </TableRow>
+    </AnimateTableRow>
   )
 }
 
