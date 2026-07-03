@@ -21,6 +21,7 @@ import {
 import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
 import { SENSUS_CATEGORY_COLORS, SENSUS_STACK_ORDER } from '../theme'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { usePresentationAnimation } from '../context/animation-context'
 
 type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR'
 
@@ -207,6 +208,7 @@ function CustomLegend({ payload, palette }: CustomLegendProps) {
 
 export function SensusStackedBar({ data }: SensusStackedBarProps) {
   const palette = usePresPalette()
+  const { durationScale } = usePresentationAnimation()
   const grandTotal = data.reduce((a, b) => a + b.total, 0)
   if (grandTotal === 0) {
     return (
@@ -265,7 +267,8 @@ export function SensusStackedBar({ data }: SensusStackedBarProps) {
               dataKey={code}
               name={CATEGORY_LABELS[code]}
               fill={SENSUS_CATEGORY_COLORS[code]}
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationDuration={Math.round(800 * durationScale)}
             >
               <LabelList
                 dataKey={code}

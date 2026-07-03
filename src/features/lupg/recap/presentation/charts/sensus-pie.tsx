@@ -2,6 +2,7 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { SENSUS_CATEGORY_COLORS } from '../theme'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { usePresentationAnimation } from '../context/animation-context'
 import { EditorialTooltipShell } from './chart-primitives'
 
 type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR'
@@ -120,6 +121,7 @@ function CustomTooltip({ active, payload, palette }: TipProps) {
 
 export function SensusPie({ data }: SensusPieProps) {
   const palette = usePresPalette()
+  const { durationScale } = usePresentationAnimation()
   const grandTotal = data.reduce((acc, d) => acc + d.total, 0)
   if (grandTotal === 0) {
     return (
@@ -157,7 +159,8 @@ export function SensusPie({ data }: SensusPieProps) {
           innerRadius={0}
           stroke={palette.bg}
           strokeWidth={1}
-          isAnimationActive={false}
+          isAnimationActive={true}
+          animationDuration={Math.round(800 * durationScale)}
           label={(p) => (
             <ExternalLabel
               {...(p as unknown as Omit<RechartsLabelProps, 'palette'>)}

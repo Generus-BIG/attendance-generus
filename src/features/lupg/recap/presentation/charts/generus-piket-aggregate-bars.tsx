@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { usePresentationAnimation } from '../context/animation-context'
 import {
   EditorialTooltipShell,
   hairlineAxisProps,
@@ -87,6 +88,7 @@ export function GenerusPiketAggregateBars({
   piketValues,
 }: GenerusPiketAggregateBarsProps) {
   const palette = usePresPalette()
+  const { durationScale } = usePresentationAnimation()
   const colorGenerus = palette.chart[0]
   const colorPiket = palette.chart[1]
 
@@ -144,7 +146,8 @@ export function GenerusPiketAggregateBars({
                 dataKey='generus'
                 name='Rata-rata Generus'
                 fill={colorGenerus}
-                isAnimationActive={false}
+                isAnimationActive={true}
+                animationDuration={Math.round(800 * durationScale)}
               >
                 <LabelList
                   dataKey='generus'
@@ -160,7 +163,8 @@ export function GenerusPiketAggregateBars({
                 dataKey='piket'
                 name='Rata-rata Piket LUPG'
                 fill={colorPiket}
-                isAnimationActive={false}
+                isAnimationActive={true}
+                animationDuration={Math.round(800 * durationScale)}
               >
                 <LabelList
                   dataKey='piket'

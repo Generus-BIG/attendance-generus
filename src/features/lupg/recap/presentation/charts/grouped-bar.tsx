@@ -10,6 +10,7 @@ import {
   YAxis,
 } from 'recharts'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { usePresentationAnimation } from '../context/animation-context'
 import {
   EditorialTooltipShell,
   hairlineAxisProps,
@@ -123,6 +124,7 @@ export function GroupedBar({
   yAxisTitle,
 }: GroupedBarProps) {
   const palette = usePresPalette()
+  const { durationScale } = usePresentationAnimation()
   const axisTitleStyle = {
     fontFamily: palette.fontMono,
     fontSize: 'clamp(0.75rem, 1vw, 1rem)',
@@ -205,7 +207,8 @@ export function GroupedBar({
                 dataKey={k.id}
                 name={k.name}
                 fill={palette.chart[idx % palette.chart.length]}
-                isAnimationActive={false}
+                isAnimationActive={true}
+                animationDuration={Math.round(800 * durationScale)}
               >
                 <LabelList
                   dataKey={k.id}
