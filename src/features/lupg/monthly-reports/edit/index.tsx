@@ -25,6 +25,7 @@ import { ShodaqohSection } from '../sections/shodaqoh-section'
 import { MustinSection } from '../sections/mustin-section'
 import { CharacterMonitoringSection } from '../sections/character-monitoring-section'
 import { CharacterTargetSection } from '../sections/character-target-section'
+import { DokumentasiSection } from '../sections/dokumentasi-section'
 import { SectionNav, type SectionItem } from '../components/section-nav'
 import { RevealOnScroll } from '../components/reveal-on-scroll'
 
@@ -41,6 +42,7 @@ const SECTIONS: SectionItem[] = [
   { id: 'section-mustin', label: 'Resume Mustin' },
   { id: 'section-character-targets', label: 'Target Capaian Materi' },
   { id: 'section-character-monitoring', label: 'Penerapan 29 Karakter' },
+  { id: 'section-dokumentasi', label: 'Dokumentasi' },
 ]
 
 export function MonthlyReportEdit({ monthlyReportId }: Props) {
@@ -197,6 +199,9 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
             </RevealOnScroll>
             <RevealOnScroll delayMs={350}>
               <CharacterMonitoringSection report={report} readOnly={readOnly} />
+            </RevealOnScroll>
+            <RevealOnScroll delayMs={400}>
+              <DokumentasiSection report={report} readOnly={readOnly} />
             </RevealOnScroll>
           </div>
         </div>
