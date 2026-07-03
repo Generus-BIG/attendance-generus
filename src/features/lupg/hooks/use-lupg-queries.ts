@@ -13,6 +13,7 @@ import * as programSvc from '../services/program-report.service'
 import * as sarprasSvc from '../services/sarpras-report.service'
 import * as sensusSvc from '../services/sensus.service'
 import * as shodaqohSvc from '../services/shodaqoh-report.service'
+import * as activityPhotosSvc from '../services/activity-photos.service'
 import {
   type DerivedGpnSensusRow,
   type MonthlyReportWithSubmitterRow,
@@ -59,6 +60,10 @@ const KEYS = {
     ['lupg', 'character-target-reports', mrId] as const,
   characterTargetReportsBatch: (mrIds: readonly string[]) =>
     ['lupg', 'character-target-reports', 'batch', mrIds] as const,
+  activityPhotos: (mrId: string) =>
+    ['lupg', 'activity-photos', mrId] as const,
+  activityPhotoUrls: (mrId: string) =>
+    ['lupg', 'activity-photo-urls', mrId] as const,
 }
 
 export const LUPG_QUERY_KEYS = KEYS
@@ -1033,3 +1038,114 @@ export function useMonthlyReportsWithSubmitter(params?: {
     enabled: !reportsQ.isLoading,
   })
 }
+
+// ============== Activity Photos ==============
+
+export function useActivityPhotos(monthlyReportId: string | undefined) {
+  return useQuery({
+    queryKey: KEYS.activityPhotos(monthlyReportId ?? 'none'),
+    queryFn: () =>
+      monthlyReportId
+        ? activityPhotosSvc.listActivityPhotos(monthlyReportId)
+        : Promise.resolve([]),
+    enabled: !!monthlyReportId,
+  })
+}
+
+export function useActivityPhotoSignedUrls(
+  monthlyReportId: string | undefined,
+  photos: { storage_path: string }[]
+) {
+  const paths = photos.map((p) => p.storage_path)
+  return useQuery({
+    queryKey: [...KEYS.activityPhotoUrls(monthlyReportId ?? 'none'), paths],
+    queryFn: () => activityPhotosSvc.getSignedUrls(paths),
+    enabled: !!monthlyReportId && paths.length > 0,
+    staleTime: 30 * 60 * 1000, // 30 minutes — signed URLs valid for 1 hour
+  })
+}
+
+export function useUploadActivityPhoto() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: activityPhotosSvc.uploadActivityPhoto,
+    onSuccess: (row) => {
+      qc.invalidateQueries({
+        queryKey: KEYS.activityPhotos(row.report_id),
+      })
+      qc.invalidateQueries({
+        queryKey: KEYS.activityPhotoUrls(row.report_id),
+      })
+    },
+  })
+}
+
+export function useUpdatePhotoCaption() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      id: string
+      caption: string | null
+      reportId: string
+    }) => activityPhotosSvc.updatePhotoCaption(vars.id, vars.caption),
+    onSuccess: (_row, vars) => {
+      qc.invalidateQueries({
+        queryKey: KEYS.activityPhotos(vars.reportId),
+      })
+    },
+  })
+}
+
+export function useDeleteActivityPhoto() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      id: string
+      storagePath: string
+      reportId: string
+    }) => activityPhotosSvc.deleteActivityPhoto(vars.id, vars.storagePath),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({
+        queryKey: KEYS.activityPhotos(vars.reportId),
+      })
+      qc.invalidateQueries({
+        queryKey: KEYS.activityPhotoUrls(vars.reportId),
+      })
+    },
+  })
+}
+
+export function useDeleteActivityPhotos() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      ids: string[]
+      storagePaths: string[]
+      reportId: string
+    }) => activityPhotosSvc.deleteActivityPhotos(vars.ids, vars.storagePaths),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({
+        queryKey: KEYS.activityPhotos(vars.reportId),
+      })
+      qc.invalidateQueries({
+        queryKey: KEYS.activityPhotoUrls(vars.reportId),
+      })
+    },
+  })
+}
+
+export function useReorderActivityPhotos() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      updates: { id: string; sort_order: number }[]
+      reportId: string
+    }) => activityPhotosSvc.reorderActivityPhotos(vars.updates),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({
+        queryKey: KEYS.activityPhotos(vars.reportId),
+      })
+    },
+  })
+}
+

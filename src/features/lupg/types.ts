@@ -168,3 +168,6 @@ export interface UpsertMetricMonthInput {
   metric_code: string
   current_value: number
 }
+
+export type ActivityPhotoRow = Tables['lupg_activity_photos']['Row']
+export type ActivityPhotoInsert = Tables['lupg_activity_photos']['Insert']
