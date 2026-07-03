@@ -186,7 +186,7 @@ function buildStatusCounts(
   const unopened = Math.max(
     0,
     (effectiveKelompokList.length - scopedReports.length) *
-      sortedActivities.length
+    sortedActivities.length
   )
   counts.not_observed += missing + unopened
   return { counts, scopedReports, scopedRows, sortedActivities }

@@ -176,13 +176,33 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const triggerZoomTransition = useCallback(() => {
+    setIsTransitioning(true)
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current)
+    }
+    transitionTimeoutRef.current = setTimeout(() => {
+      setIsTransitioning(false)
+    }, 150) // 150ms matches the 0.15s transition
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const resetZoomAndPan = useCallback(() => {
     setZoom(1)
     setPan({ x: 0, y: 0 })
   }, [])
 
-  // Trackpad pinch-to-zoom & Ctrl+Scroll listener
+  // Trackpad pinch-to-zoom & Scroll panning listener
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       if (!isFullscreen) return
@@ -198,6 +218,12 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
           }
           return nextZoom
         })
+      } else if (zoom > 1) {
+        e.preventDefault()
+        setPan((p) => ({
+          x: p.x - e.deltaX,
+          y: p.y - e.deltaY,
+        }))
       }
     }
 
@@ -205,7 +231,7 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
     return () => {
       window.removeEventListener('wheel', handleWheel)
     }
-  }, [isFullscreen])
+  }, [isFullscreen, zoom])
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (zoom <= 1) return
@@ -226,6 +252,7 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
   }
 
   const handleDoubleClick = () => {
+    triggerZoomTransition()
     if (zoom > 1) {
       setZoom(1)
       setPan({ x: 0, y: 0 })
@@ -732,9 +759,10 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
                     )}
                     style={{
                       transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                      transition: isDragging
-                        ? 'none'
-                        : 'transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                      transition: isTransitioning
+                        ? 'transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                        : 'none',
+                      willChange: 'transform',
                     }}
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
@@ -755,6 +783,7 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
                     size='icon'
                     className='h-7 w-7 rounded-full hover:bg-muted'
                     onClick={() => {
+                      triggerZoomTransition()
                       setZoom((z) => {
                         const next = Math.max(1, z - 0.25)
                         if (next === 1) setPan({ x: 0, y: 0 })
@@ -772,7 +801,10 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
                     variant='ghost'
                     size='icon'
                     className='h-7 w-7 rounded-full hover:bg-muted'
-                    onClick={() => setZoom((z) => Math.min(4, z + 0.25))}
+                    onClick={() => {
+                      triggerZoomTransition()
+                      setZoom((z) => Math.min(4, z + 0.25))
+                    }}
                     disabled={zoom >= 4}
                   >
                     <Plus className='h-3.5 w-3.5' />
@@ -785,6 +817,7 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
                         size='sm'
                         className='h-7 px-2.5 rounded-full text-[10px] hover:bg-muted font-bold'
                         onClick={() => {
+                          triggerZoomTransition()
                           setZoom(1)
                           setPan({ x: 0, y: 0 })
                         }}
