@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { format } from 'date-fns'
 import {
   CheckIcon,
   ChevronLeftIcon,
@@ -7,13 +8,23 @@ import {
   DoubleArrowRightIcon,
   PlusCircledIcon,
 } from '@radix-ui/react-icons'
-import { format } from 'date-fns'
-import { id as idLocale } from 'date-fns/locale'
-import { Activity, ArrowDown, ArrowUp, ArrowUpDown, Search, X } from 'lucide-react'
 import {
   type RealtimeChannel,
   type RealtimePostgresChangesPayload,
 } from '@supabase/supabase-js'
+import { id as idLocale } from 'date-fns/locale'
+import {
+  Activity,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  CalendarDays,
+  Clock,
+  Search,
+  X,
+} from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { cn, getPageNumbers } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -46,8 +57,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { cn, getPageNumbers } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -139,12 +148,12 @@ function mapRow(row: DBAttendanceWithParticipant): LogAttendanceRecord {
     temp_group: row.temp_group,
     participant: row.participant
       ? {
-        id: row.participant.id,
-        name: row.participant.name,
-        gender: row.participant.gender as 'L' | 'P' | null,
-        group: resolveLookup(row.participant.group),
-        category: resolveLookup(row.participant.category),
-      }
+          id: row.participant.id,
+          name: row.participant.name,
+          gender: row.participant.gender as 'L' | 'P' | null,
+          group: resolveLookup(row.participant.group),
+          category: resolveLookup(row.participant.category),
+        }
       : null,
   }
 }
@@ -156,6 +165,76 @@ function displayOf(r: LogAttendanceRecord) {
     group: r.participant?.group?.value || r.temp_group || '-',
     category: r.participant?.category?.value || r.temp_category || '-',
   }
+}
+
+function AttendanceActivityItem({ record }: { record: LogAttendanceRecord }) {
+  const dateObj = record.timestamp ? new Date(record.timestamp) : new Date()
+  const dateStr = format(dateObj, 'd MMM yyyy', { locale: idLocale })
+  const timeStr = format(dateObj, 'HH:mm')
+  const isHadir = record.status === 'HADIR'
+  const statusLabel = isHadir ? 'Hadir' : 'Izin'
+  const d = displayOf(record)
+
+  return (
+    <article className='px-4 py-3.5'>
+      <div className='flex items-start justify-between gap-3'>
+        <div className='min-w-0'>
+          <h3 className='truncate text-sm font-semibold text-foreground'>
+            {d.name}
+          </h3>
+          <div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground'>
+            <span>{d.group}</span>
+            {d.category && d.category !== '-' && (
+              <>
+                <span aria-hidden='true'>·</span>
+                <span>{d.category}</span>
+              </>
+            )}
+          </div>
+        </div>
+        <Badge
+          variant='outline'
+          className={cn(
+            'shrink-0 rounded-sm border px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase',
+            isHadir
+              ? 'border-teal-200/50 bg-teal-100/30 text-teal-900 dark:border-teal-800/30 dark:text-teal-200'
+              : 'border-amber-200/50 bg-amber-100/30 text-amber-900 dark:border-amber-800/30 dark:text-amber-200'
+          )}
+        >
+          {statusLabel}
+        </Badge>
+      </div>
+
+      <div className='mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground'>
+        <span className='inline-flex items-center gap-1 tabular-nums'>
+          <CalendarDays className='h-3.5 w-3.5' />
+          {dateStr}
+        </span>
+        <span className='inline-flex items-center gap-1 tabular-nums'>
+          <Clock className='h-3.5 w-3.5' />
+          {timeStr}
+        </span>
+        {!record.participant && record.temp_name && (
+          <span className='font-medium text-amber-700 dark:text-amber-300'>
+            Belum terhubung
+          </span>
+        )}
+      </div>
+
+      {!isHadir && (
+        <div className='mt-3 rounded-md border border-border/70 bg-muted/30 px-3 py-2'>
+          <p className='text-xs font-medium text-foreground/90'>
+            {record.permission_reason || 'Izin'}
+          </p>
+          {record.permission_description && (
+            <p className='mt-1 text-xs leading-relaxed wrap-break-word text-muted-foreground'>
+              {record.permission_description}
+            </p>
+          )}
+        </div>
+      )}
+    </article>
+  )
 }
 
 // ── Filter option constants ────────────────────────────────────────────
@@ -198,7 +277,11 @@ function FacetedFilter({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant='outline' size='sm' className='h-8 border-dashed text-xs'>
+        <Button
+          variant='outline'
+          size='sm'
+          className='h-10 border-dashed text-xs sm:h-8'
+        >
           <PlusCircledIcon className='size-4' />
           {title}
           {selected.size > 0 && (
@@ -206,7 +289,7 @@ function FacetedFilter({
               <Separator orientation='vertical' className='mx-2 h-4' />
               <Badge
                 variant='secondary'
-                className='rounded-sm px-1 font-normal lg:hidden text-[10px]'
+                className='rounded-sm px-1 text-[10px] font-normal lg:hidden'
               >
                 {selected.size}
               </Badge>
@@ -214,7 +297,7 @@ function FacetedFilter({
                 {selected.size > 2 ? (
                   <Badge
                     variant='secondary'
-                    className='rounded-sm px-1 font-normal text-[10px]'
+                    className='rounded-sm px-1 text-[10px] font-normal'
                   >
                     {selected.size} dipilih
                   </Badge>
@@ -225,7 +308,7 @@ function FacetedFilter({
                       <Badge
                         variant='secondary'
                         key={o.value}
-                        className='rounded-sm px-1 font-normal text-[10px]'
+                        className='rounded-sm px-1 text-[10px] font-normal'
                       >
                         {o.label}
                       </Badge>
@@ -255,7 +338,7 @@ function FacetedFilter({
                   >
                     <div
                       className={cn(
-                        'flex size-4 items-center justify-center rounded-sm border border-primary mr-2',
+                        'mr-2 flex size-4 items-center justify-center rounded-sm border border-primary',
                         isSelected
                           ? 'bg-primary text-primary-foreground'
                           : 'opacity-50 [&_svg]:invisible'
@@ -312,15 +395,63 @@ function LogPagination({
 }: LogPaginationProps) {
   const totalPages = Math.ceil(totalRecords / pageSize) || 1
   const pageNumbers = getPageNumbers(currentPage, totalPages)
+  const firstRecord = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1
+  const lastRecord = Math.min(currentPage * pageSize, totalRecords)
+  const canGoPrevious = currentPage > 1
+  const canGoNext = currentPage < totalPages
+
+  const handlePageSizeChange = (size: number) => {
+    onPageSizeChange(size)
+    onPageChange(1)
+  }
 
   return (
-    <div className='flex items-center justify-between overflow-clip px-2 @max-2xl/content:flex-col-reverse @max-2xl/content:gap-4 py-3 border-t border-border/40'>
-      <div className='flex items-center gap-2'>
+    <div className='border-t border-border/40 px-3 py-3 sm:px-4'>
+      <div className='flex items-center justify-between gap-3 sm:hidden'>
+        <div className='min-w-0'>
+          <p className='flex items-center gap-1 text-xs font-medium text-foreground tabular-nums'>
+            <span>
+              {firstRecord}-{lastRecord}
+            </span>
+            <span>dari</span>
+            <span>{totalRecords}</span>
+          </p>
+          <p className='flex items-center gap-1 text-[11px] text-muted-foreground'>
+            <span>Halaman</span>
+            <span className='tabular-nums'>{currentPage}</span>
+            <span>dari</span>
+            <span className='tabular-nums'>{totalPages}</span>
+          </p>
+        </div>
+        <div className='flex items-center gap-1.5'>
+          <Button
+            variant='outline'
+            className='size-11 p-0'
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={!canGoPrevious}
+            aria-label='Halaman sebelumnya'
+          >
+            <ChevronLeftIcon className='h-4 w-4' />
+          </Button>
+          <Button
+            variant='outline'
+            className='size-11 p-0'
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={!canGoNext}
+            aria-label='Halaman berikutnya'
+          >
+            <ChevronRightIcon className='h-4 w-4' />
+          </Button>
+        </div>
+      </div>
+
+      <div className='mt-3 flex items-center justify-between gap-2 sm:hidden'>
+        <p className='text-xs font-medium text-muted-foreground'>Per halaman</p>
         <Select
           value={`${pageSize}`}
-          onValueChange={(val) => onPageSizeChange(Number(val))}
+          onValueChange={(val) => handlePageSizeChange(Number(val))}
         >
-          <SelectTrigger className='h-8 w-[70px] text-xs bg-transparent'>
+          <SelectTrigger className='h-10 w-[92px] bg-transparent text-xs'>
             <SelectValue placeholder={pageSize} />
           </SelectTrigger>
           <SelectContent side='top'>
@@ -331,69 +462,92 @@ function LogPagination({
             ))}
           </SelectContent>
         </Select>
-        <p className='text-xs font-medium text-muted-foreground'>Rows per page</p>
       </div>
 
-      <div className='flex items-center sm:space-x-6 lg:space-x-8'>
-        <div className='flex items-center justify-center text-xs font-medium text-muted-foreground'>
-          Page {currentPage} of {totalPages}
+      <div className='hidden items-center justify-between sm:flex'>
+        <div className='flex items-center gap-2'>
+          <Select
+            value={`${pageSize}`}
+            onValueChange={(val) => handlePageSizeChange(Number(val))}
+          >
+            <SelectTrigger className='h-8 w-[70px] bg-transparent text-xs'>
+              <SelectValue placeholder={pageSize} />
+            </SelectTrigger>
+            <SelectContent side='top'>
+              {[10, 20, 30, 40, 50].map((size) => (
+                <SelectItem key={size} value={`${size}`} className='text-xs'>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className='text-xs font-medium text-muted-foreground'>
+            Per halaman
+          </p>
         </div>
-        <div className='flex items-center space-x-1 sm:space-x-2'>
-          <Button
-            variant='outline'
-            className='size-8 p-0 hidden sm:flex'
-            onClick={() => onPageChange(1)}
-            disabled={currentPage === 1}
-          >
-            <span className='sr-only'>Go to first page</span>
-            <DoubleArrowLeftIcon className='h-4 w-4' />
-          </Button>
-          <Button
-            variant='outline'
-            className='size-8 p-0'
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            <span className='sr-only'>Go to previous page</span>
-            <ChevronLeftIcon className='h-4 w-4' />
-          </Button>
 
-          {/* Page number buttons */}
-          {pageNumbers.map((pageNumber, index) => (
-            <div key={`${pageNumber}-${index}`} className='flex items-center'>
-              {pageNumber === '...' ? (
-                <span className='px-1.5 text-xs text-muted-foreground'>...</span>
-              ) : (
-                <Button
-                  variant={currentPage === pageNumber ? 'default' : 'outline'}
-                  className='h-8 min-w-8 px-2 text-xs font-semibold'
-                  onClick={() => onPageChange(pageNumber as number)}
-                >
-                  <span className='sr-only'>Go to page {pageNumber}</span>
-                  {pageNumber}
-                </Button>
-              )}
-            </div>
-          ))}
+        <div className='flex items-center sm:space-x-6 lg:space-x-8'>
+          <div className='flex items-center justify-center text-xs font-medium text-muted-foreground'>
+            Halaman {currentPage} dari {totalPages}
+          </div>
+          <div className='flex items-center space-x-1 sm:space-x-2'>
+            <Button
+              variant='outline'
+              className='hidden size-8 p-0 sm:flex'
+              onClick={() => onPageChange(1)}
+              disabled={!canGoPrevious}
+            >
+              <span className='sr-only'>Ke halaman pertama</span>
+              <DoubleArrowLeftIcon className='h-4 w-4' />
+            </Button>
+            <Button
+              variant='outline'
+              className='size-8 p-0'
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={!canGoPrevious}
+            >
+              <span className='sr-only'>Ke halaman sebelumnya</span>
+              <ChevronLeftIcon className='h-4 w-4' />
+            </Button>
 
-          <Button
-            variant='outline'
-            className='size-8 p-0'
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            <span className='sr-only'>Go to next page</span>
-            <ChevronRightIcon className='h-4 w-4' />
-          </Button>
-          <Button
-            variant='outline'
-            className='size-8 p-0 hidden sm:flex'
-            onClick={() => onPageChange(totalPages)}
-            disabled={currentPage === totalPages}
-          >
-            <span className='sr-only'>Go to last page</span>
-            <DoubleArrowRightIcon className='h-4 w-4' />
-          </Button>
+            {pageNumbers.map((pageNumber, index) => (
+              <div key={`${pageNumber}-${index}`} className='flex items-center'>
+                {pageNumber === '...' ? (
+                  <span className='px-1.5 text-xs text-muted-foreground'>
+                    ...
+                  </span>
+                ) : (
+                  <Button
+                    variant={currentPage === pageNumber ? 'default' : 'outline'}
+                    className='h-8 min-w-8 px-2 text-xs font-semibold'
+                    onClick={() => onPageChange(pageNumber as number)}
+                  >
+                    <span className='sr-only'>Ke halaman {pageNumber}</span>
+                    {pageNumber}
+                  </Button>
+                )}
+              </div>
+            ))}
+
+            <Button
+              variant='outline'
+              className='size-8 p-0'
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={!canGoNext}
+            >
+              <span className='sr-only'>Ke halaman berikutnya</span>
+              <ChevronRightIcon className='h-4 w-4' />
+            </Button>
+            <Button
+              variant='outline'
+              className='hidden size-8 p-0 sm:flex'
+              onClick={() => onPageChange(totalPages)}
+              disabled={!canGoNext}
+            >
+              <span className='sr-only'>Ke halaman terakhir</span>
+              <DoubleArrowRightIcon className='h-4 w-4' />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -401,7 +555,6 @@ function LogPagination({
 }
 
 // ── Main component ────────────────────────────────────────────────────
-
 
 const SELECT_QUERY = `
   id,
@@ -446,7 +599,13 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
   }, [searchQuery, kelompokFilter, kategoriFilter, statusFilter])
 
   // ── Sort state ──
-  type SortField = 'timestamp' | 'name' | 'group' | 'category' | 'status' | 'permission_reason'
+  type SortField =
+    | 'timestamp'
+    | 'name'
+    | 'group'
+    | 'category'
+    | 'status'
+    | 'permission_reason'
   const [sortField, setSortField] = useState<SortField>('timestamp')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
@@ -459,25 +618,29 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
     }
   }
 
-  const renderSortableHeader = (field: SortField, label: string, justifyEnd = false) => {
+  const renderSortableHeader = (
+    field: SortField,
+    label: string,
+    justifyEnd = false
+  ) => {
     const isActive = sortField === field
     return (
       <button
         onClick={() => handleSort(field)}
         className={cn(
-          'group inline-flex items-center gap-1 font-semibold text-[10px] text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors cursor-pointer select-none bg-transparent border-none p-0 outline-hidden',
-          justifyEnd && 'justify-end w-full'
+          'group inline-flex cursor-pointer items-center gap-1 border-none bg-transparent p-0 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase outline-hidden transition-colors select-none hover:text-foreground',
+          justifyEnd && 'w-full justify-end'
         )}
       >
         <span>{label}</span>
         {isActive ? (
           sortDirection === 'asc' ? (
-            <ArrowUp className='h-3 w-3 text-foreground/90 shrink-0' />
+            <ArrowUp className='h-3 w-3 shrink-0 text-foreground/90' />
           ) : (
-            <ArrowDown className='h-3 w-3 text-foreground/90 shrink-0' />
+            <ArrowDown className='h-3 w-3 shrink-0 text-foreground/90' />
           )
         ) : (
-          <ArrowUpDown className='h-3 w-3 text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors shrink-0' />
+          <ArrowUpDown className='h-3 w-3 shrink-0 text-muted-foreground/30 transition-colors group-hover:text-muted-foreground/60' />
         )}
       </button>
     )
@@ -688,7 +851,15 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
       if (valA > valB) return sortDirection === 'asc' ? 1 : -1
       return 0
     })
-  }, [allRecords, searchQuery, kelompokFilter, kategoriFilter, statusFilter, sortField, sortDirection])
+  }, [
+    allRecords,
+    searchQuery,
+    kelompokFilter,
+    kategoriFilter,
+    statusFilter,
+    sortField,
+    sortDirection,
+  ])
 
   // ── Paginated records ──
   const paginatedRecords = useMemo(() => {
@@ -725,41 +896,41 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
 
   // ── Render ──
   return (
-    <Card className='border-border/60 bg-card/45 backdrop-blur-md'>
-      <CardHeader className='flex flex-row items-start justify-between py-4 border-b border-border/40 gap-4'>
+    <Card className='border-border/60 bg-card'>
+      <CardHeader className='flex flex-row items-start justify-between gap-4 border-b border-border/40 py-4'>
         <div className='flex flex-col gap-1'>
-          <CardTitle className='text-sm font-semibold tracking-tight flex items-center gap-2'>
+          <CardTitle className='flex items-center gap-2 text-sm font-semibold tracking-tight'>
             <div className='relative flex h-2 w-2 shrink-0'>
               <span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/30 opacity-75' />
               <span className='relative inline-flex h-2 w-2 rounded-full bg-emerald-500' />
             </div>
-            <span>Attendance Activity Log</span>
+            <span>Aktivitas Absensi</span>
           </CardTitle>
-          <p className='text-xs text-muted-foreground font-normal leading-relaxed max-w-[70ch]'>
-            Real-time stream of check-ins and attendance updates submitted from all groups.
+          <p className='max-w-[70ch] text-xs leading-relaxed font-normal text-muted-foreground'>
+            Pembaruan hadir dan izin dari form yang dibagikan.
           </p>
         </div>
         <Badge
           variant='outline'
-          className='bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px] font-bold px-2 py-0.5 tracking-wider uppercase rounded-sm shrink-0'
+          className='shrink-0 rounded-sm border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-emerald-600 uppercase dark:text-emerald-400'
         >
-          Live Feed
+          Langsung
         </Badge>
       </CardHeader>
 
       {/* ── Toolbar ── */}
-      <div className='flex flex-col gap-2 px-4 py-3 border-b border-border/30'>
+      <div className='flex flex-col gap-2 border-b border-border/30 px-4 py-3'>
         <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
           <div className='relative w-full sm:w-[200px] lg:w-[280px]'>
-            <Search className='absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground' />
+            <Search className='absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground' />
             <Input
               placeholder='Cari peserta...'
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className='h-8 pl-8 text-xs'
+              className='h-10 pl-8 text-sm sm:h-8 sm:text-xs'
             />
           </div>
-          <div className='flex gap-x-2 flex-wrap'>
+          <div className='flex flex-wrap gap-x-2'>
             <FacetedFilter
               title='Kelompok'
               options={KELOMPOK_OPTIONS}
@@ -791,7 +962,7 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
                 setKategoriFilter(new Set())
                 setStatusFilter(new Set())
               }}
-              className='h-8 px-2 lg:px-3 text-xs'
+              className='h-10 px-2 text-xs sm:h-8 lg:px-3'
             >
               Reset
               <X className='ms-2 h-4 w-4' />
@@ -803,12 +974,12 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
       <CardContent className='p-0'>
         {isLoading ? (
           <div className='flex flex-col items-center justify-center py-12 text-center text-muted-foreground'>
-            <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-primary mb-2' />
+            <div className='mb-2 h-5 w-5 animate-spin rounded-full border-b-2 border-primary' />
             <p className='text-xs font-medium'>Memuat data aktivitas...</p>
           </div>
         ) : filteredRecords.length === 0 ? (
           <div className='flex flex-col items-center justify-center py-16 text-center text-muted-foreground'>
-            <div className='rounded-full bg-muted p-2.5 mb-2.5'>
+            <div className='mb-2.5 rounded-full bg-muted p-2.5'>
               <Activity className='h-5 w-5 text-muted-foreground' />
             </div>
             <p className='text-xs font-medium'>
@@ -817,122 +988,130 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
                 : 'Belum ada aktivitas absensi'}
             </p>
             {!isFiltered && (
-              <p className='text-[10px] text-muted-foreground/80 mt-0.5'>
+              <p className='mt-0.5 text-[10px] text-muted-foreground/80'>
                 Menunggu pencatatan absensi secara langsung...
               </p>
             )}
           </div>
         ) : (
-          <div className='overflow-x-auto'>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className='w-[130px] ps-4 py-3'>
-                    {renderSortableHeader('timestamp', 'Tanggal')}
-                  </TableHead>
-                  <TableHead className='w-[90px] py-3 text-right'>
-                    {renderSortableHeader('timestamp', 'Waktu', true)}
-                  </TableHead>
-                  <TableHead className='py-3'>
-                    {renderSortableHeader('name', 'Nama Peserta')}
-                  </TableHead>
-                  <TableHead className='py-3'>
-                    {renderSortableHeader('group', 'Kelompok')}
-                  </TableHead>
-                  <TableHead className='py-3'>
-                    {renderSortableHeader('category', 'Kategori')}
-                  </TableHead>
-                  <TableHead className='py-3'>
-                    {renderSortableHeader('status', 'Status')}
-                  </TableHead>
-                  <TableHead className='pe-4 py-3'>
-                    {renderSortableHeader('permission_reason', 'Alasan Izin')}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedRecords.map((record) => {
-                  const dateObj = record.timestamp
-                    ? new Date(record.timestamp)
-                    : new Date()
-                  const dateStr = format(dateObj, 'dd MMM yyyy', {
-                    locale: idLocale,
-                  })
-                  const timeStr = format(dateObj, 'HH:mm')
+          <>
+            <div className='divide-y divide-border/40 md:hidden'>
+              {paginatedRecords.map((record) => (
+                <AttendanceActivityItem key={record.id} record={record} />
+              ))}
+            </div>
 
-                  const isHadir = record.status === 'HADIR'
-                  const statusLabel = isHadir ? 'Hadir' : 'Izin'
+            <div className='hidden overflow-x-auto md:block'>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className='w-[130px] py-3 ps-4'>
+                      {renderSortableHeader('timestamp', 'Tanggal')}
+                    </TableHead>
+                    <TableHead className='w-[90px] py-3 text-right'>
+                      {renderSortableHeader('timestamp', 'Waktu', true)}
+                    </TableHead>
+                    <TableHead className='py-3'>
+                      {renderSortableHeader('name', 'Nama Peserta')}
+                    </TableHead>
+                    <TableHead className='py-3'>
+                      {renderSortableHeader('group', 'Kelompok')}
+                    </TableHead>
+                    <TableHead className='py-3'>
+                      {renderSortableHeader('category', 'Kategori')}
+                    </TableHead>
+                    <TableHead className='py-3'>
+                      {renderSortableHeader('status', 'Status')}
+                    </TableHead>
+                    <TableHead className='py-3 pe-4'>
+                      {renderSortableHeader('permission_reason', 'Alasan Izin')}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedRecords.map((record) => {
+                    const dateObj = record.timestamp
+                      ? new Date(record.timestamp)
+                      : new Date()
+                    const dateStr = format(dateObj, 'dd MMM yyyy', {
+                      locale: idLocale,
+                    })
+                    const timeStr = format(dateObj, 'HH:mm')
 
-                  const d = displayOf(record)
+                    const isHadir = record.status === 'HADIR'
+                    const statusLabel = isHadir ? 'Hadir' : 'Izin'
 
-                  return (
-                    <TableRow
-                      key={record.id}
-                      className='hover:bg-muted/30 transition-all duration-200 animate-in fade-in slide-in-from-top-1.5'
-                    >
-                      <TableCell className='ps-4 font-medium text-xs text-foreground/90 tabular-nums'>
-                        {dateStr}
-                      </TableCell>
-                      <TableCell className='text-right text-xs text-muted-foreground tabular-nums'>
-                        {timeStr}
-                      </TableCell>
-                      <TableCell className='py-2.5'>
-                        <div className='flex flex-col'>
-                          <span className='font-semibold text-xs text-foreground'>
-                            {d.name}
-                          </span>
-                          {!record.participant && record.temp_name && (
-                            <span className='text-[10px] text-amber-600 font-medium'>
-                              (Belum terhubung)
+                    const d = displayOf(record)
+
+                    return (
+                      <TableRow
+                        key={record.id}
+                        className='slide-in-from-top-1.5 animate-in transition-all duration-200 fade-in hover:bg-muted/30'
+                      >
+                        <TableCell className='ps-4 text-xs font-medium text-foreground/90 tabular-nums'>
+                          {dateStr}
+                        </TableCell>
+                        <TableCell className='text-right text-xs text-muted-foreground tabular-nums'>
+                          {timeStr}
+                        </TableCell>
+                        <TableCell className='py-2.5'>
+                          <div className='flex flex-col'>
+                            <span className='text-xs font-semibold text-foreground'>
+                              {d.name}
                             </span>
+                            {!record.participant && record.temp_name && (
+                              <span className='text-[10px] font-medium text-amber-600'>
+                                (Belum terhubung)
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className='text-xs text-foreground/80'>
+                          {d.group}
+                        </TableCell>
+                        <TableCell className='text-xs'>
+                          {d.category && d.category !== '-' ? (
+                            <Badge
+                              variant='outline'
+                              className='rounded-sm border-border/70 px-2 py-0 text-[10px] font-semibold text-foreground/85'
+                            >
+                              {d.category}
+                            </Badge>
+                          ) : (
+                            <span className='text-muted-foreground'>-</span>
                           )}
-                        </div>
-                      </TableCell>
-                      <TableCell className='text-xs text-foreground/80'>
-                        {d.group}
-                      </TableCell>
-                      <TableCell className='text-xs'>
-                        {d.category && d.category !== '-' ? (
+                        </TableCell>
+                        <TableCell className='text-xs'>
                           <Badge
                             variant='outline'
-                            className='text-[10px] font-semibold px-2 py-0 border-border/70 text-foreground/85 rounded-sm'
+                            className={cn(
+                              'rounded-sm border px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase',
+                              isHadir
+                                ? 'border-teal-200/50 bg-teal-100/30 text-teal-900 dark:border-teal-800/30 dark:text-teal-200'
+                                : 'border-amber-200/50 bg-amber-100/30 text-amber-900 dark:border-amber-800/30 dark:text-amber-200'
+                            )}
                           >
-                            {d.category}
+                            {statusLabel}
                           </Badge>
-                        ) : (
-                          <span className='text-muted-foreground'>-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className='text-xs'>
-                        <Badge
-                          variant='outline'
-                          className={cn(
-                            'text-[10px] font-bold px-2 py-0.5 rounded-sm tracking-wide border uppercase',
-                            isHadir
-                              ? 'bg-teal-100/30 text-teal-900 dark:text-teal-200 border-teal-200/50 dark:border-teal-800/30'
-                              : 'bg-amber-100/30 text-amber-900 dark:text-amber-200 border-amber-200/50 dark:border-amber-800/30'
-                          )}
-                        >
-                          {statusLabel}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className='pe-4 text-xs py-2'>
-                        <div className='flex flex-col gap-0.5'>
-                          <span className='font-medium text-foreground/90'>
-                            {record.permission_reason || '-'}
-                          </span>
-                          {record.permission_description && (
-                            <span className='text-[10px] text-muted-foreground whitespace-pre-wrap wrap-break-word leading-relaxed max-w-[240px]'>
-                              {record.permission_description}
+                        </TableCell>
+                        <TableCell className='py-2 pe-4 text-xs'>
+                          <div className='flex flex-col gap-0.5'>
+                            <span className='font-medium text-foreground/90'>
+                              {record.permission_reason || '-'}
                             </span>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
+                            {record.permission_description && (
+                              <span className='max-w-[240px] text-[10px] leading-relaxed wrap-break-word whitespace-pre-wrap text-muted-foreground'>
+                                {record.permission_description}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
             <LogPagination
               currentPage={currentPage}
               pageSize={pageSize}
@@ -940,7 +1119,7 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
               onPageChange={setCurrentPage}
               onPageSizeChange={setPageSize}
             />
-          </div>
+          </>
         )}
       </CardContent>
     </Card>
