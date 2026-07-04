@@ -451,7 +451,7 @@ function LogPagination({
           value={`${pageSize}`}
           onValueChange={(val) => handlePageSizeChange(Number(val))}
         >
-          <SelectTrigger className='h-10 w-[92px] bg-transparent text-xs'>
+          <SelectTrigger className='h-10 w-23 bg-transparent text-xs'>
             <SelectValue placeholder={pageSize} />
           </SelectTrigger>
           <SelectContent side='top'>
@@ -470,7 +470,7 @@ function LogPagination({
             value={`${pageSize}`}
             onValueChange={(val) => handlePageSizeChange(Number(val))}
           >
-            <SelectTrigger className='h-8 w-[70px] bg-transparent text-xs'>
+            <SelectTrigger className='h-8 w-17.5 bg-transparent text-xs'>
               <SelectValue placeholder={pageSize} />
             </SelectTrigger>
             <SelectContent side='top'>
@@ -921,7 +921,7 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
       {/* ── Toolbar ── */}
       <div className='flex flex-col gap-2 border-b border-border/30 px-4 py-3'>
         <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
-          <div className='relative w-full sm:w-[200px] lg:w-[280px]'>
+          <div className='relative w-full sm:w-50 lg:w-70'>
             <Search className='absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground' />
             <Input
               placeholder='Cari peserta...'
@@ -1005,10 +1005,10 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className='w-[130px] py-3 ps-4'>
+                    <TableHead className='w-32.5 py-3 ps-4'>
                       {renderSortableHeader('timestamp', 'Tanggal')}
                     </TableHead>
-                    <TableHead className='w-[90px] py-3 text-right'>
+                    <TableHead className='w-22.5 py-3 text-right'>
                       {renderSortableHeader('timestamp', 'Waktu', true)}
                     </TableHead>
                     <TableHead className='py-3'>
@@ -1100,7 +1100,7 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
                               {record.permission_reason || '-'}
                             </span>
                             {record.permission_description && (
-                              <span className='max-w-[240px] text-[10px] leading-relaxed wrap-break-word whitespace-pre-wrap text-muted-foreground'>
+                              <span className='max-w-60 text-[10px] leading-relaxed wrap-break-word whitespace-pre-wrap text-muted-foreground'>
                                 {record.permission_description}
                               </span>
                             )}
