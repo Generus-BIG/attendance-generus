@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Loader2, Maximize2, SlidersHorizontal, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Loader2, Maximize2, SlidersHorizontal, X, Minus, Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -166,9 +166,101 @@ function AnimationControls() {
 function PresentationInner({ monthKey, kelompokFilter }: Props) {
   const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
+  const slideContainerRef = useRef<HTMLDivElement>(null)
   const [slideIndex, setSlideIndex] = useState(0)
   const [direction, setDirection] = useState(1) // 1 = next, -1 = prev
   const [isFullscreen, setIsFullscreen] = useState(false)
+
+  // Zoom & Pan states
+  const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const triggerZoomTransition = useCallback(() => {
+    setIsTransitioning(true)
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current)
+    }
+    transitionTimeoutRef.current = setTimeout(() => {
+      setIsTransitioning(false)
+    }, 150) // 150ms matches the 0.15s transition
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const resetZoomAndPan = useCallback(() => {
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
+  }, [])
+
+  // Trackpad pinch-to-zoom & Scroll panning listener
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (!isFullscreen) return
+      
+      if (e.ctrlKey) {
+        e.preventDefault()
+        const factor = 0.02
+        const delta = -e.deltaY * factor
+        setZoom((z) => {
+          const nextZoom = Math.max(1, Math.min(4, z + delta))
+          if (nextZoom === 1) {
+            setPan({ x: 0, y: 0 })
+          }
+          return nextZoom
+        })
+      } else if (zoom > 1) {
+        e.preventDefault()
+        setPan((p) => ({
+          x: p.x - e.deltaX,
+          y: p.y - e.deltaY,
+        }))
+      }
+    }
+
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    return () => {
+      window.removeEventListener('wheel', handleWheel)
+    }
+  }, [isFullscreen, zoom])
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoom <= 1) return
+    setIsDragging(true)
+    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y })
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || zoom <= 1) return
+    setPan({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y,
+    })
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  const handleDoubleClick = () => {
+    triggerZoomTransition()
+    if (zoom > 1) {
+      setZoom(1)
+      setPan({ x: 0, y: 0 })
+    } else {
+      setZoom(2)
+      setPan({ x: 0, y: 0 })
+    }
+  }
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement)
@@ -520,20 +612,22 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
     if (slideIndex < slides.length - 1) {
       setDirection(1)
       setSlideIndex((i) => i + 1)
+      resetZoomAndPan()
     }
-  }, [slideIndex, slides.length])
+  }, [slideIndex, slides.length, resetZoomAndPan])
 
   const handlePrev = useCallback(() => {
     if (slideIndex > 0) {
       setDirection(-1)
       setSlideIndex((i) => i - 1)
+      resetZoomAndPan()
     }
-  }, [slideIndex])
+  }, [slideIndex, resetZoomAndPan])
 
   const clampedIndex = Math.min(slideIndex, Math.max(slides.length - 1, 0))
   const currentSlide = slides[clampedIndex]
 
-  const exit = () => {
+  const exit = useCallback(() => {
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {})
     }
@@ -541,7 +635,7 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
     // sent to /admin/lupg/recap, which was disorienting because that's not
     // where they launched from.
     navigate({ to: '/admin/lupg/presentation' })
-  }
+  }, [navigate])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -558,15 +652,17 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
         e.preventDefault()
         setDirection(-1)
         setSlideIndex(0)
+        resetZoomAndPan()
       } else if (e.key === 'End') {
         e.preventDefault()
         setDirection(1)
         setSlideIndex(Math.max(slides.length - 1, 0))
+        resetZoomAndPan()
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [slides.length, handleNext, handlePrev])
+  }, [slides.length, handleNext, handlePrev, resetZoomAndPan, exit])
 
   const requestFullscreen = () => {
     if (!document.fullscreenElement && containerRef.current) {
@@ -627,36 +723,112 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
               Memuat...
             </div>
           ) : (
-            <AnimatePresence mode='wait' custom={direction}>
-              <motion.div
-                key={clampedIndex}
-                custom={direction}
-                variants={{
-                  enter: (dir: number) => ({
-                    x: dir > 0 ? '5vw' : '-5vw',
-                    opacity: 0,
-                  }),
-                  center: {
-                    x: 0,
-                    opacity: 1,
-                  },
-                  exit: (dir: number) => ({
-                    x: dir > 0 ? '-5vw' : '5vw',
-                    opacity: 0,
-                  }),
-                }}
-                initial='enter'
-                animate='center'
-                exit='exit'
-                transition={{
-                  x: { type: 'spring', stiffness: 300, damping: 30 },
-                  opacity: { duration: 0.15 },
-                }}
-                className='h-full w-full'
-              >
-                {currentSlide.render()}
-              </motion.div>
-            </AnimatePresence>
+            <>
+              <AnimatePresence mode='wait' custom={direction}>
+                <motion.div
+                  key={clampedIndex}
+                  custom={direction}
+                  variants={{
+                    enter: (dir: number) => ({
+                      x: dir > 0 ? '5vw' : '-5vw',
+                      opacity: 0,
+                    }),
+                    center: {
+                      x: 0,
+                      opacity: 1,
+                    },
+                    exit: (dir: number) => ({
+                      x: dir > 0 ? '-5vw' : '5vw',
+                      opacity: 0,
+                    }),
+                  }}
+                  initial='enter'
+                  animate='center'
+                  exit='exit'
+                  transition={{
+                    x: { type: 'spring', stiffness: 300, damping: 30 },
+                    opacity: { duration: 0.15 },
+                  }}
+                  className='h-full w-full overflow-hidden'
+                >
+                  <div
+                    ref={slideContainerRef}
+                    className={cn(
+                      'h-full w-full origin-center select-none',
+                      zoom > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''
+                    )}
+                    style={{
+                      transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                      transition: isTransitioning
+                        ? 'transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                        : 'none',
+                      willChange: 'transform',
+                    }}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    onDoubleClick={handleDoubleClick}
+                  >
+                    {currentSlide.render()}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Floating Zoom Controls - visible during fullscreen */}
+              {isFullscreen && (
+                <div className='absolute bottom-6 right-6 z-50 flex items-center gap-1 bg-background/85 backdrop-blur border rounded-full px-2 py-1 shadow-lg select-none text-xs font-medium text-foreground transition-opacity hover:opacity-100 opacity-40 duration-200'>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-7 w-7 rounded-full hover:bg-muted'
+                    onClick={() => {
+                      triggerZoomTransition()
+                      setZoom((z) => {
+                        const next = Math.max(1, z - 0.25)
+                        if (next === 1) setPan({ x: 0, y: 0 })
+                        return next
+                      })
+                    }}
+                    disabled={zoom <= 1}
+                  >
+                    <Minus className='h-3.5 w-3.5' />
+                  </Button>
+                  <span className='min-w-10 text-center font-mono text-[11px] font-semibold'>
+                    {Math.round(zoom * 100)}%
+                  </span>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-7 w-7 rounded-full hover:bg-muted'
+                    onClick={() => {
+                      triggerZoomTransition()
+                      setZoom((z) => Math.min(4, z + 0.25))
+                    }}
+                    disabled={zoom >= 4}
+                  >
+                    <Plus className='h-3.5 w-3.5' />
+                  </Button>
+                  {zoom > 1 && (
+                    <>
+                      <span className='h-4 w-px bg-border mx-1' />
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        className='h-7 px-2.5 rounded-full text-[10px] hover:bg-muted font-bold'
+                        onClick={() => {
+                          triggerZoomTransition()
+                          setZoom(1)
+                          setPan({ x: 0, y: 0 })
+                        }}
+                      >
+                        Reset
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
         <Button
