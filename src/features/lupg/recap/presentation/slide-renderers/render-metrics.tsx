@@ -11,17 +11,9 @@ import {
 } from '../../../types'
 import { GenerusPiketAggregateBars } from '../charts/generus-piket-aggregate-bars'
 import { PairedMonthBars } from '../charts/paired-month-bars'
-import {
-  EditorialTable,
-  EditorialTableBody,
-  EditorialTableCell,
-  EditorialTableHead,
-  EditorialTableHeader,
-  EditorialTableRow,
-  TotalRow,
-} from '../components/editorial-table'
 import { SlideFrame } from '../components/slide-frame'
 import { type Slide } from '../slides'
+import { usePresPalette } from '../use-pres-palette'
 
 // Kategori display + metric-code mapping
 const KATEGORI_ORDER = ['ACR', 'APR', 'AR', 'GPN_A', 'GPN_B'] as const
@@ -213,7 +205,22 @@ function MetricsDesaTable({
   reports: MonthlyReportRow[]
   metricReports: MetricReportRow[]
 }) {
+  const p = usePresPalette()
   const maps = buildCurrentMetricMaps(reports, metricReports)
+
+  const isModern = typeof window !== 'undefined' && document.documentElement.getAttribute('data-palette') === 'modern-natural'
+
+  const colorCatBg = isModern ? '#ffffff' : `color-mix(in oklch, ${p.primary} 3%, ${p.bg})`
+  const colorPiketBg = isModern ? '#ececf4' : `color-mix(in oklch, ${p.primary} 9%, ${p.bg})`
+  const colorSummaryBg = isModern ? '#dae6f2' : `color-mix(in oklch, ${p.primary} 15%, ${p.bg})`
+  const colorLabelSummaryBg = isModern ? '#d3cdca' : `color-mix(in oklch, ${p.primary} 20%, ${p.bg})`
+  const colorDivider = isModern ? '#869fc3' : `color-mix(in oklch, ${p.primary} 35%, ${p.bg})`
+
+  const colorTextCat = isModern ? '#0f172a' : p.ink
+  const colorTextPiket = isModern ? '#2a2b77' : `color-mix(in oklch, ${p.primary} 85%, ${p.ink})`
+  const colorTextSummary = isModern ? '#2a2b77' : p.brandAccent
+  const colorFinalAvgBg = isModern ? '#2772b2' : p.primary
+
   const groups: Array<{
     key: KategoriCode
     attendanceRows: KategoriCode[]
@@ -300,14 +307,15 @@ function MetricsDesaTable({
   })
 
   const headerStyle = {
-    background: '#36328f',
-    color: '#f8fafc',
-    fontFamily: 'Montserrat, sans-serif',
-    fontSize: 'clamp(0.62rem, 0.82vw, 0.95rem)',
-    fontWeight: 800,
-    letterSpacing: '0.02em',
-    lineHeight: 1.15,
-  } as const
+    background: p.primary,
+    color: p.primaryFg,
+    fontFamily: p.fontMono,
+    fontSize: 'clamp(0.65rem, 0.8cqw, 0.85rem)',
+    fontWeight: 700,
+    letterSpacing: '0.05em',
+    lineHeight: 1.2,
+    textTransform: 'uppercase' as const,
+  }
 
   return (
     <div className='h-full overflow-hidden'>
@@ -352,10 +360,10 @@ function MetricsDesaTable({
           {rows.map((row) => {
             const rowBg =
               row.tone === 'summary'
-                ? '#d9e9f7'
+                ? colorSummaryBg
                 : row.tone === 'piket'
-                  ? '#ececf4'
-                  : '#f7f8ff'
+                  ? colorPiketBg
+                  : colorCatBg
             return (
               <tr
                 key={row.key}
@@ -363,9 +371,14 @@ function MetricsDesaTable({
                   background: rowBg,
                   borderTop:
                     row.startsGroup && row.key !== 'ACR-attendance'
-                      ? 'clamp(0.6rem, 1.4vh, 1.25rem) solid #83a6d8'
+                      ? `clamp(0.4rem, 1vh, 0.8rem) solid ${colorDivider}`
                       : undefined,
-                  color: row.tone === 'category' ? '#0f172a' : '#211c8b',
+                  color:
+                    row.tone === 'category'
+                      ? colorTextCat
+                      : row.tone === 'summary'
+                        ? colorTextSummary
+                        : colorTextPiket,
                   fontSize: 'clamp(0.62rem, 0.82vw, 0.96rem)',
                   fontWeight: row.tone === 'summary' ? 800 : 600,
                   lineHeight: 1.18,
@@ -374,7 +387,8 @@ function MetricsDesaTable({
                 <td
                   className='px-2 py-1.5'
                   style={{
-                    background: row.tone === 'summary' ? '#d3d0d0' : undefined,
+                    background: row.tone === 'summary' ? colorLabelSummaryBg : undefined,
+                    fontWeight: 700,
                   }}
                 >
                   {row.label}
@@ -389,12 +403,203 @@ function MetricsDesaTable({
                 ))}
                 <td
                   className='px-2 py-1.5 text-center'
-                  style={{
-                    background: row.tone === 'summary' ? '#2f7fbd' : undefined,
-                    color: row.tone === 'summary' ? '#f8fafc' : undefined,
-                  }}
+                  style={
+                    row.tone === 'summary'
+                      ? {
+                          background: colorFinalAvgBg,
+                          color: p.primaryFg,
+                          fontWeight: 800,
+                        }
+                      : {
+                          fontWeight: 700,
+                        }
+                  }
                 >
                   {formatPct(row.desaAvg)}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+// ---------- Kelompok Metric Table Component ----------
+
+interface KelompokMetricTableRow {
+  key: string
+  label: string
+  values: Array<number | null>
+  avg: number | null
+  tone: 'category' | 'piket' | 'summary'
+  startsGroup?: boolean
+}
+
+function MetricsKelompokTable({
+  monthKeys,
+  rowsByKategori,
+  summaryGenerusAvg,
+  summaryPiketAvg,
+}: {
+  monthKeys: string[]
+  rowsByKategori: Array<{
+    kat: KategoriCode
+    kehadiranRow: { label: string; monthly: Array<number | null>; avg: number | null }
+    piketRow: { label: string; monthly: Array<number | null>; avg: number | null }
+  }>
+  summaryGenerusAvg: number | null
+  summaryPiketAvg: number | null
+}) {
+  const p = usePresPalette()
+
+  const isModern = typeof window !== 'undefined' && document.documentElement.getAttribute('data-palette') === 'modern-natural'
+
+  const colorCatBg = isModern ? '#ffffff' : `color-mix(in oklch, ${p.primary} 3%, ${p.bg})`
+  const colorPiketBg = isModern ? '#ececf4' : `color-mix(in oklch, ${p.primary} 9%, ${p.bg})`
+  const colorSummaryBg = isModern ? '#dae6f2' : `color-mix(in oklch, ${p.primary} 15%, ${p.bg})`
+  const colorLabelSummaryBg = isModern ? '#d3cdca' : `color-mix(in oklch, ${p.primary} 20%, ${p.bg})`
+  const colorDivider = isModern ? '#869fc3' : `color-mix(in oklch, ${p.primary} 35%, ${p.bg})`
+
+  const colorTextCat = isModern ? '#0f172a' : p.ink
+  const colorTextPiket = isModern ? '#2a2b77' : `color-mix(in oklch, ${p.primary} 85%, ${p.ink})`
+  const colorTextSummary = isModern ? '#2a2b77' : p.brandAccent
+  const colorFinalAvgBg = isModern ? '#2772b2' : p.primary
+
+  const rows: KelompokMetricTableRow[] = []
+  rowsByKategori.forEach((g, gi) => {
+    rows.push({
+      key: `${g.kat}-kehadiran`,
+      label: g.kehadiranRow.label,
+      values: g.kehadiranRow.monthly,
+      avg: g.kehadiranRow.avg,
+      tone: 'category',
+      startsGroup: gi > 0,
+    })
+    rows.push({
+      key: `${g.kat}-piket`,
+      label: `Piket LUPG ${g.kehadiranRow.label.replace(' Intensif', '')}`,
+      values: g.piketRow.monthly,
+      avg: g.piketRow.avg,
+      tone: 'piket',
+    })
+  })
+
+  const monthlyGenerusAvg = monthKeys.map((_, i) =>
+    avgOrNull(rowsByKategori.map((g) => g.kehadiranRow.monthly[i]))
+  )
+  const monthlyPiketAvg = monthKeys.map((_, i) =>
+    avgOrNull(rowsByKategori.map((g) => g.piketRow.monthly[i]))
+  )
+
+  rows.push({
+    key: 'summary-generus',
+    label: 'RATA² KEHADIRAN GENERUS',
+    values: monthlyGenerusAvg,
+    avg: summaryGenerusAvg,
+    tone: 'summary',
+    startsGroup: true,
+  })
+  rows.push({
+    key: 'summary-piket',
+    label: 'RATA² KEHADIRAN LUPG',
+    values: monthlyPiketAvg,
+    avg: summaryPiketAvg,
+    tone: 'summary',
+  })
+
+  const headerStyle = {
+    background: p.primary,
+    color: p.primaryFg,
+    fontFamily: p.fontMono,
+    fontSize: 'clamp(0.65rem, 0.8cqw, 0.85rem)',
+    fontWeight: 700,
+    letterSpacing: '0.05em',
+    lineHeight: 1.2,
+    textTransform: 'uppercase' as const,
+  }
+
+  return (
+    <div className='h-full overflow-hidden'>
+      <table className='h-full w-full table-fixed border-collapse tabular-nums'>
+        <thead>
+          <tr>
+            <th className='w-[18%] px-2 py-2 text-left' style={headerStyle}>
+              KATEGORI
+            </th>
+            {SHORT_MONTH_LABELS.map((m) => (
+              <th key={m} className='px-1 py-2 text-center' style={headerStyle}>
+                {m}
+              </th>
+            ))}
+            <th className='w-[10%] px-2 py-2 text-center' style={headerStyle}>
+              RATA²
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => {
+            const rowBg =
+              row.tone === 'summary'
+                ? colorSummaryBg
+                : row.tone === 'piket'
+                  ? colorPiketBg
+                  : colorCatBg
+            return (
+              <tr
+                key={row.key}
+                style={{
+                  background: rowBg,
+                  borderTop:
+                    row.startsGroup && row.key !== 'summary-generus'
+                      ? `clamp(0.4rem, 1vh, 0.8rem) solid ${colorDivider}`
+                      : row.key === 'summary-generus'
+                        ? `clamp(0.5rem, 1.2vh, 1rem) solid ${colorDivider}`
+                        : undefined,
+                  color:
+                    row.tone === 'category'
+                      ? colorTextCat
+                      : row.tone === 'summary'
+                        ? colorTextSummary
+                        : colorTextPiket,
+                  fontSize: 'clamp(0.62rem, 0.82vw, 0.96rem)',
+                  fontWeight: row.tone === 'summary' ? 800 : 600,
+                  lineHeight: 1.18,
+                }}
+              >
+                <td
+                  className='px-2 py-1.5'
+                  style={{
+                    background: row.tone === 'summary' ? colorLabelSummaryBg : undefined,
+                    fontWeight: 700,
+                  }}
+                >
+                  {row.label}
+                </td>
+                {row.values.map((value, index) => (
+                  <td
+                    key={`${row.key}-${monthKeys[index]}`}
+                    className='px-1 py-1.5 text-center'
+                  >
+                    {formatPct(value)}
+                  </td>
+                ))}
+                <td
+                  className='px-2 py-1.5 text-center'
+                  style={
+                    row.tone === 'summary'
+                      ? {
+                          background: colorFinalAvgBg,
+                          color: p.primaryFg,
+                          fontWeight: 800,
+                        }
+                      : {
+                          fontWeight: 700,
+                        }
+                  }
+                >
+                  {formatPct(row.avg)}
                 </td>
               </tr>
             )
@@ -523,102 +728,12 @@ export function renderMetricsTableSlide(args: RenderMetricsTableArgs): Slide {
         totalSlides={totalSlides}
       >
         <div className='h-full overflow-auto'>
-          <EditorialTable>
-            <EditorialTableHeader>
-              <EditorialTableRow>
-                <EditorialTableHead>KATEGORI</EditorialTableHead>
-                {SHORT_MONTH_LABELS.map((m) => (
-                  <EditorialTableHead key={m} className='text-right'>
-                    {m}
-                  </EditorialTableHead>
-                ))}
-                <EditorialTableHead className='text-right'>
-                  RATA²
-                </EditorialTableHead>
-              </EditorialTableRow>
-            </EditorialTableHeader>
-            <EditorialTableBody>
-              {rowsByKategori.map((g, gi) => {
-                const isFirstGroup = gi === 0
-                return [
-                  <EditorialTableRow
-                    key={`${g.kat}-keh`}
-                    style={
-                      !isFirstGroup
-                        ? { borderTop: '1px solid #cbd5e1' }
-                        : undefined
-                    }
-                  >
-                    <EditorialTableCell>
-                      <span className='font-semibold'>
-                        {g.kehadiranRow.label}
-                      </span>
-                      <span className='ml-2 text-[9px] tracking-wider uppercase opacity-70'>
-                        Kehadiran
-                      </span>
-                    </EditorialTableCell>
-                    {g.kehadiranRow.monthly.map((v, i) => (
-                      <EditorialTableCell
-                        key={`keh-${i}`}
-                        className='text-right tabular-nums'
-                      >
-                        {formatPct(v)}
-                      </EditorialTableCell>
-                    ))}
-                    <EditorialTableCell className='text-right font-semibold tabular-nums'>
-                      {formatPct(g.kehadiranRow.avg)}
-                    </EditorialTableCell>
-                  </EditorialTableRow>,
-                  <EditorialTableRow key={`${g.kat}-piket`}>
-                    <EditorialTableCell>
-                      <span className='text-[9px] tracking-wider uppercase opacity-70'>
-                        Piket LUPG
-                      </span>
-                    </EditorialTableCell>
-                    {g.piketRow.monthly.map((v, i) => (
-                      <EditorialTableCell
-                        key={`piket-${i}`}
-                        className='text-right tabular-nums'
-                      >
-                        {formatPct(v)}
-                      </EditorialTableCell>
-                    ))}
-                    <EditorialTableCell className='text-right font-semibold tabular-nums'>
-                      {formatPct(g.piketRow.avg)}
-                    </EditorialTableCell>
-                  </EditorialTableRow>,
-                ]
-              })}
-              <TotalRow>
-                <EditorialTableCell className='font-semibold uppercase'>
-                  RATA² Kehadiran Generus
-                </EditorialTableCell>
-                {SHORT_MONTH_LABELS.map((_, i) => (
-                  <EditorialTableCell
-                    key={`g-${i}`}
-                    className='text-right tabular-nums'
-                  />
-                ))}
-                <EditorialTableCell className='text-right font-semibold tabular-nums'>
-                  {formatPct(summaryGenerusAvg)}
-                </EditorialTableCell>
-              </TotalRow>
-              <TotalRow>
-                <EditorialTableCell className='font-semibold uppercase'>
-                  RATA² Kehadiran Piket LUPG
-                </EditorialTableCell>
-                {SHORT_MONTH_LABELS.map((_, i) => (
-                  <EditorialTableCell
-                    key={`p-${i}`}
-                    className='text-right tabular-nums'
-                  />
-                ))}
-                <EditorialTableCell className='text-right font-semibold tabular-nums'>
-                  {formatPct(summaryPiketAvg)}
-                </EditorialTableCell>
-              </TotalRow>
-            </EditorialTableBody>
-          </EditorialTable>
+          <MetricsKelompokTable
+            monthKeys={monthKeys}
+            rowsByKategori={rowsByKategori}
+            summaryGenerusAvg={summaryGenerusAvg}
+            summaryPiketAvg={summaryPiketAvg}
+          />
         </div>
       </SlideFrame>
     ),
