@@ -25,7 +25,7 @@ export function SlideFrame({
 
   const eyebrowStyle = {
     fontFamily: p.fontMono,
-    fontSize: 'clamp(0.75rem, 1vw, 1.125rem)',
+    fontSize: 'clamp(0.75rem, 1cqw, 1.125rem)',
     fontWeight: 700,
     letterSpacing: '0.28em',
     color: p.muted,
@@ -33,7 +33,7 @@ export function SlideFrame({
 
   const titleStyle = {
     fontFamily: '"Archivo Black", Impact, sans-serif',
-    fontSize: 'clamp(2rem, 4vw, 4rem)',
+    fontSize: 'clamp(2rem, 4cqw, 4rem)',
     lineHeight: 1.05,
     letterSpacing: '-0.018em',
     color: p.ink,
@@ -41,14 +41,14 @@ export function SlideFrame({
 
   const metaStyle = {
     fontFamily: p.fontMono,
-    fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
+    fontSize: 'clamp(0.875rem, 1.1cqw, 1.25rem)',
     letterSpacing: '0.18em',
     color: p.muted,
   } as const
 
   const pageIndicatorStyle = {
     fontFamily: p.fontMono,
-    fontSize: 'clamp(0.875rem, 1.1vw, 1.125rem)',
+    fontSize: 'clamp(0.875rem, 1.1cqw, 1.125rem)',
     letterSpacing: '0.2em',
     color: p.muted,
     fontWeight: 600,
@@ -56,7 +56,7 @@ export function SlideFrame({
 
   const scopeStyle = {
     fontFamily: p.fontMono,
-    fontSize: 'clamp(0.75rem, 1vw, 1.125rem)',
+    fontSize: 'clamp(0.75rem, 1cqw, 1.125rem)',
     letterSpacing: '0.2em',
     color: p.muted,
   } as const
@@ -76,7 +76,7 @@ export function SlideFrame({
           style={{
             borderBottom: `1px solid ${p.rule}`,
             padding:
-              'clamp(1.25rem, 3vh, 2.5rem) clamp(2rem, 4vw, 4rem) clamp(0.75rem, 1.7vh, 1.25rem)',
+              'clamp(1.25rem, 3cqh, 2.5rem) clamp(2rem, 4cqw, 4rem) clamp(0.75rem, 1.7cqh, 1.25rem)',
           }}
         >
           <div className='flex flex-col gap-2'>
@@ -103,7 +103,7 @@ export function SlideFrame({
         <div
           className='flex-1 overflow-hidden'
           style={{
-            padding: 'clamp(1.25rem, 2.8vh, 2.5rem) clamp(2rem, 4vw, 4rem)',
+            padding: 'clamp(1.25rem, 2.8cqh, 2.5rem) clamp(2rem, 4cqw, 4rem)',
           }}
         >
           {children}
@@ -112,7 +112,7 @@ export function SlideFrame({
         <footer
           className='flex items-center justify-between'
           style={{
-            padding: '0 clamp(2rem, 4vw, 4rem) clamp(0.9rem, 2vh, 1.5rem)',
+            padding: '0 clamp(2rem, 4cqw, 4rem) clamp(0.9rem, 2cqh, 1.5rem)',
           }}
         >
           <AnimateItem className='uppercase' style={scopeStyle}>

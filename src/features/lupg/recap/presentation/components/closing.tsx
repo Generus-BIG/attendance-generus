@@ -23,7 +23,7 @@ export function Closing({ tagline, metaLines }: ClosingProps) {
             style={{
               fontFamily: p.fontSerif,
               fontStyle: 'italic',
-              fontSize: 'clamp(1.75rem, 3vw, 2.5rem)',
+              fontSize: 'clamp(1.75rem, 3cqw, 2.5rem)',
               fontWeight: 400,
               color: p.primary,
               maxWidth: '42ch',
@@ -49,7 +49,7 @@ export function Closing({ tagline, metaLines }: ClosingProps) {
             className='uppercase'
             style={{
               fontFamily: p.fontMono,
-              fontSize: 'clamp(0.875rem, 1.1vw, 1.125rem)',
+              fontSize: 'clamp(0.875rem, 1.1cqw, 1.125rem)',
               fontWeight: 600,
               letterSpacing: '0.25em',
               color: p.muted,

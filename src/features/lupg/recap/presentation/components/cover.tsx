@@ -27,7 +27,7 @@ export function Cover({
           className='uppercase'
           style={{
             fontFamily: p.fontMono,
-            fontSize: 'clamp(0.875rem, 1vw, 1.125rem)',
+            fontSize: 'clamp(0.875rem, 1cqw, 1.125rem)',
             fontWeight: 600,
             letterSpacing: '0.25em',
             color: p.primary,
@@ -40,9 +40,9 @@ export function Cover({
           className='flex flex-col'
           style={{
             fontFamily: '"Archivo Black", Impact, sans-serif',
-            fontSize: 'clamp(4rem, 9vw, 8rem)',
-            lineHeight: 0.95,
-            letterSpacing: '-0.02em',
+            fontSize: 'clamp(3.5rem, 8cqw, 6.5rem)',
+            lineHeight: 1.0,
+            letterSpacing: '-0.03em',
           }}
         >
           {titleLines.map((line, i) => (
@@ -51,16 +51,16 @@ export function Cover({
             </AnimateItem>
           ))}
           <AnimateItem style={{ color: p.brandAccent }}>{monthLabel}</AnimateItem>
-          <AnimateItem className='mt-10 flex flex-col gap-4'>
+          <AnimateItem className='mt-8 flex flex-col gap-4'>
             <span
               aria-hidden
-              style={{ width: 60, height: 3, background: p.brandAccent }}
+              style={{ width: 48, height: 2, background: p.brandAccent }}
             />
             <span
               style={{
                 fontFamily: p.fontSerif,
                 fontStyle: 'italic',
-                fontSize: 'clamp(1.25rem, 2vw, 2rem)',
+                fontSize: 'clamp(1.25rem, 2cqw, 2rem)',
                 fontWeight: 400,
                 letterSpacing: 0,
                 lineHeight: 1.3,
@@ -76,7 +76,7 @@ export function Cover({
           className='uppercase'
           style={{
             fontFamily: p.fontMono,
-            fontSize: 'clamp(0.875rem, 1.1vw, 1.125rem)',
+            fontSize: 'clamp(0.875rem, 1.1cqw, 1.125rem)',
             fontWeight: 600,
             letterSpacing: '0.2em',
             color: p.muted,
