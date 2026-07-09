@@ -56,13 +56,14 @@ function readTokens(): PresPalette {
   if (typeof window === 'undefined') {
     return defaultFallback()
   }
+  const activePalette = document.documentElement.getAttribute('data-palette') || 'modern-natural'
   const styles = getComputedStyle(document.documentElement)
   const get = (k: TokenKey) => styles.getPropertyValue(k).trim()
 
   const accent = get('--accent') || '#f5b800'
   const bg = get('--background') || '#ffffff'
 
-  return {
+  const base = {
     bg,
     ink: get('--foreground') || '#18181b',
     primary: get('--primary') || '#1e2761',
@@ -85,6 +86,21 @@ function readTokens(): PresPalette {
     fontMono: PINNED_FONT_MONO,
     fontSerif: PINNED_FONT_SERIF,
   }
+
+  if (activePalette === 'modern-natural') {
+    return {
+      ...base,
+      primary: '#22247a',
+      primaryFg: '#f8fafc',
+      ink: '#0f172a',
+      accent: '#2a2b77',
+      brandAccent: '#fcc419',
+      rule: '#869fc3',
+      cream: '#d9e9f7',
+    }
+  }
+
+  return base
 }
 
 function defaultFallback(): PresPalette {

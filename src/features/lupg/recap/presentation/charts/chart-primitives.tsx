@@ -17,7 +17,7 @@ export function hairlineAxisProps(palette: PresPalette, axis: 'x' | 'y') {
     axisLine: false,
     tick: {
       fontFamily: palette.fontMono,
-      fontSize: 'clamp(0.75rem, 1vw, 1rem)',
+      fontSize: '11px',
       fontWeight: 600,
       fill,
     } as const,
@@ -72,7 +72,7 @@ export function RestrainedTopLabel({
       textAnchor='middle'
       style={{
         fontFamily: palette.fontMono,
-        fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
+        fontSize: '13px',
         fontWeight: 600,
         fill: palette.ink,
       }}
@@ -100,11 +100,11 @@ export function EditorialTooltipShell({
       style={{
         background: palette.primary,
         color: palette.primaryFg,
-        padding: '8px 12px',
+        padding: '6px 10px',
         borderRadius: 4,
         fontFamily: palette.fontSans,
-        fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
-        lineHeight: 1.5,
+        fontSize: '12px',
+        lineHeight: 1.45,
       }}
     >
       <div
@@ -112,7 +112,7 @@ export function EditorialTooltipShell({
           fontFamily: palette.fontSans,
           fontWeight: 700,
           color: palette.brandAccent,
-          fontSize: 'clamp(1rem, 1.4vw, 1.5rem)',
+          fontSize: '13px',
           marginBottom: 2,
         }}
       >
@@ -152,7 +152,7 @@ export function MiniLegend({ entries, palette }: MiniLegendProps) {
           <span
             style={{
               fontFamily: palette.fontSans,
-              fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
+              fontSize: '13px',
               fontWeight: 600,
               color: palette.ink,
             }}

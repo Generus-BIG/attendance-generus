@@ -17,6 +17,7 @@ import {
   type ShodaqohRow,
 } from '../../types'
 import { formatMonthLabel } from '../../utils/month-utils'
+import { PROGRAM_ORDER } from '../../constants'
 import {
   renderCharacterAgendaSlide,
   renderCharacterSummarySlide,
@@ -77,16 +78,7 @@ export interface PresentationData {
   yearlyShodaqohRows?: ShodaqohRow[]
 }
 
-// Hardcoded program order requested by user (PHQ before Turba; SHOLAT_ACR/GMSU after GMKM).
-// Includes codes that may be `active: false` in DB — presentation deck overrides that filter.
-const PROGRAM_ORDER = [
-  'PHQ',
-  'TURBA_GPN',
-  'NIKAH_JM',
-  'GOMA',
-  'GMKM',
-  'SHOLAT_ACR',
-] as const
+// orderPrograms orders the programs array using the shared PROGRAM_ORDER constant.
 
 function orderPrograms(
   programs: ProgramDefinitionRow[]

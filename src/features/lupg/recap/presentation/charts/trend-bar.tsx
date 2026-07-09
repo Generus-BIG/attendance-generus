@@ -149,6 +149,7 @@ export function TrendBar({
           dataKey='value'
           isAnimationActive={true}
           animationDuration={Math.round(800 * durationScale)}
+          maxBarSize={48}
         >
           {data.map((d, idx) => {
             const fill = d.isHighlighted

@@ -19,7 +19,7 @@ import {
   YAxis,
 } from 'recharts'
 import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
-import { SENSUS_CATEGORY_COLORS, SENSUS_STACK_ORDER } from '../theme'
+import { SENSUS_STACK_ORDER, getSensusColor } from '../theme'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import { usePresentationAnimation } from '../context/animation-context'
 
@@ -260,13 +260,14 @@ export function SensusStackedBar({ data }: SensusStackedBarProps) {
         />
         {SENSUS_STACK_ORDER.map((code, idx) => {
           const isTop = idx === SENSUS_STACK_ORDER.length - 1
+          const isModern = typeof window !== 'undefined' && document.documentElement.getAttribute('data-palette') === 'modern-natural'
           return (
             <Bar
               key={code}
               stackId='g'
               dataKey={code}
               name={CATEGORY_LABELS[code]}
-              fill={SENSUS_CATEGORY_COLORS[code]}
+              fill={getSensusColor(code, isModern)}
               isAnimationActive={true}
               animationDuration={Math.round(800 * durationScale)}
             >

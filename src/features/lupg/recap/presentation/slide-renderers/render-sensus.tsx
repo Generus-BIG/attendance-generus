@@ -18,7 +18,7 @@ import {
 } from '../components/editorial-table'
 import { SlideFrame } from '../components/slide-frame'
 import { type Slide } from '../slides'
-import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { usePresPalette } from '../use-pres-palette'
 
 type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR'
 
@@ -46,8 +46,8 @@ interface KelompokSummary {
 
 interface PerKelompokSensus {
   generus: Record<GenerusCode, KelompokSummary>
-  pendidikMT: number
-  pendidikMS: number
+  pendidikMT: KelompokSummary
+  pendidikMS: KelompokSummary
   generusTotal: number
   pendidikTotal: number
 }
@@ -62,8 +62,8 @@ function emptyPerKelompokSensus(): PerKelompokSensus {
   )
   return {
     generus,
-    pendidikMT: 0,
-    pendidikMS: 0,
+    pendidikMT: { L: 0, P: 0, total: 0 },
+    pendidikMS: { L: 0, P: 0, total: 0 },
     generusTotal: 0,
     pendidikTotal: 0,
   }
@@ -84,9 +84,9 @@ function buildPerKelompok(
   const mtP = byKey.get(`${kelompokId}_PENDIDIK_MT_P`)?.count ?? 0
   const msL = byKey.get(`${kelompokId}_PENDIDIK_MS_L`)?.count ?? 0
   const msP = byKey.get(`${kelompokId}_PENDIDIK_MS_P`)?.count ?? 0
-  result.pendidikMT = mtL + mtP
-  result.pendidikMS = msL + msP
-  result.pendidikTotal = result.pendidikMT + result.pendidikMS
+  result.pendidikMT = { L: mtL, P: mtP, total: mtL + mtP }
+  result.pendidikMS = { L: msL, P: msP, total: msL + msP }
+  result.pendidikTotal = result.pendidikMT.total + result.pendidikMS.total
   return result
 }
 
@@ -94,20 +94,6 @@ function ratioLabel(generusTotal: number, pendidikTotal: number): string {
   if (pendidikTotal <= 0) return '—'
   const n = Math.round(generusTotal / pendidikTotal)
   return String(n)
-}
-
-function groupPillStyle(p: PresPalette) {
-  return {
-    background: p.primary,
-    color: p.primaryFg,
-    fontFamily: p.fontMono,
-    fontSize: 'clamp(0.62rem, 0.78vw, 0.875rem)',
-    fontWeight: 700,
-    letterSpacing: '0.15em',
-    padding: '3px 7px',
-    display: 'inline-block',
-    marginBottom: 6,
-  } as const
 }
 
 interface RatioPillProps {
@@ -119,40 +105,39 @@ function RatioPill({ label, ratioRight }: RatioPillProps) {
   const p = usePresPalette()
   return (
     <div
-      className='mt-3 rounded'
+      className='mt-4 rounded border flex items-center justify-between px-5 py-3'
       style={{
-        background: p.primary,
-        color: p.primaryFg,
-        padding: '8px 14px',
-        textAlign: 'center',
+        borderColor: p.rule,
+        background: p.cream,
       }}
     >
       <div
-        className='uppercase'
+        className='uppercase font-semibold'
         style={{
           fontFamily: p.fontMono,
-          fontSize: 'clamp(0.62rem, 0.78vw, 0.875rem)',
-          color: p.brandAccent,
-          letterSpacing: '0.2em',
+          fontSize: 'clamp(0.65rem, 0.8cqw, 0.85rem)',
+          color: p.muted,
+          letterSpacing: '0.15em',
         }}
       >
         {label}
       </div>
-      <div style={{ marginTop: 4 }}>
+      <div className='flex items-center gap-1.5'>
         <span
+          className='font-semibold'
           style={{
             fontFamily: p.fontMono,
-            fontSize: 'clamp(0.82rem, 1vw, 1.125rem)',
-            color: p.primaryFg,
+            fontSize: 'clamp(0.9rem, 1.1cqw, 1.25rem)',
+            color: p.muted,
           }}
         >
-          1 :{' '}
+          1 :
         </span>
         <span
           style={{
             fontFamily: '"Archivo Black", Impact, sans-serif',
-            fontSize: 'clamp(1.5rem, 2.1vw, 2.25rem)',
-            color: p.primaryFg,
+            fontSize: 'clamp(1.5rem, 1.8cqw, 2.25rem)',
+            color: p.ink,
           }}
         >
           {ratioRight}
@@ -167,7 +152,6 @@ interface SensusKelompokBodyProps {
 }
 
 function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
-  const p = usePresPalette()
   const totalL = GENERUS_DISPLAY_ORDER.reduce(
     (acc, code) => acc + perKelompok.generus[code].L,
     0
@@ -178,6 +162,10 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
   )
   const totalAll = totalL + totalP
 
+  const pendidikL = perKelompok.pendidikMT.L + perKelompok.pendidikMS.L
+  const pendidikP = perKelompok.pendidikMT.P + perKelompok.pendidikMS.P
+  const pendidikTotal = perKelompok.pendidikMT.total + perKelompok.pendidikMS.total
+
   const pieData: SensusPieDatum[] = GENERUS_DISPLAY_ORDER.map((code) => ({
     code,
     label: GENERUS_LABELS[code],
@@ -187,28 +175,20 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
   }))
 
   return (
-    <div className='grid h-full grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] gap-8 overflow-hidden'>
+    <div className='grid h-full grid-cols-[1.25fr_0.75fr] gap-8 overflow-hidden'>
       <DataPane>
-        <div>
-          <span className='uppercase' style={groupPillStyle(p)}>
-            KATEGORI USIA GENERUS
-          </span>
+        <div className='flex flex-col gap-4'>
           <EditorialTable density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
-                <EditorialTableHead>Kategori</EditorialTableHead>
-                <EditorialTableHead className='text-right'>
-                  L
-                </EditorialTableHead>
-                <EditorialTableHead className='text-right'>
-                  P
-                </EditorialTableHead>
-                <EditorialTableHead className='text-right'>
-                  Jumlah
-                </EditorialTableHead>
+                <EditorialTableHead>Kategori / Peran</EditorialTableHead>
+                <EditorialTableHead className='text-right'>L</EditorialTableHead>
+                <EditorialTableHead className='text-right'>P</EditorialTableHead>
+                <EditorialTableHead className='text-right'>Jumlah</EditorialTableHead>
               </EditorialTableRow>
             </EditorialTableHeader>
             <EditorialTableBody>
+              {/* Generus Section */}
               {GENERUS_DISPLAY_ORDER.map((code) => {
                 const row = perKelompok.generus[code]
                 return (
@@ -240,47 +220,57 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
                   {totalAll}
                 </EditorialTableCell>
               </TotalRow>
-            </EditorialTableBody>
-          </EditorialTable>
-        </div>
 
-        <div className='mt-4'>
-          <span className='uppercase' style={groupPillStyle(p)}>
-            SENSUS PENDIDIK
-          </span>
-          <EditorialTable density='compact'>
-            <EditorialTableHeader>
-              <EditorialTableRow>
-                <EditorialTableHead>Pendidik</EditorialTableHead>
-                <EditorialTableHead className='text-right'>
-                  MT
-                </EditorialTableHead>
-                <EditorialTableHead className='text-right'>
-                  MS
-                </EditorialTableHead>
+              {/* Spacer Row */}
+              <EditorialTableRow style={{ background: 'transparent', height: 12 }}>
+                <EditorialTableCell colSpan={4} className='p-0 border-none' />
               </EditorialTableRow>
-            </EditorialTableHeader>
-            <EditorialTableBody>
+
+              {/* Pendidik Section */}
               <EditorialTableRow>
-                <EditorialTableCell>Jumlah</EditorialTableCell>
+                <EditorialTableCell>Pendidik MT</EditorialTableCell>
                 <EditorialTableCell className='text-right'>
-                  {perKelompok.pendidikMT}
+                  {perKelompok.pendidikMT.L}
                 </EditorialTableCell>
                 <EditorialTableCell className='text-right'>
-                  {perKelompok.pendidikMS}
+                  {perKelompok.pendidikMT.P}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-right font-semibold'>
+                  {perKelompok.pendidikMT.total}
                 </EditorialTableCell>
               </EditorialTableRow>
+              <EditorialTableRow>
+                <EditorialTableCell>Pendidik MS</EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {perKelompok.pendidikMS.L}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {perKelompok.pendidikMS.P}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-right font-semibold'>
+                  {perKelompok.pendidikMS.total}
+                </EditorialTableCell>
+              </EditorialTableRow>
+              <TotalRow>
+                <EditorialTableCell>Total Pendidik</EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {pendidikL}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {pendidikP}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {pendidikTotal}
+                </EditorialTableCell>
+              </TotalRow>
             </EditorialTableBody>
           </EditorialTable>
-        </div>
 
-        <RatioPill
-          label='PERBANDINGAN PENDIDIK : GENERUS'
-          ratioRight={ratioLabel(
-            perKelompok.generusTotal,
-            perKelompok.pendidikTotal
-          )}
-        />
+          <RatioPill
+            label='PERBANDINGAN PENDIDIK : GENERUS'
+            ratioRight={ratioLabel(totalAll, pendidikTotal)}
+          />
+        </div>
       </DataPane>
       <ChartPane>
         <SensusPie data={pieData} />
@@ -325,54 +315,56 @@ function SensusDesaBody({ effectiveKelompokList, byKey }: SensusDesaBodyProps) {
   const totalPendidik = sorted.reduce((s, e) => s + e.summary.pendidikTotal, 0)
 
   return (
-    <div className='grid h-full grid-cols-2 gap-10 overflow-hidden'>
+    <div className='grid h-full grid-cols-[1.25fr_0.75fr] gap-10 overflow-hidden'>
       <DataPane>
-        <EditorialTable density='compact'>
-          <EditorialTableHeader>
-            <EditorialTableRow>
-              <EditorialTableHead>Kelompok</EditorialTableHead>
-              {GENERUS_DISPLAY_ORDER.map((code) => (
-                <EditorialTableHead key={code} className='text-right'>
-                  {GENERUS_LABELS[code]}
+        <div className='flex flex-col gap-4'>
+          <EditorialTable density='compact'>
+            <EditorialTableHeader>
+              <EditorialTableRow>
+                <EditorialTableHead>Kelompok</EditorialTableHead>
+                {GENERUS_DISPLAY_ORDER.map((code) => (
+                  <EditorialTableHead key={code} className='text-right'>
+                    {GENERUS_LABELS[code]}
+                  </EditorialTableHead>
+                ))}
+                <EditorialTableHead className='text-right'>
+                  Total
                 </EditorialTableHead>
+              </EditorialTableRow>
+            </EditorialTableHeader>
+            <EditorialTableBody>
+              {sorted.map((entry) => (
+                <EditorialTableRow key={entry.kelompok}>
+                  <EditorialTableCell>{entry.kelompok}</EditorialTableCell>
+                  {GENERUS_DISPLAY_ORDER.map((code) => (
+                    <EditorialTableCell key={code} className='text-right'>
+                      {entry.summary.generus[code].total}
+                    </EditorialTableCell>
+                  ))}
+                  <EditorialTableCell className='text-right font-semibold'>
+                    {entry.summary.generusTotal}
+                  </EditorialTableCell>
+                </EditorialTableRow>
               ))}
-              <EditorialTableHead className='text-right'>
-                Total
-              </EditorialTableHead>
-            </EditorialTableRow>
-          </EditorialTableHeader>
-          <EditorialTableBody>
-            {sorted.map((entry) => (
-              <EditorialTableRow key={entry.kelompok}>
-                <EditorialTableCell>{entry.kelompok}</EditorialTableCell>
+              <TotalRow>
+                <EditorialTableCell>Total Desa</EditorialTableCell>
                 {GENERUS_DISPLAY_ORDER.map((code) => (
                   <EditorialTableCell key={code} className='text-right'>
-                    {entry.summary.generus[code].total}
+                    {colSums[code]}
                   </EditorialTableCell>
                 ))}
-                <EditorialTableCell className='text-right font-semibold'>
-                  {entry.summary.generusTotal}
+                <EditorialTableCell className='text-right'>
+                  {grandTotal}
                 </EditorialTableCell>
-              </EditorialTableRow>
-            ))}
-            <TotalRow>
-              <EditorialTableCell>Total Desa</EditorialTableCell>
-              {GENERUS_DISPLAY_ORDER.map((code) => (
-                <EditorialTableCell key={code} className='text-right'>
-                  {colSums[code]}
-                </EditorialTableCell>
-              ))}
-              <EditorialTableCell className='text-right'>
-                {grandTotal}
-              </EditorialTableCell>
-            </TotalRow>
-          </EditorialTableBody>
-        </EditorialTable>
+              </TotalRow>
+            </EditorialTableBody>
+          </EditorialTable>
 
-        <RatioPill
-          label='PERBANDINGAN PENDIDIK : GENERUS DESA'
-          ratioRight={ratioLabel(grandTotal, totalPendidik)}
-        />
+          <RatioPill
+            label='PERBANDINGAN PENDIDIK : GENERUS DESA'
+            ratioRight={ratioLabel(grandTotal, totalPendidik)}
+          />
+        </div>
       </DataPane>
       <ChartPane>
         <SensusStackedBar data={stackedData} />

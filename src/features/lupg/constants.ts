@@ -38,6 +38,15 @@ export const PROGRAM_CODES = [
 
 export type ProgramCode = (typeof PROGRAM_CODES)[number]
 
+export const PROGRAM_ORDER = [
+  'PHQ',
+  'TURBA_GPN',
+  'NIKAH_JM',
+  'GOMA',
+  'GMKM',
+  'SHOLAT_ACR',
+] as const
+
 export const MUSTIN_STATUS_LABELS = {
   open: 'Open',
   in_progress: 'In Progress',

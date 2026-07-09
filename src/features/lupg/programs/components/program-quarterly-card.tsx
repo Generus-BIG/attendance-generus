@@ -41,7 +41,7 @@ interface Props {
 const QUARTERS: Quarter[] = [1, 2, 3, 4]
 
 function notesHeaderLabel(programCode: string): string {
-  if (programCode === 'SHOLAT_ACR') return 'Keterangan'
+  if (programCode === 'SHOLAT_ACR' || programCode === 'GMKM') return 'Keterangan'
   return 'Hasil Temuan'
 }
 
@@ -113,7 +113,7 @@ export function ProgramQuarterlyBody({
             <TableRow>
               <TableHead>Quarter</TableHead>
               <TableHead>Sensus</TableHead>
-              <TableHead>Jumlah</TableHead>
+              <TableHead>{program.code === 'GMKM' ? 'Jumlah Kehadiran' : 'Jumlah'}</TableHead>
               <TableHead className='text-right'>%</TableHead>
               <TableHead>{notesHeaderLabel(program.code)}</TableHead>
             </TableRow>

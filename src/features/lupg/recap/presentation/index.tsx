@@ -36,6 +36,8 @@ import {
 import { firstDayOfMonth, formatMonthLabel } from '../../utils/month-utils'
 import { buildSlides, type Kelompok } from './slides'
 import { type ActivityPhotoWithUrl } from './slide-renderers/render-dokumentasi'
+import { usePresPalette } from './use-pres-palette'
+import { usePalette } from '@/context/palette-provider'
 
 interface Props {
   monthKey: string
@@ -59,6 +61,7 @@ function AnimationControls() {
     speed,
     setSpeed,
   } = usePresentationAnimation()
+  const { palette, setPalette } = usePalette()
 
   const percent = ((speed - 0.25) / 2.75) * 100
 
@@ -132,6 +135,40 @@ function AnimationControls() {
         </div>
       </div>
 
+      {/* Palette Theme Selector */}
+      <div className='space-y-1.5 border-t border-border/30 pt-3'>
+        <span className='text-[10px] font-bold uppercase tracking-wider text-muted-foreground'>Theme Palette</span>
+        <div className='flex gap-x-4 text-xs font-semibold'>
+          {(['modern-natural', 'anthropic-claude', 'sage-green'] as const).map((pal) => {
+            const isActive = palette === pal
+            const label = pal === 'modern-natural' ? 'Modern' : pal === 'anthropic-claude' ? 'Claude' : 'Sage Green'
+            return (
+              <button
+                key={pal}
+                onClick={() => setPalette(pal)}
+                className='relative transition-colors duration-150 cursor-pointer py-1.5 outline-hidden'
+              >
+                <span
+                  className={cn(
+                    'transition-colors duration-150',
+                    isActive ? 'text-foreground font-bold' : 'text-muted-foreground hover:text-foreground font-medium'
+                  )}
+                >
+                  {label}
+                </span>
+                {isActive && (
+                  <motion.span
+                    layoutId='activePalette'
+                    className='absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full'
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       {/* Speed Slider (corrected logic: left = slow, right = fast) */}
       <div className='space-y-2 border-t border-border/30 pt-3'>
         <div className='flex items-center justify-between'>
@@ -165,11 +202,41 @@ function AnimationControls() {
 
 function PresentationInner({ monthKey, kelompokFilter }: Props) {
   const navigate = useNavigate()
+  const p = usePresPalette()
   const containerRef = useRef<HTMLDivElement>(null)
   const slideContainerRef = useRef<HTMLDivElement>(null)
+  const parentRef = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(1)
   const [slideIndex, setSlideIndex] = useState(0)
   const [direction, setDirection] = useState(1) // 1 = next, -1 = prev
   const [isFullscreen, setIsFullscreen] = useState(false)
+
+  useEffect(() => {
+    const parent = parentRef.current
+    if (!parent) return
+
+    const handleResize = () => {
+      const w = parent.clientWidth
+      const h = parent.clientHeight
+
+      const targetW = 1280
+      const targetH = 720
+
+      const scaleW = w / targetW
+      const scaleH = h / targetH
+      const newScale = Math.min(scaleW, scaleH)
+
+      setScale(newScale)
+    }
+
+    handleResize()
+    const observer = new ResizeObserver(handleResize)
+    observer.observe(parent)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
   // Zoom & Pan states
   const [zoom, setZoom] = useState(1)
@@ -673,7 +740,8 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
   return (
     <div
       ref={containerRef}
-      className='fixed inset-0 z-50 flex flex-col bg-background'
+      className='fixed inset-0 z-50 flex flex-col'
+      style={{ background: p.bg, color: p.ink }}
     >
       {!isFullscreen && (
         <div className='flex items-center justify-between border-b px-6 py-3'>
@@ -716,7 +784,7 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
         >
           <ChevronLeft className='h-6 w-6' />
         </Button>
-        <div className='flex-1 overflow-hidden relative'>
+        <div ref={parentRef} className='flex-1 overflow-hidden relative flex items-center justify-center'>
           {isLoading || !currentSlide ? (
             <div className='flex h-full items-center justify-center text-muted-foreground'>
               <Loader2 className='mr-2 h-6 w-6 animate-spin' />
@@ -724,56 +792,69 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
             </div>
           ) : (
             <>
-              <AnimatePresence mode='wait' custom={direction}>
-                <motion.div
-                  key={clampedIndex}
-                  custom={direction}
-                  variants={{
-                    enter: (dir: number) => ({
-                      x: dir > 0 ? '5vw' : '-5vw',
-                      opacity: 0,
-                    }),
-                    center: {
-                      x: 0,
-                      opacity: 1,
-                    },
-                    exit: (dir: number) => ({
-                      x: dir > 0 ? '-5vw' : '5vw',
-                      opacity: 0,
-                    }),
-                  }}
-                  initial='enter'
-                  animate='center'
-                  exit='exit'
-                  transition={{
-                    x: { type: 'spring', stiffness: 300, damping: 30 },
-                    opacity: { duration: 0.15 },
-                  }}
-                  className='h-full w-full overflow-hidden'
-                >
-                  <div
-                    ref={slideContainerRef}
-                    className={cn(
-                      'h-full w-full origin-center select-none',
-                      zoom > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''
-                    )}
-                    style={{
-                      transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                      transition: isTransitioning
-                        ? 'transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1)'
-                        : 'none',
-                      willChange: 'transform',
+              <div
+                style={{
+                  width: '1280px',
+                  height: '720px',
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'center center',
+                  flexShrink: 0,
+                  containerType: 'size',
+                  background: p.bg,
+                }}
+                className='relative overflow-hidden flex items-center justify-center'
+              >
+                <AnimatePresence mode='wait' custom={direction}>
+                  <motion.div
+                    key={clampedIndex}
+                    custom={direction}
+                    variants={{
+                      enter: (dir: number) => ({
+                        x: dir > 0 ? '5vw' : '-5vw',
+                        opacity: 0,
+                      }),
+                      center: {
+                        x: 0,
+                        opacity: 1,
+                      },
+                      exit: (dir: number) => ({
+                        x: dir > 0 ? '-5vw' : '5vw',
+                        opacity: 0,
+                      }),
                     }}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    onDoubleClick={handleDoubleClick}
+                    initial='enter'
+                    animate='center'
+                    exit='exit'
+                    transition={{
+                      x: { type: 'spring', stiffness: 300, damping: 30 },
+                      opacity: { duration: 0.15 },
+                    }}
+                    className='h-full w-full overflow-hidden'
                   >
-                    {currentSlide.render()}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+                    <div
+                      ref={slideContainerRef}
+                      className={cn(
+                        'h-full w-full origin-center select-none',
+                        zoom > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''
+                      )}
+                      style={{
+                        transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                        transition: isTransitioning
+                          ? 'transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                          : 'none',
+                        willChange: 'transform',
+                      }}
+                      onMouseDown={handleMouseDown}
+                      onMouseMove={handleMouseMove}
+                      onMouseUp={handleMouseUp}
+                      onMouseLeave={handleMouseUp}
+                      onDoubleClick={handleDoubleClick}
+                    >
+                      {currentSlide.render()}
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
               {/* Floating Zoom Controls - visible during fullscreen */}
               {isFullscreen && (

@@ -9,12 +9,14 @@ import {
   useActivePrograms,
   useYearlyProgramData,
 } from '../../hooks/use-lupg-queries'
+import { PROGRAM_ORDER } from '../../constants'
 import { currentMonthKey } from '../../utils/month-utils'
 import { ProgramClusterBody } from '../../programs/components/program-cluster-card'
 import { ProgramMonthlyBody } from '../../programs/components/program-monthly-card'
 import { ProgramQuarterlyBody } from '../../programs/components/program-quarterly-card'
 import { ProgramSectionCard } from '../components/program-section-card'
 import { SectionHeading } from '../components/section-heading'
+import { ProgramDefinitionRow } from '../../types'
 
 interface Props {
   report: MonthlyReportRow
@@ -32,6 +34,22 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
 
   const { data, isLoading } = useYearlyProgramData(report.kelompok_id, year)
   const { data: programs = [] } = useActivePrograms()
+
+  const orderedPrograms = useMemo(() => {
+    const byCode = new Map(programs.map((p) => [p.code, p]))
+    const ordered: ProgramDefinitionRow[] = []
+    for (const code of PROGRAM_ORDER) {
+      const p = byCode.get(code)
+      if (p) ordered.push(p)
+    }
+    // Append any active programs not in the list
+    for (const p of programs) {
+      if (!PROGRAM_ORDER.includes(p.code as any)) {
+        ordered.push(p)
+      }
+    }
+    return ordered
+  }, [programs])
 
   const { data: kelompokOptions = [] } = useQuery({
     queryKey: ['lookup_values', 'GROUP'],
@@ -76,7 +94,7 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
         </div>
       ) : (
         <div className='flex flex-col gap-4'>
-          {programs.map((p) => {
+          {orderedPrograms.map((p) => {
             const commonProps = {
               program: p,
               kelompokId: report.kelompok_id,
