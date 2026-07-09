@@ -37,6 +37,7 @@ dist-ssr
 *Example Worksheet GPN.xlsx
 *Target_29_Karakter Brief.pdf
 .vercel
+.codex/
 .env
 .env.local
 .env.*.local
