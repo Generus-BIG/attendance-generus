@@ -66,7 +66,7 @@ export function RevealOnScroll({ children, delayMs = 0, className }: Props) {
           }
         }
       },
-      { rootMargin: '0px 0px -10% 0px', threshold: 0.1 }
+      { rootMargin: '0px', threshold: 0.01 }
     )
 
     observer.observe(el)

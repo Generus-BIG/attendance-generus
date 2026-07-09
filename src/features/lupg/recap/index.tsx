@@ -41,6 +41,7 @@ import {
   CATEGORY_LABELS,
   MUSTIN_STATUS_LABELS,
   type CategoryCode,
+  PROGRAM_ORDER,
 } from '../constants'
 import {
   useActiveCharacterMonitoringActivities,
@@ -346,7 +347,21 @@ export function RekapDesa() {
     enabled: kelompokIds.length > 0,
   })
 
-  const { data: programs = [] } = useActivePrograms()
+  const { data: rawPrograms = [] } = useActivePrograms()
+  const programs = useMemo(() => {
+    const byCode = new Map(rawPrograms.map((p) => [p.code, p]))
+    const ordered: typeof rawPrograms = []
+    for (const code of PROGRAM_ORDER) {
+      const p = byCode.get(code)
+      if (p) ordered.push(p)
+    }
+    for (const p of rawPrograms) {
+      if (!PROGRAM_ORDER.includes(p.code as any)) {
+        ordered.push(p)
+      }
+    }
+    return ordered
+  }, [rawPrograms])
   const { data: metrics = [] } = useActiveMetrics()
   const { data: sarprasItems = [] } = useActiveSarprasItems()
   const { data: mustinTemplates = [] } = useActiveMustinTemplates()
