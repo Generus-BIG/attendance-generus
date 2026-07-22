@@ -37,7 +37,7 @@ export function useScrollSpy({ sectionIds }: Options): string | null {
       const reachedPageEnd =
         window.scrollY + window.innerHeight >=
         document.documentElement.scrollHeight - 1
-      if (reachedPageEnd) nextId = elements.at(-1)?.id ?? nextId
+      if (reachedPageEnd) nextId = elements[elements.length - 1]?.id ?? nextId
 
       if (nextId !== activeRef.current) {
         activeRef.current = nextId
