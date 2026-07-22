@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { CheckSquare, Loader2, Square } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
+import { CheckSquare, Loader2, Square } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -74,14 +74,14 @@ export function SarprasSection({ report, readOnly }: Props) {
   return (
     <section
       id='section-sarpras'
-      className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+      className='flex scroll-mt-24 flex-col gap-4 rounded-xl border bg-card p-4 text-card-foreground shadow-sm sm:p-6'
     >
       <SectionHeading
         kicker='Sarpras'
         description='Checklist kelengkapan sarana dan prasarana.'
         action={
           <div className='flex flex-col gap-3 sm:flex-row sm:items-center'>
-            <div className='flex gap-2'>
+            <div className='flex flex-wrap gap-2'>
               <Button
                 type='button'
                 variant='outline'
@@ -182,12 +182,12 @@ function SarprasRow({ report, item, existing, readOnly }: RowProps) {
   }
 
   return (
-    <div className='flex items-start gap-2 rounded-md border p-2'>
+    <div className='flex items-start gap-3 rounded-md border p-3'>
       <Checkbox
         checked={isFulfilled}
         onCheckedChange={handleCheckedChange}
         disabled={readOnly}
-        className='mt-1'
+        className='mt-1 size-5'
       />
       <div className='flex-1'>
         <div className='text-sm font-medium'>{item.name}</div>
@@ -197,7 +197,7 @@ function SarprasRow({ report, item, existing, readOnly }: RowProps) {
           onBlur={() => save()}
           disabled={readOnly}
           placeholder='Catatan (opsional)'
-          className='mt-1 h-8 text-xs'
+          className='mt-1 min-h-10 text-xs'
         />
       </div>
     </div>

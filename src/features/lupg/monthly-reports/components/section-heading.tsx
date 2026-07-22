@@ -8,22 +8,32 @@ interface Props {
   action?: React.ReactNode
 }
 
-export function SectionHeading({ kicker, title, description, status, action }: Props) {
+export function SectionHeading({
+  kicker,
+  title,
+  description,
+  status,
+  action,
+}: Props) {
   return (
-    <div className='flex items-start justify-between gap-3'>
+    <div className='flex flex-col items-start justify-between gap-3 sm:flex-row'>
       <div className='flex min-w-0 flex-col gap-1'>
         <div className='flex items-center gap-2'>
-          <span className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+          <span className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
             {kicker}
           </span>
           {status && <StatusDot status={status} />}
         </div>
-        <h3 className='text-lg font-semibold tracking-tight'>{title ?? kicker}</h3>
+        <h3 className='text-lg font-semibold tracking-tight'>
+          {title ?? kicker}
+        </h3>
         {description && (
-          <p className='text-muted-foreground max-w-prose text-sm'>{description}</p>
+          <p className='max-w-prose text-sm text-muted-foreground'>
+            {description}
+          </p>
         )}
       </div>
-      {action && <div className='shrink-0'>{action}</div>}
+      {action && <div className='w-full shrink-0 sm:w-auto'>{action}</div>}
     </div>
   )
 }

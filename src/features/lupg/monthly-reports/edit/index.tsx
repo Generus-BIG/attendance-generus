@@ -1,33 +1,30 @@
-import { ArrowLeft } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
+import { ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { ConfigDrawer } from '@/components/config-drawer'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { useMonthlyReport } from '../../hooks/use-lupg-queries'
-import {
-  formatMonthLabel,
-  monthKeyFromDate,
-} from '../../utils/month-utils'
 import { ReportStatusBadge } from '../../components/report-status-badge'
+import { useMonthlyReport } from '../../hooks/use-lupg-queries'
+import { formatMonthLabel, monthKeyFromDate } from '../../utils/month-utils'
+import { RevealOnScroll } from '../components/reveal-on-scroll'
+import { SectionNav, type SectionItem } from '../components/section-nav'
 import { SubmitCard } from '../components/submit-card'
-import { SensusPreviewSection } from '../sections/sensus-preview-section'
 import { AttendanceMatrixSection } from '../sections/attendance-matrix-section'
-import { ProgramTrackerSection } from '../sections/program-tracker-section'
-import { SarprasSection } from '../sections/sarpras-section'
-import { ShodaqohSection } from '../sections/shodaqoh-section'
-import { MustinSection } from '../sections/mustin-section'
 import { CharacterMonitoringSection } from '../sections/character-monitoring-section'
 import { CharacterTargetSection } from '../sections/character-target-section'
 import { DokumentasiSection } from '../sections/dokumentasi-section'
-import { SectionNav, type SectionItem } from '../components/section-nav'
-import { RevealOnScroll } from '../components/reveal-on-scroll'
+import { MustinSection } from '../sections/mustin-section'
+import { ProgramTrackerSection } from '../sections/program-tracker-section'
+import { SarprasSection } from '../sections/sarpras-section'
+import { SensusPreviewSection } from '../sections/sensus-preview-section'
+import { ShodaqohSection } from '../sections/shodaqoh-section'
 
 interface Props {
   monthlyReportId: string
@@ -143,7 +140,7 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
           <ProfileDropdown />
         </div>
       </Header>
-      <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+      <Main className='flex min-w-0 flex-1 flex-col gap-4 overflow-x-clip sm:gap-6'>
         <div className='flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between'>
           <div className='flex min-w-0 items-start gap-2'>
             <Link
@@ -155,27 +152,36 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
               </Button>
             </Link>
             <div className='flex min-w-0 flex-col gap-1 pt-1'>
-              <span className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.14em]'>
+              <span className='text-[0.6875rem] font-medium tracking-[0.14em] text-muted-foreground uppercase'>
                 Laporan Bulanan
               </span>
-              <h2 className='text-3xl font-semibold tracking-tight text-foreground whitespace-normal wrap-break-word sm:text-[2rem]'>
-                {kelompokName} · {formatMonthLabel(monthKeyFromDate(report.month))}
+              <h2 className='text-2xl font-semibold tracking-tight wrap-break-word whitespace-normal text-foreground sm:text-[2rem]'>
+                {kelompokName} ·{' '}
+                {formatMonthLabel(monthKeyFromDate(report.month))}
               </h2>
-              <p className='text-muted-foreground text-sm'>
+              <p className='max-w-[65ch] text-sm text-muted-foreground'>
                 Isi setiap bagian. Tandai selesai di bawah saat sudah lengkap.
               </p>
+              <div className='pt-1 sm:hidden'>
+                <ReportStatusBadge
+                  status={report.status as 'draft' | 'submitted'}
+                  locked={report.locked}
+                />
+              </div>
             </div>
           </div>
-          <ReportStatusBadge
-            status={report.status as 'draft' | 'submitted'}
-            locked={report.locked}
-          />
+          <div className='hidden sm:block'>
+            <ReportStatusBadge
+              status={report.status as 'draft' | 'submitted'}
+              locked={report.locked}
+            />
+          </div>
         </div>
 
-        <div className='grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]'>
+        <div className='grid min-w-0 gap-6 lg:grid-cols-[220px_minmax(0,1fr)]'>
           <SectionNav sections={SECTIONS} />
 
-          <div className='flex flex-col gap-8 lg:gap-12'>
+          <div className='flex min-w-0 flex-col gap-6 sm:gap-8 lg:gap-12'>
             <RevealOnScroll>
               <SensusPreviewSection report={report} />
             </RevealOnScroll>

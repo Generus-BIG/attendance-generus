@@ -1,26 +1,23 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Lock } from 'lucide-react'
-import { toast } from 'sonner'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { ChevronsLeftRight, Lock } from 'lucide-react'
+import { toast } from 'sonner'
+import { useAuthStore } from '@/stores/auth-store'
+import { type Role } from '@/lib/rbac'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { type Role } from '@/lib/rbac'
-import { useAuthStore } from '@/stores/auth-store'
-import {
-  type MetricReportRow,
-  type MonthlyReportRow,
-} from '../../types'
 import {
   useYearlyMatrixData,
   useUpsertMetricMonth,
 } from '../../hooks/use-lupg-queries'
-import { currentMonthKey } from '../../utils/month-utils'
 import {
   allMonthKeysForYear,
   isMonthEditable,
   monthNameFromKey,
 } from '../../programs/utils/editability'
+import { type MetricReportRow, type MonthlyReportRow } from '../../types'
+import { currentMonthKey } from '../../utils/month-utils'
 import { SectionHeading } from '../components/section-heading'
 
 const CATEGORIES = [
@@ -47,6 +44,7 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
   const typedRole = role as Role
   const isTeamManager = typedRole === 'team_manager'
   const [view, setView] = useState<MatrixView>('kehadiran')
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const year = parseInt(report.month.slice(0, 4), 10)
   const kelompokId = report.kelompok_id
@@ -54,6 +52,22 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
   const current = currentMonthKey()
 
   const { data, isLoading } = useYearlyMatrixData(kelompokId, year)
+
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container || isLoading) return
+    const relevantMonth = report.month.slice(0, 7)
+    const monthHeader = container.querySelector<HTMLElement>(
+      `[data-month-key="${relevantMonth}"]`
+    )
+    if (!monthHeader) return
+    container.scrollLeft = Math.max(
+      0,
+      monthHeader.offsetLeft -
+        container.clientWidth / 2 +
+        monthHeader.clientWidth / 2
+    )
+  }, [isLoading, report.month, view])
 
   const { data: kelompokOptions = [] } = useQuery({
     queryKey: ['lookup_values', 'GROUP'],
@@ -94,14 +108,14 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
   return (
     <section
       id='section-attendance'
-      className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+      className='flex scroll-mt-24 flex-col gap-4 rounded-xl border bg-card p-4 text-card-foreground shadow-sm sm:p-6'
     >
       <SectionHeading
         kicker='Kehadiran'
         title='Attendance Matrix'
         description='Kehadiran dan Piket LUPG per bulan. Toggle view di atas tabel.'
         action={
-          <div className='flex gap-2'>
+          <div className='flex flex-wrap gap-2'>
             <Button
               variant={view === 'kehadiran' ? 'default' : 'outline'}
               size='sm'
@@ -121,51 +135,61 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
       />
       <div>
         {isLoading ? (
-          <div className='text-muted-foreground py-8 text-center'>
+          <div className='py-8 text-center text-muted-foreground'>
             Memuat...
           </div>
         ) : (
-          <div className='overflow-x-auto'>
-            <table className='w-full min-w-240 table-fixed text-sm'>
-              <colgroup>
-                <col className='w-28' />
-                {monthKeys.map((mk) => (
-                  <col key={mk} />
-                ))}
-              </colgroup>
-              <thead>
-                <tr className='border-b'>
-                  <th className='bg-background sticky left-0 z-10 px-2 py-2 text-left font-medium'>
-                    Kategori
-                  </th>
+          <div className='flex flex-col gap-2'>
+            <div className='flex items-center gap-1 text-xs text-muted-foreground lg:hidden'>
+              <ChevronsLeftRight className='size-4' />
+              Geser tabel untuk melihat bulan lain
+            </div>
+            <div
+              ref={scrollContainerRef}
+              className='overflow-x-auto overscroll-x-contain scroll-smooth motion-reduce:scroll-auto'
+            >
+              <table className='w-full min-w-240 table-fixed text-sm'>
+                <colgroup>
+                  <col className='w-28' />
                   {monthKeys.map((mk) => (
-                    <th
-                      key={mk}
-                      className='text-muted-foreground px-1 py-2 text-center text-xs font-medium'
-                    >
-                      {monthNameFromKey(mk).slice(0, 3)}
-                    </th>
+                    <col key={mk} />
                   ))}
-                </tr>
-              </thead>
-              <tbody>
-                {CATEGORIES.map((cat) => (
-                  <MatrixRow
-                    key={cat.code}
-                    category={cat}
-                    monthKeys={monthKeys}
-                    currentMonthKeyValue={current}
-                    kelompokId={kelompokId}
-                    reportByMonthKey={reportByMonthKey}
-                    metricByKey={metricByKey}
-                    userRole={typedRole}
-                    userOwnsKelompok={userOwnsKelompok}
-                    readOnly={readOnly}
-                    view={view}
-                  />
-                ))}
-              </tbody>
-            </table>
+                </colgroup>
+                <thead>
+                  <tr className='border-b'>
+                    <th className='sticky left-0 z-10 bg-background px-2 py-2 text-left font-medium shadow-[1px_0_0_var(--border)]'>
+                      Kategori
+                    </th>
+                    {monthKeys.map((mk) => (
+                      <th
+                        key={mk}
+                        data-month-key={mk}
+                        className='px-1 py-2 text-center text-xs font-medium text-muted-foreground'
+                      >
+                        {monthNameFromKey(mk).slice(0, 3)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {CATEGORIES.map((cat) => (
+                    <MatrixRow
+                      key={cat.code}
+                      category={cat}
+                      monthKeys={monthKeys}
+                      currentMonthKeyValue={current}
+                      kelompokId={kelompokId}
+                      reportByMonthKey={reportByMonthKey}
+                      metricByKey={metricByKey}
+                      userRole={typedRole}
+                      userOwnsKelompok={userOwnsKelompok}
+                      readOnly={readOnly}
+                      view={view}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
@@ -200,7 +224,7 @@ function MatrixRow({
 }: MatrixRowProps) {
   return (
     <tr className='border-b'>
-      <td className='bg-background sticky left-0 z-10 px-2 py-1.5 font-medium'>
+      <td className='sticky left-0 z-10 bg-background px-2 py-1.5 font-medium shadow-[1px_0_0_var(--border)]'>
         {category.label}
       </td>
       {monthKeys.map((mk) => {
@@ -266,7 +290,7 @@ function MatrixCell({
     // out of scope to refactor to key-based remount. We intentionally do
     // NOT depend on existing?.current_value — it would clobber in-flight
     // edits before the save round-trip lands.
-     
+
     setVal(existing?.current_value?.toString() ?? '')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existing?.id, existing?.updated_at])
@@ -293,7 +317,7 @@ function MatrixCell({
   if (disabled) {
     return (
       <div
-        className='text-muted-foreground flex h-7 items-center justify-center gap-1 text-xs tabular-nums'
+        className='flex h-7 items-center justify-center gap-1 text-xs text-muted-foreground tabular-nums'
         title={reason}
       >
         <span>{val ? `${val}%` : '-'}</span>

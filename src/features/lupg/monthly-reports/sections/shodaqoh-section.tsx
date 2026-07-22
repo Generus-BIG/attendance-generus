@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { toast } from 'sonner'
-import {
-  useShodaqoh,
-  useUpsertShodaqoh,
-} from '../../hooks/use-lupg-queries'
-import { type MonthlyReportRow } from '../../types'
+import { useShodaqoh, useUpsertShodaqoh } from '../../hooks/use-lupg-queries'
 import { getPrevMonthShodaqoh } from '../../services/shodaqoh-report.service'
+import { type MonthlyReportRow } from '../../types'
 import { monthKeyFromDate } from '../../utils/month-utils'
 import { SectionHeading } from '../components/section-heading'
 
@@ -59,13 +56,19 @@ export function ShodaqohSection({ report, readOnly }: Props) {
     // changes. Intentional "form mirrors server data" pattern. We deliberately
     // do NOT depend on `existing` (the whole object) since its individual
     // fields would clobber in-flight edits before save completes.
-     
+
     setNominal(existing.nominal?.toString() ?? '')
     setJumlahKK(existing.jumlah_kk?.toString() ?? '')
     setNotes(existing.notes ?? '')
-     
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existing?.id, existing?.updated_at, report.kelompok_id, report.month, readOnly])
+  }, [
+    existing?.id,
+    existing?.updated_at,
+    report.kelompok_id,
+    report.month,
+    readOnly,
+  ])
 
   const save = () => {
     // `nominal` stores raw digits only (see onChange handler); formatting is display-only.
@@ -93,7 +96,7 @@ export function ShodaqohSection({ report, readOnly }: Props) {
   return (
     <section
       id='section-shodaqoh'
-      className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+      className='flex scroll-mt-24 flex-col gap-4 rounded-xl border bg-card p-4 text-card-foreground shadow-sm sm:p-6'
     >
       <SectionHeading
         kicker='Shodaqoh PPG'

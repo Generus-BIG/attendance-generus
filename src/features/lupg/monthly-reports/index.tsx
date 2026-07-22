@@ -1,25 +1,25 @@
 import { useMemo, useState } from 'react'
-import { Plus, Loader2 } from 'lucide-react'
-import { useNavigate } from '@tanstack/react-router'
-import { toast } from 'sonner'
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
+import { Route } from '@/routes/admin/lupg/reports/index'
+import { Plus, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { supabase } from '@/lib/supabase'
+import { Button } from '@/components/ui/button'
+import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { ConfigDrawer } from '@/components/config-drawer'
-import { Button } from '@/components/ui/button'
-import { supabase } from '@/lib/supabase'
-import { Route } from '@/routes/admin/lupg/reports/index'
+import { KelompokSelector } from '../components/kelompok-selector'
+import { ReportCard } from '../components/report-card'
+import { ReportMonthTabs } from '../components/report-month-tabs'
 import {
   useEnsureMonthlyReport,
   useMonthlyReportsWithSubmitter,
 } from '../hooks/use-lupg-queries'
-import { KelompokSelector } from '../components/kelompok-selector'
-import { ReportCard } from '../components/report-card'
-import { ReportMonthTabs } from '../components/report-month-tabs'
 import {
   currentMonthKey,
   firstDayOfMonth,
@@ -114,33 +114,37 @@ export function MonthlyReportsList() {
           <ProfileDropdown />
         </div>
       </Header>
-      <Main className='flex flex-1 flex-col gap-6'>
+      <Main className='flex min-w-0 flex-1 flex-col gap-5 overflow-x-clip sm:gap-6'>
         <div className='flex flex-col gap-1'>
-          <span className='text-muted-foreground text-[0.6875rem] font-medium uppercase tracking-[0.14em]'>
+          <span className='text-[0.6875rem] font-medium tracking-[0.14em] text-muted-foreground uppercase'>
             LUPG
           </span>
-          <h2 className='text-foreground text-3xl font-semibold tracking-tight sm:text-[2rem]'>
+          <h2 className='text-2xl font-semibold tracking-tight text-foreground sm:text-[2rem]'>
             Laporan Bulanan
           </h2>
-          <p className='text-muted-foreground text-sm'>
+          <p className='text-sm text-muted-foreground'>
             {isTeamManager
               ? 'Laporan bulanan untuk kelompok Anda.'
               : 'Laporan bulanan per kelompok.'}
           </p>
         </div>
 
-        <div className='flex flex-wrap items-center gap-2'>
+        <div className='flex flex-col items-stretch gap-2 sm:flex-row sm:items-center'>
           {!isTeamManager && (
             <KelompokSelector
               value={adminKelompokId}
               onChange={setAdminKelompokId}
+              className='min-h-11 w-full sm:min-h-9 sm:w-[180px]'
             />
           )}
-          <div className='flex-1' />
+          <div className='hidden flex-1 sm:block' />
           <Button
+            className='min-h-11 w-full sm:min-h-9 sm:w-auto'
             onClick={handleOpenMonth}
             disabled={!resolvedKelompokId || ensure.isPending}
-            aria-describedby={openDisabledReason ? 'open-month-hint' : undefined}
+            aria-describedby={
+              openDisabledReason ? 'open-month-hint' : undefined
+            }
           >
             {ensure.isPending ? (
               <Loader2
@@ -172,7 +176,7 @@ export function MonthlyReportsList() {
 
         {!resolvedKelompokId ? (
           <div
-            className='border-border text-muted-foreground rounded-lg border border-dashed p-10 text-center'
+            className='rounded-lg border border-dashed border-border p-6 text-center text-muted-foreground sm:p-10'
             role='status'
             aria-live='polite'
           >
@@ -180,7 +184,7 @@ export function MonthlyReportsList() {
           </div>
         ) : isLoading ? (
           <div
-            className='text-muted-foreground flex items-center justify-center py-16'
+            className='flex items-center justify-center py-16 text-muted-foreground'
             role='status'
             aria-live='polite'
           >
@@ -211,14 +215,18 @@ export function MonthlyReportsList() {
           </div>
         ) : (
           <div
-            className='border-border flex flex-col items-center gap-3 rounded-lg border border-dashed p-10 text-center'
+            className='flex flex-col items-stretch gap-3 rounded-lg border border-dashed border-border p-6 text-center sm:items-center sm:p-10'
             role='status'
             aria-live='polite'
           >
-            <p className='text-muted-foreground text-sm'>
+            <p className='text-sm text-muted-foreground'>
               Belum ada laporan untuk {formatMonthLabel(activeMonth)}.
             </p>
-            <Button onClick={handleOpenMonth} disabled={ensure.isPending}>
+            <Button
+              className='min-h-11 w-full sm:w-auto'
+              onClick={handleOpenMonth}
+              disabled={ensure.isPending}
+            >
               {ensure.isPending ? (
                 <Loader2
                   className='mr-2 h-4 w-4 animate-spin motion-reduce:animate-none'

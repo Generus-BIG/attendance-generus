@@ -8,8 +8,7 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,8 +19,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
 import {
   useActivityPhotos,
   useActivityPhotoSignedUrls,
@@ -108,13 +108,7 @@ export function DokumentasiSection({ report, readOnly }: Props) {
       setCompressProgress(0)
       if (fileInputRef.current) fileInputRef.current.value = ''
     },
-    [
-      photos.length,
-      report.id,
-      report.kelompok_id,
-      report.month,
-      uploadMutation,
-    ]
+    [photos.length, report.id, report.kelompok_id, report.month, uploadMutation]
   )
 
   const handleDropUpload = useCallback(
@@ -152,9 +146,7 @@ export function DokumentasiSection({ report, readOnly }: Props) {
       {
         onSuccess: () => toast.success('Foto dihapus'),
         onError: (e: unknown) =>
-          toast.error(
-            e instanceof Error ? e.message : 'Gagal menghapus foto'
-          ),
+          toast.error(e instanceof Error ? e.message : 'Gagal menghapus foto'),
       }
     )
     setDeleteTarget(null)
@@ -243,14 +235,14 @@ export function DokumentasiSection({ report, readOnly }: Props) {
     <>
       <section
         id='section-dokumentasi'
-        className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+        className='flex scroll-mt-24 flex-col gap-4 rounded-xl border bg-card p-4 text-card-foreground shadow-sm sm:p-6'
       >
         <SectionHeading
           kicker='Dokumentasi Kegiatan'
           description={`Upload foto dokumentasi kegiatan bulan ini (maks ${MAX_PHOTOS_PER_REPORT} foto).`}
           action={
             !readOnly && isSelectMode ? (
-              <div className='flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-200'>
+              <div className='flex animate-in items-center gap-2 duration-200 fade-in slide-in-from-top-1'>
                 <Button
                   variant='destructive'
                   size='sm'
@@ -292,7 +284,7 @@ export function DokumentasiSection({ report, readOnly }: Props) {
                   Drag & drop foto atau{' '}
                   <button
                     type='button'
-                    className='font-medium text-primary underline-offset-4 hover:underline'
+                    className='min-h-10 font-medium text-primary underline-offset-4 hover:underline'
                     onClick={() => fileInputRef.current?.click()}
                   >
                     pilih file
@@ -335,9 +327,10 @@ export function DokumentasiSection({ report, readOnly }: Props) {
                     setDragOverIndex(null)
                   }}
                   className={cn(
-                    'group relative flex flex-col gap-2 rounded-lg border bg-muted/30 p-2 transition-all',
-                    isDragging && 'opacity-40 scale-95 border-dashed border-primary/40',
-                    isDragOver && 'border-primary scale-[1.02] bg-primary/5',
+                    'group relative flex flex-col gap-2 rounded-lg border bg-muted/30 p-2 transition-[border-color,background-color,opacity,transform] duration-150',
+                    isDragging &&
+                      'scale-95 border-dashed border-primary/40 opacity-40',
+                    isDragOver && 'scale-[1.02] border-primary bg-primary/5',
                     isSelectMode
                       ? 'cursor-pointer border-primary/20 hover:border-primary/50'
                       : !readOnly && 'cursor-move'
@@ -349,7 +342,7 @@ export function DokumentasiSection({ report, readOnly }: Props) {
                   <button
                     type='button'
                     disabled={isSelectMode}
-                    className='overflow-hidden rounded-md cursor-pointer'
+                    className='min-h-10 cursor-pointer overflow-hidden rounded-md outline outline-black/10 dark:outline-white/10'
                     onClick={(e) => {
                       if (!isSelectMode) {
                         e.stopPropagation()
@@ -360,7 +353,7 @@ export function DokumentasiSection({ report, readOnly }: Props) {
                     <img
                       src={getUrl(photo.storage_path)}
                       alt={photo.caption ?? `Foto ${i + 1}`}
-                      className='aspect-4/3 w-full object-cover transition-transform group-hover:scale-105 pointer-events-none'
+                      className='pointer-events-none aspect-4/3 w-full object-cover'
                       loading='lazy'
                     />
                   </button>
@@ -369,8 +362,10 @@ export function DokumentasiSection({ report, readOnly }: Props) {
                   {!readOnly && (
                     <div
                       className={cn(
-                        'absolute left-4 top-4 z-10 flex h-6 w-6 items-center justify-center rounded bg-white shadow-md border transition-opacity duration-150',
-                        isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                        'absolute top-3 left-3 z-10 flex size-10 items-center justify-center rounded-md border bg-background shadow-md transition-opacity duration-150',
+                        isSelected
+                          ? 'opacity-100'
+                          : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
                       )}
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -378,7 +373,7 @@ export function DokumentasiSection({ report, readOnly }: Props) {
                         type='checkbox'
                         checked={isSelected}
                         onChange={() => toggleSelectPhoto(photo.id)}
-                        className='h-4 w-4 cursor-pointer accent-primary'
+                        className='size-5 cursor-pointer accent-primary'
                       />
                     </div>
                   )}
@@ -404,7 +399,8 @@ export function DokumentasiSection({ report, readOnly }: Props) {
                     <Button
                       variant='destructive'
                       size='icon'
-                      className='absolute right-3 top-3 h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100'
+                      className='absolute top-3 right-3 size-10 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100'
+                      aria-label='Hapus foto'
                       onClick={(e) => {
                         e.stopPropagation()
                         setDeleteTarget(photo)
@@ -433,9 +429,12 @@ export function DokumentasiSection({ report, readOnly }: Props) {
           if (!open) setLightboxIndex(null)
         }}
       >
-        <DialogContent className='max-w-4xl border-none bg-black/95 p-0 [&>button]:hidden'>
+        <DialogContent className='max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-4xl border-none bg-black/95 p-0 [&>button]:hidden'>
+          <DialogTitle className='sr-only'>
+            Pratinjau foto dokumentasi
+          </DialogTitle>
           {lightboxIndex !== null && photos[lightboxIndex] && (
-            <div className='relative flex h-[80vh] items-center justify-center'>
+            <div className='relative flex h-[min(80dvh,48rem)] items-center justify-center px-[max(0.5rem,env(safe-area-inset-left))] py-[max(0.5rem,env(safe-area-inset-top))]'>
               <img
                 src={getUrl(photos[lightboxIndex].storage_path)}
                 alt={photos[lightboxIndex].caption ?? ''}
@@ -446,8 +445,9 @@ export function DokumentasiSection({ report, readOnly }: Props) {
               <Button
                 variant='ghost'
                 size='icon'
-                className='absolute right-2 top-2 text-white hover:bg-white/20'
+                className='absolute top-[max(0.5rem,env(safe-area-inset-top))] right-[max(0.5rem,env(safe-area-inset-right))] size-11 text-white hover:bg-white/20'
                 onClick={() => setLightboxIndex(null)}
+                aria-label='Tutup pratinjau'
               >
                 <X className='h-5 w-5' />
               </Button>
@@ -457,10 +457,9 @@ export function DokumentasiSection({ report, readOnly }: Props) {
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='absolute left-2 top-1/2 -translate-y-1/2 text-white hover:bg-white/20'
-                  onClick={() =>
-                    setLightboxIndex((prev) => (prev ?? 1) - 1)
-                  }
+                  className='absolute top-1/2 left-[max(0.5rem,env(safe-area-inset-left))] size-11 -translate-y-1/2 text-white hover:bg-white/20'
+                  onClick={() => setLightboxIndex((prev) => (prev ?? 1) - 1)}
+                  aria-label='Foto sebelumnya'
                 >
                   <ChevronLeft className='h-6 w-6' />
                 </Button>
@@ -471,10 +470,9 @@ export function DokumentasiSection({ report, readOnly }: Props) {
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='absolute right-2 top-1/2 -translate-y-1/2 text-white hover:bg-white/20'
-                  onClick={() =>
-                    setLightboxIndex((prev) => (prev ?? 0) + 1)
-                  }
+                  className='absolute top-1/2 right-[max(0.5rem,env(safe-area-inset-right))] size-11 -translate-y-1/2 text-white hover:bg-white/20'
+                  onClick={() => setLightboxIndex((prev) => (prev ?? 0) + 1)}
+                  aria-label='Foto berikutnya'
                 >
                   <ChevronRight className='h-6 w-6' />
                 </Button>
@@ -482,7 +480,7 @@ export function DokumentasiSection({ report, readOnly }: Props) {
 
               {/* Caption overlay */}
               {photos[lightboxIndex].caption && (
-                <div className='absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-6 pb-4 pt-8'>
+                <div className='absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-6 pt-8 pb-4'>
                   <p className='text-center text-sm text-white/90'>
                     {photos[lightboxIndex].caption}
                   </p>
@@ -509,9 +507,7 @@ export function DokumentasiSection({ report, readOnly }: Props) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>
-              Hapus
-            </AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete}>Hapus</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -525,7 +521,8 @@ export function DokumentasiSection({ report, readOnly }: Props) {
           <AlertDialogHeader>
             <AlertDialogTitle>Hapus foto terpilih?</AlertDialogTitle>
             <AlertDialogDescription>
-              Sebanyak {selectedIds.length} foto terpilih akan dihapus secara permanen.
+              Sebanyak {selectedIds.length} foto terpilih akan dihapus secara
+              permanen.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

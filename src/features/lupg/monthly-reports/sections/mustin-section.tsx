@@ -150,7 +150,9 @@ function defaultPlaceholder(template: MustinTemplateRow): string {
 }
 
 export function MustinSection({ report, readOnly }: Props) {
-  const { data: notes = [], isLoading: notesLoading } = useMustinNotes(report.id)
+  const { data: notes = [], isLoading: notesLoading } = useMustinNotes(
+    report.id
+  )
   const { data: templates = [], isLoading: templatesLoading } =
     useActiveMustinTemplates()
   const create = useCreateMustinNote()
@@ -225,8 +227,7 @@ export function MustinSection({ report, readOnly }: Props) {
   }
 
   const handleAddFree = () => {
-    const nextSort =
-      (freeNotes[freeNotes.length - 1]?.sort_order ?? 900) + 10
+    const nextSort = (freeNotes[freeNotes.length - 1]?.sort_order ?? 900) + 10
     create.mutate(
       {
         monthly_report_id: report.id,
@@ -248,7 +249,7 @@ export function MustinSection({ report, readOnly }: Props) {
   return (
     <section
       id='section-mustin'
-      className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+      className='flex scroll-mt-24 flex-col gap-4 rounded-xl border bg-card p-4 text-card-foreground shadow-sm sm:p-6'
     >
       <SectionHeading
         kicker='Resume Mustin'
@@ -273,13 +274,13 @@ export function MustinSection({ report, readOnly }: Props) {
       />
       <div className='flex flex-col gap-3'>
         {isLoading ? (
-          <div className='text-muted-foreground flex items-center justify-center py-8'>
+          <div className='flex items-center justify-center py-8 text-muted-foreground'>
             <Loader2 className='mr-2 h-5 w-5 animate-spin' />
             Memuat...
           </div>
         ) : canSeed ? (
           <div className='flex flex-col items-center gap-3 rounded-md border border-dashed p-8 text-center'>
-            <Sparkles className='text-muted-foreground h-6 w-6' />
+            <Sparkles className='h-6 w-6 text-muted-foreground' />
             <div className='text-sm'>
               <div className='font-medium'>Belum ada catatan Mustin</div>
               <div className='text-muted-foreground'>
@@ -288,11 +289,7 @@ export function MustinSection({ report, readOnly }: Props) {
               </div>
             </div>
             <div className='flex flex-wrap justify-center gap-2'>
-              <Button
-                onClick={handleSeed}
-                disabled={seed.isPending}
-                size='sm'
-              >
+              <Button onClick={handleSeed} disabled={seed.isPending} size='sm'>
                 {seed.isPending ? (
                   <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                 ) : (
@@ -312,7 +309,7 @@ export function MustinSection({ report, readOnly }: Props) {
             </div>
           </div>
         ) : notes.length === 0 && readOnly ? (
-          <div className='text-muted-foreground rounded-md border border-dashed p-6 text-center text-sm'>
+          <div className='rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground'>
             Belum ada catatan.
           </div>
         ) : (
@@ -329,7 +326,7 @@ export function MustinSection({ report, readOnly }: Props) {
 
             {!readOnly && missingTemplates.length > 0 && (
               <div className='flex flex-wrap items-center gap-2 rounded-md border border-dashed p-3'>
-                <span className='text-muted-foreground text-xs'>
+                <span className='text-xs text-muted-foreground'>
                   Topik template yang belum ditambahkan:
                 </span>
                 {missingTemplates.map((t) => (
@@ -350,7 +347,7 @@ export function MustinSection({ report, readOnly }: Props) {
 
             {freeNotes.length > 0 && (
               <div className='mt-2 flex flex-col gap-3'>
-                <div className='text-muted-foreground text-xs font-medium uppercase tracking-wide'>
+                <div className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>
                   Catatan lain
                 </div>
                 {freeNotes.map((note) => (
@@ -417,12 +414,12 @@ function MustinTemplateRowView({
 
   return (
     <div className='grid gap-3 rounded-md border p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]'>
-      <div className='bg-muted/30 flex flex-col rounded-md border p-3'>
-        <div className='text-sm font-semibold uppercase tracking-wide'>
+      <div className='flex flex-col rounded-md border bg-muted/30 p-3'>
+        <div className='text-sm font-semibold tracking-wide uppercase'>
           {template.label}
         </div>
         {subs.length > 0 && (
-          <ol className='text-muted-foreground mt-2 list-[lower-alpha] pl-5 text-xs leading-relaxed'>
+          <ol className='mt-2 list-[lower-alpha] pl-5 text-xs leading-relaxed text-muted-foreground'>
             {subs.map((s, i) => (
               <li key={i}>{s}</li>
             ))}
