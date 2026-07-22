@@ -32,6 +32,13 @@ export type ReportingStyle = 'monthly_series' | 'quarterly'
 
 export type CharacterMonitoringLevel = 'ACR' | 'APR' | 'AR' | 'GPN'
 export type CharacterMonitoringStatus =
+  | 'needs_guidance'
+  | 'not_applied'
+  | 'in_progress'
+  | 'consistent'
+  | 'established'
+
+export type CharacterTargetReportStatus =
   | 'needs_discussion'
   | 'needs_guidance'
   | 'not_observed'
@@ -57,23 +64,25 @@ export type CharacterMonitoringActivityUpdate = Omit<
   level_code?: CharacterMonitoringLevel
 }
 
-export type CharacterMonitoringReportRow =
-  Tables['lupg_character_monitoring_reports']['Row'] & {
-    status: CharacterMonitoringStatus
-  }
+export type CharacterMonitoringReportRow = Omit<
+  Tables['lupg_character_monitoring_reports']['Row'],
+  'status'
+> & {
+  status: CharacterMonitoringStatus | null
+}
 
 export type CharacterMonitoringReportInsert = Omit<
   Tables['lupg_character_monitoring_reports']['Insert'],
   'status'
 > & {
-  status?: CharacterMonitoringStatus
+  status?: CharacterMonitoringStatus | null
 }
 
 export type CharacterMonitoringReportUpdate = Omit<
   Tables['lupg_character_monitoring_reports']['Update'],
   'status'
 > & {
-  status?: CharacterMonitoringStatus
+  status?: CharacterMonitoringStatus | null
 }
 
 export type CharacterTargetTemplateStatus =
@@ -129,19 +138,19 @@ export type CharacterTargetItemUpdate = Omit<
 
 export type CharacterTargetReportRow =
   Tables['lupg_character_target_reports']['Row'] & {
-    status: CharacterMonitoringStatus
+    status: CharacterTargetReportStatus
   }
 export type CharacterTargetReportInsert = Omit<
   Tables['lupg_character_target_reports']['Insert'],
   'status'
 > & {
-  status?: CharacterMonitoringStatus
+  status?: CharacterTargetReportStatus
 }
 export type CharacterTargetReportUpdate = Omit<
   Tables['lupg_character_target_reports']['Update'],
   'status'
 > & {
-  status?: CharacterMonitoringStatus
+  status?: CharacterTargetReportStatus
 }
 
 // ============== R2 additions ==============

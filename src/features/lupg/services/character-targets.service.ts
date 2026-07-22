@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import {
-  type CharacterMonitoringStatus,
+  type CharacterTargetReportStatus,
   type CharacterTargetItemInsert,
   type CharacterTargetItemRow,
   type CharacterTargetItemUpdate,
@@ -160,7 +160,8 @@ export async function listActiveCharacterTargetItemsForMonth(
   items: CharacterTargetItemRow[]
 }> {
   const templates = await listActiveCharacterTargetTemplates(year)
-  if (templates.length === 0) return { template: null, templates: [], items: [] }
+  if (templates.length === 0)
+    return { template: null, templates: [], items: [] }
   const templateIds = templates.map((template) => template.id)
 
   const { data, error } = await supabase
@@ -253,7 +254,7 @@ export async function listCharacterTargetReportsBatch(
 export async function upsertCharacterTargetReport(input: {
   monthly_report_id: string
   target_item_id: string
-  status?: CharacterMonitoringStatus
+  status?: CharacterTargetReportStatus
   discussion_flag?: boolean
   realization_percent?: number | null
   material_gap?: string | null
@@ -261,24 +262,44 @@ export async function upsertCharacterTargetReport(input: {
   reference_to_actual?: string | null
   notes?: string | null
 }): Promise<CharacterTargetReportRow> {
+  const payload: Record<string, unknown> = {
+    monthly_report_id: input.monthly_report_id,
+    target_item_id: input.target_item_id,
+    discussion_flag: input.discussion_flag ?? false,
+    realization_percent: input.realization_percent ?? null,
+    material_gap: input.material_gap ?? null,
+    notes: input.notes ?? null,
+  }
+  if (input.status !== undefined) payload.status = input.status
+  if (input.reference_from_actual !== undefined) {
+    payload.reference_from_actual = input.reference_from_actual
+  }
+  if (input.reference_to_actual !== undefined) {
+    payload.reference_to_actual = input.reference_to_actual
+  }
+
   const { data, error } = await supabase
     .from('lupg_character_target_reports')
-    .upsert(
-      {
-        monthly_report_id: input.monthly_report_id,
-        target_item_id: input.target_item_id,
-        status: input.status ?? 'not_observed',
-        discussion_flag: input.discussion_flag ?? false,
-        realization_percent: input.realization_percent ?? null,
-        material_gap: input.material_gap ?? null,
-        reference_from_actual: input.reference_from_actual ?? null,
-        reference_to_actual: input.reference_to_actual ?? null,
-        notes: input.notes ?? null,
-      },
-      { onConflict: 'monthly_report_id,target_item_id' }
-    )
+    .upsert(payload, { onConflict: 'monthly_report_id,target_item_id' })
     .select()
     .single()
   if (error) throw error
   return data as CharacterTargetReportRow
+}
+
+export async function upsertCharacterTargetReports(
+  inputs: Array<{
+    monthly_report_id: string
+    target_item_id: string
+    realization_percent: number
+  }>
+): Promise<CharacterTargetReportRow[]> {
+  if (inputs.length === 0) return []
+
+  const { data, error } = await supabase
+    .from('lupg_character_target_reports')
+    .upsert(inputs, { onConflict: 'monthly_report_id,target_item_id' })
+    .select()
+  if (error) throw error
+  return (data ?? []) as CharacterTargetReportRow[]
 }
