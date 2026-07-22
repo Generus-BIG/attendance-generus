@@ -18,15 +18,26 @@ const AnimationContext = createContext<AnimationContextProps | undefined>(
   undefined
 )
 
-const VALID_PRESETS: AnimationPreset[] = ['simple', 'sleek', 'corporate', 'chill']
+const VALID_PRESETS: AnimationPreset[] = [
+  'simple',
+  'sleek',
+  'corporate',
+  'chill',
+]
 const VALID_TRIGGERS: AnimationTrigger[] = ['both', 'enter', 'exit']
 
-function isValidPreset(value: any): value is AnimationPreset {
-  return VALID_PRESETS.includes(value)
+function isValidPreset(value: unknown): value is AnimationPreset {
+  return (
+    typeof value === 'string' &&
+    VALID_PRESETS.includes(value as AnimationPreset)
+  )
 }
 
-function isValidTrigger(value: any): value is AnimationTrigger {
-  return VALID_TRIGGERS.includes(value)
+function isValidTrigger(value: unknown): value is AnimationTrigger {
+  return (
+    typeof value === 'string' &&
+    VALID_TRIGGERS.includes(value as AnimationTrigger)
+  )
 }
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year

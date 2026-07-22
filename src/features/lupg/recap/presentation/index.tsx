@@ -2,15 +2,25 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Loader2, Maximize2, SlidersHorizontal, X, Minus, Plus } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import {
-  AnimationProvider,
-  usePresentationAnimation,
-} from './context/animation-context'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Maximize2,
+  SlidersHorizontal,
+  X,
+  Minus,
+  Plus,
+} from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
+import { usePalette } from '@/context/palette-provider'
+import { Button } from '@/components/ui/button'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import {
   useActiveCharacterMonitoringActivities,
   useActiveMetrics,
@@ -18,6 +28,8 @@ import {
   useActiveSarprasItems,
   useAllPrograms,
   useCharacterMonitoringReportsBatch,
+  useCharacterTargetItemsForMonth,
+  useCharacterTargetReportsBatch,
   useMonthlyReports,
   useYearlyMetrics,
   useYearlyMetricsDesa,
@@ -34,10 +46,13 @@ import {
   type ShodaqohRow,
 } from '../../types'
 import { firstDayOfMonth, formatMonthLabel } from '../../utils/month-utils'
-import { buildSlides, type Kelompok } from './slides'
+import {
+  AnimationProvider,
+  usePresentationAnimation,
+} from './context/animation-context'
 import { type ActivityPhotoWithUrl } from './slide-renderers/render-dokumentasi'
+import { buildSlides, type Kelompok } from './slides'
 import { usePresPalette } from './use-pres-palette'
-import { usePalette } from '@/context/palette-provider'
 
 interface Props {
   monthKey: string
@@ -53,14 +68,8 @@ export function Presentation(props: Props) {
 }
 
 function AnimationControls() {
-  const {
-    preset,
-    setPreset,
-    trigger,
-    setTrigger,
-    speed,
-    setSpeed,
-  } = usePresentationAnimation()
+  const { preset, setPreset, trigger, setTrigger, speed, setSpeed } =
+    usePresentationAnimation()
   const { palette, setPalette } = usePalette()
 
   const percent = ((speed - 0.25) / 2.75) * 100
@@ -69,21 +78,32 @@ function AnimationControls() {
     <div className='flex flex-col gap-4 text-xs select-none'>
       {/* Transition Selector */}
       <div className='space-y-1.5'>
-        <span className='text-[10px] font-bold uppercase tracking-wider text-muted-foreground'>Transition</span>
+        <span className='text-[10px] font-bold tracking-wider text-muted-foreground uppercase'>
+          Transition
+        </span>
         <div className='flex gap-x-4 text-xs font-semibold'>
           {(['simple', 'sleek', 'corporate', 'chill'] as const).map((p) => {
             const isActive = preset === p
-            const label = p === 'simple' ? 'Simple' : p === 'sleek' ? 'Sleek' : p === 'corporate' ? 'Corporate' : 'Chill'
+            const label =
+              p === 'simple'
+                ? 'Simple'
+                : p === 'sleek'
+                  ? 'Sleek'
+                  : p === 'corporate'
+                    ? 'Corporate'
+                    : 'Chill'
             return (
               <button
                 key={p}
                 onClick={() => setPreset(p)}
-                className='relative transition-colors duration-150 cursor-pointer py-1.5 outline-hidden'
+                className='relative cursor-pointer py-1.5 outline-hidden transition-colors duration-150'
               >
                 <span
                   className={cn(
                     'transition-colors duration-150',
-                    isActive ? 'text-foreground font-bold' : 'text-muted-foreground hover:text-foreground font-medium'
+                    isActive
+                      ? 'font-bold text-foreground'
+                      : 'font-medium text-muted-foreground hover:text-foreground'
                   )}
                 >
                   {label}
@@ -91,7 +111,7 @@ function AnimationControls() {
                 {isActive && (
                   <motion.span
                     layoutId='activePreset'
-                    className='absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full'
+                    className='absolute right-0 bottom-0 left-0 h-0.5 rounded-full bg-primary'
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
@@ -103,21 +123,26 @@ function AnimationControls() {
 
       {/* Animate Trigger Selector */}
       <div className='space-y-1.5 border-t border-border/30 pt-3'>
-        <span className='text-[10px] font-bold uppercase tracking-wider text-muted-foreground'>Animate</span>
+        <span className='text-[10px] font-bold tracking-wider text-muted-foreground uppercase'>
+          Animate
+        </span>
         <div className='flex gap-x-4 text-xs font-semibold'>
           {(['both', 'enter', 'exit'] as const).map((t) => {
             const isActive = trigger === t
-            const label = t === 'both' ? 'Both' : t === 'enter' ? 'On Enter' : 'On Exit'
+            const label =
+              t === 'both' ? 'Both' : t === 'enter' ? 'On Enter' : 'On Exit'
             return (
               <button
                 key={t}
                 onClick={() => setTrigger(t)}
-                className='relative transition-colors duration-150 cursor-pointer py-1.5 outline-hidden'
+                className='relative cursor-pointer py-1.5 outline-hidden transition-colors duration-150'
               >
                 <span
                   className={cn(
                     'transition-colors duration-150',
-                    isActive ? 'text-foreground font-bold' : 'text-muted-foreground hover:text-foreground font-medium'
+                    isActive
+                      ? 'font-bold text-foreground'
+                      : 'font-medium text-muted-foreground hover:text-foreground'
                   )}
                 >
                   {label}
@@ -125,7 +150,7 @@ function AnimationControls() {
                 {isActive && (
                   <motion.span
                     layoutId='activeTrigger'
-                    className='absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full'
+                    className='absolute right-0 bottom-0 left-0 h-0.5 rounded-full bg-primary'
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
@@ -137,50 +162,67 @@ function AnimationControls() {
 
       {/* Palette Theme Selector */}
       <div className='space-y-1.5 border-t border-border/30 pt-3'>
-        <span className='text-[10px] font-bold uppercase tracking-wider text-muted-foreground'>Theme Palette</span>
+        <span className='text-[10px] font-bold tracking-wider text-muted-foreground uppercase'>
+          Theme Palette
+        </span>
         <div className='flex gap-x-4 text-xs font-semibold'>
-          {(['modern-natural', 'anthropic-claude', 'sage-green'] as const).map((pal) => {
-            const isActive = palette === pal
-            const label = pal === 'modern-natural' ? 'Modern' : pal === 'anthropic-claude' ? 'Claude' : 'Sage Green'
-            return (
-              <button
-                key={pal}
-                onClick={() => setPalette(pal)}
-                className='relative transition-colors duration-150 cursor-pointer py-1.5 outline-hidden'
-              >
-                <span
-                  className={cn(
-                    'transition-colors duration-150',
-                    isActive ? 'text-foreground font-bold' : 'text-muted-foreground hover:text-foreground font-medium'
-                  )}
+          {(['modern-natural', 'anthropic-claude', 'sage-green'] as const).map(
+            (pal) => {
+              const isActive = palette === pal
+              const label =
+                pal === 'modern-natural'
+                  ? 'Modern'
+                  : pal === 'anthropic-claude'
+                    ? 'Claude'
+                    : 'Sage Green'
+              return (
+                <button
+                  key={pal}
+                  onClick={() => setPalette(pal)}
+                  className='relative cursor-pointer py-1.5 outline-hidden transition-colors duration-150'
                 >
-                  {label}
-                </span>
-                {isActive && (
-                  <motion.span
-                    layoutId='activePalette'
-                    className='absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full'
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
-              </button>
-            )
-          })}
+                  <span
+                    className={cn(
+                      'transition-colors duration-150',
+                      isActive
+                        ? 'font-bold text-foreground'
+                        : 'font-medium text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {label}
+                  </span>
+                  {isActive && (
+                    <motion.span
+                      layoutId='activePalette'
+                      className='absolute right-0 bottom-0 left-0 h-0.5 rounded-full bg-primary'
+                      transition={{
+                        type: 'spring',
+                        stiffness: 380,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                </button>
+              )
+            }
+          )}
         </div>
       </div>
 
       {/* Speed Slider (corrected logic: left = slow, right = fast) */}
       <div className='space-y-2 border-t border-border/30 pt-3'>
         <div className='flex items-center justify-between'>
-          <label className='text-[10px] font-bold uppercase tracking-wider text-muted-foreground'>
+          <label className='text-[10px] font-bold tracking-wider text-muted-foreground uppercase'>
             Speed
           </label>
-          <span className='text-xs font-mono font-bold text-primary bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10'>
+          <span className='rounded border border-primary/10 bg-primary/5 px-1.5 py-0.5 font-mono text-xs font-bold text-primary'>
             {speed.toFixed(2)}x
           </span>
         </div>
         <div className='flex items-center gap-3'>
-          <span className='text-[10px] text-muted-foreground font-semibold'>Slow</span>
+          <span className='text-[10px] font-semibold text-muted-foreground'>
+            Slow
+          </span>
           <input
             type='range'
             min='0.25'
@@ -188,12 +230,14 @@ function AnimationControls() {
             step='0.25'
             value={speed}
             onChange={(e) => setSpeed(Number(e.target.value))}
-            className='flex-1 appearance-none h-0.5 rounded-lg outline-hidden [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-none [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:duration-100 [&::-webkit-slider-thumb]:hover:scale-125 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-none [&::-moz-range-thumb]:transition-transform [&::-moz-range-thumb]:duration-100 [&::-moz-range-thumb]:hover:scale-125 cursor-pointer'
+            className='h-0.5 flex-1 cursor-pointer appearance-none rounded-lg outline-hidden [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:shadow-none [&::-moz-range-thumb]:transition-transform [&::-moz-range-thumb]:duration-100 [&::-moz-range-thumb]:hover:scale-125 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-none [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:duration-100 [&::-webkit-slider-thumb]:hover:scale-125'
             style={{
               background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${percent}%, var(--border) ${percent}%, var(--border) 100%)`,
             }}
           />
-          <span className='text-[10px] text-muted-foreground font-semibold'>Fast</span>
+          <span className='text-[10px] font-semibold text-muted-foreground'>
+            Fast
+          </span>
         </div>
       </div>
     </div>
@@ -273,7 +317,7 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       if (!isFullscreen) return
-      
+
       if (e.ctrlKey) {
         e.preventDefault()
         const factor = 0.02
@@ -486,6 +530,7 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
     })
 
   const year = parseInt(monthKey.slice(0, 4), 10)
+  const monthIndex = parseInt(monthKey.slice(5, 7), 10)
 
   // Yearly data for program slide charts (R3):
   // - Single-kelompok mode (kelompokFilter set): fetch 12 months for that kelompok
@@ -557,6 +602,12 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
   const { data: metrics = [] } = useActiveMetrics()
   const { data: sarprasItems = [] } = useActiveSarprasItems()
   const { data: mustinTemplates = [] } = useActiveMustinTemplates()
+  const { data: characterTargetData, isLoading: characterTargetItemsLoading } =
+    useCharacterTargetItemsForMonth(year, monthIndex)
+  const {
+    data: characterTargetReports = [],
+    isLoading: characterTargetReportsLoading,
+  } = useCharacterTargetReportsBatch(reportIds)
   const {
     data: characterActivities = [],
     isLoading: characterActivitiesLoading,
@@ -584,9 +635,7 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
       if (error) throw error
       if (!rows || rows.length === 0) return []
 
-      const paths = rows.map(
-        (r: { storage_path: string }) => r.storage_path
-      )
+      const paths = rows.map((r: { storage_path: string }) => r.storage_path)
       const { data: urls } = await supabase.storage
         .from('lupg-activity-photos')
         .createSignedUrls(paths, 3600)
@@ -597,11 +646,7 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
       }
 
       return rows.map(
-        (r: {
-          id: string
-          caption: string | null
-          storage_path: string
-        }) => ({
+        (r: { id: string; caption: string | null; storage_path: string }) => ({
           id: r.id,
           caption: r.caption,
           signedUrl: urlMap.get(r.storage_path) ?? '',
@@ -619,6 +664,8 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
     sarprasQ.isLoading ||
     shodaqohQ.isLoading ||
     mustinQ.isLoading ||
+    characterTargetItemsLoading ||
+    characterTargetReportsLoading ||
     characterActivitiesLoading ||
     characterReportsLoading ||
     activityPhotosQ.isLoading
@@ -639,6 +686,8 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
         shodaqohRows: shodaqohQ.data ?? [],
         mustinRows: mustinQ.data ?? [],
         mustinTemplates,
+        characterTargetItems: characterTargetData?.items ?? [],
+        characterTargetReports,
         characterActivities,
         characterReports,
         kelompokFilter,
@@ -663,6 +712,8 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
       shodaqohQ.data,
       mustinQ.data,
       mustinTemplates,
+      characterTargetData?.items,
+      characterTargetReports,
       characterActivities,
       characterReports,
       kelompokFilter,
@@ -784,7 +835,10 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
         >
           <ChevronLeft className='h-6 w-6' />
         </Button>
-        <div ref={parentRef} className='flex-1 overflow-hidden relative flex items-center justify-center'>
+        <div
+          ref={parentRef}
+          className='relative flex flex-1 items-center justify-center overflow-hidden'
+        >
           {isLoading || !currentSlide ? (
             <div className='flex h-full items-center justify-center text-muted-foreground'>
               <Loader2 className='mr-2 h-6 w-6 animate-spin' />
@@ -802,7 +856,7 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
                   containerType: 'size',
                   background: p.bg,
                 }}
-                className='relative overflow-hidden flex items-center justify-center'
+                className='relative flex items-center justify-center overflow-hidden'
               >
                 <AnimatePresence mode='wait' custom={direction}>
                   <motion.div
@@ -835,7 +889,11 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
                       ref={slideContainerRef}
                       className={cn(
                         'h-full w-full origin-center select-none',
-                        zoom > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''
+                        zoom > 1
+                          ? isDragging
+                            ? 'cursor-grabbing'
+                            : 'cursor-grab'
+                          : ''
                       )}
                       style={{
                         transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
@@ -858,7 +916,7 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
 
               {/* Floating Zoom Controls - visible during fullscreen */}
               {isFullscreen && (
-                <div className='absolute bottom-6 right-6 z-50 flex items-center gap-1 bg-background/85 backdrop-blur border rounded-full px-2 py-1 shadow-lg select-none text-xs font-medium text-foreground transition-opacity hover:opacity-100 opacity-40 duration-200'>
+                <div className='absolute right-6 bottom-6 z-50 flex items-center gap-1 rounded-full border bg-background/85 px-2 py-1 text-xs font-medium text-foreground opacity-40 shadow-lg backdrop-blur transition-opacity duration-200 select-none hover:opacity-100'>
                   <Button
                     variant='ghost'
                     size='icon'
@@ -892,11 +950,11 @@ function PresentationInner({ monthKey, kelompokFilter }: Props) {
                   </Button>
                   {zoom > 1 && (
                     <>
-                      <span className='h-4 w-px bg-border mx-1' />
+                      <span className='mx-1 h-4 w-px bg-border' />
                       <Button
                         variant='ghost'
                         size='sm'
-                        className='h-7 px-2.5 rounded-full text-[10px] hover:bg-muted font-bold'
+                        className='h-7 rounded-full px-2.5 text-[10px] font-bold hover:bg-muted'
                         onClick={() => {
                           triggerZoomTransition()
                           setZoom(1)

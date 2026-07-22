@@ -4,6 +4,7 @@ import {
   type MonthlyReportRow,
 } from '../../../types'
 import {
+  CHARACTER_LEVELS,
   CHARACTER_STATUS_CODES,
   CHARACTER_STATUS_META,
   type CharacterMonitoringJoinedRow,
@@ -21,6 +22,7 @@ import { usePresPalette, type PresPalette } from '../use-pres-palette'
 interface SlideArgs {
   monthLabel: string
   scope: string
+  isSingleKelompok: boolean
   effectiveKelompokList: { id: string; value: string }[]
   reports: MonthlyReportRow[]
   activities: CharacterMonitoringActivityRow[]
@@ -29,44 +31,25 @@ interface SlideArgs {
   totalSlides: number
 }
 
-const PRIORITY_STATUSES = ['needs_discussion', 'needs_guidance'] as const
+const PRIORITY_STATUS: CharacterMonitoringStatus = 'needs_guidance'
+
+const STATUS_TONES: Record<CharacterMonitoringStatus, string> = {
+  needs_guidance: 'oklch(0.58 0.22 27)',
+  not_applied: 'oklch(0.64 0.18 48)',
+  in_progress: 'oklch(0.7 0.16 80)',
+  consistent: 'oklch(0.62 0.16 125)',
+  established: 'oklch(0.57 0.15 155)',
+}
 
 function statusColors(
   status: CharacterMonitoringStatus,
   p: PresPalette
 ): { background: string; color: string; border: string } {
-  if (status === 'needs_discussion') {
-    return {
-      background: `color-mix(in oklch, ${p.chart[4]} 13%, ${p.bg})`,
-      color: p.chart[4],
-      border: p.chart[4],
-    }
-  }
-  if (status === 'needs_guidance') {
-    return {
-      background: `color-mix(in oklch, ${p.warning} 16%, ${p.bg})`,
-      color: p.warning,
-      border: p.warning,
-    }
-  }
-  if (status === 'established') {
-    return {
-      background: `color-mix(in oklch, ${p.success} 15%, ${p.bg})`,
-      color: p.success,
-      border: p.success,
-    }
-  }
-  if (status === 'in_progress') {
-    return {
-      background: `color-mix(in oklch, ${p.warning} 18%, ${p.bg})`,
-      color: p.warning,
-      border: p.warning,
-    }
-  }
+  const tone = STATUS_TONES[status]
   return {
-    background: `color-mix(in oklch, ${p.muted} 10%, ${p.bg})`,
-    color: p.muted,
-    border: p.rule,
+    background: `color-mix(in oklch, ${tone} 14%, ${p.bg})`,
+    color: `color-mix(in oklch, ${tone} 78%, ${p.ink})`,
+    border: `color-mix(in oklch, ${tone} 65%, ${p.rule})`,
   }
 }
 
@@ -114,8 +97,9 @@ function buildScopedData(
   )
   const reportIds = new Set(scopedReports.map((report) => report.id))
   const activityIds = new Set(activities.map((activity) => activity.id))
-  const scopedRows = characterReports.filter((row) =>
-    reportIds.has(row.monthly_report_id) && activityIds.has(row.activity_id)
+  const scopedRows = characterReports.filter(
+    (row) =>
+      reportIds.has(row.monthly_report_id) && activityIds.has(row.activity_id)
   )
   const sortedActivities = sortCharacterActivities(activities)
   return { scopedReports, scopedRows, sortedActivities }
@@ -142,9 +126,7 @@ function buildAgendaRows(
   const joined: CharacterMonitoringJoinedRow[] = []
   for (const row of scopedRows) {
     const status = normalizeCharacterStatus(row.status)
-    if (status !== PRIORITY_STATUSES[0] && status !== PRIORITY_STATUSES[1]) {
-      continue
-    }
+    if (status !== PRIORITY_STATUS) continue
 
     const activity = activityById.get(row.activity_id)
     const monthlyReport = monthlyReportById.get(row.monthly_report_id)
@@ -169,33 +151,31 @@ function buildStatusCounts(
     'effectiveKelompokList' | 'reports' | 'activities' | 'characterReports'
   >
 ) {
-  const { effectiveKelompokList } = args
   const { scopedReports, scopedRows, sortedActivities } = buildScopedData(args)
   const counts = countCharacterStatuses(scopedRows)
-  const observedCells = new Set(
-    scopedRows.map((row) => `${row.monthly_report_id}_${row.activity_id}`)
+  const assessedCells = new Set(
+    scopedRows
+      .filter((row) => normalizeCharacterStatus(row.status) !== null)
+      .map((row) => `${row.monthly_report_id}_${row.activity_id}`)
   )
-
-  let missing = 0
-  for (const report of scopedReports) {
-    for (const activity of sortedActivities) {
-      if (!observedCells.has(`${report.id}_${activity.id}`)) missing += 1
-    }
+  const totalPossible = scopedReports.length * sortedActivities.length
+  return {
+    counts,
+    unassessed: Math.max(0, totalPossible - assessedCells.size),
+    scopedReports,
+    scopedRows,
+    sortedActivities,
   }
-
-  const unopened = Math.max(
-    0,
-    (effectiveKelompokList.length - scopedReports.length) *
-    sortedActivities.length
-  )
-  counts.not_observed += missing + unopened
-  return { counts, scopedReports, scopedRows, sortedActivities }
 }
 
 function AgendaBody(
   args: Pick<
     SlideArgs,
-    'effectiveKelompokList' | 'reports' | 'activities' | 'characterReports'
+    | 'effectiveKelompokList'
+    | 'reports'
+    | 'activities'
+    | 'characterReports'
+    | 'isSingleKelompok'
   >
 ) {
   const p = usePresPalette()
@@ -216,12 +196,17 @@ function AgendaBody(
         </div>
       ) : (
         <div className='grid gap-4'>
-          {agendaRows.slice(0, 12).map((row, index) => {
+          {agendaRows.map((row, index) => {
             const status = normalizeCharacterStatus(row.report.status)
+            if (!status) return null
             return (
               <div
                 key={row.report.id}
-                className='grid grid-cols-[4rem_minmax(0,0.8fr)_minmax(0,1.4fr)_minmax(0,1.5fr)] gap-5 border-b pb-4'
+                className={
+                  args.isSingleKelompok
+                    ? 'grid grid-cols-[4rem_minmax(0,0.55fr)_minmax(0,1.4fr)_minmax(0,1.5fr)] gap-5 border-b pb-4'
+                    : 'grid grid-cols-[4rem_minmax(0,0.8fr)_minmax(0,1.4fr)_minmax(0,1.5fr)] gap-5 border-b pb-4'
+                }
                 style={{ borderColor: p.rule }}
               >
                 <div
@@ -247,16 +232,18 @@ function AgendaBody(
                   >
                     {row.activity.level_code}
                   </div>
-                  <div
-                    className='whitespace-normal'
-                    style={{
-                      color: p.primary,
-                      fontSize: 'clamp(1rem, 1.35vw, 1.45rem)',
-                      fontWeight: 800,
-                    }}
-                  >
-                    {row.kelompokName}
-                  </div>
+                  {!args.isSingleKelompok ? (
+                    <div
+                      className='whitespace-normal'
+                      style={{
+                        color: p.primary,
+                        fontSize: 'clamp(1rem, 1.35vw, 1.45rem)',
+                        fontWeight: 800,
+                      }}
+                    >
+                      {row.kelompokName}
+                    </div>
+                  ) : null}
                 </div>
                 <div
                   className='min-w-0 whitespace-normal'
@@ -279,7 +266,7 @@ function AgendaBody(
                       lineHeight: 1.35,
                     }}
                   >
-                    {row.report.notes || 'Belum ada catatan.'}
+                    {row.report.notes || 'Catatan pembinaan belum diisi.'}
                   </div>
                 </div>
               </div>
@@ -294,11 +281,15 @@ function AgendaBody(
 function SummaryBody(
   args: Pick<
     SlideArgs,
-    'effectiveKelompokList' | 'reports' | 'activities' | 'characterReports'
+    | 'effectiveKelompokList'
+    | 'reports'
+    | 'activities'
+    | 'characterReports'
+    | 'isSingleKelompok'
   >
 ) {
   const p = usePresPalette()
-  const { counts, scopedReports, scopedRows, sortedActivities } =
+  const { counts, unassessed, scopedReports, scopedRows, sortedActivities } =
     buildStatusCounts(args)
   const max = Math.max(
     ...CHARACTER_STATUS_CODES.map((status) => counts[status]),
@@ -354,61 +345,214 @@ function SummaryBody(
             </div>
           </div>
         ))}
+        <div className='grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-4'>
+          <div
+            style={{
+              color: p.muted,
+              fontFamily: p.fontMono,
+              fontSize: 'clamp(0.68rem, 0.9vw, 0.95rem)',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Belum dinilai
+          </div>
+          <div
+            className='text-right tabular-nums'
+            style={{
+              color: p.muted,
+              fontFamily: p.fontMono,
+              fontSize: 'clamp(1.5rem, 2.8vw, 3rem)',
+              fontWeight: 800,
+            }}
+          >
+            {unassessed}
+          </div>
+        </div>
       </div>
 
       <DataPane>
         <div className='grid gap-3'>
-          {args.effectiveKelompokList.map((kelompok) => {
-            const report = reportByKelompok.get(kelompok.id)
-            const reportRows = report ? (rowsByReport.get(report.id) ?? []) : []
-            const byActivity = new Map(
-              reportRows.map((row) => [row.activity_id, row])
-            )
-            const kelompokCounts = {
-              needs_discussion: 0,
-              needs_guidance: 0,
-              not_observed: 0,
-              in_progress: 0,
-              established: 0,
-            } satisfies Record<CharacterMonitoringStatus, number>
+          {args.isSingleKelompok
+            ? CHARACTER_LEVELS.map((level) => {
+                const report = scopedReports[0]
+                const reportRows = report
+                  ? (rowsByReport.get(report.id) ?? [])
+                  : []
+                const byActivity = new Map(
+                  reportRows.map((row) => [row.activity_id, row])
+                )
+                const levelActivities = sortedActivities.filter(
+                  (activity) => activity.level_code === level
+                )
+                if (levelActivities.length === 0) return null
 
-            for (const activity of sortedActivities) {
-              const status = normalizeCharacterStatus(
-                byActivity.get(activity.id)?.status
-              )
-              kelompokCounts[status] += 1
-            }
+                const levelCounts = {
+                  needs_guidance: 0,
+                  not_applied: 0,
+                  in_progress: 0,
+                  consistent: 0,
+                  established: 0,
+                } satisfies Record<CharacterMonitoringStatus, number>
+                let levelUnassessed = 0
 
-            return (
-              <div
-                key={kelompok.id}
-                className='grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] items-center gap-4 border-b py-2'
-                style={{ borderColor: p.rule }}
-              >
-                <div
-                  className='min-w-0 whitespace-normal'
-                  style={{
-                    color: p.ink,
-                    fontSize: 'clamp(0.95rem, 1.2vw, 1.25rem)',
-                    fontWeight: 800,
-                  }}
-                >
-                  {kelompok.value}
-                </div>
-                <div className='flex min-w-0 flex-wrap justify-end gap-1.5'>
-                  {CHARACTER_STATUS_CODES.map((status) =>
-                    kelompokCounts[status] > 0 ? (
-                      <StatusChip
-                        key={status}
-                        status={status}
-                        count={kelompokCounts[status]}
-                      />
-                    ) : null
-                  )}
-                </div>
-              </div>
-            )
-          })}
+                for (const activity of levelActivities) {
+                  const status = normalizeCharacterStatus(
+                    byActivity.get(activity.id)?.status
+                  )
+                  if (status) levelCounts[status] += 1
+                  else levelUnassessed += 1
+                }
+
+                return (
+                  <div
+                    key={level}
+                    className='grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-4 border-b py-3'
+                    style={{ borderColor: p.rule }}
+                  >
+                    <div
+                      style={{
+                        color: p.ink,
+                        fontFamily: p.fontMono,
+                        fontSize: 'clamp(1rem, 1.35vw, 1.45rem)',
+                        fontWeight: 800,
+                        letterSpacing: '0.08em',
+                      }}
+                    >
+                      {level}
+                    </div>
+                    <div className='flex min-w-0 flex-wrap justify-end gap-1.5'>
+                      {!report ? (
+                        <span
+                          className='inline-flex items-center rounded-md border px-2.5 py-1'
+                          style={{
+                            borderColor: p.rule,
+                            color: p.muted,
+                            fontFamily: p.fontMono,
+                            fontSize: 'clamp(0.68rem, 0.9vw, 0.95rem)',
+                            fontWeight: 700,
+                          }}
+                        >
+                          Laporan belum dibuat
+                        </span>
+                      ) : (
+                        <>
+                          {CHARACTER_STATUS_CODES.map((status) =>
+                            levelCounts[status] > 0 ? (
+                              <StatusChip
+                                key={status}
+                                status={status}
+                                count={levelCounts[status]}
+                              />
+                            ) : null
+                          )}
+                          {levelUnassessed > 0 ? (
+                            <span
+                              className='inline-flex items-center rounded-md border px-2.5 py-1'
+                              style={{
+                                borderColor: p.rule,
+                                color: p.muted,
+                                fontFamily: p.fontMono,
+                                fontSize: 'clamp(0.68rem, 0.9vw, 0.95rem)',
+                                fontWeight: 700,
+                              }}
+                            >
+                              Belum dinilai {levelUnassessed}
+                            </span>
+                          ) : null}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )
+              })
+            : args.effectiveKelompokList.map((kelompok) => {
+                const report = reportByKelompok.get(kelompok.id)
+                const reportRows = report
+                  ? (rowsByReport.get(report.id) ?? [])
+                  : []
+                const byActivity = new Map(
+                  reportRows.map((row) => [row.activity_id, row])
+                )
+                const kelompokCounts = {
+                  needs_guidance: 0,
+                  not_applied: 0,
+                  in_progress: 0,
+                  consistent: 0,
+                  established: 0,
+                } satisfies Record<CharacterMonitoringStatus, number>
+                let kelompokUnassessed = 0
+
+                for (const activity of sortedActivities) {
+                  const status = normalizeCharacterStatus(
+                    byActivity.get(activity.id)?.status
+                  )
+                  if (status) kelompokCounts[status] += 1
+                  else kelompokUnassessed += 1
+                }
+
+                return (
+                  <div
+                    key={kelompok.id}
+                    className='grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] items-center gap-4 border-b py-2'
+                    style={{ borderColor: p.rule }}
+                  >
+                    <div
+                      className='min-w-0 whitespace-normal'
+                      style={{
+                        color: p.ink,
+                        fontSize: 'clamp(0.95rem, 1.2vw, 1.25rem)',
+                        fontWeight: 800,
+                      }}
+                    >
+                      {kelompok.value}
+                    </div>
+                    <div className='flex min-w-0 flex-wrap justify-end gap-1.5'>
+                      {!report ? (
+                        <span
+                          className='inline-flex items-center rounded-md border px-2.5 py-1'
+                          style={{
+                            borderColor: p.rule,
+                            color: p.muted,
+                            fontFamily: p.fontMono,
+                            fontSize: 'clamp(0.68rem, 0.9vw, 0.95rem)',
+                            fontWeight: 700,
+                          }}
+                        >
+                          Laporan belum dibuat
+                        </span>
+                      ) : (
+                        <>
+                          {CHARACTER_STATUS_CODES.map((status) =>
+                            kelompokCounts[status] > 0 ? (
+                              <StatusChip
+                                key={status}
+                                status={status}
+                                count={kelompokCounts[status]}
+                              />
+                            ) : null
+                          )}
+                          {kelompokUnassessed > 0 ? (
+                            <span
+                              className='inline-flex items-center rounded-md border px-2.5 py-1'
+                              style={{
+                                borderColor: p.rule,
+                                color: p.muted,
+                                fontFamily: p.fontMono,
+                                fontSize: 'clamp(0.68rem, 0.9vw, 0.95rem)',
+                                fontWeight: 700,
+                              }}
+                            >
+                              Belum dinilai {kelompokUnassessed}
+                            </span>
+                          ) : null}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
         </div>
       </DataPane>
     </div>
@@ -419,6 +563,7 @@ export function renderCharacterAgendaSlide(args: SlideArgs): Slide {
   const {
     monthLabel,
     scope,
+    isSingleKelompok,
     effectiveKelompokList,
     reports,
     activities,
@@ -429,11 +574,11 @@ export function renderCharacterAgendaSlide(args: SlideArgs): Slide {
 
   return {
     key: 'character-agenda',
-    title: 'Agenda 29 Karakter',
+    title: 'Penerapan 29 Karakter — Perlu Pembinaan',
     render: () => (
       <SlideFrame
-        eyebrow='29 KARAKTER'
-        title='Agenda 29 Karakter'
+        eyebrow='PENERAPAN 29 KARAKTER'
+        title='Perlu Pembinaan'
         meta={monthLabel}
         scope={scope}
         slideNumber={slideNumber}
@@ -441,6 +586,7 @@ export function renderCharacterAgendaSlide(args: SlideArgs): Slide {
       >
         <AgendaBody
           effectiveKelompokList={effectiveKelompokList}
+          isSingleKelompok={isSingleKelompok}
           reports={reports}
           activities={activities}
           characterReports={characterReports}
@@ -454,6 +600,7 @@ export function renderCharacterSummarySlide(args: SlideArgs): Slide {
   const {
     monthLabel,
     scope,
+    isSingleKelompok,
     effectiveKelompokList,
     reports,
     activities,
@@ -464,11 +611,11 @@ export function renderCharacterSummarySlide(args: SlideArgs): Slide {
 
   return {
     key: 'character-summary',
-    title: 'Ringkasan Penerapan 29 Karakter',
+    title: 'Penerapan 29 Karakter',
     render: () => (
       <SlideFrame
-        eyebrow='29 KARAKTER'
-        title='Ringkasan Penerapan 29 Karakter'
+        eyebrow='PENERAPAN 29 KARAKTER'
+        title='Distribusi Penerapan'
         meta={monthLabel}
         scope={scope}
         slideNumber={slideNumber}
@@ -476,6 +623,7 @@ export function renderCharacterSummarySlide(args: SlideArgs): Slide {
       >
         <SummaryBody
           effectiveKelompokList={effectiveKelompokList}
+          isSingleKelompok={isSingleKelompok}
           reports={reports}
           activities={activities}
           characterReports={characterReports}

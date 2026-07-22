@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { Flag } from 'lucide-react'
-
 import {
   Card,
   CardContent,
@@ -38,7 +37,8 @@ export function CharacterTargetRecap({
   rows,
 }: Props) {
   const kelompokById = useMemo(
-    () => new Map(kelompokList.map((kelompok) => [kelompok.id, kelompok.value])),
+    () =>
+      new Map(kelompokList.map((kelompok) => [kelompok.id, kelompok.value])),
     [kelompokList]
   )
 
@@ -51,7 +51,8 @@ export function CharacterTargetRecap({
         report,
         item,
         row: rowByReportItem.get(`${report.id}_${item.id}`),
-        kelompokName: kelompokById.get(report.kelompok_id) ?? report.kelompok_id,
+        kelompokName:
+          kelompokById.get(report.kelompok_id) ?? report.kelompok_id,
       }))
     )
   }, [items, kelompokById, reports, rows])
@@ -94,16 +95,14 @@ export function CharacterTargetRecap({
     >()
     for (const { item, row } of reportRows) {
       const key = `${item.level_code}__${item.category_label}`
-      const summary =
-        map.get(key) ??
-        {
-          level: item.level_code,
-          category: item.category_label,
-          total: 0,
-          filled: 0,
-          realizationSum: 0,
-          discussion: 0,
-        }
+      const summary = map.get(key) ?? {
+        level: item.level_code,
+        category: item.category_label,
+        total: 0,
+        filled: 0,
+        realizationSum: 0,
+        discussion: 0,
+      }
       summary.total += 1
       if (
         row?.realization_percent !== null &&
@@ -123,7 +122,8 @@ export function CharacterTargetRecap({
 
   const filledRows = reportRows.filter(
     ({ row }) =>
-      row?.realization_percent !== null && row?.realization_percent !== undefined
+      row?.realization_percent !== null &&
+      row?.realization_percent !== undefined
   )
   const averageRealization =
     filledRows.length > 0
@@ -139,15 +139,14 @@ export function CharacterTargetRecap({
   return (
     <Card className='print:break-inside-avoid print:shadow-none'>
       <CardHeader>
-        <CardTitle>Materi Target 29 Karakter</CardTitle>
+        <CardTitle>Target Capaian Materi</CardTitle>
         <CardDescription>
-          Rekap realisasi target materi, kekurangan materi, dan flag
-          musyawarah.
+          Rekap realisasi target materi, kekurangan materi, dan flag musyawarah.
         </CardDescription>
       </CardHeader>
       <CardContent className='flex flex-col gap-6'>
         {items.length === 0 ? (
-          <div className='text-muted-foreground rounded-md border border-dashed p-6 text-center text-sm'>
+          <div className='rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground'>
             Belum ada template materi aktif untuk bulan ini.
           </div>
         ) : (
@@ -183,52 +182,54 @@ export function CharacterTargetRecap({
                           </TableCell>
                         </TableRow>
                       ) : (
-                        agendaRows.map(({ row, item, kelompokName, report }) => (
-                          <TableRow key={`${report.id}_${item.id}`}>
-                            <TableCell className='max-w-[14ch] font-medium wrap-break-word whitespace-normal'>
-                              {kelompokName}
-                            </TableCell>
-                            <TableCell className='max-w-[32ch] wrap-break-word whitespace-normal'>
-                              <div className='flex items-start gap-2'>
-                                {row?.discussion_flag ? (
-                                  <Flag className='mt-1 h-3.5 w-3.5 shrink-0 text-rose-600' />
-                                ) : null}
-                                <div>
-                                  <p className='font-medium'>
-                                    {item.material_label}
-                                  </p>
-                                  <p className='text-muted-foreground text-xs'>
-                                    {item.level_code} · {item.category_label}
-                                  </p>
-                                  {row?.notes ? (
-                                    <p className='text-muted-foreground mt-1 text-xs'>
-                                      {row.notes}
-                                    </p>
+                        agendaRows.map(
+                          ({ row, item, kelompokName, report }) => (
+                            <TableRow key={`${report.id}_${item.id}`}>
+                              <TableCell className='max-w-[14ch] font-medium wrap-break-word whitespace-normal'>
+                                {kelompokName}
+                              </TableCell>
+                              <TableCell className='max-w-[32ch] wrap-break-word whitespace-normal'>
+                                <div className='flex items-start gap-2'>
+                                  {row?.discussion_flag ? (
+                                    <Flag className='mt-1 h-3.5 w-3.5 shrink-0 text-rose-600' />
                                   ) : null}
+                                  <div>
+                                    <p className='font-medium'>
+                                      {item.material_label}
+                                    </p>
+                                    <p className='text-xs text-muted-foreground'>
+                                      {item.level_code} · {item.category_label}
+                                    </p>
+                                    {row?.notes ? (
+                                      <p className='mt-1 text-xs text-muted-foreground'>
+                                        {row.notes}
+                                      </p>
+                                    ) : null}
+                                  </div>
                                 </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className='font-semibold tabular-nums'>
-                              {row?.realization_percent !== null &&
-                              row?.realization_percent !== undefined ? (
-                                <span
-                                  className={
-                                    row.realization_percent < 100
-                                      ? 'text-amber-600 dark:text-amber-400'
-                                      : 'text-emerald-600 dark:text-emerald-400'
-                                  }
-                                >
-                                  {row.realization_percent}%
-                                </span>
-                              ) : (
-                                '—'
-                              )}
-                            </TableCell>
-                            <TableCell className='max-w-[34ch] text-sm wrap-break-word whitespace-normal text-muted-foreground'>
-                              {row?.material_gap || '—'}
-                            </TableCell>
-                          </TableRow>
-                        ))
+                              </TableCell>
+                              <TableCell className='font-semibold tabular-nums'>
+                                {row?.realization_percent !== null &&
+                                row?.realization_percent !== undefined ? (
+                                  <span
+                                    className={
+                                      row.realization_percent < 100
+                                        ? 'text-amber-600 dark:text-amber-400'
+                                        : 'text-emerald-600 dark:text-emerald-400'
+                                    }
+                                  >
+                                    {row.realization_percent}%
+                                  </span>
+                                ) : (
+                                  '—'
+                                )}
+                              </TableCell>
+                              <TableCell className='max-w-[34ch] text-sm wrap-break-word whitespace-normal text-muted-foreground'>
+                                {row?.material_gap || '—'}
+                              </TableCell>
+                            </TableRow>
+                          )
+                        )
                       )}
                     </TableBody>
                   </Table>
@@ -242,7 +243,9 @@ export function CharacterTargetRecap({
                   </h3>
                   <p className='mt-1 text-xs text-muted-foreground'>
                     Rata-rata desa:{' '}
-                    {averageRealization === null ? '—' : `${averageRealization}%`}
+                    {averageRealization === null
+                      ? '—'
+                      : `${averageRealization}%`}
                   </p>
                 </div>
                 <div className='divide-y divide-border/70'>
@@ -254,10 +257,10 @@ export function CharacterTargetRecap({
                     return (
                       <div
                         key={`${summary.level}_${summary.category}`}
-                        className='grid grid-cols-[minmax(0,1fr)_4rem] items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors duration-150 group'
+                        className='group grid grid-cols-[minmax(0,1fr)_4rem] items-center gap-3 px-4 py-3 transition-colors duration-150 hover:bg-muted/30'
                       >
                         <div className='min-w-0'>
-                          <p className='truncate text-sm font-semibold text-foreground/80 group-hover:text-foreground transition-colors duration-150'>
+                          <p className='truncate text-sm font-semibold text-foreground/80 transition-colors duration-150 group-hover:text-foreground'>
                             {summary.category}
                           </p>
                           <p className='text-xs text-muted-foreground'>
@@ -276,7 +279,7 @@ export function CharacterTargetRecap({
                             />
                           </div>
                         </div>
-                        <div className='text-right text-xl font-bold tabular-nums text-foreground/80 group-hover:text-foreground transition-colors duration-150'>
+                        <div className='text-right text-xl font-bold text-foreground/80 tabular-nums transition-colors duration-150 group-hover:text-foreground'>
                           {average === null ? '—' : `${average}%`}
                         </div>
                       </div>
