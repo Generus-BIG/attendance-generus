@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
+import { type Role } from '@/lib/rbac'
+import { cn } from '@/lib/utils'
 import {
   Card,
   CardContent,
@@ -15,8 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { type Role } from '@/lib/rbac'
-import { cn } from '@/lib/utils'
 import {
   type MonthlyReportRow,
   type ProgramDefinitionRow,
@@ -92,7 +92,7 @@ export function ProgramClusterBody({
     return m
   }, [programReports, program.code])
 
-  const renderRow = (mk: string) => {
+  const renderRow = (mk: string, layout: 'row' | 'card' = 'row') => {
     const report = reportByMonthKey.get(mk)
     const row = report ? programRowByReportId.get(report.id) : undefined
     const editability = isMonthEditable(
@@ -111,13 +111,58 @@ export function ProgramClusterBody({
         programCode={program.code}
         existing={row}
         editability={editability}
+        layout={layout}
       />
     )
   }
 
   return (
     <div className='flex flex-col gap-3'>
-      <div className='overflow-x-auto'>
+      <div className='flex flex-col gap-2 md:hidden'>
+        {past.length > 0 ? (
+          <button
+            type='button'
+            onClick={() => setShowPast((value) => !value)}
+            aria-expanded={showPast}
+            className='flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-dashed text-xs text-muted-foreground transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+          >
+            <ChevronRight
+              className={cn(
+                'size-3 transition-transform motion-reduce:transition-none',
+                showPast && 'rotate-90'
+              )}
+            />
+            {showPast
+              ? 'Sembunyikan bulan lalu'
+              : `Tampilkan ${past.length} bulan lalu`}
+          </button>
+        ) : null}
+        {showPast ? past.map((monthKey) => renderRow(monthKey, 'card')) : null}
+        {current ? renderRow(current, 'card') : null}
+        {future.length > 0 ? (
+          <button
+            type='button'
+            onClick={() => setShowFuture((value) => !value)}
+            aria-expanded={showFuture}
+            className='flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-dashed text-xs text-muted-foreground transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+          >
+            <ChevronRight
+              className={cn(
+                'size-3 transition-transform motion-reduce:transition-none',
+                showFuture && 'rotate-90'
+              )}
+            />
+            {showFuture
+              ? 'Sembunyikan bulan mendatang'
+              : `Tampilkan ${future.length} bulan mendatang`}
+          </button>
+        ) : null}
+        {showFuture
+          ? future.map((monthKey) => renderRow(monthKey, 'card'))
+          : null}
+      </div>
+
+      <div className='hidden overflow-x-auto md:block'>
         <Table>
           <TableHeader>
             <TableRow>
@@ -151,7 +196,7 @@ export function ProgramClusterBody({
                     type='button'
                     onClick={() => setShowPast((v) => !v)}
                     aria-expanded={showPast}
-                    className='text-muted-foreground hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center justify-center gap-2 py-2 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none'
+                    className='flex w-full items-center justify-center gap-2 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
                   >
                     <ChevronRight
                       className={cn(
@@ -167,7 +212,7 @@ export function ProgramClusterBody({
               </TableRow>
             )}
 
-            {showPast && past.map(renderRow)}
+            {showPast && past.map((monthKey) => renderRow(monthKey))}
 
             {current && renderRow(current)}
 
@@ -178,7 +223,7 @@ export function ProgramClusterBody({
                     type='button'
                     onClick={() => setShowFuture((v) => !v)}
                     aria-expanded={showFuture}
-                    className='text-muted-foreground hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center justify-center gap-2 py-2 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none'
+                    className='flex w-full items-center justify-center gap-2 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
                   >
                     <ChevronRight
                       className={cn(
@@ -194,7 +239,7 @@ export function ProgramClusterBody({
               </TableRow>
             )}
 
-            {showFuture && future.map(renderRow)}
+            {showFuture && future.map((monthKey) => renderRow(monthKey))}
           </TableBody>
         </Table>
       </div>
@@ -209,7 +254,8 @@ export function ProgramClusterCard(props: Props) {
       <CardHeader>
         <CardTitle>{props.program.name}</CardTitle>
         <CardDescription>
-          {props.program.denominator_label} → {props.program.count_label} (3 cluster)
+          {props.program.denominator_label} → {props.program.count_label} (3
+          cluster)
         </CardDescription>
       </CardHeader>
       <CardContent>
