@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -16,6 +17,7 @@ interface Props {
     value: string
     label: string
   }
+  className?: string
 }
 
 export function KelompokSelector({
@@ -23,6 +25,7 @@ export function KelompokSelector({
   onChange,
   placeholder,
   allOption,
+  className,
 }: Props) {
   const { data: options = [] } = useQuery({
     queryKey: ['lookup_values', 'GROUP'],
@@ -39,7 +42,7 @@ export function KelompokSelector({
 
   return (
     <Select value={value ?? undefined} onValueChange={onChange}>
-      <SelectTrigger className='w-[180px]'>
+      <SelectTrigger className={cn('w-[180px]', className)}>
         <SelectValue placeholder={placeholder ?? 'Pilih kelompok'} />
       </SelectTrigger>
       <SelectContent>

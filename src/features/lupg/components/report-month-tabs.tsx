@@ -61,7 +61,7 @@ export function ReportMonthTabs({
       aria-label='Pilih bulan laporan'
       onKeyDown={handleKeyDown}
       className={cn(
-        'border-border no-scrollbar -mx-2 flex items-stretch gap-0.5 overflow-x-auto border-b px-2',
+        '-mx-2 no-scrollbar flex items-stretch gap-0.5 overflow-x-auto border-b border-border px-2',
         className
       )}
     >
@@ -79,13 +79,13 @@ export function ReportMonthTabs({
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(k)}
             className={cn(
-              'shrink-0 border-b-2 px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors',
-              'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+              'min-h-11 shrink-0 border-b-2 px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors',
+              'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
               active
                 ? 'border-primary text-foreground'
-                : 'text-muted-foreground hover:text-foreground border-transparent',
+                : 'border-transparent text-muted-foreground hover:text-foreground',
               isNow &&
-                'bg-background sticky left-0 pe-3 ps-2 shadow-[inset_-8px_0_8px_-8px_var(--border)]'
+                'sticky left-0 bg-background ps-2 pe-3 shadow-[inset_-8px_0_8px_-8px_var(--border)]'
             )}
           >
             {label}
