@@ -58,20 +58,24 @@ export async function fetchCensusParticipants(
   }
 
   // Filter by allowed categories
-  return (data ?? [])
-    .map((row) => {
-      const category = row.category as unknown as { value: string } | null
-      const group = row.group as unknown as { value: string } | null
-      const gender = (row.gender ?? null) as 'L' | 'P' | null
-      return {
-        id: row.id,
-        name: row.name,
-        category: category?.value ?? null,
-        group: group?.value ?? null,
-        gender,
-      }
-    })
-    .filter((p) => p.category && allowedCategories.includes(p.category))
+  return (data ?? []).reduce<CensusParticipant[]>((participants, row) => {
+    const category = row.category as unknown as { value: string } | null
+    const group = row.group as unknown as { value: string } | null
+    const participant: CensusParticipant = {
+      id: row.id,
+      name: row.name,
+      category: category?.value ?? null,
+      group: group?.value ?? null,
+      gender: (row.gender ?? null) as 'L' | 'P' | null,
+    }
+    if (
+      participant.category &&
+      allowedCategories.includes(participant.category)
+    ) {
+      participants.push(participant)
+    }
+    return participants
+  }, [])
 }
 
 /**
@@ -226,18 +230,21 @@ function computeGenderBreakdown(
   }
 
   const buckets: Array<'L' | 'P' | 'Unknown'> = ['L', 'P', 'Unknown']
-  return buckets
-    .map((gender) => {
-      const hadirCount = hadirByGender[gender]
-      const totalSensus = censusByGender[gender]
-      const denom = totalSensus * totalMeetings
-      const percentage = denom > 0 ? (hadirCount / denom) * 100 : 0
-      return { gender, hadirCount, totalSensus, percentage }
+  return buckets.reduce<GenderBreakdownRow[]>((rows, gender) => {
+    const hadirCount = hadirByGender[gender]
+    const totalSensus = censusByGender[gender]
+    if (gender === 'Unknown' && hadirCount === 0 && totalSensus === 0) {
+      return rows
+    }
+    const denom = totalSensus * totalMeetings
+    rows.push({
+      gender,
+      hadirCount,
+      totalSensus,
+      percentage: denom > 0 ? (hadirCount / denom) * 100 : 0,
     })
-    .filter(
-      (r) =>
-        !(r.gender === 'Unknown' && r.hadirCount === 0 && r.totalSensus === 0)
-    )
+    return rows
+  }, [])
 }
 
 function computeAbsenceReasonBreakdown(

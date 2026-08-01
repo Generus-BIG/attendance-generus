@@ -6,6 +6,5 @@ export interface ManagedUser {
   full_name: string | null
   role: Role
   kelompok: string | null
-  temp_password: string | null
   created_at: string
 }

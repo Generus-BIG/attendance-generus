@@ -1,13 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Loader2, MessageSquareText, X } from 'lucide-react'
+import { Check, ChevronDown, Loader2, MessageSquareText, X } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import { Input } from '@/components/ui/input'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   useCharacterTargetItemsForMonth,
   useCharacterTargetReports,
   useUpsertCharacterTargetReport,
+  useUpsertCharacterTargetReports,
 } from '../../hooks/use-lupg-queries'
 import {
   type CharacterTargetItemRow,
@@ -17,12 +28,20 @@ import {
 import {
   CHARACTER_LEVEL_LABELS,
   CHARACTER_LEVELS,
+  type CharacterLevelCode,
 } from '../../utils/character-monitoring'
 import { SectionHeading } from '../components/section-heading'
 
 interface Props {
   report: MonthlyReportRow
   readOnly: boolean
+}
+
+function isTargetComplete(report: CharacterTargetReportRow | undefined) {
+  return (
+    report?.realization_percent !== null &&
+    report?.realization_percent !== undefined
+  )
 }
 
 export function CharacterTargetSection({ report, readOnly }: Props) {
@@ -38,10 +57,16 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
     isLoading: reportsLoading,
     error: reportsError,
   } = useCharacterTargetReports(report.id)
+  const [activeLevel, setActiveLevel] = useState<CharacterLevelCode | ''>('')
+  const [openCategory, setOpenCategory] = useState<string | null>(null)
+  const [expandedByCategory, setExpandedByCategory] = useState<
+    Record<string, string | null>
+  >({})
+  const [bulkPercent, setBulkPercent] = useState(90)
+  const initializedCategoryLevelRef = useRef<CharacterLevelCode | null>(null)
 
   const items = useMemo(() => data?.items ?? [], [data?.items])
-  const template = data?.template ?? null
-  const templates = data?.templates ?? (template ? [template] : [])
+  const templates = data?.templates ?? (data?.template ? [data.template] : [])
   const reportByItem = useMemo(() => {
     const map = new Map<string, CharacterTargetReportRow>()
     for (const row of reports) map.set(row.target_item_id, row)
@@ -49,23 +74,87 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
   }, [reports])
 
   const grouped = useMemo(() => {
-    const map = new Map<string, Map<string, CharacterTargetItemRow[]>>()
+    const map = new Map<
+      CharacterLevelCode,
+      Map<string, CharacterTargetItemRow[]>
+    >()
     for (const item of items) {
-      const levelMap = map.get(item.level_code) ?? new Map()
+      const level = item.level_code as CharacterLevelCode
+      const levelMap =
+        map.get(level) ?? new Map<string, CharacterTargetItemRow[]>()
       const rows = levelMap.get(item.category_label) ?? []
       rows.push(item)
       levelMap.set(item.category_label, rows)
-      map.set(item.level_code, levelMap)
+      map.set(level, levelMap)
     }
     return map
   }, [items])
 
-  const activeItemIds = useMemo(() => new Set(items.map((item) => item.id)), [items])
-  const filledCount = reports.filter(
-    (row) =>
-      activeItemIds.has(row.target_item_id) &&
-      row.realization_percent !== null &&
-      row.realization_percent !== undefined
+  const availableLevels = useMemo(
+    () => CHARACTER_LEVELS.filter((level) => grouped.has(level)),
+    [grouped]
+  )
+  const progressByLevel = useMemo(() => {
+    const progress = new Map<
+      CharacterLevelCode,
+      { completed: number; total: number }
+    >()
+    for (const level of availableLevels) {
+      const levelItems = [...(grouped.get(level)?.values() ?? [])].flat()
+      progress.set(level, {
+        completed: levelItems.filter((item) =>
+          isTargetComplete(reportByItem.get(item.id))
+        ).length,
+        total: levelItems.length,
+      })
+    }
+    return progress
+  }, [availableLevels, grouped, reportByItem])
+
+  useEffect(() => {
+    if (itemsLoading || reportsLoading || availableLevels.length === 0) return
+    if (activeLevel && availableLevels.includes(activeLevel)) return
+    const firstIncomplete = availableLevels.find((level) => {
+      const progress = progressByLevel.get(level)
+      return progress && progress.completed < progress.total
+    })
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActiveLevel(firstIncomplete ?? availableLevels[0])
+  }, [
+    activeLevel,
+    availableLevels,
+    itemsLoading,
+    progressByLevel,
+    reportsLoading,
+  ])
+
+  useEffect(() => {
+    if (!activeLevel || itemsLoading || reportsLoading) return
+    if (initializedCategoryLevelRef.current === activeLevel) return
+    const categoryMap = grouped.get(activeLevel)
+    if (!categoryMap || categoryMap.size === 0) return
+    initializedCategoryLevelRef.current = activeLevel
+    const firstIncomplete = [...categoryMap.entries()].find(([, rows]) =>
+      rows.some((item) => !isTargetComplete(reportByItem.get(item.id)))
+    )
+    const nextCategory = firstIncomplete?.[0] ?? null
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpenCategory(nextCategory)
+    const firstIncompleteItem = firstIncomplete?.[1].find(
+      (item) => !isTargetComplete(reportByItem.get(item.id))
+    )
+    if (firstIncompleteItem && nextCategory) {
+      const key = `${activeLevel}:${nextCategory}`
+      setExpandedByCategory((current) => ({
+        ...current,
+        [key]: current[key] ?? firstIncompleteItem.id,
+      }))
+    }
+  }, [activeLevel, grouped, itemsLoading, reportByItem, reportsLoading])
+
+  const activeCategoryMap = activeLevel ? grouped.get(activeLevel) : undefined
+  const filledCount = items.filter((item) =>
+    isTargetComplete(reportByItem.get(item.id))
   ).length
   const isLoading = itemsLoading || reportsLoading
   const error = itemsError ?? reportsError
@@ -73,29 +162,38 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
   return (
     <section
       id='section-character-targets'
-      className='bg-card text-card-foreground scroll-mt-24 flex flex-col gap-4 rounded-xl border p-5 shadow-sm sm:p-6'
+      className='flex scroll-mt-24 flex-col gap-4 rounded-xl border bg-card p-4 text-card-foreground shadow-sm sm:p-6'
     >
       <SectionHeading
-        kicker='Materi Target 29 Karakter'
+        kicker='Target Capaian Materi'
         description={
           templates.length > 0
-            ? `${templates.length} template aktif untuk bulan laporan. Isi realisasi, kekurangan materi, dan ayat/hal bila diperlukan.`
+            ? `${filledCount}/${items.length} materi terisi. Target ayat/hal ditampilkan sebagai referensi dan catatan lain tetap opsional.`
             : 'Belum ada template aktif untuk tahun laporan ini.'
         }
         status={
-          items.length === 0
+          items.length === 0 || filledCount === 0
             ? 'empty'
-            : filledCount === 0
-              ? 'empty'
-              : filledCount < items.length
-                ? 'partial'
-                : 'complete'
+            : filledCount < items.length
+              ? 'partial'
+              : 'complete'
+        }
+        action={
+          !readOnly && activeLevel && activeCategoryMap ? (
+            <TargetFillAll
+              reportId={report.id}
+              items={[...activeCategoryMap.values()].flat()}
+              reportByItem={reportByItem}
+              percent={bulkPercent}
+              onPercentChange={setBulkPercent}
+            />
+          ) : undefined
         }
       />
 
       {isLoading ? (
-        <div className='text-muted-foreground flex items-center justify-center rounded-md border border-dashed py-8'>
-          <Loader2 className='mr-2 h-5 w-5 animate-spin' />
+        <div className='flex items-center justify-center rounded-md border border-dashed py-8 text-muted-foreground'>
+          <Loader2 className='mr-2 size-5 animate-spin' />
           Memuat materi...
         </div>
       ) : error ? (
@@ -105,47 +203,227 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
             : 'Gagal memuat target capaian materi.'}
         </div>
       ) : items.length === 0 ? (
-        <div className='text-muted-foreground rounded-md border border-dashed p-6 text-center text-sm'>
+        <div className='rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground'>
           Belum ada materi aktif untuk bulan ini. Aktifkan template di
           Konfigurasi LUPG.
         </div>
       ) : (
         <div className='flex flex-col gap-4'>
-          {CHARACTER_LEVELS.map((level) => {
-            const categoryMap = grouped.get(level)
-            if (!categoryMap) return null
+          <Tabs
+            value={activeLevel}
+            onValueChange={(value) =>
+              setActiveLevel(value as CharacterLevelCode)
+            }
+          >
+            <TabsList className='grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4'>
+              {availableLevels.map((level) => {
+                const progress = progressByLevel.get(level)
+                return (
+                  <TabsTrigger
+                    key={level}
+                    value={level}
+                    className='min-h-11 flex-col gap-0.5 px-2'
+                  >
+                    <span>{CHARACTER_LEVEL_LABELS[level]}</span>
+                    <span className='text-[10px] font-normal tabular-nums opacity-75'>
+                      {progress?.completed ?? 0}/{progress?.total ?? 0}
+                    </span>
+                  </TabsTrigger>
+                )
+              })}
+            </TabsList>
+          </Tabs>
 
-            return (
-              <div key={level} className='overflow-hidden border-t first:border-t-0'>
-                <div className='bg-muted/30 px-3 py-2'>
-                  <h4 className='text-sm font-semibold tracking-tight'>
-                    {CHARACTER_LEVEL_LABELS[level]}
-                  </h4>
-                </div>
-                <div className='divide-y'>
-                  {[...categoryMap.entries()].map(([category, rows]) => (
-                    <div key={`${level}_${category}`} className='divide-y'>
-                      <div className='bg-muted/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground'>
-                        {category}
+          <div className='flex flex-col gap-3'>
+            {[...(activeCategoryMap?.entries() ?? [])].map(
+              ([category, rows]) => {
+                const completed = rows.filter((item) =>
+                  isTargetComplete(reportByItem.get(item.id))
+                ).length
+                const categoryKey = `${activeLevel}:${category}`
+                const isOpen = openCategory === category
+                return (
+                  <Collapsible
+                    key={categoryKey}
+                    open={isOpen}
+                    onOpenChange={(nextOpen) => {
+                      setOpenCategory(nextOpen ? category : null)
+                      if (nextOpen && !expandedByCategory[categoryKey]) {
+                        const nextItem =
+                          rows.find(
+                            (item) =>
+                              !isTargetComplete(reportByItem.get(item.id))
+                          ) ?? rows[0]
+                        setExpandedByCategory((current) => ({
+                          ...current,
+                          [categoryKey]: nextItem?.id ?? null,
+                        }))
+                      }
+                    }}
+                    className='overflow-hidden rounded-lg border'
+                  >
+                    <CollapsibleTrigger asChild>
+                      <Button
+                        type='button'
+                        variant='ghost'
+                        className='group h-auto min-h-12 w-full justify-between rounded-none px-3 py-2'
+                      >
+                        <span className='min-w-0 text-left'>
+                          <span className='block truncate text-sm font-semibold'>
+                            {category}
+                          </span>
+                          <span className='block text-xs text-muted-foreground tabular-nums'>
+                            {completed}/{rows.length} materi
+                          </span>
+                        </span>
+                        <ChevronDown className='transition-transform duration-150 group-data-[state=open]:rotate-180 motion-reduce:transition-none' />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className='divide-y border-t'>
+                        {rows.map((item) => (
+                          <CharacterTargetRow
+                            key={item.id}
+                            report={report}
+                            item={item}
+                            existing={reportByItem.get(item.id)}
+                            readOnly={readOnly}
+                            expanded={
+                              expandedByCategory[categoryKey] === item.id
+                            }
+                            onAdjust={() =>
+                              setExpandedByCategory((current) => ({
+                                ...current,
+                                [categoryKey]: item.id,
+                              }))
+                            }
+                            onCollapse={() =>
+                              setExpandedByCategory((current) => ({
+                                ...current,
+                                [categoryKey]: null,
+                              }))
+                            }
+                          />
+                        ))}
                       </div>
-                      {rows.map((item) => (
-                        <CharacterTargetRow
-                          key={item.id}
-                          report={report}
-                          item={item}
-                          existing={reportByItem.get(item.id)}
-                          readOnly={readOnly}
-                        />
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
+                    </CollapsibleContent>
+                  </Collapsible>
+                )
+              }
+            )}
+          </div>
         </div>
       )}
     </section>
+  )
+}
+
+function TargetFillAll({
+  reportId,
+  items,
+  reportByItem,
+  percent,
+  onPercentChange,
+}: {
+  reportId: string
+  items: CharacterTargetItemRow[]
+  reportByItem: Map<string, CharacterTargetReportRow>
+  percent: number
+  onPercentChange: (value: number) => void
+}) {
+  const bulkUpsert = useUpsertCharacterTargetReports()
+  const [open, setOpen] = useState(false)
+  const emptyCount = items.filter(
+    (item) => !isTargetComplete(reportByItem.get(item.id))
+  ).length
+
+  const apply = (overwrite: boolean) => {
+    const normalizedPercent = Math.max(0, Math.min(100, percent))
+    const affected = items.filter(
+      (item) => overwrite || !isTargetComplete(reportByItem.get(item.id))
+    )
+    bulkUpsert.mutate(
+      affected.map((item) => ({
+        monthly_report_id: reportId,
+        target_item_id: item.id,
+        realization_percent: normalizedPercent,
+      })),
+      {
+        onSuccess: () => {
+          toast.success(`${affected.length} materi diisi ${normalizedPercent}%`)
+          setOpen(false)
+        },
+        onError: (error: unknown) => {
+          toast.error(
+            error instanceof Error ? error.message : 'Gagal mengisi materi'
+          )
+        },
+      }
+    )
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button type='button' variant='outline' size='sm'>
+          Fill all
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align='end' className='w-[min(20rem,calc(100vw-2rem))]'>
+        <div className='flex flex-col gap-3'>
+          <div>
+            <p className='text-sm font-semibold'>Fill active jenjang</p>
+            <p className='mt-1 text-xs text-muted-foreground'>
+              Fill all preserves existing values. Overwrite all replaces them.
+            </p>
+          </div>
+          <label
+            className='flex flex-col gap-1 text-xs font-medium'
+            htmlFor='target-fill-percent'
+          >
+            Progress
+            <div className='relative'>
+              <Input
+                id='target-fill-percent'
+                type='number'
+                min={0}
+                max={100}
+                value={percent}
+                onChange={(event) =>
+                  onPercentChange(Number(event.target.value))
+                }
+                className='min-h-10 pr-9 tabular-nums'
+              />
+              <span className='pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm text-muted-foreground'>
+                %
+              </span>
+            </div>
+          </label>
+          <div className='flex flex-col gap-2 sm:flex-row'>
+            <Button
+              type='button'
+              className='flex-1'
+              disabled={emptyCount === 0 || bulkUpsert.isPending}
+              onClick={() => apply(false)}
+            >
+              {bulkUpsert.isPending ? (
+                <Loader2 className='animate-spin' />
+              ) : null}
+              Fill all ({emptyCount})
+            </Button>
+            <Button
+              type='button'
+              variant='outline'
+              className='flex-1'
+              disabled={bulkUpsert.isPending}
+              onClick={() => apply(true)}
+            >
+              Overwrite all
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
 
@@ -154,33 +432,32 @@ function CharacterTargetRow({
   item,
   existing,
   readOnly,
+  expanded,
+  onAdjust,
+  onCollapse,
 }: {
   report: MonthlyReportRow
   item: CharacterTargetItemRow
   existing: CharacterTargetReportRow | undefined
   readOnly: boolean
+  expanded: boolean
+  onAdjust: () => void
+  onCollapse: () => void
 }) {
   const upsert = useUpsertCharacterTargetReport()
   const [realization, setRealization] = useState(
     existing?.realization_percent?.toString() ?? ''
   )
   const [materialGap, setMaterialGap] = useState(existing?.material_gap ?? '')
-  const [referenceFrom, setReferenceFrom] = useState(
-    existing?.reference_from_actual ?? ''
-  )
-  const [referenceTo, setReferenceTo] = useState(
-    existing?.reference_to_actual ?? ''
-  )
   const [notes, setNotes] = useState(existing?.notes ?? '')
   const [notesVisible, setNotesVisible] = useState(Boolean(existing?.notes))
   const [materialGapVisible, setMaterialGapVisible] = useState(
     Boolean(existing?.material_gap)
   )
-
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>(
     'idle'
   )
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     return () => {
@@ -192,8 +469,6 @@ function CharacterTargetRow({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setRealization(existing?.realization_percent?.toString() ?? '')
     setMaterialGap(existing?.material_gap ?? '')
-    setReferenceFrom(existing?.reference_from_actual ?? '')
-    setReferenceTo(existing?.reference_to_actual ?? '')
     setNotes(existing?.notes ?? '')
     setNotesVisible(Boolean(existing?.notes))
     setMaterialGapVisible(Boolean(existing?.material_gap))
@@ -202,223 +477,224 @@ function CharacterTargetRow({
     existing?.updated_at,
     existing?.realization_percent,
     existing?.material_gap,
-    existing?.reference_from_actual,
-    existing?.reference_to_actual,
     existing?.notes,
   ])
 
   const save = (next?: {
     realization?: string
     materialGap?: string
-    referenceFrom?: string
-    referenceTo?: string
     notes?: string
   }) => {
     const rawRealization = next?.realization ?? realization
+    const numberValue = Number(rawRealization)
     const parsedRealization =
-      rawRealization.trim() === ''
+      rawRealization.trim() === '' || !Number.isFinite(numberValue)
         ? null
-        : Math.max(0, Math.min(100, Number(rawRealization)))
-
+        : Math.max(0, Math.min(100, numberValue))
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
     setSaveStatus('saving')
-
     upsert.mutate(
       {
         monthly_report_id: report.id,
         target_item_id: item.id,
-        realization_percent: Number.isFinite(parsedRealization)
-          ? parsedRealization
-          : null,
+        realization_percent: parsedRealization,
         material_gap: (next?.materialGap ?? materialGap).trim() || null,
-        reference_from_actual:
-          (next?.referenceFrom ?? referenceFrom).trim() || null,
-        reference_to_actual: (next?.referenceTo ?? referenceTo).trim() || null,
         notes: (next?.notes ?? notes).trim() || null,
       },
       {
         onSuccess: () => {
           setSaveStatus('saved')
-          saveTimeoutRef.current = setTimeout(() => {
-            setSaveStatus('idle')
-          }, 1500)
+          saveTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 1500)
         },
-        onError: (e: unknown) => {
+        onError: (error: unknown) => {
           setSaveStatus('idle')
-          toast.error(e instanceof Error ? e.message : 'Gagal menyimpan')
+          toast.error(
+            error instanceof Error ? error.message : 'Gagal menyimpan'
+          )
         },
       }
     )
   }
-  const needsReference = item.uses_reference
+
+  const targetReference = [item.reference_from, item.reference_to]
+    .filter(Boolean)
+    .join(' – ')
 
   return (
-    <div className='grid gap-3 px-3 py-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,22rem)] lg:items-start'>
-      <div className='min-w-0'>
-        <div className='flex flex-wrap items-center gap-2'>
-          <span className='rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground'>
-            {realization ? `${realization}%` : 'Belum diisi'}
-          </span>
-          {saveStatus === 'saving' && (
-            <span className='flex items-center gap-1 text-[10px] text-muted-foreground animate-pulse'>
-              <Loader2 className='h-3 w-3 animate-spin text-primary' />
-              Menyimpan...
+    <div className='px-3 py-3'>
+      <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
+        <div className='min-w-0'>
+          <div className='flex flex-wrap items-center gap-2'>
+            <span className='rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground tabular-nums'>
+              {realization ? `${realization}%` : 'Belum diisi'}
             </span>
-          )}
-          {saveStatus === 'saved' && (
-            <span className='flex items-center gap-0.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium'>
-              <span className='inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 mr-0.5 animate-pulse' />
-              Disimpan
-            </span>
-          )}
+            {saveStatus === 'saving' ? (
+              <span className='flex items-center gap-1 text-[10px] text-muted-foreground'>
+                <Loader2 className='size-3 animate-spin' /> Menyimpan...
+              </span>
+            ) : null}
+            {saveStatus === 'saved' ? (
+              <span className='flex items-center gap-1 text-[10px] font-medium text-emerald-600'>
+                <Check className='size-3' /> Disimpan
+              </span>
+            ) : null}
+          </div>
+          <p className='mt-1 text-sm leading-6 font-semibold wrap-break-word whitespace-normal'>
+            {item.material_label}
+          </p>
+          {item.detail_label ? (
+            <p className='mt-0.5 text-sm leading-5 wrap-break-word whitespace-normal text-muted-foreground'>
+              {item.detail_label}
+            </p>
+          ) : null}
+          {targetReference ? (
+            <p className='mt-1 text-xs text-muted-foreground'>
+              Target: {targetReference}
+            </p>
+          ) : null}
+          {!expanded && (materialGap || notes) ? (
+            <p className='mt-1 line-clamp-1 text-xs text-muted-foreground'>
+              {[materialGap && `Kurang: ${materialGap}`, notes]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+          ) : null}
         </div>
-        <p className='mt-1 text-sm font-semibold leading-6 whitespace-normal wrap-break-word'>
-          {item.material_label}
-        </p>
-        {item.detail_label ? (
-          <p className='text-muted-foreground mt-1 text-sm leading-6 whitespace-normal wrap-break-word'>
-            {item.detail_label}
-          </p>
-        ) : null}
-        {item.reference_from || item.reference_to ? (
-          <p className='text-muted-foreground mt-1 text-xs'>
-            Target:{' '}
-            {[item.reference_from, item.reference_to].filter(Boolean).join(' - ')}
-          </p>
+        {!readOnly ? (
+          <Button
+            type='button'
+            variant={expanded ? 'ghost' : 'outline'}
+            size='sm'
+            className='min-h-10 shrink-0 self-start'
+            onClick={expanded ? onCollapse : onAdjust}
+          >
+            {expanded ? 'Done' : 'Adjust'}
+          </Button>
         ) : null}
       </div>
 
-      <div className='flex min-w-0 flex-col gap-2'>
-        <div className={cn('grid gap-2', needsReference ? 'grid-cols-3' : 'grid-cols-1')}>
-          <Input
-            type='number'
-            min={0}
-            max={100}
-            value={realization}
-            onChange={(e) => setRealization(e.target.value)}
-            onBlur={() => save({ realization })}
-            disabled={readOnly || upsert.isPending}
-            placeholder='Realisasi (%)'
-            className='h-9 text-xs'
-          />
-          {needsReference && (
-            <>
-              <Input
-                value={referenceFrom}
-                onChange={(e) => setReferenceFrom(e.target.value)}
-                onBlur={() => save({ referenceFrom })}
-                disabled={readOnly || upsert.isPending}
-                placeholder='Dari ayat/hal'
-                className='h-9 text-xs'
-              />
-              <Input
-                value={referenceTo}
-                onChange={(e) => setReferenceTo(e.target.value)}
-                onBlur={() => save({ referenceTo })}
-                disabled={readOnly || upsert.isPending}
-                placeholder='Sampai ayat/hal'
-                className='h-9 text-xs'
-              />
-            </>
-          )}
-        </div>
-
-        {materialGapVisible && (
-          <div className='flex min-w-0 items-center gap-2'>
+      {expanded && !readOnly ? (
+        <div className='mt-3 flex flex-col gap-2 rounded-lg bg-muted/20 p-3'>
+          <label
+            className='flex flex-col gap-1 text-xs font-medium'
+            htmlFor={`realization-${item.id}`}
+          >
+            Progress (%)
             <Input
+              id={`realization-${item.id}`}
+              type='number'
+              min={0}
+              max={100}
+              value={realization}
+              onChange={(event) => setRealization(event.target.value)}
+              onBlur={() => save({ realization })}
+              disabled={upsert.isPending}
+              placeholder='0–100'
+              className='min-h-10 tabular-nums sm:max-w-40'
+            />
+          </label>
+
+          {materialGapVisible ? (
+            <OptionalInput
               value={materialGap}
-              onChange={(e) => setMaterialGap(e.target.value)}
-              onBlur={() => {
-                save({ materialGap })
-                if (!materialGap.trim()) setMaterialGapVisible(false)
+              onChange={setMaterialGap}
+              onBlur={() => save({ materialGap })}
+              onRemove={() => {
+                setMaterialGap('')
+                save({ materialGap: '' })
+                setMaterialGapVisible(false)
               }}
-              disabled={readOnly || upsert.isPending}
-              placeholder='Kurang materi'
-              className='h-9 min-w-0 flex-1 text-xs'
+              placeholder='Kurang materi (opsional)'
+              disabled={upsert.isPending}
+              removeLabel='Hapus kurang materi'
             />
-            {!readOnly ? (
-              <Button
-                type='button'
-                variant='ghost'
-                size='icon'
-                className='h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive'
-                disabled={upsert.isPending}
-                onClick={() => {
-                  setMaterialGap('')
-                  save({ materialGap: '' })
-                  setMaterialGapVisible(false)
-                }}
-                aria-label='Hapus kurang materi'
-              >
-                <X className='h-4 w-4' />
-              </Button>
-            ) : null}
-          </div>
-        )}
-
-        {notesVisible ? (
-          <div className='flex min-w-0 items-center gap-2'>
-            <Input
+          ) : null}
+          {notesVisible ? (
+            <OptionalInput
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              onBlur={() => {
-                save({ notes })
-                if (!notes.trim()) setNotesVisible(false)
+              onChange={setNotes}
+              onBlur={() => save({ notes })}
+              onRemove={() => {
+                setNotes('')
+                save({ notes: '' })
+                setNotesVisible(false)
               }}
-              disabled={readOnly || upsert.isPending}
-              placeholder='Catatan singkat'
-              className='h-9 min-w-0 flex-1 text-xs'
+              placeholder='Catatan singkat (opsional)'
+              disabled={upsert.isPending}
+              removeLabel='Hapus catatan'
             />
-            {!readOnly ? (
-              <Button
-                type='button'
-                variant='ghost'
-                size='icon'
-                className='h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive'
-                disabled={upsert.isPending}
-                onClick={() => {
-                  setNotes('')
-                  save({ notes: '' })
-                  setNotesVisible(false)
-                }}
-                aria-label='Hapus catatan'
-              >
-                <X className='h-4 w-4' />
-              </Button>
-            ) : null}
-          </div>
-        ) : null}
+          ) : null}
 
-        {!readOnly && (!materialGapVisible || !notesVisible) && (
-          <div className='flex items-center gap-2 justify-end mt-1'>
-            {!materialGapVisible && (
-              <Button
-                type='button'
-                variant='outline'
-                size='sm'
-                className='h-7 px-2 text-[10px] text-muted-foreground hover:text-foreground'
-                disabled={upsert.isPending}
-                onClick={() => setMaterialGapVisible(true)}
-              >
-                + Kurang Materi
-              </Button>
-            )}
-            {!notesVisible && (
-              <Button
-                type='button'
-                variant='outline'
-                size='sm'
-                className='h-7 px-2 text-[10px] text-muted-foreground hover:text-foreground'
-                disabled={upsert.isPending}
-                onClick={() => setNotesVisible(true)}
-              >
-                <MessageSquareText className='mr-1 h-3 w-3' />
-                + Catatan
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
+          {!materialGapVisible || !notesVisible ? (
+            <div className='flex flex-wrap justify-end gap-2'>
+              {!materialGapVisible ? (
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='sm'
+                  className='min-h-10'
+                  onClick={() => setMaterialGapVisible(true)}
+                >
+                  + Material gap
+                </Button>
+              ) : null}
+              {!notesVisible ? (
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='sm'
+                  className='min-h-10'
+                  onClick={() => setNotesVisible(true)}
+                >
+                  <MessageSquareText data-icon='inline-start' /> + Note
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function OptionalInput({
+  value,
+  onChange,
+  onBlur,
+  onRemove,
+  placeholder,
+  disabled,
+  removeLabel,
+}: {
+  value: string
+  onChange: (value: string) => void
+  onBlur: () => void
+  onRemove: () => void
+  placeholder: string
+  disabled: boolean
+  removeLabel: string
+}) {
+  return (
+    <div className='flex min-w-0 items-center gap-2'>
+      <Input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onBlur={onBlur}
+        disabled={disabled}
+        placeholder={placeholder}
+        className='min-h-10 min-w-0 flex-1 text-xs'
+      />
+      <Button
+        type='button'
+        variant='ghost'
+        size='icon'
+        className='size-10 shrink-0'
+        disabled={disabled}
+        onClick={onRemove}
+        aria-label={removeLabel}
+      >
+        <X />
+      </Button>
     </div>
   )
 }

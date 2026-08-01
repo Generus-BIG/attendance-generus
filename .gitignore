@@ -30,6 +30,12 @@ dist-ssr
 *.superpowers
 *docs
 *skills-lock.json
+!docs/
+docs/*
+!docs/agents/
+!docs/agents/*.md
+!docs/adr/
+!docs/adr/*.md
 *reference-ppt
 *.impeccable.md
 *copilot-instructions.md
@@ -43,3 +49,4 @@ dist-ssr
 .env.*.local
 !.env.example
 !.env.template
+*docs/

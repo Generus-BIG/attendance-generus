@@ -114,6 +114,8 @@ All LUPG tables prefixed `lupg_`. Container pattern: one `lupg_monthly_reports` 
 - `lupg_shodaqoh` (1:1 with monthly report)
 - `lupg_mustin_notes` + `lupg_mustin_templates` (templates seed the per-report notes; see `mustin-section.tsx`)
 
+**Penerapan 29 Karakter assessment**: `lupg_character_monitoring_reports.status` is nullable (`NULL` = Belum dinilai) and accepts `needs_guidance`, `not_applied`, `in_progress`, `consistent`, or `established`. `needs_guidance` means Perlu Pembinaan and requires a non-empty row-specific note; the note constraint is `NOT VALID` so historical coaching rows without notes remain visible for correction while new/edited rows are enforced. This assessment is collective per `jenjang × konteks penerapan`, not per participant or per individual character. Keep this status model separate from the legacy `lupg_character_target_reports.status` field.
+
 ### Sensus Auto-Sync (participant-derived)
 
 Categories `GPN_A`, `GPN_B`, `AR`, `APR` are **auto-derived** from the `participants` table — not manually entered. The pipeline:
@@ -203,6 +205,7 @@ Public read-only attendance dashboards shareable via token-based links (`/share/
 - **Table** `public_dashboard_shares` — admin-created share configs with `displayMode: 'monthly' | 'forms'`, `formMode: 'all' | 'selected'`, `visibleSections` (JSON, controls which dashboard sections render), `token` (auto-generated). RLS: admin-only CRUD.
 - **RPC** `get_public_dashboard_payload(p_token, p_month)` — `SECURITY DEFINER` (required for anon access). Returns share config + forms + attendance records + census participants. **Privacy**: when `followUp` section is disabled, participant/attendance/census identifiers are replaced with deterministic md5 surrogate keys — real UUIDs are never exposed on public links. When `followUp` is enabled, real ids are returned (needed for the follow-up table).
 - **Frontend**: [src/features/public-dashboard/](src/features/public-dashboard/) — `PublicDashboardPage` renders a read-only `MonthlyFormDashboard` with workspace-aware form selector. Monthly mode supports month navigation; fixed-forms mode aggregates across selected events.
+- **Authority boundary**: anonymous clients do not read `attendance` or `participants` directly. Public participant search and attendance submission use active-form-scoped RPCs (`search_form_participants`, `submit_attendance_guarded`), while shared dashboards poll `get_public_dashboard_payload` every 15 seconds when the realtime log is enabled.
 - **SSR/OG**: `api/share/dashboard/[token].ts` — server-side handler for Open Graph meta tags (no auth headers leaked in response).
 
 ### UI Components
@@ -239,6 +242,8 @@ Schema changes are tracked in `supabase/migrations/` as timestamped `.sql` files
 - `20260629000000_public_dashboard_shares.sql` — `public_dashboard_shares` table, constraints, RLS, RPC `get_public_dashboard_payload`
 - `20260701000000_sensus_participant_auto_sync.sql` — view `lupg_sensus_participant_derived`, sync function, participant trigger
 - `20260703042233_harden_participant_sensus_sync_trigger.sql` — runs participant sensus sync trigger wrapper as `SECURITY DEFINER` and keeps the sync helper non-callable by anon/authenticated roles
+- `20260719000000_update_lupg_character_assessment_scale.sql` — nullable five-state collective character assessment, conservative legacy mapping, and required coaching-note constraint
+- `20260722000000_harden_browser_authority_surfaces.sql` — removes broad anonymous attendance/participant access, adds form-scoped public RPCs, hardens Absensi/LUPG team boundaries, report audit fields, derived sensus, photo storage paths, and privileged function grants
 
 ## Known Debt / Future Improvements
 
@@ -251,3 +256,17 @@ These are acknowledged gaps worth folding into future work rather than silent su
 - **No scheduled job for daily re-evaluation.** GPN A → GPN B promotion is lazy (only fires when a participant row is inserted or its `birth_date` / `category_id` is updated). Participants who cross the 23-year threshold without being edited stay GPN A until a TM touches them. A nightly pg_cron job is the natural follow-up.
 - **Absensi → `/admin/absensi/*` URL migration** was scoped in Phase 1a but deferred. Sidebar entries still point at `/admin/*`. If/when migrated, update `ROUTE_ACCESS` keys (prefix-matched) and sidebar-data-absensi in lockstep.
 - **`accordion` shadcn primitive not installed** — Rekap Desa Mustin falls back to a flat grouped list. Install if you need collapsible groups.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked in this repository’s GitHub Issues via `gh`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Canonical triage roles use their default GitHub label names. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout: root `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.

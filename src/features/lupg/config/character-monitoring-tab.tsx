@@ -89,10 +89,10 @@ export function CharacterMonitoringConfigTab() {
       rows.push(item)
       map.set(item.level_code, rows)
     }
-    return CHARACTER_LEVELS.map((level) => ({
-      level,
-      rows: map.get(level) ?? [],
-    })).filter((group) => group.rows.length > 0)
+    return CHARACTER_LEVELS.flatMap((level) => {
+      const rows = map.get(level)
+      return rows?.length ? [{ level, rows }] : []
+    })
   }, [items])
 
   const handleNew = () => {

@@ -79,10 +79,10 @@ export function ProgramSectionCard({
       : null
 
   return (
-    <div className='bg-card text-card-foreground rounded-xl border shadow-sm'>
-      <div className='grid grid-cols-[1fr_auto_auto_auto] items-center gap-3 px-4 py-3 sm:px-5'>
+    <div className='rounded-xl border bg-card text-card-foreground shadow-sm'>
+      <div className='flex flex-col gap-3 px-4 py-3 sm:grid sm:grid-cols-[1fr_auto_auto_auto] sm:items-center sm:px-5'>
         <div className='min-w-0'>
-          <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+          <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
             {program.denominator_label} → {program.count_label}
           </div>
           <div className='truncate text-sm font-semibold tracking-tight'>
@@ -101,13 +101,13 @@ export function ProgramSectionCard({
         </div>
         <div className='flex items-center gap-2'>
           {displayCount && (
-            <span className='text-muted-foreground hidden text-xs tabular-nums sm:inline'>
+            <span className='text-xs text-muted-foreground tabular-nums'>
               {displayCount}
             </span>
           )}
         </div>
       </div>
-      <div className='border-border/60 border-t px-4 py-4 sm:px-5'>
+      <div className='border-t border-border/60 px-4 py-4 sm:px-5'>
         {children}
       </div>
     </div>

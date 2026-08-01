@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import * as matrixSvc from '../matrix/services'
 import * as programsSvc from '../programs/services'
+import * as activityPhotosSvc from '../services/activity-photos.service'
 import * as characterSvc from '../services/character-monitoring.service'
 import * as characterTargetsSvc from '../services/character-targets.service'
 import * as defsSvc from '../services/definitions.service'
@@ -13,7 +14,6 @@ import * as programSvc from '../services/program-report.service'
 import * as sarprasSvc from '../services/sarpras-report.service'
 import * as sensusSvc from '../services/sensus.service'
 import * as shodaqohSvc from '../services/shodaqoh-report.service'
-import * as activityPhotosSvc from '../services/activity-photos.service'
 import {
   type DerivedGpnSensusRow,
   type MonthlyReportWithSubmitterRow,
@@ -60,8 +60,7 @@ const KEYS = {
     ['lupg', 'character-target-reports', mrId] as const,
   characterTargetReportsBatch: (mrIds: readonly string[]) =>
     ['lupg', 'character-target-reports', 'batch', mrIds] as const,
-  activityPhotos: (mrId: string) =>
-    ['lupg', 'activity-photos', mrId] as const,
+  activityPhotos: (mrId: string) => ['lupg', 'activity-photos', mrId] as const,
   activityPhotoUrls: (mrId: string) =>
     ['lupg', 'activity-photo-urls', mrId] as const,
 }
@@ -529,6 +528,21 @@ export function useUpsertCharacterMonitoringReport() {
   })
 }
 
+export function useUpsertCharacterMonitoringReports() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: characterSvc.upsertCharacterMonitoringReports,
+    onSuccess: (_rows, vars) => {
+      const monthlyReportId = vars[0]?.monthly_report_id
+      if (monthlyReportId) {
+        qc.invalidateQueries({
+          queryKey: KEYS.characterReports(monthlyReportId),
+        })
+      }
+    },
+  })
+}
+
 // ============== Character Target Templates ==============
 
 export function useCharacterTargetTemplates() {
@@ -705,6 +719,21 @@ export function useUpsertCharacterTargetReport() {
       qc.invalidateQueries({
         queryKey: KEYS.characterTargetReports(row.monthly_report_id),
       })
+    },
+  })
+}
+
+export function useUpsertCharacterTargetReports() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: characterTargetsSvc.upsertCharacterTargetReports,
+    onSuccess: (_rows, vars) => {
+      const monthlyReportId = vars[0]?.monthly_report_id
+      if (monthlyReportId) {
+        qc.invalidateQueries({
+          queryKey: KEYS.characterTargetReports(monthlyReportId),
+        })
+      }
     },
   })
 }
@@ -1099,11 +1128,8 @@ export function useUpdatePhotoCaption() {
 export function useDeleteActivityPhoto() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (vars: {
-      id: string
-      storagePath: string
-      reportId: string
-    }) => activityPhotosSvc.deleteActivityPhoto(vars.id, vars.storagePath),
+    mutationFn: (vars: { id: string; storagePath: string; reportId: string }) =>
+      activityPhotosSvc.deleteActivityPhoto(vars.id, vars.storagePath),
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({
         queryKey: KEYS.activityPhotos(vars.reportId),
@@ -1148,4 +1174,3 @@ export function useReorderActivityPhotos() {
     },
   })
 }
-

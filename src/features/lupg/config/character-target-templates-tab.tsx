@@ -8,9 +8,9 @@ import {
   Trash2,
   WandSparkles,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -151,7 +151,8 @@ export function CharacterTargetTemplatesTab() {
   const { data: templates = [], isLoading } = useCharacterTargetTemplates()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isImporting, setIsImporting] = useState(false)
-  const [selectedLogItem, setSelectedLogItem] = useState<ParserHistoryItem | null>(null)
+  const [selectedLogItem, setSelectedLogItem] =
+    useState<ParserHistoryItem | null>(null)
 
   const [logHistory, setLogHistory] = useState<ParserHistoryItem[]>(() => {
     try {
@@ -275,7 +276,7 @@ export function CharacterTargetTemplatesTab() {
         )}
 
         {/* Divider */}
-        <div className='h-px bg-border/70 my-2' />
+        <div className='my-2 h-px bg-border/70' />
 
         {/* Section: Parser Activity Logs */}
         <div className='flex flex-col gap-3'>
@@ -288,7 +289,7 @@ export function CharacterTargetTemplatesTab() {
                 variant='ghost'
                 size='sm'
                 onClick={handleClearLogHistory}
-                className='h-6 px-1.5 text-[10px] text-muted-foreground hover:text-destructive transition-colors'
+                className='h-6 px-1.5 text-[10px] text-muted-foreground transition-colors hover:text-destructive'
               >
                 Clear
               </Button>
@@ -300,35 +301,39 @@ export function CharacterTargetTemplatesTab() {
               No parser activity yet.
             </div>
           ) : (
-            <div className='flex flex-col gap-1.5 max-h-80 overflow-y-auto pr-1 scrollbar-thin'>
+            <div className='scrollbar-thin flex max-h-80 flex-col gap-1.5 overflow-y-auto pr-1'>
               {logHistory.map((item) => (
                 <button
                   key={item.id}
                   type='button'
                   onClick={() => setSelectedLogItem(item)}
-                  className='flex w-full flex-col gap-1 rounded-md border border-border/40 bg-card/45 px-2.5 py-2 text-left text-xs transition-all hover:bg-muted/70 hover:border-border/70 group'
+                  className='group flex w-full flex-col gap-1 rounded-md border border-border/40 bg-card/45 px-2.5 py-2 text-left text-xs transition-all hover:border-border/70 hover:bg-muted/70'
                 >
                   <div className='flex w-full items-start justify-between gap-2'>
-                    <span className='block max-w-[15ch] truncate font-medium text-foreground group-hover:text-primary transition-colors'>
+                    <span className='block max-w-[15ch] truncate font-medium text-foreground transition-colors group-hover:text-primary'>
                       {item.filename}
                     </span>
                     {item.status === 'success' ? (
-                      <span className='shrink-0 rounded bg-emerald-500/10 border border-emerald-500/20 px-1 py-0.2 text-[8px] font-bold text-emerald-600 uppercase'>
+                      <span className='py-0.2 shrink-0 rounded border border-emerald-500/20 bg-emerald-500/10 px-1 text-[8px] font-bold text-emerald-600 uppercase'>
                         Success
                       </span>
                     ) : item.status === 'warning' ? (
-                      <span className='shrink-0 rounded bg-amber-500/10 border border-amber-500/20 px-1 py-0.2 text-[8px] font-bold text-amber-600 uppercase'>
+                      <span className='py-0.2 shrink-0 rounded border border-amber-500/20 bg-amber-500/10 px-1 text-[8px] font-bold text-amber-600 uppercase'>
                         Warning
                       </span>
                     ) : (
-                      <span className='shrink-0 rounded bg-red-500/10 border border-red-500/20 px-1 py-0.2 text-[8px] font-bold text-red-600 uppercase'>
+                      <span className='py-0.2 shrink-0 rounded border border-red-500/20 bg-red-500/10 px-1 text-[8px] font-bold text-red-600 uppercase'>
                         Error
                       </span>
                     )}
                   </div>
                   <div className='flex items-center justify-between text-[10px] text-muted-foreground/80'>
-                    <span>{item.itemCount} items · Conf: {item.confidence}%</span>
-                    <span>{item.timestamp.split(', ')[1] || item.timestamp}</span>
+                    <span>
+                      {item.itemCount} items · Conf: {item.confidence}%
+                    </span>
+                    <span>
+                      {item.timestamp.split(', ')[1] || item.timestamp}
+                    </span>
                   </div>
                 </button>
               ))}
@@ -417,37 +422,46 @@ function LogDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-xl max-h-[90vh] flex flex-col p-6'>
-        <DialogHeader className='pb-4 border-b border-border/50'>
-          <DialogTitle className='text-base font-bold flex items-center gap-2'>
-            <span className={cn(
-              'h-2.5 w-2.5 rounded-full shrink-0',
-              item.status === 'success'
-                ? 'bg-emerald-500'
-                : item.status === 'warning'
-                  ? 'bg-amber-500'
-                  : 'bg-red-500'
-            )} />
+      <DialogContent className='flex max-h-[90vh] flex-col p-6 sm:max-w-xl'>
+        <DialogHeader className='border-b border-border/50 pb-4'>
+          <DialogTitle className='flex items-center gap-2 text-base font-bold'>
+            <span
+              className={cn(
+                'h-2.5 w-2.5 shrink-0 rounded-full',
+                item.status === 'success'
+                  ? 'bg-emerald-500'
+                  : item.status === 'warning'
+                    ? 'bg-amber-500'
+                    : 'bg-red-500'
+              )}
+            />
             Parser Log Details
           </DialogTitle>
           <DialogDescription className='text-xs'>
-            Parsing activity on {item.timestamp} for template "{item.templateName}"
+            Parsing activity on {item.timestamp} for template "
+            {item.templateName}"
           </DialogDescription>
         </DialogHeader>
 
-        <div className='flex flex-col gap-4 py-4 overflow-y-auto min-h-0 flex-1 scrollbar-thin pr-1'>
-          <div className='grid grid-cols-2 gap-3 bg-muted/30 rounded-lg p-3 text-xs'>
+        <div className='scrollbar-thin flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto py-4 pr-1'>
+          <div className='grid grid-cols-2 gap-3 rounded-lg bg-muted/30 p-3 text-xs'>
             <div>
               <p className='text-muted-foreground'>File Name</p>
-              <p className='font-medium text-foreground truncate'>{item.filename}</p>
+              <p className='truncate font-medium text-foreground'>
+                {item.filename}
+              </p>
             </div>
             <div>
               <p className='text-muted-foreground'>Parser Method</p>
-              <p className='font-medium text-foreground uppercase'>Local Deterministic</p>
+              <p className='font-medium text-foreground uppercase'>
+                Local Deterministic
+              </p>
             </div>
             <div>
               <p className='text-muted-foreground'>Extracted Items</p>
-              <p className='font-medium text-foreground'>{item.itemCount} items</p>
+              <p className='font-medium text-foreground'>
+                {item.itemCount} items
+              </p>
             </div>
             <div>
               <p className='text-muted-foreground'>Confidence Score</p>
@@ -456,44 +470,58 @@ function LogDetailDialog({
           </div>
 
           <div className='flex flex-col gap-1.5'>
-            <p className='text-xs font-semibold text-muted-foreground uppercase tracking-wider'>Terminal Trace Logs</p>
-            <div className='rounded-lg border border-zinc-800 bg-zinc-950 p-4 font-mono text-[10px] leading-relaxed text-zinc-300 max-h-72 overflow-y-auto scrollbar-thin'>
+            <p className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
+              Terminal Trace Logs
+            </p>
+            <div className='scrollbar-thin max-h-72 overflow-y-auto rounded-lg border border-zinc-800 bg-zinc-950 p-4 font-mono text-[10px] leading-relaxed text-zinc-300'>
               {item.logs.map((log, index) => (
-                <div key={index} className='flex items-start gap-2 mb-1.5 last:mb-0'>
-                  <span className='text-zinc-600 shrink-0 select-none'>[{log.timestamp}]</span>
+                <div
+                  key={index}
+                  className='mb-1.5 flex items-start gap-2 last:mb-0'
+                >
+                  <span className='shrink-0 text-zinc-600 select-none'>
+                    [{log.timestamp}]
+                  </span>
                   <span
                     className={cn(
-                      'font-semibold shrink-0 select-none px-1 rounded text-[8px] uppercase tracking-wide',
+                      'shrink-0 rounded px-1 text-[8px] font-semibold tracking-wide uppercase select-none',
                       log.level === 'success'
-                        ? 'bg-emerald-950 text-emerald-400 border border-emerald-900/50'
+                        ? 'border border-emerald-900/50 bg-emerald-950 text-emerald-400'
                         : log.level === 'warning'
-                          ? 'bg-amber-950 text-amber-400 border border-amber-900/50'
+                          ? 'border border-amber-900/50 bg-amber-950 text-amber-400'
                           : log.level === 'error'
-                            ? 'bg-red-950 text-red-400 border border-red-900/50'
-                            : 'bg-zinc-900 text-zinc-400 border border-zinc-800'
+                            ? 'border border-red-900/50 bg-red-950 text-red-400'
+                            : 'border border-zinc-800 bg-zinc-900 text-zinc-400'
                     )}
                   >
                     {log.level}
                   </span>
-                  <span className='text-zinc-200 wrap-break-word whitespace-pre-wrap'>{log.message}</span>
+                  <span className='wrap-break-word whitespace-pre-wrap text-zinc-200'>
+                    {log.message}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* How parser processed detail inside dialog */}
-          <div className='rounded-lg border border-border bg-gradient-to-br from-indigo-50/20 to-violet-50/10 dark:from-indigo-950/10 dark:to-violet-950/5 p-3.5 text-xs'>
-            <h6 className='font-bold text-foreground mb-1.5 flex items-center gap-1.5'>
+          <div className='rounded-lg border border-border bg-gradient-to-br from-indigo-50/20 to-violet-50/10 p-3.5 text-xs dark:from-indigo-950/10 dark:to-violet-950/5'>
+            <h6 className='mb-1.5 flex items-center gap-1.5 font-bold text-foreground'>
               <WandSparkles className='h-3.5 w-3.5 text-indigo-500' />
               How This Parser Processed the Document
             </h6>
-            <p className='text-muted-foreground leading-normal'>
-              The local parser reads the Excel file hierarchically. First, it identifies the worksheet layout, detects month header rows, and maps the column structure. Then it reads material patterns to infer categories, removes empty placeholders, and marks rows that need Ayat/hal references. Finally, it produces structured data that is ready to save.
+            <p className='leading-normal text-muted-foreground'>
+              The local parser reads the Excel file hierarchically. First, it
+              identifies the worksheet layout, detects month header rows, and
+              maps the column structure. Then it reads material patterns to
+              infer categories, removes empty placeholders, and marks rows that
+              need Ayat/hal references. Finally, it produces structured data
+              that is ready to save.
             </p>
           </div>
         </div>
 
-        <DialogFooter className='pt-2 border-t border-border/50'>
+        <DialogFooter className='border-t border-border/50 pt-2'>
           <Button onClick={() => onOpenChange(false)}>Close</Button>
         </DialogFooter>
       </DialogContent>
@@ -547,7 +575,10 @@ function TemplateImportCard({
     setItems([])
 
     const tempLogs: LogEntry[] = []
-    const addLog = (level: 'info' | 'success' | 'warning' | 'error', message: string) => {
+    const addLog = (
+      level: 'info' | 'success' | 'warning' | 'error',
+      message: string
+    ) => {
       const timeStr = new Date().toLocaleTimeString('id-ID', {
         hour: '2-digit',
         minute: '2-digit',
@@ -557,25 +588,38 @@ function TemplateImportCard({
       setCurrentLogs([...tempLogs])
     }
 
-    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+    const delay = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms))
 
     try {
-      addLog('info', `Starting file parse: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`)
+      addLog(
+        'info',
+        `Starting file parse: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`
+      )
       await delay(120)
 
       addLog('info', `Opening Excel file and reading sheet previews...`)
       const sheets = await readWorkbookPreview(file)
       await delay(120)
 
-      addLog('info', `Found ${sheets.length} sheet(s): ${sheets.map((s) => `"${s.name}"`).join(', ')}.`)
+      addLog(
+        'info',
+        `Found ${sheets.length} sheet(s): ${sheets.map((s) => `"${s.name}"`).join(', ')}.`
+      )
       await delay(140)
 
-      addLog('info', `Looking for target material headers (Month, Category, Material, Ayat/Hal)...`)
+      addLog(
+        'info',
+        `Looking for target material headers (Month, Category, Material, Ayat/Hal)...`
+      )
       await delay(140)
 
       const activeSheet = sheets[0]
       const headerRowIndex = findHeaderRowIndex(activeSheet?.rows ?? [])
-      addLog('info', `Header row detected on sheet "${activeSheet?.name ?? 'Sheet'}" at row ${headerRowIndex + 1}.`)
+      addLog(
+        'info',
+        `Header row detected on sheet "${activeSheet?.name ?? 'Sheet'}" at row ${headerRowIndex + 1}.`
+      )
       await delay(120)
 
       addLog('info', `Mapping columns intelligently...`)
@@ -585,25 +629,40 @@ function TemplateImportCard({
       await delay(120)
 
       let parseResult = deterministicParse({ year, defaultLevel, sheets })
-      addLog('success', `Local deterministic parser processed the file successfully.`)
+      addLog(
+        'success',
+        `Local deterministic parser processed the file successfully.`
+      )
 
       parseResult = normalizeParseResult(
         forceParseLevel(parseResult, defaultLevel)
       )
 
-      addLog('info', `Balancing material categories and default level "${defaultLevel}"...`)
+      addLog(
+        'info',
+        `Balancing material categories and default level "${defaultLevel}"...`
+      )
       await delay(120)
 
       if (parseResult.issues.length > 0) {
-        addLog('warning', `Found ${parseResult.issues.length} validation note(s):`)
+        addLog(
+          'warning',
+          `Found ${parseResult.issues.length} validation note(s):`
+        )
         for (const issue of parseResult.issues.slice(0, 3)) {
           addLog('warning', `[Validation] ${issue.message}`)
         }
       }
 
       const confidencePercent = Math.round(parseResult.confidence * 100)
-      addLog('success', `Extraction complete. Loaded ${parseResult.items.length} material item(s).`)
-      addLog('success', `Parser confidence score: ${confidencePercent}% via Local Deterministic.`)
+      addLog(
+        'success',
+        `Extraction complete. Loaded ${parseResult.items.length} material item(s).`
+      )
+      addLog(
+        'success',
+        `Parser confidence score: ${confidencePercent}% via Local Deterministic.`
+      )
 
       setParsed(parseResult)
       setItems(
@@ -640,7 +699,10 @@ function TemplateImportCard({
         `Parser loaded ${parseResult.items.length} item(s) (${parseResult.parser_method})`
       )
     } catch (e) {
-      addLog('error', `Parsing failed: ${e instanceof Error ? e.message : 'Failed to parse file'}`)
+      addLog(
+        'error',
+        `Parsing failed: ${e instanceof Error ? e.message : 'Failed to parse file'}`
+      )
 
       onAddLogHistory({
         id: crypto.randomUUID(),
@@ -724,7 +786,8 @@ function TemplateImportCard({
       <CardHeader>
         <CardTitle>Import Excel + Local Parser</CardTitle>
         <CardDescription>
-          Upload the worksheet, review the deterministic parser result, then save it as a template.
+          Upload the worksheet, review the deterministic parser result, then
+          save it as a template.
         </CardDescription>
       </CardHeader>
       <CardContent className='flex flex-col gap-6'>
@@ -841,15 +904,17 @@ function TemplateImportCard({
 
         {/* Real-time parser console output */}
         {currentLogs.length > 0 && (
-          <div className='flex flex-col gap-4 mt-2'>
-            <div className='rounded-lg border border-zinc-800 bg-zinc-950 p-4 font-mono text-[11px] leading-relaxed text-zinc-300 shadow-lg relative overflow-hidden'>
-              <div className='flex items-center justify-between border-b border-zinc-800 pb-2 mb-3'>
+          <div className='mt-2 flex flex-col gap-4'>
+            <div className='relative overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 p-4 font-mono text-[11px] leading-relaxed text-zinc-300 shadow-lg'>
+              <div className='mb-3 flex items-center justify-between border-b border-zinc-800 pb-2'>
                 <div className='flex items-center gap-2'>
-                  <span className={cn(
-                    'h-2 w-2 rounded-full shrink-0',
-                    isParsing ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-500'
-                  )} />
-                  <span className='text-[10px] uppercase tracking-wider text-zinc-400 font-bold'>
+                  <span
+                    className={cn(
+                      'h-2 w-2 shrink-0 rounded-full',
+                      isParsing ? 'animate-pulse bg-emerald-500' : 'bg-zinc-500'
+                    )}
+                  />
+                  <span className='text-[10px] font-bold tracking-wider text-zinc-400 uppercase'>
                     Parser Terminal Output
                   </span>
                 </div>
@@ -857,31 +922,34 @@ function TemplateImportCard({
                   Status: {isParsing ? 'Processing' : 'Finished'}
                 </span>
               </div>
-              <div className='max-h-60 overflow-y-auto space-y-1.5 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent pr-1'>
+              <div className='scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent max-h-60 space-y-1.5 overflow-y-auto pr-1'>
                 {currentLogs.map((log, index) => (
                   <div key={index} className='flex items-start gap-2'>
-                    <span className='text-zinc-600 shrink-0 select-none'>[{log.timestamp}]</span>
+                    <span className='shrink-0 text-zinc-600 select-none'>
+                      [{log.timestamp}]
+                    </span>
                     <span
                       className={cn(
-                        'font-semibold shrink-0 select-none px-1 py-0.2 rounded text-[9px] uppercase tracking-wide',
+                        'py-0.2 shrink-0 rounded px-1 text-[9px] font-semibold tracking-wide uppercase select-none',
                         log.level === 'success'
-                          ? 'bg-emerald-950 text-emerald-400 border border-emerald-900/50'
+                          ? 'border border-emerald-900/50 bg-emerald-950 text-emerald-400'
                           : log.level === 'warning'
-                            ? 'bg-amber-950 text-amber-400 border border-amber-900/50'
+                            ? 'border border-amber-900/50 bg-amber-950 text-amber-400'
                             : log.level === 'error'
-                              ? 'bg-red-950 text-red-400 border border-red-900/50'
-                              : 'bg-zinc-900 text-zinc-400 border border-zinc-800'
+                              ? 'border border-red-900/50 bg-red-950 text-red-400'
+                              : 'border border-zinc-800 bg-zinc-900 text-zinc-400'
                       )}
                     >
                       {log.level}
                     </span>
-                    <span className='text-zinc-200 wrap-break-word whitespace-pre-wrap'>{log.message}</span>
+                    <span className='wrap-break-word whitespace-pre-wrap text-zinc-200'>
+                      {log.message}
+                    </span>
                   </div>
                 ))}
                 <div ref={logEndRef} />
               </div>
             </div>
-
           </div>
         )}
 
@@ -1055,7 +1123,9 @@ function TemplateItemsEditor({
           setIsEditDialogOpen(false)
         },
         onError: (e: unknown) =>
-          toast.error(e instanceof Error ? e.message : 'Failed to update template'),
+          toast.error(
+            e instanceof Error ? e.message : 'Failed to update template'
+          ),
       }
     )
   }
@@ -1204,8 +1274,8 @@ function TemplateItemsEditor({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Target 29 template?</AlertDialogTitle>
             <AlertDialogDescription>
-              Template <strong>{template.name}</strong>, all material items,
-              and monitoring data linked to this template will be permanently
+              Template <strong>{template.name}</strong>, all material items, and
+              monitoring data linked to this template will be permanently
               deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1853,12 +1923,12 @@ function normalizeParseResult(result: ParseResult): ParseResult {
     issues:
       skippedRows > 0
         ? [
-          ...result.issues,
-          {
-            severity: 'info',
-            message: `${skippedRows} baris kosong/placeholder diabaikan saat parsing.`,
-          },
-        ]
+            ...result.issues,
+            {
+              severity: 'info',
+              message: `${skippedRows} baris kosong/placeholder diabaikan saat parsing.`,
+            },
+          ]
         : result.issues,
     items,
   }
@@ -1978,9 +2048,12 @@ function makeMapping(headers: string[]) {
   const lower = headers.map((header) => header.toLowerCase())
   const findIndex = (terms: string[]) =>
     lower.findIndex((header) => terms.every((term) => header.includes(term)))
-  const kategoriColumns = lower
-    .map((header, index) => ({ header, index }))
-    .filter(({ header }) => header.includes('kategori'))
+  const kategoriColumns = lower.reduce<
+    Array<{ header: string; index: number }>
+  >((columns, header, index) => {
+    if (header.includes('kategori')) columns.push({ header, index })
+    return columns
+  }, [])
   const materialIndex = findIndex(['materi'])
   const detailIndex = findIndex(['detail', 'materi'])
   const dariIndex = findIndex(['dari'])

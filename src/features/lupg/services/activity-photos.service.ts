@@ -76,15 +76,16 @@ export async function deleteActivityPhoto(
   id: string,
   storagePath: string
 ): Promise<void> {
-  // Delete DB row first (CASCADE won't help for storage)
-  const { error: dbError } = await supabase
+  const { error: storageError } = await supabase.storage
+    .from(BUCKET)
+    .remove([storagePath])
+  if (storageError) throw storageError
+
+  const { error } = await supabase
     .from('lupg_activity_photos')
     .delete()
     .eq('id', id)
-  if (dbError) throw dbError
-
-  // Delete from storage (best effort — orphaned files are acceptable)
-  await supabase.storage.from(BUCKET).remove([storagePath])
+  if (error) throw error
 }
 
 export async function getSignedUrls(
@@ -110,17 +111,16 @@ export async function deleteActivityPhotos(
 ): Promise<void> {
   if (ids.length === 0) return
 
-  // Delete DB rows first
-  const { error: dbError } = await supabase
+  if (storagePaths.length > 0) {
+    const { error } = await supabase.storage.from(BUCKET).remove(storagePaths)
+    if (error) throw error
+  }
+
+  const { error } = await supabase
     .from('lupg_activity_photos')
     .delete()
     .in('id', ids)
-  if (dbError) throw dbError
-
-  // Delete files from storage
-  if (storagePaths.length > 0) {
-    await supabase.storage.from(BUCKET).remove(storagePaths)
-  }
+  if (error) throw error
 }
 
 export async function reorderActivityPhotos(
@@ -140,4 +140,3 @@ export async function reorderActivityPhotos(
     if (r.error) throw r.error
   }
 }
-

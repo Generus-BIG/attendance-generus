@@ -8,8 +8,10 @@ import {
   aggregateMonthlyRecap,
   type CensusParticipant,
 } from '@/features/dashboard/services/dashboard-recap.service'
-import { type AttendanceRecord } from '@/features/dashboard/types'
-import { type PublicDashboardPayload } from './types'
+import {
+  type PublicDashboardPayload,
+  type PublicDashboardRecord,
+} from './types'
 
 type RpcPayload = {
   status: 'ok' | 'unavailable'
@@ -23,7 +25,7 @@ type RpcPayload = {
     formIds?: string[]
   }
   forms?: Array<{ id: string; title: string; date: string }>
-  records?: AttendanceRecord[]
+  records?: PublicDashboardRecord[]
   censusParticipants?: CensusParticipant[]
 }
 

@@ -356,7 +356,7 @@ export function RekapDesa() {
       if (p) ordered.push(p)
     }
     for (const p of rawPrograms) {
-      if (!PROGRAM_ORDER.includes(p.code as any)) {
+      if (!PROGRAM_ORDER.includes(p.code as (typeof PROGRAM_ORDER)[number])) {
         ordered.push(p)
       }
     }

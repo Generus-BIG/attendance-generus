@@ -95,7 +95,7 @@ export async function listCharacterMonitoringReportsBatch(
 export async function upsertCharacterMonitoringReport(input: {
   monthly_report_id: string
   activity_id: string
-  status: CharacterMonitoringStatus
+  status: CharacterMonitoringStatus | null
   notes?: string | null
 }): Promise<CharacterMonitoringReportRow> {
   const { data, error } = await supabase
@@ -113,4 +113,21 @@ export async function upsertCharacterMonitoringReport(input: {
     .single()
   if (error) throw error
   return data as CharacterMonitoringReportRow
+}
+
+export async function upsertCharacterMonitoringReports(
+  inputs: Array<{
+    monthly_report_id: string
+    activity_id: string
+    status: Exclude<CharacterMonitoringStatus, 'needs_guidance'>
+  }>
+): Promise<CharacterMonitoringReportRow[]> {
+  if (inputs.length === 0) return []
+
+  const { data, error } = await supabase
+    .from('lupg_character_monitoring_reports')
+    .upsert(inputs, { onConflict: 'monthly_report_id,activity_id' })
+    .select()
+  if (error) throw error
+  return (data ?? []) as CharacterMonitoringReportRow[]
 }

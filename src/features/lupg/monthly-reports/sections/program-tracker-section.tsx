@@ -1,22 +1,21 @@
 import { useMemo } from 'react'
-import { Loader2 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
-import { type Role } from '@/lib/rbac'
+import { Loader2 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
-import { type MonthlyReportRow } from '../../types'
+import { type Role } from '@/lib/rbac'
+import { supabase } from '@/lib/supabase'
+import { PROGRAM_ORDER } from '../../constants'
 import {
   useActivePrograms,
   useYearlyProgramData,
 } from '../../hooks/use-lupg-queries'
-import { PROGRAM_ORDER } from '../../constants'
-import { currentMonthKey } from '../../utils/month-utils'
 import { ProgramClusterBody } from '../../programs/components/program-cluster-card'
 import { ProgramMonthlyBody } from '../../programs/components/program-monthly-card'
 import { ProgramQuarterlyBody } from '../../programs/components/program-quarterly-card'
+import { type MonthlyReportRow, type ProgramDefinitionRow } from '../../types'
+import { currentMonthKey } from '../../utils/month-utils'
 import { ProgramSectionCard } from '../components/program-section-card'
 import { SectionHeading } from '../components/section-heading'
-import { ProgramDefinitionRow } from '../../types'
 
 interface Props {
   report: MonthlyReportRow
@@ -44,7 +43,7 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
     }
     // Append any active programs not in the list
     for (const p of programs) {
-      if (!PROGRAM_ORDER.includes(p.code as any)) {
+      if (!PROGRAM_ORDER.includes(p.code as (typeof PROGRAM_ORDER)[number])) {
         ordered.push(p)
       }
     }
@@ -76,7 +75,7 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
   return (
     <section
       id='section-program-tracker'
-      className='scroll-mt-24 flex flex-col gap-4'
+      className='flex scroll-mt-24 flex-col gap-4'
     >
       <SectionHeading
         kicker='Program Tracker'
@@ -84,12 +83,12 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
       />
 
       {isLoading ? (
-        <div className='text-muted-foreground bg-card flex items-center justify-center rounded-xl border py-8 shadow-sm'>
+        <div className='flex items-center justify-center rounded-xl border bg-card py-8 text-muted-foreground shadow-sm'>
           <Loader2 className='mr-2 h-5 w-5 animate-spin' />
           Memuat...
         </div>
       ) : programs.length === 0 ? (
-        <div className='text-muted-foreground bg-card rounded-xl border py-8 text-center text-sm shadow-sm'>
+        <div className='rounded-xl border bg-card py-8 text-center text-sm text-muted-foreground shadow-sm'>
           Belum ada program aktif.
         </div>
       ) : (

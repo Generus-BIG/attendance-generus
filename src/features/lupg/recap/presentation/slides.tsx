@@ -1,9 +1,12 @@
 // Thin slide builder: composes per-slide renderers into the final ordered deck.
 // Each renderer lives in `./slide-renderers/render-*.tsx`.
 import { type ReactNode } from 'react'
+import { PROGRAM_ORDER } from '../../constants'
 import {
   type CharacterMonitoringActivityRow,
   type CharacterMonitoringReportRow,
+  type CharacterTargetItemRow,
+  type CharacterTargetReportRow,
   type MetricDefinitionRow,
   type MetricReportRow,
   type MonthlyReportRow,
@@ -17,11 +20,14 @@ import {
   type ShodaqohRow,
 } from '../../types'
 import { formatMonthLabel } from '../../utils/month-utils'
-import { PROGRAM_ORDER } from '../../constants'
 import {
   renderCharacterAgendaSlide,
   renderCharacterSummarySlide,
 } from './slide-renderers/render-character-monitoring'
+import {
+  renderCharacterTargetAgendaSlide,
+  renderCharacterTargetSummarySlide,
+} from './slide-renderers/render-character-targets'
 import { renderClosingSlide } from './slide-renderers/render-closing'
 import { renderCoverSlide } from './slide-renderers/render-cover'
 import {
@@ -65,6 +71,8 @@ export interface PresentationData {
   shodaqohRows: ShodaqohRow[]
   mustinRows: MustinNoteRow[]
   mustinTemplates?: MustinTemplateRow[]
+  characterTargetItems?: CharacterTargetItemRow[]
+  characterTargetReports?: CharacterTargetReportRow[]
   characterActivities?: CharacterMonitoringActivityRow[]
   characterReports?: CharacterMonitoringReportRow[]
   kelompokFilter?: string
@@ -107,6 +115,8 @@ export function buildSlides(data: PresentationData): Slide[] {
     shodaqohRows,
     mustinRows,
     mustinTemplates = [],
+    characterTargetItems = [],
+    characterTargetReports = [],
     characterActivities = [],
     characterReports = [],
     kelompokFilter,
@@ -154,6 +164,8 @@ export function buildSlides(data: PresentationData): Slide[] {
     | { kind: 'sarpras' }
     | { kind: 'shodaqoh' }
     | { kind: 'program'; program: ProgramDefinitionRow }
+    | { kind: 'character-target-summary' }
+    | { kind: 'character-target-agenda' }
     | { kind: 'character-agenda' }
     | { kind: 'character-summary' }
     | { kind: 'mustin' }
@@ -185,9 +197,11 @@ export function buildSlides(data: PresentationData): Slide[] {
   for (const program of orderedPrograms) {
     descriptors.push({ kind: 'program', program })
   }
-  descriptors.push({ kind: 'character-agenda' })
-  descriptors.push({ kind: 'character-summary' })
   descriptors.push({ kind: 'mustin' })
+  descriptors.push({ kind: 'character-target-summary' })
+  descriptors.push({ kind: 'character-target-agenda' })
+  descriptors.push({ kind: 'character-summary' })
+  descriptors.push({ kind: 'character-agenda' })
   if ((data.activityPhotos ?? []).length > 0) {
     descriptors.push({ kind: 'dokumentasi' })
   }
@@ -355,11 +369,44 @@ export function buildSlides(data: PresentationData): Slide[] {
         )
         break
       }
+      case 'character-target-summary': {
+        slides.push(
+          renderCharacterTargetSummarySlide({
+            monthLabel,
+            scope,
+            isSingleKelompok,
+            effectiveKelompokList,
+            reports,
+            targetItems: characterTargetItems,
+            targetReports: characterTargetReports,
+            slideNumber,
+            totalSlides,
+          })
+        )
+        break
+      }
+      case 'character-target-agenda': {
+        slides.push(
+          renderCharacterTargetAgendaSlide({
+            monthLabel,
+            scope,
+            isSingleKelompok,
+            effectiveKelompokList,
+            reports,
+            targetItems: characterTargetItems,
+            targetReports: characterTargetReports,
+            slideNumber,
+            totalSlides,
+          })
+        )
+        break
+      }
       case 'character-agenda': {
         slides.push(
           renderCharacterAgendaSlide({
             monthLabel,
             scope,
+            isSingleKelompok,
             effectiveKelompokList,
             reports,
             activities: characterActivities,
@@ -375,6 +422,7 @@ export function buildSlides(data: PresentationData): Slide[] {
           renderCharacterSummarySlide({
             monthLabel,
             scope,
+            isSingleKelompok,
             effectiveKelompokList,
             reports,
             activities: characterActivities,

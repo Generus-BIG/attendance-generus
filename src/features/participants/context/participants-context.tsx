@@ -3,8 +3,12 @@ import { format, parse } from 'date-fns'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import {
+  participantListSchema,
+  type Participant,
+  type KATEGORI,
+} from '@/lib/schema'
 import { supabase } from '@/lib/supabase'
-import { participantListSchema, type Participant, type KATEGORI } from '@/lib/schema'
 
 // Lookup value mappings (value -> UUID)
 // These are fetched from DB and cached
@@ -25,16 +29,26 @@ function fromDateOnly(value: string | null | undefined): Date | null {
 interface ParticipantsCRUDContextType {
   participants: Participant[]
   isLoading: boolean
-  createParticipant: (data: Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
-  updateParticipant: (id: string, data: Partial<Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<void>
+  createParticipant: (
+    data: Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>
+  ) => Promise<void>
+  updateParticipant: (
+    id: string,
+    data: Partial<Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>>
+  ) => Promise<void>
   deleteParticipant: (id: string) => Promise<void>
   deleteParticipants: (ids: string[]) => Promise<void>
 }
 
-const ParticipantsCRUDContext = createContext<ParticipantsCRUDContextType | undefined>(undefined)
+const ParticipantsCRUDContext = createContext<
+  ParticipantsCRUDContextType | undefined
+>(undefined)
 
 // Helper to fetch lookup values
-async function fetchLookupMaps(): Promise<{ groups: LookupMap; categories: LookupMap }> {
+async function fetchLookupMaps(): Promise<{
+  groups: LookupMap
+  categories: LookupMap
+}> {
   const { data, error } = await supabase
     .from('lookup_values')
     .select('id, value, type')
@@ -63,14 +77,18 @@ function mapKategoriToDb(kategori: string): string {
 }
 
 // Map DB category value to app kategori
-function mapKategoriFromDb(dbValue: string): typeof KATEGORI[number] {
+function mapKategoriFromDb(dbValue: string): (typeof KATEGORI)[number] {
   if (dbValue === 'GPN A') return 'A'
   if (dbValue === 'GPN B') return 'B'
   if (dbValue === 'APR') return 'APR'
   return 'AR'
 }
 
-export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) {
+export function ParticipantsCRUDProvider({
+  children,
+}: {
+  children: ReactNode
+}) {
   const queryClient = useQueryClient()
 
   // Fetch lookup values for mapping
@@ -88,17 +106,10 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
   const { data: participants = [], isLoading } = useQuery({
     queryKey: ['participants', role, userKelompok],
     queryFn: async () => {
-      // Automatically promote eligible GPN A -> GPN B in the database
-      try {
-        await supabase.rpc('promote_eligible_gpn')
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to run promote_eligible_gpn:', err)
-      }
-
       let query = supabase
         .from('participants')
-        .select(`
+        .select(
+          `
           id,
           name,
           gender,
@@ -108,7 +119,8 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
           created_at,
           group:group_id(value),
           category:category_id(value)
-        `)
+        `
+        )
         .order('name', { ascending: true })
 
       // Team Manager: resolve kelompok UUID and filter directly in this query
@@ -153,7 +165,9 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
 
   // Create participant mutation
   const createMutation = useMutation({
-    mutationFn: async (newParticipant: Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>) => {
+    mutationFn: async (
+      newParticipant: Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>
+    ) => {
       if (!lookups) throw new Error('Lookup values not loaded')
 
       const dbKategori = mapKategoriToDb(newParticipant.kategori)
@@ -197,12 +211,19 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
 
   // Update participant mutation
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>> }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string
+      data: Partial<Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>>
+    }) => {
       if (!lookups) throw new Error('Lookup values not loaded')
 
       // Pre-read current category when birth_date is being changed but kategori isn't —
       // this lets us detect GPN A → GPN B promote that the trigger may fire.
-      let preUpdateKategori: typeof KATEGORI[number] | undefined = data.kategori
+      let preUpdateKategori: (typeof KATEGORI)[number] | undefined =
+        data.kategori
       if (preUpdateKategori === undefined && data.birthDate !== undefined) {
         const { data: existing, error: preReadError } = await supabase
           .from('participants')
@@ -219,9 +240,12 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
 
       if (data.name !== undefined) payload.name = data.name
       if (data.gender !== undefined) payload.gender = data.gender
-      if (data.status !== undefined) payload.status_active = data.status === 'active'
-      if (data.birthDate !== undefined) payload.birth_date = toDateOnly(data.birthDate)
-      if (data.birthPlace !== undefined) payload.birth_place = data.birthPlace?.trim() || null
+      if (data.status !== undefined)
+        payload.status_active = data.status === 'active'
+      if (data.birthDate !== undefined)
+        payload.birth_date = toDateOnly(data.birthDate)
+      if (data.birthPlace !== undefined)
+        payload.birth_place = data.birthPlace?.trim() || null
 
       if (data.kelompok !== undefined) {
         const groupId = lookups.groups[data.kelompok]
@@ -246,7 +270,8 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
       if (error) throw error
 
       const wasGpnA = preUpdateKategori === 'A'
-      const returnedIsGpnB = returned?.category_id === lookups.categories['GPN B']
+      const returnedIsGpnB =
+        returned?.category_id === lookups.categories['GPN B']
       return { autoPromoted: wasGpnA && returnedIsGpnB }
     },
     onSuccess: ({ autoPromoted }) => {
@@ -322,7 +347,9 @@ export function ParticipantsCRUDProvider({ children }: { children: ReactNode }) 
 export function useParticipantsCRUD() {
   const context = useContext(ParticipantsCRUDContext)
   if (!context) {
-    throw new Error('useParticipantsCRUD must be used within a ParticipantsCRUDProvider')
+    throw new Error(
+      'useParticipantsCRUD must be used within a ParticipantsCRUDProvider'
+    )
   }
   return context
 }
