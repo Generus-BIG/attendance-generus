@@ -147,22 +147,17 @@ export async function submitAttendanceForm(
     tempGender?: string
   }
 ) {
-  await assertAttendanceMatchesFormScope(formId, data)
-
-  const payload = {
-    form_id: formId,
-    participant_id: data.participantId || null,
-    status: data.status?.toUpperCase(),
-    permission_reason: data.permissionReason || null,
-    permission_description: data.notes || null,
-    temp_name: data.tempName || null,
-    temp_group: data.tempKelompok || null,
-    temp_category: data.tempKategori || null,
-    temp_gender: data.tempGender || null,
-    timestamp: new Date().toISOString(),
-  }
-
-  const { error } = await supabase.from('attendance').insert(payload)
+  const { error } = await supabase.rpc('submit_attendance_guarded', {
+    p_form_id: formId,
+    p_participant_id: data.participantId || null,
+    p_status: data.status ?? null,
+    p_permission_reason: data.permissionReason ?? null,
+    p_permission_description: data.notes ?? null,
+    p_temp_name: data.tempName ?? null,
+    p_temp_group: data.tempKelompok ?? null,
+    p_temp_category: data.tempKategori ?? null,
+    p_temp_gender: data.tempGender ?? null,
+  })
 
   if (error) throw error
 }
@@ -245,102 +240,32 @@ function mapDbCategoryToInternal(dbCategory: string): string {
   return dbCategory // "AR" stays as "AR"
 }
 
-// Map internal form values back to database category values for filtering
-function mapInternalToDbCategories(allowedCategories: string[]): string[] {
-  const dbCategories: string[] = []
-  if (allowedCategories.includes('A')) dbCategories.push('GPN A')
-  if (allowedCategories.includes('B')) dbCategories.push('GPN B')
-  if (allowedCategories.includes('AR')) {
-    dbCategories.push('Anak Remaja')
-    dbCategories.push('AR')
-  }
-  if (allowedCategories.includes('APR')) dbCategories.push('APR')
-  return dbCategories
-}
-
 export async function searchParticipants(
-  query: string,
-  allowedCategories?: string[],
-  groupId?: string | null
+  formId: string,
+  query: string
 ): Promise<ParticipantSearchResult[]> {
-  // Construct the select string based on whether we need to filter by category (inner join) or not
-  const hasCategoryFilter = allowedCategories && allowedCategories.length > 0
-
-  const selectQuery = `
-        id,
-        name,
-        gender,
-        groups:group_id(value),
-        categories:category_id${hasCategoryFilter ? '!inner' : ''}(value)
-    `
-
-  let queryBuilder = supabase
-    .from('participants')
-    .select(selectQuery)
-    .eq('status_active', true)
-    .ilike('name', `%${query || ''}%`)
-
-  // Filter by kelompok (group_id) for kelompok-type forms
-  if (groupId) {
-    queryBuilder = queryBuilder.eq('group_id', groupId)
-  }
-
-  // Apply category filter if needed
-  if (hasCategoryFilter) {
-    const dbAllowedValues = mapInternalToDbCategories(allowedCategories)
-    queryBuilder = queryBuilder.in('categories.value', dbAllowedValues)
-  }
-
-  // Apply limit after filtering
-  const { data, error } = await queryBuilder.limit(20)
+  const { data, error } = await supabase.rpc('search_form_participants', {
+    p_form_id: formId,
+    p_query: query,
+  })
 
   if (error || !data) {
     return []
   }
 
-  // Type-safe mapping for Supabase foreign key relations
   type ParticipantRow = {
     id: string
     name: string
     gender: string
-    groups: { value: string } | null
-    categories: { value: string } | null
+    group_name: string
+    category_name: string
   }
 
-  // Supabase returns foreign key relations as objects or arrays depending on the relationship
-  const mapped: ParticipantSearchResult[] = (
-    data as unknown as ParticipantRow[]
-  ).map((p) => {
-    // Handle both single object and array responses from Supabase
-    const groupData = p.groups
-    const categoryData = p.categories
-
-    const groupValue = groupData?.value
-
-    const categoryValue = categoryData?.value
-
-    return {
-      id: p.id,
-      name: p.name,
-      gender: p.gender,
-      group: groupValue || '',
-      category: categoryValue || '', // Keep original DB value for display
-    }
-  })
-
-  // Filter by allowed categories if provided
-  // Since we now filter in the DB using !inner join, we can skip strict filtering here,
-  // but we still map the category value for the frontend.
-  // However, if the mapping logic differs (e.g. multiple DB values mapping to one internal),
-  // we should ensure the returned object uses the "display" or "internal" value?
-  // The current code keeps the original DB value.
-  if (allowedCategories && allowedCategories.length > 0) {
-    // Redundant client-side check but safe to keep
-    return mapped.filter((p) => {
-      const internalCategory = mapDbCategoryToInternal(p.category)
-      return allowedCategories.includes(internalCategory)
-    })
-  }
-
-  return mapped
+  return (data as ParticipantRow[]).map((participant) => ({
+    id: participant.id,
+    name: participant.name,
+    gender: participant.gender,
+    group: participant.group_name,
+    category: participant.category_name,
+  }))
 }

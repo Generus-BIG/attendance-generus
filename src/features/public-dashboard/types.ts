@@ -6,6 +6,10 @@ import {
   type MonthlyFormRecap,
 } from '@/features/dashboard/types'
 
+export type PublicDashboardRecord = AttendanceRecord & {
+  permission_description: string | null
+}
+
 export type PublicDashboardPayload =
   | { status: 'unavailable' }
   | {
@@ -20,7 +24,7 @@ export type PublicDashboardPayload =
         formIds: string[]
       }
       forms: Pick<DashboardFormItem, 'id' | 'title' | 'date'>[]
-      records: AttendanceRecord[]
+      records: PublicDashboardRecord[]
       censusParticipants: CensusParticipant[]
       recap: MonthlyFormRecap
     }

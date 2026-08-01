@@ -1,14 +1,23 @@
 import { useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
+import { useQuery } from '@tanstack/react-query'
 import { id as idLocale } from 'date-fns/locale'
-import { toast } from 'sonner'
 import { Loader2, Check, ChevronsUpDown } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { exportToExcel } from '@/lib/export'
+import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { DatePicker } from '@/components/date-picker'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
 import {
   Dialog,
   DialogContent,
@@ -19,27 +28,18 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
+import { DatePicker } from '@/components/date-picker'
 import { useAttendance } from './attendance-provider'
 
 interface MultiSelectProps {
@@ -50,7 +50,13 @@ interface MultiSelectProps {
   onChange: (values: string[]) => void
 }
 
-function MultiSelect({ label, placeholder, options, selected, onChange }: MultiSelectProps) {
+function MultiSelect({
+  label,
+  placeholder,
+  options,
+  selected,
+  onChange,
+}: MultiSelectProps) {
   const [open, setOpen] = useState(false)
 
   const handleToggle = (value: string) => {
@@ -72,24 +78,33 @@ function MultiSelect({ label, placeholder, options, selected, onChange }: MultiS
           variant='outline'
           role='combobox'
           aria-expanded={open}
-          className='w-full justify-between h-auto min-h-[38px] py-1.5 px-3 text-left font-normal hover:bg-background'
+          className='h-auto min-h-[38px] w-full justify-between px-3 py-1.5 text-left font-normal hover:bg-background'
         >
-          <div className='flex flex-wrap gap-1 items-center max-w-[90%]'>
+          <div className='flex max-w-[90%] flex-wrap items-center gap-1'>
             {selectedLabels.length === 0 ? (
-              <span className='text-muted-foreground text-sm'>{placeholder}</span>
+              <span className='text-sm text-muted-foreground'>
+                {placeholder}
+              </span>
             ) : selectedLabels.length > 2 ? (
-              <Badge variant='secondary' className='rounded-sm font-normal text-xs'>
+              <Badge
+                variant='secondary'
+                className='rounded-sm text-xs font-normal'
+              >
                 {selectedLabels.length} terpilih
               </Badge>
             ) : (
               selectedLabels.map((lbl) => (
-                <Badge variant='secondary' key={lbl} className='rounded-sm font-normal text-xs'>
+                <Badge
+                  variant='secondary'
+                  key={lbl}
+                  className='rounded-sm text-xs font-normal'
+                >
                   {lbl}
                 </Badge>
               ))
             )}
           </div>
-          <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50 self-center' />
+          <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 self-center opacity-50' />
         </Button>
       </PopoverTrigger>
       <PopoverContent className='w-80 p-0' align='start'>
@@ -106,17 +121,19 @@ function MultiSelect({ label, placeholder, options, selected, onChange }: MultiS
                     onChange(options.map((o) => o.value))
                   }
                 }}
-                className='font-semibold border-b border-border mb-1 rounded-none py-2'
+                className='mb-1 rounded-none border-b border-border py-2 font-semibold'
               >
                 <div
                   className={cn(
                     'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
                     selected.length === options.length
-                      ? 'bg-[#9A3412] border-[#9A3412] text-white'
+                      ? 'border-[#9A3412] bg-[#9A3412] text-white'
                       : 'opacity-50'
                   )}
                 >
-                  {selected.length === options.length && <Check className='h-3 w-3 text-white' />}
+                  {selected.length === options.length && (
+                    <Check className='h-3 w-3 text-white' />
+                  )}
                 </div>
                 Pilih Semua
               </CommandItem>
@@ -131,7 +148,7 @@ function MultiSelect({ label, placeholder, options, selected, onChange }: MultiS
                       className={cn(
                         'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
                         isSelected
-                          ? 'bg-[#9A3412] border-[#9A3412] text-white'
+                          ? 'border-[#9A3412] bg-[#9A3412] text-white'
                           : 'opacity-50'
                       )}
                     >
@@ -213,7 +230,8 @@ export function ExportAttendanceDialog() {
     try {
       let query = supabase
         .from('attendance')
-        .select(`
+        .select(
+          `
           *,
           participant:participants!attendance_participant_id_fkey(
             id,
@@ -225,17 +243,24 @@ export function ExportAttendanceDialog() {
             category:category_id(value)
           ),
           form:form_id(title)
-        `)
+        `
+        )
         .order('timestamp', { ascending: false })
 
       // Apply date filters in query
       if (fromDate) {
-        query = query.gte('timestamp', `${format(fromDate, 'yyyy-MM-dd')}T00:00:00`)
+        query = query.gte(
+          'timestamp',
+          `${format(fromDate, 'yyyy-MM-dd')}T00:00:00`
+        )
       }
       if (toDate) {
-        query = query.lte('timestamp', `${format(toDate, 'yyyy-MM-dd')}T23:59:59.999`)
+        query = query.lte(
+          'timestamp',
+          `${format(toDate, 'yyyy-MM-dd')}T23:59:59.999`
+        )
       }
-      
+
       // Apply forms filter in query if selected (using IN operator)
       if (selectedForms.length > 0) {
         query = query.in('form_id', selectedForms)
@@ -258,42 +283,56 @@ export function ExportAttendanceDialog() {
       }
 
       // Client-side filtering for remaining conditions
-      const filtered = data
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((item: any) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const filtered = data.reduce<any[]>((rows, item: any) => {
+        const normalized = {
           ...item,
           kelompok: item.participant?.group?.value || item.temp_group || '-',
-          kategori: mapDbCategoryToLabel(item.participant?.category?.value || item.temp_category || '-'),
-          gender: (item.participant?.gender || item.temp_gender) === 'L' ? 'Laki-laki' : 'Perempuan',
+          kategori: mapDbCategoryToLabel(
+            item.participant?.category?.value || item.temp_category || '-'
+          ),
+          gender:
+            (item.participant?.gender || item.temp_gender) === 'L'
+              ? 'Laki-laki'
+              : 'Perempuan',
           status: item.status?.toUpperCase() || '-',
           name: item.participant?.name || item.temp_name || '-',
-          kategoriRaw: item.participant?.category?.value || item.temp_category || '-', // for filter checks
+          kategoriRaw:
+            item.participant?.category?.value || item.temp_category || '-', // for filter checks
           groupId: item.participant?.group_id || null,
-        }))
-        .filter((item) => {
-          // Team Manager Scoping Check
-          if (role === 'team_manager' && userKelompok) {
-            if (item.kelompok !== userKelompok) return false
-          } else if (selectedKelompoks.length > 0) {
-            if (!item.groupId || !selectedKelompoks.includes(item.groupId)) return false
-          }
+        }
+        // Team Manager Scoping Check
+        if (role === 'team_manager' && userKelompok) {
+          if (normalized.kelompok !== userKelompok) return rows
+        } else if (selectedKelompoks.length > 0) {
+          if (
+            !normalized.groupId ||
+            !selectedKelompoks.includes(normalized.groupId)
+          )
+            return rows
+        }
 
-          // Category check
-          if (selectedKategoris.length > 0) {
-            // Map selected values ('A', 'B', etc.) to DB lookup values
-            const mappedSelected = selectedKategoris.map((kat) => 
-              kat === 'A' ? 'GPN A' : kat === 'B' ? 'GPN B' : kat
-            )
-            if (!mappedSelected.includes(item.kategoriRaw) && !selectedKategoris.includes(item.kategoriRaw)) return false
-          }
+        // Category check
+        if (selectedKategoris.length > 0) {
+          // Map selected values ('A', 'B', etc.) to DB lookup values
+          const mappedSelected = selectedKategoris.map((kat) =>
+            kat === 'A' ? 'GPN A' : kat === 'B' ? 'GPN B' : kat
+          )
+          if (
+            !mappedSelected.includes(normalized.kategoriRaw) &&
+            !selectedKategoris.includes(normalized.kategoriRaw)
+          )
+            return rows
+        }
 
-          // Status check
-          if (selectedStatus !== 'all') {
-            if (item.status.toLowerCase() !== selectedStatus.toLowerCase()) return false
-          }
-
-          return true
-        })
+        // Status check
+        if (selectedStatus !== 'all') {
+          if (normalized.status.toLowerCase() !== selectedStatus.toLowerCase())
+            return rows
+        }
+        rows.push(normalized)
+        return rows
+      }, [])
 
       if (filtered.length === 0) {
         toast.info('Tidak ada data absensi yang cocok dengan filter detail')
@@ -305,7 +344,9 @@ export function ExportAttendanceDialog() {
       const dataToExport = filtered.map((item) => {
         const date = item.timestamp ? new Date(item.timestamp) : null
         return {
-          Tanggal: date ? format(date, 'dd MMMM yyyy HH:mm', { locale: idLocale }) : '-',
+          Tanggal: date
+            ? format(date, 'dd MMMM yyyy HH:mm', { locale: idLocale })
+            : '-',
           Nama: item.name,
           Kelompok: item.kelompok,
           Kategori: item.kategori,
@@ -330,30 +371,48 @@ export function ExportAttendanceDialog() {
       const activeFormTitle =
         selectedForms.length === 0
           ? 'Semua Form'
-          : selectedForms.map((id) => forms.find((f) => f.id === id)?.title).filter(Boolean).join(', ')
+          : selectedForms
+              .map((id) => forms.find((f) => f.id === id)?.title)
+              .filter(Boolean)
+              .join(', ')
 
       const activeKelompokTitle =
         role === 'team_manager'
           ? userKelompok
           : selectedKelompoks.length === 0
             ? 'Semua Kelompok'
-            : selectedKelompoks.map((id) => kelompokList.find((k) => k.id === id)?.value).filter(Boolean).join(', ')
+            : selectedKelompoks
+                .map((id) => kelompokList.find((k) => k.id === id)?.value)
+                .filter(Boolean)
+                .join(', ')
 
       const activeKategoriTitle =
         selectedKategoris.length === 0
           ? 'Semua Kategori'
-          : selectedKategoris.map((kat) => (kat === 'A' ? 'GPN A' : kat === 'B' ? 'GPN B' : kat)).join(', ')
+          : selectedKategoris
+              .map((kat) =>
+                kat === 'A' ? 'GPN A' : kat === 'B' ? 'GPN B' : kat
+              )
+              .join(', ')
 
       await exportToExcel(dataToExport, 'Log_Absensi_MuMiBig', {
         title: 'Laporan Log Kehadiran Peserta',
-        description: 'Laporan rekap log absensi kehadiran kegiatan GPN MuMiBig.',
+        description:
+          'Laporan rekap log absensi kehadiran kegiatan GPN MuMiBig.',
         metadata: {
           Periode: periodLabel,
           Formulir: activeFormTitle,
           Kelompok: activeKelompokTitle || '-',
           Kategori: activeKategoriTitle,
-          Status: selectedStatus !== 'all' ? (selectedStatus === 'HADIR' ? 'Hadir' : 'Izin') : 'Semua Status',
-          'Tanggal Unduh': format(new Date(), 'dd MMMM yyyy HH:mm', { locale: idLocale }),
+          Status:
+            selectedStatus !== 'all'
+              ? selectedStatus === 'HADIR'
+                ? 'Hadir'
+                : 'Izin'
+              : 'Semua Status',
+          'Tanggal Unduh': format(new Date(), 'dd MMMM yyyy HH:mm', {
+            locale: idLocale,
+          }),
         },
       })
 
@@ -363,7 +422,9 @@ export function ExportAttendanceDialog() {
     } catch (err: any) {
       // eslint-disable-next-line no-console
       console.error('Export failed:', err)
-      toast.error(`Gagal export absensi: ${err.message || 'Error tidak diketahui'}`)
+      toast.error(
+        `Gagal export absensi: ${err.message || 'Error tidak diketahui'}`
+      )
     } finally {
       setIsExporting(false)
     }
@@ -371,9 +432,12 @@ export function ExportAttendanceDialog() {
 
   // Map forms for MultiSelect component
   const formOptions = forms.map((f) => ({ label: f.title, value: f.id }))
-  
+
   // Map kelompok for MultiSelect component
-  const kelompokOptions = kelompokList.map((k) => ({ label: k.value, value: k.id }))
+  const kelompokOptions = kelompokList.map((k) => ({
+    label: k.value,
+    value: k.id,
+  }))
 
   // Kategori options
   const kategoriOptions = [
@@ -389,7 +453,8 @@ export function ExportAttendanceDialog() {
         <DialogHeader>
           <DialogTitle>Customize Export Attendance</DialogTitle>
           <DialogDescription>
-            Pilih filter absensi untuk diunduh sebagai file Microsoft Excel (.xlsx).
+            Pilih filter absensi untuk diunduh sebagai file Microsoft Excel
+            (.xlsx).
           </DialogDescription>
         </DialogHeader>
 
@@ -397,14 +462,16 @@ export function ExportAttendanceDialog() {
           {/* Rentang Waktu */}
           <div className='grid gap-2'>
             <Label className='text-[13px] font-medium'>Rentang Waktu</Label>
-            <div className='flex flex-col sm:flex-row sm:items-center gap-2'>
+            <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
               <DatePicker
                 selected={fromDate}
                 onSelect={setFromDate}
                 placeholder='Mulai Dari'
                 className='w-full sm:flex-1'
               />
-              <span className='hidden sm:inline text-muted-foreground text-xs self-center'>—</span>
+              <span className='hidden self-center text-xs text-muted-foreground sm:inline'>
+                —
+              </span>
               <DatePicker
                 selected={toDate}
                 onSelect={setToDate}
@@ -471,10 +538,18 @@ export function ExportAttendanceDialog() {
         </div>
 
         <DialogFooter>
-          <Button variant='outline' onClick={() => setOpen(null)} disabled={isExporting}>
+          <Button
+            variant='outline'
+            onClick={() => setOpen(null)}
+            disabled={isExporting}
+          >
             Batal
           </Button>
-          <Button onClick={handleExportSubmit} disabled={isExporting} className='bg-[#9A3412] hover:bg-[#7C2D12] text-white'>
+          <Button
+            onClick={handleExportSubmit}
+            disabled={isExporting}
+            className='bg-[#9A3412] text-white hover:bg-[#7C2D12]'
+          >
             {isExporting ? (
               <>
                 <Loader2 className='mr-2 h-4 w-4 animate-spin' />
