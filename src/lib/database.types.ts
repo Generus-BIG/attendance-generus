@@ -1166,6 +1166,10 @@ export type Database = {
         Args: { p_month?: string; p_token: string }
         Returns: Json
       }
+      lupg_activity_photo_path_matches_report: {
+        Args: { p_path: string; p_report_id: string }
+        Returns: boolean
+      }
       lupg_get_submitter_display: {
         Args: { p_user_id: string }
         Returns: string
@@ -1178,6 +1182,30 @@ export type Database = {
       }
       normalize_participant_name: { Args: { input: string }; Returns: string }
       promote_eligible_gpn: { Args: never; Returns: undefined }
+      search_form_participants: {
+        Args: { p_form_id: string; p_query?: string }
+        Returns: {
+          category_name: string
+          gender: string
+          group_name: string
+          id: string
+          name: string
+        }[]
+      }
+      submit_attendance_guarded: {
+        Args: {
+          p_form_id: string
+          p_participant_id: string
+          p_permission_description?: string
+          p_permission_reason?: string
+          p_status: string
+          p_temp_category?: string
+          p_temp_gender?: string
+          p_temp_group?: string
+          p_temp_name?: string
+        }
+        Returns: string
+      }
       submit_pending_attendance_guarded: {
         Args: {
           p_birth_date: string
