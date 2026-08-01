@@ -1,4 +1,5 @@
 // Per-program slide renderer — kelompok mode (12-month trend) and desa mode (5-kelompok % comparison).
+import { parseNikahClusterExtras } from '../../../programs/types'
 import {
   allMonthKeysForYear,
   monthNameFromKey,
@@ -6,7 +7,6 @@ import {
   QUARTER_LABEL,
   getQuarterEndMonthKey,
 } from '../../../programs/utils/editability'
-import { parseNikahClusterExtras } from '../../../programs/types'
 import {
   type MonthlyReportRow,
   type ProgramDefinitionRow,
@@ -68,22 +68,22 @@ function buildSingleKelompokRows(
   for (const r of yearlyProgramReports) {
     if (r.program_code === programCode) progByReport.set(r.monthly_report_id, r)
   }
-  return monthKeys
-    .filter((mk) => mk <= currentMonthKey)
-    .map((mk) => {
-      const report = reportByMonth.get(mk)
-      const row = report ? progByReport.get(report.id) : undefined
-      const denom = row?.denominator ?? 0
-      const now = row?.count_this_month ?? 0
-      const pct = denom > 0 ? Math.round((now / denom) * 100) : null
-      return {
-        monthKey: mk,
-        monthLabel: monthNameFromKey(mk),
-        denom,
-        now,
-        pct,
-      }
+  return monthKeys.reduce<SingleRow[]>((rows, mk) => {
+    if (mk > currentMonthKey) return rows
+    const report = reportByMonth.get(mk)
+    const row = report ? progByReport.get(report.id) : undefined
+    const denom = row?.denominator ?? 0
+    const now = row?.count_this_month ?? 0
+    const pct = denom > 0 ? Math.round((now / denom) * 100) : null
+    rows.push({
+      monthKey: mk,
+      monthLabel: monthNameFromKey(mk),
+      denom,
+      now,
+      pct,
     })
+    return rows
+  }, [])
 }
 
 function buildSingleKelompokChart(
@@ -213,9 +213,15 @@ function ProgramKelompokBody(props: SlideArgs) {
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead>Bulan</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Sensus</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Jumlah</EditorialTableHead>
-                <EditorialTableHead className='text-right'>%</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Sensus
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Jumlah
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  %
+                </EditorialTableHead>
               </EditorialTableRow>
             </EditorialTableHeader>
             <EditorialTableBody>
@@ -224,9 +230,7 @@ function ProgramKelompokBody(props: SlideArgs) {
                 return (
                   <EditorialTableRow
                     key={r.monthKey}
-                    style={
-                      isCurrent ? { background: p.cream } : undefined
-                    }
+                    style={isCurrent ? { background: p.cream } : undefined}
                   >
                     <EditorialTableCell>{r.monthLabel}</EditorialTableCell>
                     <EditorialTableCell className='text-right'>
@@ -294,10 +298,18 @@ function ProgramDesaBody(props: SlideArgs) {
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead>Kelompok</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Sensus</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Lalu</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Ini</EditorialTableHead>
-                <EditorialTableHead className='text-right'>%</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Sensus
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Lalu
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Ini
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  %
+                </EditorialTableHead>
               </EditorialTableRow>
             </EditorialTableHeader>
             <EditorialTableBody>
@@ -323,7 +335,9 @@ function ProgramDesaBody(props: SlideArgs) {
                 <EditorialTableCell className='text-right'>
                   {totals.denom}
                 </EditorialTableCell>
-                <EditorialTableCell className='text-right'>—</EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  —
+                </EditorialTableCell>
                 <EditorialTableCell className='text-right'>
                   {totals.now}
                 </EditorialTableCell>
@@ -380,24 +394,24 @@ function buildSingleKelompokQuarterlyRows(
   const currentMonthIndex = parseInt(currentMonthKey.slice(5, 7), 10)
   const currentQuarter = Math.ceil(currentMonthIndex / 3)
 
-  return quarters
-    .filter((q) => q <= currentQuarter)
-    .map((q) => {
-      const endKey = getQuarterEndMonthKey(q, year)
-      const report = reportByMonth.get(endKey)
-      const row = report ? progByReport.get(report.id) : undefined
-      const denom = row?.denominator ?? 0
-      const now = row?.count_this_month ?? 0
-      const pct = denom > 0 ? Math.round((now / denom) * 100) : null
-      return {
-        quarter: q,
-        quarterLabel: QUARTER_LABEL[q],
-        denom,
-        now,
-        pct,
-        notes: row?.notes ?? '',
-      }
+  return quarters.reduce<SingleQuarterlyRow[]>((rows, q) => {
+    if (q > currentQuarter) return rows
+    const endKey = getQuarterEndMonthKey(q, year)
+    const report = reportByMonth.get(endKey)
+    const row = report ? progByReport.get(report.id) : undefined
+    const denom = row?.denominator ?? 0
+    const now = row?.count_this_month ?? 0
+    const pct = denom > 0 ? Math.round((now / denom) * 100) : null
+    rows.push({
+      quarter: q,
+      quarterLabel: QUARTER_LABEL[q],
+      denom,
+      now,
+      pct,
+      notes: row?.notes ?? '',
     })
+    return rows
+  }, [])
 }
 
 function buildSingleKelompokQuarterlyChart(
@@ -463,7 +477,9 @@ function buildQuarterlyDesaRows(
     const reportCurrent = reportByKelompokCurrent.get(k.id)
     const reportPrev = reportByKelompokPrev.get(k.id)
 
-    const rowCurrent = reportCurrent ? byReport.get(reportCurrent.id) : undefined
+    const rowCurrent = reportCurrent
+      ? byReport.get(reportCurrent.id)
+      : undefined
     const rowPrev = reportPrev ? byReport.get(reportPrev.id) : undefined
 
     const denom = rowCurrent?.denominator ?? 0
@@ -476,7 +492,8 @@ function buildQuarterlyDesaRows(
 
   const totalDenom = rows.reduce((a, b) => a + b.denom, 0)
   const totalNow = rows.reduce((a, b) => a + b.now, 0)
-  const avgPct = totalDenom > 0 ? Math.round((totalNow / totalDenom) * 100) : null
+  const avgPct =
+    totalDenom > 0 ? Math.round((totalNow / totalDenom) * 100) : null
 
   return {
     rows,
@@ -543,12 +560,16 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead>Quarter</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Sensus</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Sensus
+                </EditorialTableHead>
                 <EditorialTableHead className='text-right'>
                   {program.code === 'GMKM' ? 'Jumlah Kehadiran' : 'Jumlah'}
                 </EditorialTableHead>
-                <EditorialTableHead className='text-right'>%</EditorialTableHead>
-                <EditorialTableHead className='min-w-24 max-w-[20ch] whitespace-normal wrap-break-word'>
+                <EditorialTableHead className='text-right'>
+                  %
+                </EditorialTableHead>
+                <EditorialTableHead className='max-w-[20ch] min-w-24 wrap-break-word whitespace-normal'>
                   {program.code === 'GMKM' ? 'Keterangan' : 'Hasil Temuan'}
                 </EditorialTableHead>
               </EditorialTableRow>
@@ -562,12 +583,16 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
                     style={isCurrent ? { background: p.cream } : undefined}
                   >
                     <EditorialTableCell>{r.quarterLabel}</EditorialTableCell>
-                    <EditorialTableCell className='text-right'>{r.denom}</EditorialTableCell>
-                    <EditorialTableCell className='text-right'>{r.now}</EditorialTableCell>
+                    <EditorialTableCell className='text-right'>
+                      {r.denom}
+                    </EditorialTableCell>
+                    <EditorialTableCell className='text-right'>
+                      {r.now}
+                    </EditorialTableCell>
                     <EditorialTableCell className='text-right font-semibold'>
                       {r.pct != null ? `${r.pct}%` : '—'}
                     </EditorialTableCell>
-                    <EditorialTableCell className='text-sm text-muted-foreground whitespace-normal wrap-break-word max-w-[20ch]'>
+                    <EditorialTableCell className='max-w-[20ch] text-sm wrap-break-word whitespace-normal text-muted-foreground'>
                       {r.notes || '—'}
                     </EditorialTableCell>
                   </EditorialTableRow>
@@ -605,7 +630,8 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
   const q = Math.ceil(currentMonthIndex / 3)
 
   const currentQuarterEndMonthKey = getQuarterEndMonthKey(q as Quarter, year)
-  const prevQuarterEndMonthKey = q > 1 ? getQuarterEndMonthKey((q - 1) as Quarter, year) : null
+  const prevQuarterEndMonthKey =
+    q > 1 ? getQuarterEndMonthKey((q - 1) as Quarter, year) : null
 
   const { rows, totals } = buildQuarterlyDesaRows(
     effectiveKelompokList,
@@ -636,19 +662,33 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead>Kelompok</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Sensus</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Lalu</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Ini</EditorialTableHead>
-                <EditorialTableHead className='text-right'>%</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Sensus
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Lalu
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Ini
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  %
+                </EditorialTableHead>
               </EditorialTableRow>
             </EditorialTableHeader>
             <EditorialTableBody>
               {rows.map((r) => (
                 <EditorialTableRow key={r.kelompokId}>
                   <EditorialTableCell>{r.kelompokName}</EditorialTableCell>
-                  <EditorialTableCell className='text-right'>{r.denom}</EditorialTableCell>
-                  <EditorialTableCell className='text-right'>{r.prev ?? '—'}</EditorialTableCell>
-                  <EditorialTableCell className='text-right'>{r.now}</EditorialTableCell>
+                  <EditorialTableCell className='text-right'>
+                    {r.denom}
+                  </EditorialTableCell>
+                  <EditorialTableCell className='text-right'>
+                    {r.prev ?? '—'}
+                  </EditorialTableCell>
+                  <EditorialTableCell className='text-right'>
+                    {r.now}
+                  </EditorialTableCell>
                   <EditorialTableCell className='text-right font-semibold'>
                     {r.pct != null ? `${r.pct}%` : '—'}
                   </EditorialTableCell>
@@ -656,9 +696,15 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
               ))}
               <TotalRow>
                 <EditorialTableCell>{totals.kelompokName}</EditorialTableCell>
-                <EditorialTableCell className='text-right'>{totals.denom}</EditorialTableCell>
-                <EditorialTableCell className='text-right'>—</EditorialTableCell>
-                <EditorialTableCell className='text-right'>{totals.now}</EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {totals.denom}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  —
+                </EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {totals.now}
+                </EditorialTableCell>
                 <EditorialTableCell className='text-right'>
                   {totals.pct != null ? `${totals.pct}%` : '—'}
                 </EditorialTableCell>
@@ -710,33 +756,33 @@ function buildNikahJmKelompokRows(
   for (const r of yearlyProgramReports) {
     if (r.program_code === 'NIKAH_JM') progByReport.set(r.monthly_report_id, r)
   }
-  return monthKeys
-    .filter((mk) => mk <= currentMonthKey)
-    .map((mk) => {
-      const report = reportByMonth.get(mk)
-      const row = report ? progByReport.get(report.id) : undefined
-      const denom = row?.denominator ?? 0
-      const extras = parseNikahClusterExtras(row?.extras)
-      const notReady = extras.not_ready
-      const ready = extras.ready
-      const married = row?.count_this_month ?? extras.married
+  return monthKeys.reduce<NikahJmRow[]>((rows, mk) => {
+    if (mk > currentMonthKey) return rows
+    const report = reportByMonth.get(mk)
+    const row = report ? progByReport.get(report.id) : undefined
+    const denom = row?.denominator ?? 0
+    const extras = parseNikahClusterExtras(row?.extras)
+    const notReady = extras.not_ready
+    const ready = extras.ready
+    const married = row?.count_this_month ?? extras.married
 
-      const pctOf = (val: number) =>
-        denom > 0 ? Math.round((val / denom) * 100) : null
+    const pctOf = (val: number) =>
+      denom > 0 ? Math.round((val / denom) * 100) : null
 
-      return {
-        monthKey: mk,
-        monthLabel: monthNameFromKey(mk),
-        denom,
-        notReady,
-        notReadyPct: pctOf(notReady),
-        ready,
-        readyPct: pctOf(ready),
-        married,
-        marriedPct: pctOf(married),
-        notes: row?.notes ?? '',
-      }
+    rows.push({
+      monthKey: mk,
+      monthLabel: monthNameFromKey(mk),
+      denom,
+      notReady,
+      notReadyPct: pctOf(notReady),
+      ready,
+      readyPct: pctOf(ready),
+      married,
+      marriedPct: pctOf(married),
+      notes: row?.notes ?? '',
     })
+    return rows
+  }, [])
 }
 
 function NikahJmKelompokBody(props: SlideArgs) {
@@ -772,25 +818,50 @@ function NikahJmKelompokBody(props: SlideArgs) {
       slideNumber={slideNumber}
       totalSlides={totalSlides}
     >
-      <div className='h-full overflow-hidden flex flex-col gap-4'>
+      <div className='flex h-full flex-col gap-4 overflow-hidden'>
         <DataPane>
           <EditorialTable headerVariant='hairline' density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead rowSpan={2}>Bulan</EditorialTableHead>
-                <EditorialTableHead rowSpan={2} className='text-right'>Sensus</EditorialTableHead>
-                <EditorialTableHead colSpan={2} className='text-center'>Belum Siap Menikah</EditorialTableHead>
-                <EditorialTableHead colSpan={2} className='text-center'>Siap Menikah</EditorialTableHead>
-                <EditorialTableHead colSpan={2} className='text-center'>Menikah</EditorialTableHead>
-                <EditorialTableHead rowSpan={2} className='min-w-24 max-w-[20ch] whitespace-normal wrap-break-word'>Keterangan</EditorialTableHead>
+                <EditorialTableHead rowSpan={2} className='text-right'>
+                  Sensus
+                </EditorialTableHead>
+                <EditorialTableHead colSpan={2} className='text-center'>
+                  Belum Siap Menikah
+                </EditorialTableHead>
+                <EditorialTableHead colSpan={2} className='text-center'>
+                  Siap Menikah
+                </EditorialTableHead>
+                <EditorialTableHead colSpan={2} className='text-center'>
+                  Menikah
+                </EditorialTableHead>
+                <EditorialTableHead
+                  rowSpan={2}
+                  className='max-w-[20ch] min-w-24 wrap-break-word whitespace-normal'
+                >
+                  Keterangan
+                </EditorialTableHead>
               </EditorialTableRow>
               <EditorialTableRow>
-                <EditorialTableHead className='text-right'>Jml</EditorialTableHead>
-                <EditorialTableHead className='text-right'>%</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Jml</EditorialTableHead>
-                <EditorialTableHead className='text-right'>%</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Jml</EditorialTableHead>
-                <EditorialTableHead className='text-right'>%</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Jml
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  %
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Jml
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  %
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Jml
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  %
+                </EditorialTableHead>
               </EditorialTableRow>
             </EditorialTableHeader>
             <EditorialTableBody>
@@ -802,20 +873,28 @@ function NikahJmKelompokBody(props: SlideArgs) {
                     style={isCurrent ? { background: p.cream } : undefined}
                   >
                     <EditorialTableCell>{r.monthLabel}</EditorialTableCell>
-                    <EditorialTableCell className='text-right'>{r.denom}</EditorialTableCell>
-                    <EditorialTableCell className='text-right'>{r.notReady}</EditorialTableCell>
-                    <EditorialTableCell className='text-right text-muted-foreground font-semibold'>
+                    <EditorialTableCell className='text-right'>
+                      {r.denom}
+                    </EditorialTableCell>
+                    <EditorialTableCell className='text-right'>
+                      {r.notReady}
+                    </EditorialTableCell>
+                    <EditorialTableCell className='text-right font-semibold text-muted-foreground'>
                       {r.notReadyPct != null ? `${r.notReadyPct}%` : '—'}
                     </EditorialTableCell>
-                    <EditorialTableCell className='text-right'>{r.ready}</EditorialTableCell>
-                    <EditorialTableCell className='text-right text-muted-foreground font-semibold'>
+                    <EditorialTableCell className='text-right'>
+                      {r.ready}
+                    </EditorialTableCell>
+                    <EditorialTableCell className='text-right font-semibold text-muted-foreground'>
                       {r.readyPct != null ? `${r.readyPct}%` : '—'}
                     </EditorialTableCell>
-                    <EditorialTableCell className='text-right'>{r.married}</EditorialTableCell>
-                    <EditorialTableCell className='text-right text-muted-foreground font-semibold'>
+                    <EditorialTableCell className='text-right'>
+                      {r.married}
+                    </EditorialTableCell>
+                    <EditorialTableCell className='text-right font-semibold text-muted-foreground'>
                       {r.marriedPct != null ? `${r.marriedPct}%` : '—'}
                     </EditorialTableCell>
-                    <EditorialTableCell className='text-sm text-muted-foreground whitespace-normal wrap-break-word max-w-[20ch]'>
+                    <EditorialTableCell className='max-w-[20ch] text-sm wrap-break-word whitespace-normal text-muted-foreground'>
                       {r.notes || '—'}
                     </EditorialTableCell>
                   </EditorialTableRow>
@@ -879,9 +958,12 @@ function NikahJmDesaBody(props: SlideArgs) {
   const totalReady = rows.reduce((a, b) => a + b.ready, 0)
   const totalMarried = rows.reduce((a, b) => a + b.married, 0)
 
-  const avgNotReadyPct = totalDenom > 0 ? Math.round((totalNotReady / totalDenom) * 100) : null
-  const avgReadyPct = totalDenom > 0 ? Math.round((totalReady / totalDenom) * 100) : null
-  const avgMarriedPct = totalDenom > 0 ? Math.round((totalMarried / totalDenom) * 100) : null
+  const avgNotReadyPct =
+    totalDenom > 0 ? Math.round((totalNotReady / totalDenom) * 100) : null
+  const avgReadyPct =
+    totalDenom > 0 ? Math.round((totalReady / totalDenom) * 100) : null
+  const avgMarriedPct =
+    totalDenom > 0 ? Math.round((totalMarried / totalDenom) * 100) : null
 
   return (
     <SlideFrame
@@ -892,61 +974,102 @@ function NikahJmDesaBody(props: SlideArgs) {
       slideNumber={slideNumber}
       totalSlides={totalSlides}
     >
-      <div className='h-full overflow-hidden flex flex-col gap-4'>
+      <div className='flex h-full flex-col gap-4 overflow-hidden'>
         <DataPane>
           <EditorialTable headerVariant='hairline' density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead rowSpan={2}>Kelompok</EditorialTableHead>
-                <EditorialTableHead rowSpan={2} className='text-right'>Sensus</EditorialTableHead>
-                <EditorialTableHead colSpan={2} className='text-center'>Belum Siap Menikah</EditorialTableHead>
-                <EditorialTableHead colSpan={2} className='text-center'>Siap Menikah</EditorialTableHead>
-                <EditorialTableHead colSpan={2} className='text-center'>Menikah</EditorialTableHead>
-                <EditorialTableHead rowSpan={2} className='min-w-24 max-w-[20ch] whitespace-normal wrap-break-word'>Keterangan</EditorialTableHead>
+                <EditorialTableHead rowSpan={2} className='text-right'>
+                  Sensus
+                </EditorialTableHead>
+                <EditorialTableHead colSpan={2} className='text-center'>
+                  Belum Siap Menikah
+                </EditorialTableHead>
+                <EditorialTableHead colSpan={2} className='text-center'>
+                  Siap Menikah
+                </EditorialTableHead>
+                <EditorialTableHead colSpan={2} className='text-center'>
+                  Menikah
+                </EditorialTableHead>
+                <EditorialTableHead
+                  rowSpan={2}
+                  className='max-w-[20ch] min-w-24 wrap-break-word whitespace-normal'
+                >
+                  Keterangan
+                </EditorialTableHead>
               </EditorialTableRow>
               <EditorialTableRow>
-                <EditorialTableHead className='text-right'>Jml</EditorialTableHead>
-                <EditorialTableHead className='text-right'>%</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Jml</EditorialTableHead>
-                <EditorialTableHead className='text-right'>%</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Jml</EditorialTableHead>
-                <EditorialTableHead className='text-right'>%</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Jml
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  %
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Jml
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  %
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Jml
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  %
+                </EditorialTableHead>
               </EditorialTableRow>
             </EditorialTableHeader>
             <EditorialTableBody>
               {rows.map((r) => (
                 <EditorialTableRow key={r.kelompokId}>
                   <EditorialTableCell>{r.kelompokName}</EditorialTableCell>
-                  <EditorialTableCell className='text-right'>{r.denom}</EditorialTableCell>
-                  <EditorialTableCell className='text-right'>{r.notReady}</EditorialTableCell>
-                  <EditorialTableCell className='text-right text-muted-foreground font-semibold'>
+                  <EditorialTableCell className='text-right'>
+                    {r.denom}
+                  </EditorialTableCell>
+                  <EditorialTableCell className='text-right'>
+                    {r.notReady}
+                  </EditorialTableCell>
+                  <EditorialTableCell className='text-right font-semibold text-muted-foreground'>
                     {r.notReadyPct != null ? `${r.notReadyPct}%` : '—'}
                   </EditorialTableCell>
-                  <EditorialTableCell className='text-right'>{r.ready}</EditorialTableCell>
-                  <EditorialTableCell className='text-right text-muted-foreground font-semibold'>
+                  <EditorialTableCell className='text-right'>
+                    {r.ready}
+                  </EditorialTableCell>
+                  <EditorialTableCell className='text-right font-semibold text-muted-foreground'>
                     {r.readyPct != null ? `${r.readyPct}%` : '—'}
                   </EditorialTableCell>
-                  <EditorialTableCell className='text-right'>{r.married}</EditorialTableCell>
-                  <EditorialTableCell className='text-right text-muted-foreground font-semibold'>
+                  <EditorialTableCell className='text-right'>
+                    {r.married}
+                  </EditorialTableCell>
+                  <EditorialTableCell className='text-right font-semibold text-muted-foreground'>
                     {r.marriedPct != null ? `${r.marriedPct}%` : '—'}
                   </EditorialTableCell>
-                  <EditorialTableCell className='text-sm text-muted-foreground whitespace-normal wrap-break-word max-w-[20ch]'>
+                  <EditorialTableCell className='max-w-[20ch] text-sm wrap-break-word whitespace-normal text-muted-foreground'>
                     {r.notes || '—'}
                   </EditorialTableCell>
                 </EditorialTableRow>
               ))}
               <TotalRow>
                 <EditorialTableCell>Total / Rata</EditorialTableCell>
-                <EditorialTableCell className='text-right'>{totalDenom}</EditorialTableCell>
-                <EditorialTableCell className='text-right'>{totalNotReady}</EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {totalDenom}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {totalNotReady}
+                </EditorialTableCell>
                 <EditorialTableCell className='text-right font-semibold'>
                   {avgNotReadyPct != null ? `${avgNotReadyPct}%` : '—'}
                 </EditorialTableCell>
-                <EditorialTableCell className='text-right'>{totalReady}</EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {totalReady}
+                </EditorialTableCell>
                 <EditorialTableCell className='text-right font-semibold'>
                   {avgReadyPct != null ? `${avgReadyPct}%` : '—'}
                 </EditorialTableCell>
-                <EditorialTableCell className='text-right'>{totalMarried}</EditorialTableCell>
+                <EditorialTableCell className='text-right'>
+                  {totalMarried}
+                </EditorialTableCell>
                 <EditorialTableCell className='text-right font-semibold'>
                   {avgMarriedPct != null ? `${avgMarriedPct}%` : '—'}
                 </EditorialTableCell>

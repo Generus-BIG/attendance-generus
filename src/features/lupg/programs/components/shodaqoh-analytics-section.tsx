@@ -22,11 +22,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useYearlyShodaqohData } from '../../hooks/use-lupg-queries'
-import {
-  allMonthKeysForYear,
-  monthNameFromKey,
-} from '../utils/editability'
 import { formatChartValue } from '../../utils/format-chart-value'
+import { allMonthKeysForYear, monthNameFromKey } from '../utils/editability'
 
 interface Props {
   kelompokId: string
@@ -101,15 +98,19 @@ export function ShodaqohAnalyticsSection({
   // at the current month rather than dropping to 0 for unfilled months ahead.
   const chartData = useMemo(
     () =>
-      rows
-        .filter((r) => !r.isFuture)
-        .map((r) => ({
-          label: r.monthLabel.slice(0, 3),
-          fullLabel: r.monthLabel,
-          shodaqah: r.shodaqah,
-          jumlahKK: r.jumlahKK,
-          rataRata: r.rataRata,
-        })),
+      rows.flatMap((r) =>
+        r.isFuture
+          ? []
+          : [
+              {
+                label: r.monthLabel.slice(0, 3),
+                fullLabel: r.monthLabel,
+                shodaqah: r.shodaqah,
+                jumlahKK: r.jumlahKK,
+                rataRata: r.rataRata,
+              },
+            ]
+      ),
     [rows]
   )
 
@@ -150,9 +151,7 @@ export function ShodaqohAnalyticsSection({
                       {r.monthLabel}
                     </TableCell>
                     <TableCell className='text-end font-mono tabular-nums'>
-                      {r.hasData
-                        ? formatChartValue(r.shodaqah, 'rupiah')
-                        : '-'}
+                      {r.hasData ? formatChartValue(r.shodaqah, 'rupiah') : '-'}
                     </TableCell>
                     <TableCell className='text-end tabular-nums'>
                       {r.hasData ? r.jumlahKK.toLocaleString('id-ID') : '-'}
@@ -187,7 +186,7 @@ export function ShodaqohAnalyticsSection({
           {/* Right: Area chart */}
           <div className='flex min-w-0 flex-col gap-2'>
             <div className='text-sm font-semibold'>Tren Shodaqah Bulanan</div>
-            <div className='-mx-2 overflow-x-auto px-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]'>
+            <div className='-mx-2 overflow-x-auto px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
               <div className='min-w-70'>
                 <ChartContainer
                   config={chartConfig}
@@ -289,15 +288,16 @@ function ShodaqohTooltip({ active, payload }: ShodaqohTooltipProps) {
   const jumlahKK = p.jumlahKK ?? 0
   const rataRata = p.rataRata ?? 0
   return (
-    <div className='border-border/50 bg-background grid min-w-45 gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl'>
-      <div className='text-foreground font-medium'>{p.fullLabel}</div>
+    <div className='grid min-w-45 gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl'>
+      <div className='font-medium text-foreground'>{p.fullLabel}</div>
       <div className='grid gap-1'>
-        <Row label='Total Shodaqah' value={formatChartValue(shodaqah, 'rupiah')} />
+        <Row
+          label='Total Shodaqah'
+          value={formatChartValue(shodaqah, 'rupiah')}
+        />
         <Row
           label='Rata-rata/KK'
-          value={
-            jumlahKK > 0 ? formatChartValue(rataRata, 'rupiah') : '-'
-          }
+          value={jumlahKK > 0 ? formatChartValue(rataRata, 'rupiah') : '-'}
         />
         <Row label='Jumlah KK' value={jumlahKK.toLocaleString('id-ID')} />
       </div>
