@@ -112,8 +112,8 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
     >
       <SectionHeading
         kicker='Kehadiran'
-        title='Attendance Matrix'
-        description='Kehadiran dan Piket LUPG per bulan. Toggle view di atas tabel.'
+        title='Persentase Berdasarkan Kategori'
+        description='Kehadiran Generus dan Piket LUPG per bulan. Switch ke tab Piket LUPG untuk mengisi persentase kehadiran jadwal piket.'
         action={
           <div className='flex flex-wrap gap-2'>
             <Button

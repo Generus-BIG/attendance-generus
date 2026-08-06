@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { id as idLocale } from 'date-fns/locale'
-import { Loader2 } from 'lucide-react'
+import { Loader2, UsersRound } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import {
   ChartContainer,
   ChartTooltip,
@@ -134,13 +136,20 @@ export function SensusMaster() {
           title='Sensus Generus'
           description='Data master peserta per kategori × gender. Update saat ada perubahan.'
           actions={
-            !isTeamManager ? (
+            isTeamManager ? (
+              <Button asChild variant='outline'>
+                <Link to='/admin/participants'>
+                  <UsersRound data-icon='inline-start' />
+                  Kelola Peserta
+                </Link>
+              </Button>
+            ) : (
               <KelompokSelector
                 value={adminKelompokId}
                 onChange={setAdminKelompokId}
                 allOption={{ value: DESA_SELECTION, label: 'Rekap Desa' }}
               />
-            ) : null
+            )
           }
         />
 
@@ -194,13 +203,15 @@ export function SensusMaster() {
             )}
             <div className='hidden md:block'>
               <div className='rounded-md border'>
-                <Table>
+                <Table className='table-fixed'>
                   <TableHeader>
                     <TableRow className='hover:bg-transparent'>
-                      <TableHead>Kategori</TableHead>
-                      <TableHead className='text-right'>L</TableHead>
-                      <TableHead className='text-right'>P</TableHead>
-                      <TableHead className='text-right'>Total</TableHead>
+                      <TableHead className='w-[55%]'>Kategori</TableHead>
+                      <TableHead className='w-[15%] text-center'>L</TableHead>
+                      <TableHead className='w-[15%] text-center'>P</TableHead>
+                      <TableHead className='w-[15%] text-right'>
+                        Total
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -217,18 +228,20 @@ export function SensusMaster() {
                         <TableRow
                           key={code}
                           className={cn(
-                            isDerived && 'bg-muted/40 hover:bg-muted/40'
+                            isDerived && 'bg-muted/30 hover:bg-muted/40'
                           )}
                         >
                           <TableCell className='font-medium'>
-                            {CATEGORY_LABELS[code]}
-                            {isDerived && (
-                              <span className='ms-2 text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
-                                Otomatis
-                              </span>
-                            )}
+                            <div className='flex items-center gap-2'>
+                              {CATEGORY_LABELS[code]}
+                              {isDerived && !isDesaMode && (
+                                <span className='text-[0.625rem] font-medium tracking-[0.1em] text-muted-foreground uppercase'>
+                                  Auto Fetched
+                                </span>
+                              )}
+                            </div>
                           </TableCell>
-                          <TableCell className='text-right'>
+                          <TableCell className='text-center'>
                             {isReadOnly || !resolvedKelompokId ? (
                               <DerivedCell count={l} />
                             ) : (
@@ -240,7 +253,7 @@ export function SensusMaster() {
                               />
                             )}
                           </TableCell>
-                          <TableCell className='text-right'>
+                          <TableCell className='text-center'>
                             {isReadOnly || !resolvedKelompokId ? (
                               <DerivedCell count={p} />
                             ) : (
@@ -595,11 +608,7 @@ interface CellProps {
 }
 
 function DerivedCell({ count }: { count: number }) {
-  return (
-    <div className='flex flex-col items-end gap-0.5'>
-      <div className='text-base font-semibold tabular-nums'>{count}</div>
-    </div>
-  )
+  return <div className='text-base font-semibold tabular-nums'>{count}</div>
 }
 
 function SensusCell({ kelompokId, categoryCode, gender, initial }: CellProps) {
@@ -641,7 +650,7 @@ function SensusCell({ kelompokId, categoryCode, gender, initial }: CellProps) {
       value={value}
       onChange={(e) => setValue(e.target.value)}
       onBlur={save}
-      className='ms-auto w-20 text-right tabular-nums'
+      className='mx-auto w-20 text-center tabular-nums'
       inputMode='numeric'
     />
   )
