@@ -48,36 +48,36 @@ function AnimationControls() {
   return (
     <div className='flex flex-col gap-4 text-xs select-none'>
       <ControlChoices
-        label='Transisi'
+        label='Transition'
         value={preset}
         choices={[
-          ['simple', 'Sederhana'],
-          ['sleek', 'Halus'],
-          ['corporate', 'Formal'],
-          ['chill', 'Santai'],
+          ['simple', 'Simple'],
+          ['sleek', 'Sleek'],
+          ['corporate', 'Corporate'],
+          ['chill', 'Chill'],
         ]}
         onChange={setPreset}
         layoutId='activePreset'
       />
       <ControlChoices
-        label='Animasi'
+        label='Animate'
         value={trigger}
         choices={[
-          ['both', 'Keduanya'],
-          ['enter', 'Saat masuk'],
-          ['exit', 'Saat keluar'],
+          ['both', 'Both'],
+          ['enter', 'On Enter'],
+          ['exit', 'On Exit'],
         ]}
         onChange={setTrigger}
         layoutId='activeTrigger'
         separated
       />
       <ControlChoices
-        label='Palet tema'
+        label='Theme Palette'
         value={palette}
         choices={[
           ['modern-natural', 'Modern'],
           ['anthropic-claude', 'Claude'],
-          ['sage-green', 'Hijau sage'],
+          ['sage-green', 'Sage Green'],
         ]}
         onChange={setPalette}
         layoutId='activePalette'
@@ -86,7 +86,7 @@ function AnimationControls() {
       <div className='space-y-2 border-t border-border/30 pt-3'>
         <div className='flex items-center justify-between'>
           <label className='text-[10px] font-bold tracking-wider text-muted-foreground uppercase'>
-            Kecepatan
+            Speed
           </label>
           <span className='rounded border border-primary/10 bg-primary/5 px-1.5 py-0.5 font-mono text-xs font-bold text-primary tabular-nums'>
             {speed.toFixed(2)}x
@@ -94,11 +94,11 @@ function AnimationControls() {
         </div>
         <div className='flex items-center gap-3'>
           <span className='text-[10px] font-semibold text-muted-foreground'>
-            Lambat
+            Slow
           </span>
           <input
             type='range'
-            aria-label='Kecepatan animasi'
+            aria-label='Animation speed'
             min='0.25'
             max='3'
             step='0.25'
@@ -110,7 +110,7 @@ function AnimationControls() {
             }}
           />
           <span className='text-[10px] font-semibold text-muted-foreground'>
-            Cepat
+            Fast
           </span>
         </div>
       </div>
@@ -299,7 +299,7 @@ function PresentationPlayerInner({
                   className='min-h-11 min-w-11 sm:min-w-0'
                 >
                   <SlidersHorizontal className='h-4 w-4 sm:mr-2' />
-                  <span className='hidden sm:inline'>Pengaturan</span>
+                  <span className='hidden sm:inline'>Setting</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent align='end' className='w-72 p-4'>
