@@ -1,15 +1,5 @@
-// Resolves the active palette + dark-mode tokens at runtime so chart
-// components (which can't read CSS vars in Recharts SVG props) get concrete
-// color strings. Re-resolves when `data-palette` or `.dark` change.
-//
-// TYPOGRAPHY EXCEPTION: fontSans/fontMono/fontSerif are pinned to the
-// Sage Green palette's font stack across ALL palettes. Rationale: the deck's
-// typographic personality should not flip when the active palette changes; the
-// Sage Green stack reads best at projector distance. See
-// docs/superpowers/specs/2026-05-18-lupg-presentation-final-polish-design.md
-// section P0-6.
-import { useEffect, useState } from 'react'
-
+// Presentation must remain stable across user-selected app palettes. Charts
+// need concrete colors because their SVG props cannot resolve CSS variables.
 export interface PresPalette {
   bg: string
   ink: string
@@ -28,115 +18,30 @@ export interface PresPalette {
   fontSerif: string
 }
 
-type TokenKey =
-  | '--background'
-  | '--foreground'
-  | '--primary'
-  | '--primary-foreground'
-  | '--accent'
-  | '--brand-accent'
-  | '--muted-foreground'
-  | '--border'
-  | '--success'
-  | '--warning'
-  | '--chart-1'
-  | '--chart-2'
-  | '--chart-3'
-  | '--chart-4'
-  | '--chart-5'
-
-// Pinned across all palettes — see file header.
-const PINNED_FONT_SANS =
-  '"Plus Jakarta Sans", Geist, system-ui, sans-serif'
-const PINNED_FONT_MONO =
-  '"IBM Plex Mono", "Geist Mono", ui-monospace, monospace'
-const PINNED_FONT_SERIF = 'Lora, Georgia, serif'
-
-function readTokens(): PresPalette {
-  if (typeof window === 'undefined') {
-    return defaultFallback()
-  }
-  const activePalette = document.documentElement.getAttribute('data-palette') || 'modern-natural'
-  const styles = getComputedStyle(document.documentElement)
-  const get = (k: TokenKey) => styles.getPropertyValue(k).trim()
-
-  const accent = get('--accent') || '#f5b800'
-  const bg = get('--background') || '#ffffff'
-
-  const base = {
-    bg,
-    ink: get('--foreground') || '#18181b',
-    primary: get('--primary') || '#1e2761',
-    primaryFg: get('--primary-foreground') || '#ffffff',
-    accent,
-    brandAccent: get('--brand-accent') || accent,
-    muted: get('--muted-foreground') || '#71717a',
-    rule: get('--border') || '#e5e7eb',
-    cream: `color-mix(in oklch, ${accent} 14%, ${bg})`,
-    success: get('--success') || '#16a34a',
-    warning: get('--warning') || '#f59e0b',
-    chart: [
-      get('--chart-1') || '#1e2761',
-      get('--chart-2') || '#f5b800',
-      get('--chart-3') || '#5cb85c',
-      get('--chart-4') || '#a78bfa',
-      get('--chart-5') || '#ef4444',
-    ] as const,
-    fontSans: PINNED_FONT_SANS,
-    fontMono: PINNED_FONT_MONO,
-    fontSerif: PINNED_FONT_SERIF,
-  }
-
-  if (activePalette === 'modern-natural') {
-    return {
-      ...base,
-      primary: '#22247a',
-      primaryFg: '#f8fafc',
-      ink: '#0f172a',
-      accent: '#2a2b77',
-      brandAccent: '#fcc419',
-      rule: '#869fc3',
-      cream: '#d9e9f7',
-    }
-  }
-
-  return base
-}
-
-function defaultFallback(): PresPalette {
-  return {
-    bg: '#ffffff',
-    ink: '#18181b',
-    primary: '#1e2761',
-    primaryFg: '#ffffff',
-    accent: '#f5b800',
-    brandAccent: '#f5b800',
-    muted: '#71717a',
-    rule: '#e5e7eb',
-    cream: '#fef3c7',
-    success: '#16a34a',
-    warning: '#f59e0b',
-    chart: ['#1e2761', '#f5b800', '#5cb85c', '#a78bfa', '#ef4444'] as const,
-    fontSans: PINNED_FONT_SANS,
-    fontMono: PINNED_FONT_MONO,
-    fontSerif: PINNED_FONT_SERIF,
-  }
+const presentationPalette: PresPalette = {
+  bg: 'oklch(0.984 0.003 247.858)',
+  ink: 'oklch(0.208 0.042 265.755)',
+  primary: 'oklch(0.208 0.042 265.755)',
+  primaryFg: 'oklch(0.984 0.003 247.858)',
+  accent: 'oklch(0.968 0.007 247.896)',
+  brandAccent: 'oklch(0.208 0.042 265.755)',
+  muted: 'oklch(0.554 0.046 257.417)',
+  rule: 'oklch(0.829 0.013 255.508)',
+  cream: 'oklch(0.95 0.007 247.896)',
+  success: 'oklch(0.55 0.14 150)',
+  warning: 'oklch(0.67 0.15 75)',
+  chart: [
+    'oklch(0.398 0.07 227.392)',
+    'oklch(0.6 0.118 184.704)',
+    'oklch(0.646 0.222 41.116)',
+    'oklch(0.58 0.13 300)',
+    'oklch(0.577 0.245 27.325)',
+  ],
+  fontSans: 'Geist, Inter, system-ui, sans-serif',
+  fontMono: '"Geist Mono", ui-monospace, monospace',
+  fontSerif: 'Geist, Inter, system-ui, sans-serif',
 }
 
 export function usePresPalette(): PresPalette {
-  const [palette, setPalette] = useState<PresPalette>(() => readTokens())
-
-  useEffect(() => {
-    const update = () => setPalette(readTokens())
-    update()
-
-    const observer = new MutationObserver(update)
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-palette', 'class'],
-    })
-    return () => observer.disconnect()
-  }, [])
-
-  return palette
+  return presentationPalette
 }

@@ -1,23 +1,12 @@
-import {
-  createContext,
-  useContext,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react'
+import { createContext, useContext, type ReactNode } from 'react'
 import { useReducedMotion } from 'framer-motion'
-import { getCookie, setCookie } from '@/lib/cookies'
 
 export type AnimationPreset = 'simple' | 'sleek' | 'corporate' | 'chill'
 export type AnimationTrigger = 'both' | 'enter' | 'exit'
 
 interface AnimationContextProps {
   preset: AnimationPreset
-  setPreset: (preset: AnimationPreset) => void
   trigger: AnimationTrigger
-  setTrigger: (trigger: AnimationTrigger) => void
-  speed: number
-  setSpeed: (speed: number) => void
   durationScale: number
   reduceMotion: boolean
 }
@@ -26,84 +15,18 @@ const AnimationContext = createContext<AnimationContextProps | undefined>(
   undefined
 )
 
-const VALID_PRESETS: AnimationPreset[] = [
-  'simple',
-  'sleek',
-  'corporate',
-  'chill',
-]
-const VALID_TRIGGERS: AnimationTrigger[] = ['both', 'enter', 'exit']
-
-function isValidPreset(value: unknown): value is AnimationPreset {
-  return (
-    typeof value === 'string' &&
-    VALID_PRESETS.includes(value as AnimationPreset)
-  )
-}
-
-function isValidTrigger(value: unknown): value is AnimationTrigger {
-  return (
-    typeof value === 'string' &&
-    VALID_TRIGGERS.includes(value as AnimationTrigger)
-  )
-}
-
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year
-
 export function AnimationProvider({ children }: { children: ReactNode }) {
   const reduceMotion = useReducedMotion() ?? false
-  const [preset, _setPreset] = useState<AnimationPreset>(() => {
-    const stored = getCookie('pres-preset')
-    return isValidPreset(stored) ? stored : 'sleek'
-  })
-  const [trigger, _setTrigger] = useState<AnimationTrigger>(() => {
-    const stored = getCookie('pres-trigger')
-    return isValidTrigger(stored) ? stored : 'both'
-  })
-  const [speed, _setSpeed] = useState<number>(() => {
-    const stored = getCookie('pres-speed')
-    if (stored) {
-      const parsed = parseFloat(stored)
-      if (Number.isFinite(parsed) && parsed >= 0.25 && parsed <= 3.0) {
-        return parsed
-      }
-    }
-    return 1.0
-  })
-
-  const setPreset = (next: AnimationPreset) => {
-    setCookie('pres-preset', next, COOKIE_MAX_AGE)
-    _setPreset(next)
-  }
-
-  const setTrigger = (next: AnimationTrigger) => {
-    setCookie('pres-trigger', next, COOKIE_MAX_AGE)
-    _setTrigger(next)
-  }
-
-  const setSpeed = (next: number) => {
-    setCookie('pres-speed', String(next), COOKIE_MAX_AGE)
-    _setSpeed(next)
-  }
-
-  // Derived: higher speed means smaller durationScale (faster transitions)
-  const durationScale = 1 / speed
-  const value = useMemo(
-    () => ({
-      preset,
-      setPreset,
-      trigger,
-      setTrigger,
-      speed,
-      setSpeed,
-      durationScale,
-      reduceMotion,
-    }),
-    [preset, trigger, speed, durationScale, reduceMotion]
-  )
 
   return (
-    <AnimationContext.Provider value={value}>
+    <AnimationContext.Provider
+      value={{
+        preset: 'sleek',
+        trigger: 'both',
+        durationScale: 1,
+        reduceMotion,
+      }}
+    >
       {children}
     </AnimationContext.Provider>
   )

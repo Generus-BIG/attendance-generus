@@ -63,7 +63,7 @@ export function getLupgNavGroups(role: Role): NavGroup[] {
 
   if (role !== 'member') {
     generalItems.push({
-      title: 'Presentation Mode',
+      title: 'Presentasi',
       url: '/admin/lupg/presentation',
       icon: Presentation,
     })

@@ -136,6 +136,7 @@ export function PresentationShareCard({
   enabled,
 }: PresentationShareCardProps) {
   const queryClient = useQueryClient()
+  const [publishDialogOpen, setPublishDialogOpen] = useState(false)
   const [rotateDialogOpen, setRotateDialogOpen] = useState(false)
   const queryKey = [
     'lupg',
@@ -219,6 +220,12 @@ export function PresentationShareCard({
       : ''
   const busy = saveMutation.isPending || rotateMutation.isPending
   const canUseLink = Boolean(share?.isActive && publicUrl)
+  const saveActive = (isActive: boolean) =>
+    saveMutation.mutate({
+      isActive,
+      current: share?.id === 'pending' ? null : share,
+      target,
+    })
 
   const copyLink = async () => {
     try {
@@ -268,13 +275,10 @@ export function PresentationShareCard({
               <Switch
                 id='presentation-sharing'
                 checked={share?.isActive ?? false}
-                onCheckedChange={(isActive) =>
-                  saveMutation.mutate({
-                    isActive,
-                    current: share?.id === 'pending' ? null : share,
-                    target,
-                  })
-                }
+                onCheckedChange={(isActive) => {
+                  if (isActive && !share?.isActive) setPublishDialogOpen(true)
+                  else saveActive(false)
+                }}
                 disabled={!enabled || busy}
                 aria-label='Aktifkan sharing presentasi'
                 className='h-7 w-12'
@@ -304,17 +308,17 @@ export function PresentationShareCard({
               variant='secondary'
               onClick={copyLink}
               disabled={!canUseLink || busy}
-              className='min-h-11 transition-transform active:scale-[0.96]'
+              className='min-h-11'
             >
               <Copy className='mr-2 size-4' />
-              Copy
+              Salin
             </Button>
             <Button
               type='button'
               variant='outline'
               onClick={openLink}
               disabled={!canUseLink || busy}
-              className='min-h-11 transition-transform active:scale-[0.96]'
+              className='min-h-11'
             >
               <ExternalLink className='mr-2 size-4' />
               Buka
@@ -324,7 +328,7 @@ export function PresentationShareCard({
               variant='ghost'
               onClick={() => setRotateDialogOpen(true)}
               disabled={!share?.token || busy}
-              className='min-h-11 transition-transform active:scale-[0.96] sm:ml-auto'
+              className='min-h-11 sm:ml-auto'
             >
               <RotateCw className='mr-2 size-4' />
               Ganti Link
@@ -332,6 +336,33 @@ export function PresentationShareCard({
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={publishDialogOpen} onOpenChange={setPublishDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Publikasikan presentasi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Presentasi {scopeLabel} untuk {formatMonthLabel(monthKey)} dapat
+              dibuka oleh siapa pun yang memiliki link.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saveMutation.isPending}>
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={saveMutation.isPending}
+              onClick={(event) => {
+                event.preventDefault()
+                saveActive(true)
+                setPublishDialogOpen(false)
+              }}
+            >
+              Publikasikan
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={rotateDialogOpen} onOpenChange={setRotateDialogOpen}>
         <AlertDialogContent>

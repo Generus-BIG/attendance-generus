@@ -22,22 +22,34 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { KelompokSelector } from '../components/kelompok-selector'
 import { MonthPicker } from '../components/month-picker'
-import { currentMonthKey } from '../utils/month-utils'
 import { PresentationShareCard } from './presentation-share-card'
 
 const DESA_SELECTION = 'desa'
 
-export function PresentationPicker() {
+interface PresentationPickerProps {
+  initialMonthKey: string
+  initialKelompokId?: string
+}
+
+export function PresentationPicker({
+  initialMonthKey,
+  initialKelompokId,
+}: PresentationPickerProps) {
   const navigate = useNavigate()
   const role = useAuthStore((s) => s.auth.role)
   const kelompokName = useAuthStore((s) => s.auth.kelompok)
   const typedRole = role as Role
   const isTeamManager = typedRole === 'team_manager'
 
-  const [monthKey, setMonthKey] = useState(currentMonthKey())
-  const [adminKelompokId, setAdminKelompokId] = useState<string | undefined>()
+  const [monthKey, setMonthKey] = useState(initialMonthKey)
+  const [adminKelompokId, setAdminKelompokId] = useState(initialKelompokId)
 
-  const { data: kelompokOptions = [] } = useQuery({
+  const {
+    data: kelompokOptions = [],
+    isError: kelompokError,
+    isLoading: kelompokLoading,
+    refetch: refetchKelompok,
+  } = useQuery({
     queryKey: ['lookup_values', 'GROUP'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -62,7 +74,9 @@ export function PresentationPicker() {
   const scopeLabel =
     selectedKelompok?.value ??
     (isTeamManager ? kelompokName || 'Kelompok Anda' : 'Desa Big')
-  const sharingEnabled = !isTeamManager || Boolean(tmKelompokId)
+  const kelompokReady = !kelompokLoading && !kelompokError
+  const sharingEnabled =
+    kelompokReady && (!isTeamManager || Boolean(tmKelompokId))
 
   const launch = () => {
     navigate({
@@ -87,11 +101,11 @@ export function PresentationPicker() {
       <Main className='flex flex-1 flex-col gap-6'>
         <div>
           <h2 className='text-2xl font-bold tracking-tight text-balance'>
-            Presentation Mode
+            Presentasi
           </h2>
           <p className='text-pretty text-muted-foreground'>
             Siapkan deck untuk ditampilkan langsung atau bagikan link publik
-            dengan bulan dan scope yang sama.
+            dengan bulan dan cakupan yang sama.
           </p>
         </div>
 
@@ -109,7 +123,7 @@ export function PresentationPicker() {
                   <CardDescription className='mt-1 text-pretty'>
                     {isTeamManager
                       ? `Laporan otomatis difilter ke kelompok ${kelompokName}.`
-                      : 'Pilih satu kelompok untuk deck per-kelompok, atau gunakan scope Desa.'}
+                      : 'Pilih satu kelompok untuk deck per-kelompok, atau gunakan cakupan Desa.'}
                   </CardDescription>
                 </div>
               </div>
@@ -121,7 +135,7 @@ export function PresentationPicker() {
               </div>
               {!isTeamManager && (
                 <div className='flex flex-col gap-1.5'>
-                  <Label>Scope presentasi</Label>
+                  <Label>Cakupan presentasi</Label>
                   <KelompokSelector
                     value={adminKelompokId ?? DESA_SELECTION}
                     onChange={(value) =>
@@ -136,11 +150,30 @@ export function PresentationPicker() {
                   </p>
                 </div>
               )}
+              {kelompokError && (
+                <div className='flex flex-wrap items-center gap-2 rounded-lg border bg-muted/20 px-3 py-2 text-sm text-muted-foreground'>
+                  Data kelompok gagal dimuat.
+                  <Button
+                    type='button'
+                    variant='link'
+                    size='sm'
+                    className='h-auto p-0'
+                    onClick={() => refetchKelompok()}
+                  >
+                    Coba lagi
+                  </Button>
+                </div>
+              )}
+              {isTeamManager && kelompokReady && !tmKelompokId && (
+                <p className='text-sm text-muted-foreground'>
+                  Kelompok Anda belum dapat ditentukan. Hubungi administrator.
+                </p>
+              )}
               <Button
                 onClick={launch}
                 disabled={!sharingEnabled}
                 size='lg'
-                className='mt-auto min-h-11 self-start transition-transform active:scale-[0.96]'
+                className='mt-auto min-h-11 self-start'
               >
                 <PresentationIcon className='mr-2 h-4 w-4' />
                 Mulai Presentasi

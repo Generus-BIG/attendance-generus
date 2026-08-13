@@ -97,7 +97,7 @@ export function PublicPresentationPage({ token }: PublicPresentationPageProps) {
           <Button
             type='button'
             onClick={() => query.refetch()}
-            className='min-h-11 transition-transform active:scale-[0.96]'
+            className='min-h-11'
           >
             <RefreshCw className='mr-2 size-4' />
             Coba Lagi

@@ -42,7 +42,15 @@ export function Presentation(props: Props) {
   return (
     <PresentationLoader
       {...props}
-      onExit={() => navigate({ to: '/admin/lupg/presentation' })}
+      onExit={() =>
+        navigate({
+          to: '/admin/lupg/presentation',
+          search: {
+            month: props.monthKey,
+            ...(props.kelompokFilter ? { kelompok: props.kelompokFilter } : {}),
+          },
+        })
+      }
     />
   )
 }

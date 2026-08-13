@@ -13,7 +13,7 @@ export function MonthPicker({ monthKey, onChange }: Props) {
       <Button
         variant='outline'
         size='icon'
-        className='h-8 w-8'
+        className='size-11'
         onClick={() => onChange(shiftMonth(monthKey, -1))}
         aria-label='Bulan sebelumnya'
       >
@@ -29,7 +29,7 @@ export function MonthPicker({ monthKey, onChange }: Props) {
       <Button
         variant='outline'
         size='icon'
-        className='h-8 w-8'
+        className='size-11'
         onClick={() => onChange(shiftMonth(monthKey, 1))}
         aria-label='Bulan berikutnya'
       >
