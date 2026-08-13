@@ -1,9 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Loader2, Maximize2, X } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Maximize2,
+  SlidersHorizontal,
+  X,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { usePalette } from '@/context/palette-provider'
 import { Button } from '@/components/ui/button'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { formatMonthLabel } from '../../utils/month-utils'
-import { AnimationProvider } from './context/animation-context'
+import {
+  AnimationProvider,
+  usePresentationAnimation,
+} from './context/animation-context'
 import { type Slide } from './slides'
 import { usePresPalette } from './use-pres-palette'
 
@@ -19,6 +36,151 @@ export function PresentationPlayer(props: PresentationPlayerProps) {
     <AnimationProvider>
       <PresentationPlayerInner {...props} />
     </AnimationProvider>
+  )
+}
+
+function AnimationControls() {
+  const { preset, setPreset, trigger, setTrigger, speed, setSpeed } =
+    usePresentationAnimation()
+  const { palette, setPalette } = usePalette()
+  const percent = ((speed - 0.25) / 2.75) * 100
+
+  return (
+    <div className='flex flex-col gap-4 text-xs select-none'>
+      <ControlChoices
+        label='Transisi'
+        value={preset}
+        choices={[
+          ['simple', 'Sederhana'],
+          ['sleek', 'Halus'],
+          ['corporate', 'Formal'],
+          ['chill', 'Santai'],
+        ]}
+        onChange={setPreset}
+        layoutId='activePreset'
+      />
+      <ControlChoices
+        label='Animasi'
+        value={trigger}
+        choices={[
+          ['both', 'Keduanya'],
+          ['enter', 'Saat masuk'],
+          ['exit', 'Saat keluar'],
+        ]}
+        onChange={setTrigger}
+        layoutId='activeTrigger'
+        separated
+      />
+      <ControlChoices
+        label='Palet tema'
+        value={palette}
+        choices={[
+          ['modern-natural', 'Modern'],
+          ['anthropic-claude', 'Claude'],
+          ['sage-green', 'Hijau sage'],
+        ]}
+        onChange={setPalette}
+        layoutId='activePalette'
+        separated
+      />
+      <div className='space-y-2 border-t border-border/30 pt-3'>
+        <div className='flex items-center justify-between'>
+          <label className='text-[10px] font-bold tracking-wider text-muted-foreground uppercase'>
+            Kecepatan
+          </label>
+          <span className='rounded border border-primary/10 bg-primary/5 px-1.5 py-0.5 font-mono text-xs font-bold text-primary tabular-nums'>
+            {speed.toFixed(2)}x
+          </span>
+        </div>
+        <div className='flex items-center gap-3'>
+          <span className='text-[10px] font-semibold text-muted-foreground'>
+            Lambat
+          </span>
+          <input
+            type='range'
+            aria-label='Kecepatan animasi'
+            min='0.25'
+            max='3'
+            step='0.25'
+            value={speed}
+            onChange={(event) => setSpeed(Number(event.target.value))}
+            className='h-0.5 flex-1 cursor-pointer appearance-none rounded-lg outline-hidden [&::-moz-range-thumb]:size-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary [&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary'
+            style={{
+              background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${percent}%, var(--border) ${percent}%, var(--border) 100%)`,
+            }}
+          />
+          <span className='text-[10px] font-semibold text-muted-foreground'>
+            Cepat
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ControlChoices<T extends string>({
+  label,
+  value,
+  choices,
+  onChange,
+  layoutId,
+  separated = false,
+}: {
+  label: string
+  value: T
+  choices: readonly (readonly [T, string])[]
+  onChange: (value: T) => void
+  layoutId: string
+  separated?: boolean
+}) {
+  const { reduceMotion } = usePresentationAnimation()
+
+  return (
+    <div
+      className={cn(
+        'space-y-1.5',
+        separated && 'border-t border-border/30 pt-3'
+      )}
+    >
+      <span className='text-[10px] font-bold tracking-wider text-muted-foreground uppercase'>
+        {label}
+      </span>
+      <div className='flex flex-wrap gap-x-4 text-xs font-semibold'>
+        {choices.map(([choice, choiceLabel]) => {
+          const active = choice === value
+          return (
+            <button
+              key={choice}
+              type='button'
+              onClick={() => onChange(choice)}
+              className='relative min-h-11 py-1.5 outline-hidden'
+            >
+              <span
+                className={cn(
+                  'transition-colors duration-150',
+                  active
+                    ? 'font-bold text-foreground'
+                    : 'font-medium text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {choiceLabel}
+              </span>
+              {active && (
+                <motion.span
+                  layoutId={layoutId}
+                  className='absolute right-0 bottom-1 left-0 h-0.5 rounded-full bg-primary'
+                  transition={
+                    reduceMotion
+                      ? { duration: 0 }
+                      : { type: 'spring', stiffness: 380, damping: 30 }
+                  }
+                />
+              )}
+            </button>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -129,6 +291,21 @@ function PresentationPlayerInner({
             </span>
           </div>
           <div className='flex items-center gap-1 sm:gap-2'>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className='min-h-11 min-w-11 sm:min-w-0'
+                >
+                  <SlidersHorizontal className='h-4 w-4 sm:mr-2' />
+                  <span className='hidden sm:inline'>Pengaturan</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align='end' className='w-72 p-4'>
+                <AnimationControls />
+              </PopoverContent>
+            </Popover>
             {supportsFullscreen && (
               <Button
                 variant='ghost'
