@@ -104,7 +104,7 @@ export function PresentationPicker({
             Presentasi
           </h2>
           <p className='text-pretty text-muted-foreground'>
-            Siapkan deck untuk ditampilkan langsung atau bagikan link publik
+            Preview deck untuk ditampilkan langsung atau bagikan link publik
             dengan bulan dan cakupan yang sama.
           </p>
         </div>
