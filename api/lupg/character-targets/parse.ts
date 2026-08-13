@@ -114,9 +114,13 @@ function makeMapping(headers: string[]) {
   const lower = headers.map((h) => h.toLowerCase())
   const findIndex = (terms: string[]) =>
     lower.findIndex((header) => terms.every((term) => header.includes(term)))
-  const kategoriColumns = lower
-    .map((header, index) => ({ header, index }))
-    .filter(({ header }) => header.includes('kategori'))
+  const kategoriColumns = lower.reduce<Array<{ header: string; index: number }>>(
+    (columns, header, index) => {
+      if (header.includes('kategori')) columns.push({ header, index })
+      return columns
+    },
+    []
+  )
   const materialIndex = findIndex(['materi'])
   const detailIndex = findIndex(['detail', 'materi'])
   const dariIndex = findIndex(['dari'])

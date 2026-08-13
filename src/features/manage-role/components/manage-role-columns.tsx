@@ -6,7 +6,6 @@ import { DataTableColumnHeader } from '@/components/data-table'
 import { type ManagedUser } from '../types'
 import { DataTableRowActions } from './data-table-row-actions'
 import { RoleBadge } from './role-badge'
-import { TempPasswordReveal } from './temp-password-reveal'
 
 export function useManageRoleColumns(): ColumnDef<ManagedUser>[] {
   const { can } = usePermissions()
@@ -93,28 +92,12 @@ export function useManageRoleColumns(): ColumnDef<ManagedUser>[] {
     },
   ]
 
-  // Password and actions columns only for super_admin
+  // Actions column only for super_admin
   if (can.manageUsers) {
-    columns.push(
-      {
-        id: 'password',
-        accessorKey: 'temp_password',
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title='Password Sementara' />
-        ),
-        cell: ({ row }) => (
-          <TempPasswordReveal password={row.original.temp_password ?? null} />
-        ),
-        meta: {
-          className: cn('w-48'),
-        },
-        enableSorting: false,
-      },
-      {
-        id: 'actions',
-        cell: ({ row }) => <DataTableRowActions row={row} />,
-      }
-    )
+    columns.push({
+      id: 'actions',
+      cell: ({ row }) => <DataTableRowActions row={row} />,
+    })
   }
 
   return columns

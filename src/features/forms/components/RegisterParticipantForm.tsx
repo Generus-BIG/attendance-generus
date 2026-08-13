@@ -409,26 +409,27 @@ export function RegisterParticipantForm({
                       value={field.value || undefined}
                       className='flex flex-wrap gap-x-6 gap-y-3'
                     >
-                      {KATEGORI.filter(
-                        (k) =>
-                          !formConfig.allowedCategories ||
-                          formConfig.allowedCategories.includes(k)
-                      ).map((k) => (
-                        <FormItem
-                          key={k}
-                          className='group flex items-center space-y-0 space-x-3'
-                        >
-                          <FormControl>
-                            <RadioGroupItem
-                              value={k}
-                              className='h-4.5 w-4.5 border-zinc-300 text-zinc-900 shadow-sm dark:border-zinc-700 dark:text-zinc-100'
-                            />
-                          </FormControl>
-                          <FormLabel className='cursor-pointer text-[15px] font-medium text-zinc-700 transition-colors group-hover:text-zinc-900 dark:text-zinc-300 dark:group-hover:text-zinc-100'>
-                            {k === 'AR' || k === 'APR' ? k : `GPN ${k}`}
-                          </FormLabel>
-                        </FormItem>
-                      ))}
+                      {KATEGORI.flatMap((k) =>
+                        !formConfig.allowedCategories ||
+                        formConfig.allowedCategories.includes(k)
+                          ? [
+                              <FormItem
+                                key={k}
+                                className='group flex items-center space-y-0 space-x-3'
+                              >
+                                <FormControl>
+                                  <RadioGroupItem
+                                    value={k}
+                                    className='h-4.5 w-4.5 border-zinc-300 text-zinc-900 shadow-sm dark:border-zinc-700 dark:text-zinc-100'
+                                  />
+                                </FormControl>
+                                <FormLabel className='cursor-pointer text-[15px] font-medium text-zinc-700 transition-colors group-hover:text-zinc-900 dark:text-zinc-300 dark:group-hover:text-zinc-100'>
+                                  {k === 'AR' || k === 'APR' ? k : `GPN ${k}`}
+                                </FormLabel>
+                              </FormItem>,
+                            ]
+                          : []
+                      )}
                     </RadioGroup>
                   </FormControl>
                   <FormMessage />

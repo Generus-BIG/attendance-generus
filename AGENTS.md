@@ -206,6 +206,7 @@ Public read-only attendance dashboards shareable via token-based links (`/share/
 - **Table** `public_dashboard_shares` — admin-created share configs with `displayMode: 'monthly' | 'forms'`, `formMode: 'all' | 'selected'`, `visibleSections` (JSON, controls which dashboard sections render), `token` (auto-generated). RLS: admin-only CRUD.
 - **RPC** `get_public_dashboard_payload(p_token, p_month)` — `SECURITY DEFINER` (required for anon access). Returns share config + forms + attendance records + census participants. **Privacy**: when `followUp` section is disabled, participant/attendance/census identifiers are replaced with deterministic md5 surrogate keys — real UUIDs are never exposed on public links. When `followUp` is enabled, real ids are returned (needed for the follow-up table).
 - **Frontend**: [src/features/public-dashboard/](src/features/public-dashboard/) — `PublicDashboardPage` renders a read-only `MonthlyFormDashboard` with workspace-aware form selector. Monthly mode supports month navigation; fixed-forms mode aggregates across selected events.
+- **Authority boundary**: anonymous clients do not read `attendance` or `participants` directly. Public participant search and attendance submission use active-form-scoped RPCs (`search_form_participants`, `submit_attendance_guarded`), while shared dashboards poll `get_public_dashboard_payload` every 15 seconds when the realtime log is enabled.
 - **SSR/OG**: `api/share/dashboard/[token].ts` — server-side handler for Open Graph meta tags (no auth headers leaked in response).
 
 ### Public LUPG Presentation Sharing
@@ -265,6 +266,7 @@ Schema changes are tracked in `supabase/migrations/` as timestamped `.sql` files
 - `20260701000000_sensus_participant_auto_sync.sql` — view `lupg_sensus_participant_derived`, sync function, participant trigger
 - `20260703042233_harden_participant_sensus_sync_trigger.sql` — runs participant sensus sync trigger wrapper as `SECURITY DEFINER` and keeps the sync helper non-callable by anon/authenticated roles
 - `20260719000000_update_lupg_character_assessment_scale.sql` — nullable five-state collective character assessment, conservative legacy mapping, and required coaching-note constraint
+- `20260722000000_harden_browser_authority_surfaces.sql` — removes broad anonymous attendance/participant access, adds form-scoped public RPCs, hardens Absensi/LUPG team boundaries, report audit fields, derived sensus, photo storage paths, and privileged function grants
 - `20260813000000_lupg_presentation_sharing.sql` — per-month/scope presentation shares, role-scoped RLS, token rotation RPC, and public presentation payload RPC
 
 ## Known Debt / Future Improvements

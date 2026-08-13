@@ -71,9 +71,12 @@ function formatFormsMeta(
 
   const formLabel = `${forms.length} form`
   const attendanceDates = records
-    .filter((record) => !record.is_pending && record.timestamp)
-    .map((record) => new Date(record.timestamp))
-    .filter((date) => !Number.isNaN(date.getTime()))
+    .reduce<Date[]>((dates, record) => {
+      if (record.is_pending || !record.timestamp) return dates
+      const date = new Date(record.timestamp)
+      if (!Number.isNaN(date.getTime())) dates.push(date)
+      return dates
+    }, [])
     .sort((a, b) => a.getTime() - b.getTime())
 
   if (attendanceDates.length === 0) return `${formLabel} · Belum ada absensi`
@@ -134,7 +137,8 @@ export function PublicDashboardPage({
   )
   const { data, isLoading, error, dataUpdatedAt } = usePublicDashboardPayload(
     token,
-    monthKey
+    monthKey,
+    { pollRealtime: true }
   )
   const isMonthlyMode =
     data?.status !== 'ok' || data.share.displayMode === 'monthly'
@@ -281,7 +285,7 @@ export function PublicDashboardPage({
     )
   }
 
-  if (error || !data || data.status === 'unavailable') {
+  if ((!data && error) || !data || data.status === 'unavailable') {
     return (
       <main className='flex min-h-screen items-center justify-center bg-background px-4 antialiased'>
         <Card className='max-w-md'>
@@ -418,11 +422,11 @@ export function PublicDashboardPage({
             isMonthlyMode
               ? undefined
               : (selectedRecap ?? data.recap)
-                ? data.forms
-                    .filter((f) =>
-                      selectedFormId ? f.id === selectedFormId : true
-                    )
-                    .map((f) => ({ id: f.id, date: f.date, title: f.title }))
+                ? data.forms.flatMap((f) =>
+                    !selectedFormId || f.id === selectedFormId
+                      ? [{ id: f.id, date: f.date, title: f.title }]
+                      : []
+                  )
                 : undefined
           }
           activeMonth={
@@ -435,7 +439,7 @@ export function PublicDashboardPage({
 
         {data.share.visibleSections.realtimeLog && (
           <div className='print:hidden'>
-            <RealtimeAttendanceLog forms={data.forms} />
+            <RealtimeAttendanceLog records={data.records} />
           </div>
         )}
       </div>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import {
   CheckIcon,
@@ -8,10 +8,6 @@ import {
   DoubleArrowRightIcon,
   PlusCircledIcon,
 } from '@radix-ui/react-icons'
-import {
-  type RealtimeChannel,
-  type RealtimePostgresChangesPayload,
-} from '@supabase/supabase-js'
 import { id as idLocale } from 'date-fns/locale'
 import {
   Activity,
@@ -23,7 +19,6 @@ import {
   Search,
   X,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 import { cn, getPageNumbers } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -57,117 +52,26 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { type PublicDashboardRecord } from '../types'
 
 // ── Types ──────────────────────────────────────────────────────────────
 
 interface RealtimeAttendanceLogProps {
-  forms: Array<{ id: string; title: string; date: string }>
-}
-
-interface DBAttendanceRow {
-  id: string
-  form_id: string
-  participant_id: string | null
-  status: string
-  timestamp: string | null
-  is_pending: boolean | null
-  temp_name: string | null
-  temp_category: string | null
-  temp_gender: string | null
-  temp_group: string | null
-  permission_reason: string | null
-  permission_description: string | null
-}
-
-interface JoinedParticipant {
-  id: string
-  name: string
-  gender: 'L' | 'P' | null
-  group: { value: string } | null
-  category: { value: string } | null
-}
-
-interface DBAttendanceWithParticipant {
-  id: string
-  form_id: string
-  status: string
-  timestamp: string | null
-  is_pending: boolean | null
-  permission_reason: string | null
-  permission_description: string | null
-  temp_name: string | null
-  temp_category: string | null
-  temp_gender: string | null
-  temp_group: string | null
-  participant: {
-    id: string
-    name: string
-    gender: string | null
-    group_id: string | null
-    category_id: string | null
-    group: unknown
-    category: unknown
-  } | null
-}
-
-interface LogAttendanceRecord {
-  id: string
-  form_id: string
-  status: 'HADIR' | 'IZIN'
-  timestamp: string
-  is_pending: boolean
-  permission_reason: string | null
-  permission_description: string | null
-  temp_name: string | null
-  temp_category: string | null
-  temp_gender: string | null
-  temp_group: string | null
-  participant: JoinedParticipant | null
+  records: PublicDashboardRecord[]
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
-function resolveLookup(val: unknown): { value: string } | null {
-  if (!val) return null
-  if (Array.isArray(val)) return (val[0] as { value: string }) || null
-  return val as { value: string }
-}
-
-function mapRow(row: DBAttendanceWithParticipant): LogAttendanceRecord {
-  return {
-    id: row.id,
-    form_id: row.form_id,
-    status: row.status as 'HADIR' | 'IZIN',
-    timestamp: row.timestamp ?? '',
-    is_pending: !!row.is_pending,
-    permission_reason: row.permission_reason,
-    permission_description: row.permission_description,
-    temp_name: row.temp_name,
-    temp_category: row.temp_category,
-    temp_gender: row.temp_gender,
-    temp_group: row.temp_group,
-    participant: row.participant
-      ? {
-          id: row.participant.id,
-          name: row.participant.name,
-          gender: row.participant.gender as 'L' | 'P' | null,
-          group: resolveLookup(row.participant.group),
-          category: resolveLookup(row.participant.category),
-        }
-      : null,
-  }
-}
-
 /** Derive the display group/category/name for a record */
-function displayOf(r: LogAttendanceRecord) {
+function displayOf(r: PublicDashboardRecord) {
   return {
-    name: r.participant?.name || r.temp_name || '-',
-    group: r.participant?.group?.value || r.temp_group || '-',
-    category: r.participant?.category?.value || r.temp_category || '-',
+    name: r.participant_name || r.temp_name || '-',
+    group: r.group_value || '-',
+    category: r.category_value || r.temp_category || '-',
   }
 }
 
-function AttendanceActivityItem({ record }: { record: LogAttendanceRecord }) {
+function AttendanceActivityItem({ record }: { record: PublicDashboardRecord }) {
   const dateObj = record.timestamp ? new Date(record.timestamp) : new Date()
   const dateStr = format(dateObj, 'd MMM yyyy', { locale: idLocale })
   const timeStr = format(dateObj, 'HH:mm')
@@ -214,7 +118,7 @@ function AttendanceActivityItem({ record }: { record: LogAttendanceRecord }) {
           <Clock className='h-3.5 w-3.5' />
           {timeStr}
         </span>
-        {!record.participant && record.temp_name && (
+        {!record.participant_id && record.temp_name && (
           <span className='font-medium text-amber-700 dark:text-amber-300'>
             Belum terhubung
           </span>
@@ -302,17 +206,19 @@ function FacetedFilter({
                     {selected.size} dipilih
                   </Badge>
                 ) : (
-                  options
-                    .filter((o) => selected.has(o.value))
-                    .map((o) => (
-                      <Badge
-                        variant='secondary'
-                        key={o.value}
-                        className='rounded-sm px-1 text-[10px] font-normal'
-                      >
-                        {o.label}
-                      </Badge>
-                    ))
+                  options.flatMap((o) =>
+                    selected.has(o.value)
+                      ? [
+                          <Badge
+                            variant='secondary'
+                            key={o.value}
+                            className='rounded-sm px-1 text-[10px] font-normal'
+                          >
+                            {o.label}
+                          </Badge>,
+                        ]
+                      : []
+                  )
                 )}
               </div>
             </>
@@ -556,32 +462,8 @@ function LogPagination({
 
 // ── Main component ────────────────────────────────────────────────────
 
-const SELECT_QUERY = `
-  id,
-  form_id,
-  status,
-  timestamp,
-  is_pending,
-  permission_reason,
-  permission_description,
-  temp_name,
-  temp_category,
-  temp_gender,
-  temp_group,
-  participant:participants!attendance_participant_id_fkey(
-    id,
-    name,
-    gender,
-    group_id,
-    category_id,
-    group:group_id(value),
-    category:category_id(value)
-  )
-`
-
-export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
-  const [allRecords, setAllRecords] = useState<LogAttendanceRecord[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+export function RealtimeAttendanceLog({ records }: RealtimeAttendanceLogProps) {
+  const allRecords = records
 
   // ── Filter state ──
   const [searchQuery, setSearchQuery] = useState('')
@@ -592,11 +474,6 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
   // ── Pagination state ──
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
-
-  // Reset page to 1 when filters or search change
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, kelompokFilter, kategoriFilter, statusFilter])
 
   // ── Sort state ──
   type SortField =
@@ -651,153 +528,6 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
     kelompokFilter.size > 0 ||
     kategoriFilter.size > 0 ||
     statusFilter.size > 0
-
-  // ── Fetch ALL attendance records ──
-  useEffect(() => {
-    if (forms.length === 0) {
-      setAllRecords([])
-      setIsLoading(false)
-      return
-    }
-
-    let cancelled = false
-
-    async function fetchAll() {
-      setIsLoading(true)
-      try {
-        const formIds = forms.map((f) => f.id)
-        const { data, error } = await supabase
-          .from('attendance')
-          .select(SELECT_QUERY)
-          .in('form_id', formIds)
-          .eq('is_pending', false)
-          .order('timestamp', { ascending: false })
-
-        if (error) throw error
-        if (cancelled) return
-
-        const mapped = (
-          (data as unknown as DBAttendanceWithParticipant[]) || []
-        ).map(mapRow)
-
-        setAllRecords(mapped)
-      } catch (_err) {
-        // silently fail on public page
-      } finally {
-        if (!cancelled) setIsLoading(false)
-      }
-    }
-
-    fetchAll()
-    return () => {
-      cancelled = true
-    }
-  }, [forms])
-
-  // ── Realtime subscriptions ──
-  const handleRealtimeEvent = useCallback(
-    async (payload: RealtimePostgresChangesPayload<DBAttendanceRow>) => {
-      if (payload.eventType === 'DELETE') {
-        const oldId = payload.old.id
-        if (oldId) {
-          setAllRecords((cur) => cur.filter((r) => r.id !== oldId))
-        }
-        return
-      }
-
-      const raw = payload.new
-      if (!raw?.id) return
-
-      if (raw.is_pending) {
-        setAllRecords((cur) => cur.filter((r) => r.id !== raw.id))
-        return
-      }
-
-      // Fetch participant details
-      let participantData: JoinedParticipant | null = null
-      if (raw.participant_id) {
-        try {
-          const { data: p, error } = await supabase
-            .from('participants')
-            .select(
-              `
-              id, name, gender, group_id, category_id,
-              group:group_id(value),
-              category:category_id(value)
-            `
-            )
-            .eq('id', raw.participant_id)
-            .single()
-
-          if (!error && p) {
-            participantData = {
-              id: p.id,
-              name: p.name,
-              gender: p.gender as 'L' | 'P' | null,
-              group: resolveLookup(p.group),
-              category: resolveLookup(p.category),
-            }
-          }
-        } catch (_e) {
-          /* noop */
-        }
-      }
-
-      const mapped: LogAttendanceRecord = {
-        id: raw.id,
-        form_id: raw.form_id,
-        status: raw.status as 'HADIR' | 'IZIN',
-        timestamp: raw.timestamp ?? '',
-        is_pending: !!raw.is_pending,
-        permission_reason: raw.permission_reason,
-        permission_description: raw.permission_description,
-        temp_name: raw.temp_name,
-        temp_category: raw.temp_category,
-        temp_gender: raw.temp_gender,
-        temp_group: raw.temp_group,
-        participant: participantData,
-      }
-
-      setAllRecords((cur) => {
-        const exists = cur.some((r) => r.id === mapped.id)
-        const updated = exists
-          ? cur.map((r) => (r.id === mapped.id ? mapped : r))
-          : [mapped, ...cur]
-        return updated.sort(
-          (a, b) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        )
-      })
-    },
-    []
-  )
-
-  useEffect(() => {
-    if (forms.length === 0) return
-
-    const channels: RealtimeChannel[] = []
-
-    forms.forEach((form) => {
-      const channel = supabase
-        .channel(`realtime-attendance-${form.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'attendance',
-            filter: `form_id=eq.${form.id}`,
-          },
-          handleRealtimeEvent
-        )
-        .subscribe()
-      channels.push(channel)
-    })
-
-    return () => {
-      channels.forEach((ch) => supabase.removeChannel(ch))
-    }
-  }, [forms, handleRealtimeEvent])
 
   // ── Client-side filtering and sorting ──
   const filteredRecords = useMemo(() => {
@@ -914,7 +644,7 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
           variant='outline'
           className='shrink-0 rounded-sm border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-emerald-600 uppercase dark:text-emerald-400'
         >
-          Langsung
+          Otomatis · 15 dtk
         </Badge>
       </CardHeader>
 
@@ -926,7 +656,10 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
             <Input
               placeholder='Cari peserta...'
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setCurrentPage(1)
+              }}
               className='h-10 pl-8 text-sm sm:h-8 sm:text-xs'
             />
           </div>
@@ -935,21 +668,30 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
               title='Kelompok'
               options={KELOMPOK_OPTIONS}
               selected={kelompokFilter}
-              onChange={setKelompokFilter}
+              onChange={(value) => {
+                setKelompokFilter(value)
+                setCurrentPage(1)
+              }}
               counts={kelompokCounts}
             />
             <FacetedFilter
               title='Kategori'
               options={KATEGORI_OPTIONS}
               selected={kategoriFilter}
-              onChange={setKategoriFilter}
+              onChange={(value) => {
+                setKategoriFilter(value)
+                setCurrentPage(1)
+              }}
               counts={kategoriCounts}
             />
             <FacetedFilter
               title='Status'
               options={STATUS_OPTIONS}
               selected={statusFilter}
-              onChange={setStatusFilter}
+              onChange={(value) => {
+                setStatusFilter(value)
+                setCurrentPage(1)
+              }}
               counts={statusCounts}
             />
           </div>
@@ -972,12 +714,7 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
       </div>
 
       <CardContent className='p-0'>
-        {isLoading ? (
-          <div className='flex flex-col items-center justify-center py-12 text-center text-muted-foreground'>
-            <div className='mb-2 h-5 w-5 animate-spin rounded-full border-b-2 border-primary' />
-            <p className='text-xs font-medium'>Memuat data aktivitas...</p>
-          </div>
-        ) : filteredRecords.length === 0 ? (
+        {filteredRecords.length === 0 ? (
           <div className='flex flex-col items-center justify-center py-16 text-center text-muted-foreground'>
             <div className='mb-2.5 rounded-full bg-muted p-2.5'>
               <Activity className='h-5 w-5 text-muted-foreground' />
@@ -989,7 +726,7 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
             </p>
             {!isFiltered && (
               <p className='mt-0.5 text-[10px] text-muted-foreground/80'>
-                Menunggu pencatatan absensi secara langsung...
+                Menunggu pencatatan absensi terbaru...
               </p>
             )}
           </div>
@@ -1059,7 +796,7 @@ export function RealtimeAttendanceLog({ forms }: RealtimeAttendanceLogProps) {
                             <span className='text-xs font-semibold text-foreground'>
                               {d.name}
                             </span>
-                            {!record.participant && record.temp_name && (
+                            {!record.participant_id && record.temp_name && (
                               <span className='text-[10px] font-medium text-amber-600'>
                                 (Belum terhubung)
                               </span>

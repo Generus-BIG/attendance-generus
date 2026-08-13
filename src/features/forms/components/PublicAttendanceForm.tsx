@@ -141,23 +141,15 @@ export function PublicAttendanceForm({
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  // Fetch participants - filter by kelompok for kelompok-type forms
-  const kelompokGroupId =
-    formConfig.formType === 'kelompok' ? formConfig.kelompokId : null
   const { data: participants = [], isLoading: isLoadingParticipants } =
     useQuery({
       queryKey: [
         'participants',
         debouncedQuery,
         formConfig.allowedCategories,
-        kelompokGroupId,
+        formConfig.id,
       ],
-      queryFn: () =>
-        searchParticipants(
-          debouncedQuery,
-          formConfig.allowedCategories,
-          kelompokGroupId
-        ),
+      queryFn: () => searchParticipants(formConfig.id, debouncedQuery),
       enabled: open, // Fetch when popover is open, even with empty query
       staleTime: 1000 * 60, // 1 minute
     })
@@ -437,9 +429,7 @@ export function PublicAttendanceForm({
                         value={field.value || undefined}
                       >
                         <FormControl>
-                          <SelectTrigger
-                            className='h-12 rounded-lg border-border px-4 font-normal shadow-sm transition-colors hover:bg-muted'
-                          >
+                          <SelectTrigger className='h-12 rounded-lg border-border px-4 font-normal shadow-sm transition-colors hover:bg-muted'>
                             <SelectValue
                               placeholder='Pilih'
                               className='text-muted-foreground'
@@ -519,26 +509,27 @@ export function PublicAttendanceForm({
                         value={field.value || undefined}
                         className='flex flex-wrap gap-x-6 gap-y-3'
                       >
-                        {KATEGORI.filter(
-                          (k) =>
-                            !formConfig.allowedCategories ||
-                            formConfig.allowedCategories.includes(k)
-                        ).map((k) => (
-                          <FormItem
-                            key={k}
-                            className='group flex min-h-11 items-center gap-3 space-y-0'
-                          >
-                            <FormControl>
-                              <RadioGroupItem
-                                value={k}
-                                className='h-4.5 w-4.5 border-input text-foreground shadow-sm'
-                              />
-                            </FormControl>
-                            <FormLabel className='flex-1 cursor-pointer py-2 text-[15px] font-medium text-foreground/90 transition-colors group-hover:text-foreground'>
-                              {k === 'A' || k === 'B' ? `GPN ${k}` : k}
-                            </FormLabel>
-                          </FormItem>
-                        ))}
+                        {KATEGORI.flatMap((k) =>
+                          !formConfig.allowedCategories ||
+                          formConfig.allowedCategories.includes(k)
+                            ? [
+                                <FormItem
+                                  key={k}
+                                  className='group flex min-h-11 items-center gap-3 space-y-0'
+                                >
+                                  <FormControl>
+                                    <RadioGroupItem
+                                      value={k}
+                                      className='h-4.5 w-4.5 border-input text-foreground shadow-sm'
+                                    />
+                                  </FormControl>
+                                  <FormLabel className='flex-1 cursor-pointer py-2 text-[15px] font-medium text-foreground/90 transition-colors group-hover:text-foreground'>
+                                    {k === 'A' || k === 'B' ? `GPN ${k}` : k}
+                                  </FormLabel>
+                                </FormItem>,
+                              ]
+                            : []
+                        )}
                       </RadioGroup>
                     </FormControl>
                     <FormMessage />

@@ -60,17 +60,19 @@ export function DataTableFacetedFilter<TData, TValue>({
                     {selectedValues.size} selected
                   </Badge>
                 ) : (
-                  options
-                    .filter((option) => selectedValues.has(option.value))
-                    .map((option) => (
-                      <Badge
-                        variant='secondary'
-                        key={option.value}
-                        className='rounded-sm px-1 font-normal'
-                      >
-                        {option.label}
-                      </Badge>
-                    ))
+                  options.flatMap((option) =>
+                    selectedValues.has(option.value)
+                      ? [
+                          <Badge
+                            variant='secondary'
+                            key={option.value}
+                            className='rounded-sm px-1 font-normal'
+                          >
+                            {option.label}
+                          </Badge>,
+                        ]
+                      : []
+                  )
                 )}
               </div>
             </>

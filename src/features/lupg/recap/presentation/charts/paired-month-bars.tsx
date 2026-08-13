@@ -10,6 +10,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { usePresentationAnimation } from '../context/animation-context'
+import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import {
   EditorialTooltipShell,
   hairlineAxisProps,
@@ -17,8 +19,6 @@ import {
   RestrainedTopLabel,
   type RestrainedTopLabelProps,
 } from './chart-primitives'
-import { usePresPalette, type PresPalette } from '../use-pres-palette'
-import { usePresentationAnimation } from '../context/animation-context'
 
 export interface PairedMonthBarsProps {
   title: string
@@ -44,9 +44,12 @@ interface TipProps {
 
 function PairedTooltip({ active, payload, label, palette }: TipProps) {
   if (!active || !payload || payload.length === 0) return null
-  const rows = payload
-    .filter((p) => p.value != null && Number.isFinite(p.value))
-    .map((p) => ({
+  const rows = payload.reduce<
+    Array<{ key: string; name: string; color: string; value: number }>
+  >((rows, p) => {
+    const value = p.value
+    if (value == null || !Number.isFinite(value)) return rows
+    rows.push({
       key: String(p.dataKey),
       name:
         p.dataKey === 'kehadiran'
@@ -55,8 +58,10 @@ function PairedTooltip({ active, payload, label, palette }: TipProps) {
             ? 'Piket LUPG'
             : (p.name ?? ''),
       color: p.color ?? palette.chart[0],
-      value: p.value as number,
-    }))
+      value,
+    })
+    return rows
+  }, [])
   if (rows.length === 0) return null
   return (
     <EditorialTooltipShell title={label ?? ''} palette={palette}>
@@ -154,7 +159,11 @@ export function PairedMonthBars({
                 vertical={false}
                 stroke={palette.rule}
               />
-              <XAxis dataKey='month' interval={0} {...hairlineAxisProps(palette, 'x')} />
+              <XAxis
+                dataKey='month'
+                interval={0}
+                {...hairlineAxisProps(palette, 'x')}
+              />
               <YAxis
                 ticks={[0, 50, 100]}
                 domain={[0, 100]}
@@ -182,7 +191,10 @@ export function PairedMonthBars({
                   dataKey='kehadiran'
                   content={(p) => (
                     <RestrainedTopLabel
-                      {...(p as unknown as Omit<RestrainedTopLabelProps, 'palette'>)}
+                      {...(p as unknown as Omit<
+                        RestrainedTopLabelProps,
+                        'palette'
+                      >)}
                       palette={palette}
                     />
                   )}
@@ -199,7 +211,10 @@ export function PairedMonthBars({
                   dataKey='piket'
                   content={(p) => (
                     <RestrainedTopLabel
-                      {...(p as unknown as Omit<RestrainedTopLabelProps, 'palette'>)}
+                      {...(p as unknown as Omit<
+                        RestrainedTopLabelProps,
+                        'palette'
+                      >)}
                       palette={palette}
                     />
                   )}

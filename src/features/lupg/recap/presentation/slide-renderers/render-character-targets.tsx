@@ -90,15 +90,18 @@ function buildJoinedRows(
   )
   const reportIds = new Set(scopedReports.map((report) => report.id))
   const targetItemIds = new Set(targetItems.map((item) => item.id))
-  const targetReportByCell = new Map(
-    targetReports
-      .filter(
-        (row) =>
-          reportIds.has(row.monthly_report_id) &&
-          targetItemIds.has(row.target_item_id)
+  const targetReportByCell = new Map<string, CharacterTargetReportRow>()
+  for (const row of targetReports) {
+    if (
+      reportIds.has(row.monthly_report_id) &&
+      targetItemIds.has(row.target_item_id)
+    ) {
+      targetReportByCell.set(
+        `${row.monthly_report_id}_${row.target_item_id}`,
+        row
       )
-      .map((row) => [`${row.monthly_report_id}_${row.target_item_id}`, row])
-  )
+    }
+  }
   const sortedItems = sortTargetItems(targetItems)
 
   const joinedRows = scopedReports.flatMap((report) =>
