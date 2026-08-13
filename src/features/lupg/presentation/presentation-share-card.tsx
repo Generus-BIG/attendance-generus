@@ -281,7 +281,7 @@ export function PresentationShareCard({
                 }}
                 disabled={!enabled || busy}
                 aria-label='Aktifkan sharing presentasi'
-                className='h-7 w-12'
+                className='h-7 w-12 [&_[data-slot=switch-thumb]]:size-5 [&_[data-slot=switch-thumb]]:transition-transform [&_[data-slot=switch-thumb]]:duration-200 [&_[data-slot=switch-thumb]]:ease-[cubic-bezier(0.23,1,0.32,1)] [&_[data-slot=switch-thumb][data-state=checked]]:translate-x-6'
               />
             )}
           </div>
