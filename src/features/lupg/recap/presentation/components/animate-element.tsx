@@ -14,7 +14,8 @@ interface WrapperProps {
 
 // Staggered Container
 export function AnimateContainer({ children, className, style }: WrapperProps) {
-  const { preset, trigger, durationScale } = usePresentationAnimation()
+  const { preset, trigger, durationScale, reduceMotion } =
+    usePresentationAnimation()
 
   const transition = getStaggerTransition(preset)
 
@@ -22,12 +23,16 @@ export function AnimateContainer({ children, className, style }: WrapperProps) {
     hidden: {},
     visible: {
       transition: {
-        staggerChildren: transition.staggerEnter * durationScale,
+        staggerChildren: reduceMotion
+          ? 0
+          : transition.staggerEnter * durationScale,
       },
     },
     exit: {
       transition: {
-        staggerChildren: transition.staggerExit * durationScale,
+        staggerChildren: reduceMotion
+          ? 0
+          : transition.staggerExit * durationScale,
         staggerDirection: -1 as const,
       },
     },
@@ -49,9 +54,15 @@ export function AnimateContainer({ children, className, style }: WrapperProps) {
 
 // Individual Animated Item
 export function AnimateItem({ children, className, style }: WrapperProps) {
-  const { preset, trigger, durationScale } = usePresentationAnimation()
+  const { preset, trigger, durationScale, reduceMotion } =
+    usePresentationAnimation()
 
-  const config = getAnimationConfig(preset, trigger, durationScale)
+  const config = getAnimationConfig(
+    preset,
+    trigger,
+    durationScale,
+    reduceMotion
+  )
 
   return (
     <motion.div
@@ -66,10 +77,21 @@ export function AnimateItem({ children, className, style }: WrapperProps) {
 }
 
 // Animated Table Row Component
-export function AnimateTableRow({ children, className, style, ...props }: HTMLMotionProps<'tr'>) {
-  const { preset, trigger, durationScale } = usePresentationAnimation()
+export function AnimateTableRow({
+  children,
+  className,
+  style,
+  ...props
+}: HTMLMotionProps<'tr'>) {
+  const { preset, trigger, durationScale, reduceMotion } =
+    usePresentationAnimation()
 
-  const config = getAnimationConfig(preset, trigger, durationScale)
+  const config = getAnimationConfig(
+    preset,
+    trigger,
+    durationScale,
+    reduceMotion
+  )
 
   return (
     <motion.tr
@@ -84,12 +106,11 @@ export function AnimateTableRow({ children, className, style, ...props }: HTMLMo
   )
 }
 
-
 // Preset-specific timing/stagger parameters
 /**
  * Resolves the stagger timings (in seconds) for entry and exit animations
  * based on the selected transition preset.
- * 
+ *
  * @param preset - The active animation configuration preset
  * @returns Object containing stagger timings for enter and exit animations
  */
@@ -110,7 +131,7 @@ function getStaggerTransition(preset: AnimationPreset) {
 /**
  * Builds the Framer Motion variants and transition parameters (duration, easing bezier)
  * based on the active preset, active trigger boundary, and speed duration scale.
- * 
+ *
  * @param preset - The active animation configuration preset
  * @param trigger - The trigger boundaries configuration ('both' | 'enter' | 'exit')
  * @param scale - The duration scale factor (1 / speed)
@@ -119,10 +140,22 @@ function getStaggerTransition(preset: AnimationPreset) {
 function getAnimationConfig(
   preset: AnimationPreset,
   trigger: AnimationTrigger,
-  scale: number
+  scale: number,
+  reduceMotion: boolean
 ) {
   const isEnterActive = trigger === 'both' || trigger === 'enter'
   const isExitActive = trigger === 'both' || trigger === 'exit'
+
+  if (reduceMotion) {
+    return {
+      variants: {
+        hidden: isEnterActive ? { opacity: 0 } : { opacity: 1 },
+        visible: { opacity: 1 },
+        exit: isExitActive ? { opacity: 0 } : { opacity: 1 },
+      } satisfies Variants,
+      transition: { duration: 0.12 },
+    }
+  }
 
   // Variant definitions
   let hidden = {}
@@ -179,4 +212,3 @@ function getAnimationConfig(
 
   return { variants, transition }
 }
-

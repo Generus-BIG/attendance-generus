@@ -3,7 +3,6 @@ import {
   CATEGORY_CODES,
   CATEGORY_LABELS,
   DERIVED_SENSUS_CATEGORIES,
-  type CategoryCode,
 } from '../../constants'
 import { SensusStepperInput } from './sensus-stepper-input'
 
@@ -50,7 +49,7 @@ export function SensusCardList({
                 </div>
                 {isDerived && (
                   <span className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
-                    Otomatis dari absensi
+                    Auto Fetched
                   </span>
                 )}
               </div>
@@ -69,7 +68,7 @@ export function SensusCardList({
                   </span>
                   <SensusStepperInput
                     kelompokId={kelompokId}
-                    categoryCode={code as CategoryCode}
+                    categoryCode={code}
                     gender='L'
                     initial={l}
                   />
@@ -80,7 +79,7 @@ export function SensusCardList({
                   </span>
                   <SensusStepperInput
                     kelompokId={kelompokId}
-                    categoryCode={code as CategoryCode}
+                    categoryCode={code}
                     gender='P'
                     initial={p}
                   />

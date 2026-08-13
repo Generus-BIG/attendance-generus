@@ -710,6 +710,41 @@ export type Database = {
         }
         Relationships: []
       }
+      lupg_presentation_shares: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          kelompok_id: string | null
+          month: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kelompok_id?: string | null
+          month: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kelompok_id?: string | null
+          month?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'lupg_presentation_shares_kelompok_id_fkey'
+            columns: ['kelompok_id']
+            isOneToOne: false
+            referencedRelation: 'lookup_values'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       lupg_program_definitions: {
         Row: {
           active: boolean
@@ -1166,6 +1201,10 @@ export type Database = {
         Args: { p_month?: string; p_token: string }
         Returns: Json
       }
+      get_public_lupg_presentation_payload: {
+        Args: { p_token: string }
+        Returns: Json
+      }
       lupg_activity_photo_path_matches_report: {
         Args: { p_path: string; p_report_id: string }
         Returns: boolean
@@ -1182,6 +1221,23 @@ export type Database = {
       }
       normalize_participant_name: { Args: { input: string }; Returns: string }
       promote_eligible_gpn: { Args: never; Returns: undefined }
+      rotate_lupg_presentation_share: {
+        Args: { p_share_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          is_active: boolean
+          kelompok_id: string | null
+          month: string
+          token: string
+        }
+        SetofOptions: {
+          from: '*'
+          to: 'lupg_presentation_shares'
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       search_form_participants: {
         Args: { p_form_id: string; p_query?: string }
         Returns: {

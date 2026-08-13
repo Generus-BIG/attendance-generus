@@ -50,6 +50,7 @@ pnpm lint             # ESLint
 pnpm format:check     # Prettier check
 pnpm format           # Prettier auto-fix
 pnpm knip             # Find unused exports/dependencies
+pnpm typecheck:functions # Type-check Supabase Edge Functions
 ```
 
 Package manager is **pnpm** (not npm/yarn). No test framework is installed — verify changes via `pnpm build` (tsc) + `pnpm lint` + manual browser check.
@@ -208,6 +209,28 @@ Public read-only attendance dashboards shareable via token-based links (`/share/
 - **Authority boundary**: anonymous clients do not read `attendance` or `participants` directly. Public participant search and attendance submission use active-form-scoped RPCs (`search_form_participants`, `submit_attendance_guarded`), while shared dashboards poll `get_public_dashboard_payload` every 15 seconds when the realtime log is enabled.
 - **SSR/OG**: `api/share/dashboard/[token].ts` — server-side handler for Open Graph meta tags (no auth headers leaked in response).
 
+### Public LUPG Presentation Sharing
+
+LUPG presentation decks can be shared per `month × scope` through
+`/share/lupg/presentation/$token`:
+- **Table** `lupg_presentation_shares` — one row per month for Desa or per
+  month + kelompok. RLS lets `super_admin`/`admin` manage every scope and
+  `team_manager` only their own kelompok; anon has no table access.
+- **Tokens** are server-generated. Toggling `is_active` keeps the URL;
+  `rotate_lupg_presentation_share` immediately invalidates the previous URL.
+- **Public payload** comes from
+  `get_public_lupg_presentation_payload(token)`; it exposes only presentation
+  fields scoped to the link, never submitter/audit identities, and is executable
+  only by the anonymous role used by the Edge Function.
+- **Private photos** remain in `lupg-activity-photos`.
+  `supabase/functions/lupg-public-presentation/index.ts` is deployed with
+  `verify_jwt=false`, validates the capability token through the public RPC,
+  and uses the project secret only to create one-hour signed URLs for photo
+  paths already returned by that RPC.
+- Internal and public routes both use
+  `PresentationPlayer` + `buildSlides(PresentationData)`; do not add a
+  second public deck renderer.
+
 ### UI Components
 
 - `src/components/ui/` — shadcn/ui primitives (excluded from ESLint). Add new ones via shadcn CLI. Note: `accordion` primitive is NOT installed (LUPG Rekap Desa Mustin section falls back to flat grouped list).
@@ -244,6 +267,7 @@ Schema changes are tracked in `supabase/migrations/` as timestamped `.sql` files
 - `20260703042233_harden_participant_sensus_sync_trigger.sql` — runs participant sensus sync trigger wrapper as `SECURITY DEFINER` and keeps the sync helper non-callable by anon/authenticated roles
 - `20260719000000_update_lupg_character_assessment_scale.sql` — nullable five-state collective character assessment, conservative legacy mapping, and required coaching-note constraint
 - `20260722000000_harden_browser_authority_surfaces.sql` — removes broad anonymous attendance/participant access, adds form-scoped public RPCs, hardens Absensi/LUPG team boundaries, report audit fields, derived sensus, photo storage paths, and privileged function grants
+- `20260813000000_lupg_presentation_sharing.sql` — per-month/scope presentation shares, role-scoped RLS, token rotation RPC, and public presentation payload RPC
 
 ## Known Debt / Future Improvements
 

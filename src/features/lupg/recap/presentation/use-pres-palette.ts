@@ -1,13 +1,3 @@
-// Resolves the active palette + dark-mode tokens at runtime so chart
-// components (which can't read CSS vars in Recharts SVG props) get concrete
-// color strings. Re-resolves when `data-palette` or `.dark` change.
-//
-// TYPOGRAPHY EXCEPTION: fontSans/fontMono/fontSerif are pinned to the
-// Sage Green palette's font stack across ALL palettes. Rationale: the deck's
-// typographic personality should not flip when the active palette changes; the
-// Sage Green stack reads best at projector distance. See
-// docs/superpowers/specs/2026-05-18-lupg-presentation-final-polish-design.md
-// section P0-6.
 import { useEffect, useState } from 'react'
 
 export interface PresPalette {
@@ -45,91 +35,68 @@ type TokenKey =
   | '--chart-4'
   | '--chart-5'
 
-// Pinned across all palettes — see file header.
-const PINNED_FONT_SANS =
-  '"Plus Jakarta Sans", Geist, system-ui, sans-serif'
-const PINNED_FONT_MONO =
-  '"IBM Plex Mono", "Geist Mono", ui-monospace, monospace'
-const PINNED_FONT_SERIF = 'Lora, Georgia, serif'
+const fontSans = 'Geist, Inter, system-ui, sans-serif'
+const fontMono = '"Geist Mono", ui-monospace, monospace'
 
-function readTokens(): PresPalette {
-  if (typeof window === 'undefined') {
-    return defaultFallback()
+function fallback(): PresPalette {
+  return {
+    bg: 'oklch(0.984 0.003 247.858)',
+    ink: 'oklch(0.208 0.042 265.755)',
+    primary: 'oklch(0.208 0.042 265.755)',
+    primaryFg: 'oklch(0.984 0.003 247.858)',
+    accent: 'oklch(0.968 0.007 247.896)',
+    brandAccent: 'oklch(0.208 0.042 265.755)',
+    muted: 'oklch(0.554 0.046 257.417)',
+    rule: 'oklch(0.829 0.013 255.508)',
+    cream: 'oklch(0.95 0.007 247.896)',
+    success: 'oklch(0.55 0.14 150)',
+    warning: 'oklch(0.67 0.15 75)',
+    chart: ['#315a7d', '#3b8c78', '#c2643d', '#79589f', '#b84d4d'],
+    fontSans,
+    fontMono,
+    fontSerif: fontSans,
   }
-  const activePalette = document.documentElement.getAttribute('data-palette') || 'modern-natural'
-  const styles = getComputedStyle(document.documentElement)
-  const get = (k: TokenKey) => styles.getPropertyValue(k).trim()
-
-  const accent = get('--accent') || '#f5b800'
-  const bg = get('--background') || '#ffffff'
-
-  const base = {
-    bg,
-    ink: get('--foreground') || '#18181b',
-    primary: get('--primary') || '#1e2761',
-    primaryFg: get('--primary-foreground') || '#ffffff',
-    accent,
-    brandAccent: get('--brand-accent') || accent,
-    muted: get('--muted-foreground') || '#71717a',
-    rule: get('--border') || '#e5e7eb',
-    cream: `color-mix(in oklch, ${accent} 14%, ${bg})`,
-    success: get('--success') || '#16a34a',
-    warning: get('--warning') || '#f59e0b',
-    chart: [
-      get('--chart-1') || '#1e2761',
-      get('--chart-2') || '#f5b800',
-      get('--chart-3') || '#5cb85c',
-      get('--chart-4') || '#a78bfa',
-      get('--chart-5') || '#ef4444',
-    ] as const,
-    fontSans: PINNED_FONT_SANS,
-    fontMono: PINNED_FONT_MONO,
-    fontSerif: PINNED_FONT_SERIF,
-  }
-
-  if (activePalette === 'modern-natural') {
-    return {
-      ...base,
-      primary: '#22247a',
-      primaryFg: '#f8fafc',
-      ink: '#0f172a',
-      accent: '#2a2b77',
-      brandAccent: '#fcc419',
-      rule: '#869fc3',
-      cream: '#d9e9f7',
-    }
-  }
-
-  return base
 }
 
-function defaultFallback(): PresPalette {
+function readTokens(): PresPalette {
+  if (typeof window === 'undefined') return fallback()
+
+  const styles = getComputedStyle(document.documentElement)
+  const get = (key: TokenKey) => styles.getPropertyValue(key).trim()
+  const defaults = fallback()
+  const bg = get('--background') || defaults.bg
+  const accent = get('--accent') || defaults.accent
+
   return {
-    bg: '#ffffff',
-    ink: '#18181b',
-    primary: '#1e2761',
-    primaryFg: '#ffffff',
-    accent: '#f5b800',
-    brandAccent: '#f5b800',
-    muted: '#71717a',
-    rule: '#e5e7eb',
-    cream: '#fef3c7',
-    success: '#16a34a',
-    warning: '#f59e0b',
-    chart: ['#1e2761', '#f5b800', '#5cb85c', '#a78bfa', '#ef4444'] as const,
-    fontSans: PINNED_FONT_SANS,
-    fontMono: PINNED_FONT_MONO,
-    fontSerif: PINNED_FONT_SERIF,
+    bg,
+    ink: get('--foreground') || defaults.ink,
+    primary: get('--primary') || defaults.primary,
+    primaryFg: get('--primary-foreground') || defaults.primaryFg,
+    accent,
+    brandAccent: get('--brand-accent') || defaults.brandAccent,
+    muted: get('--muted-foreground') || defaults.muted,
+    rule: get('--border') || defaults.rule,
+    cream: `color-mix(in oklch, ${accent} 14%, ${bg})`,
+    success: get('--success') || defaults.success,
+    warning: get('--warning') || defaults.warning,
+    chart: [
+      get('--chart-1') || defaults.chart[0],
+      get('--chart-2') || defaults.chart[1],
+      get('--chart-3') || defaults.chart[2],
+      get('--chart-4') || defaults.chart[3],
+      get('--chart-5') || defaults.chart[4],
+    ],
+    fontSans,
+    fontMono,
+    fontSerif: fontSans,
   }
 }
 
 export function usePresPalette(): PresPalette {
-  const [palette, setPalette] = useState<PresPalette>(() => readTokens())
+  const [palette, setPalette] = useState(readTokens)
 
   useEffect(() => {
     const update = () => setPalette(readTokens())
-    update()
-
     const observer = new MutationObserver(update)
     observer.observe(document.documentElement, {
       attributes: true,

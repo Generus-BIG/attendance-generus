@@ -1,5 +1,13 @@
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
-import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { createClient } from '@supabase/supabase-js'
+
+interface EdgeRuntime {
+  env: { get(name: string): string | undefined }
+  serve(handler: (request: Request) => Response | Promise<Response>): void
+}
+
+const edgeRuntime = (
+  globalThis as typeof globalThis & { Deno: EdgeRuntime }
+).Deno
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -31,14 +39,14 @@ interface ManageUserRequest {
   }
 }
 
-Deno.serve(async (req: Request) => {
+edgeRuntime.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const supabaseUrl = edgeRuntime.env.get('SUPABASE_URL')
+    const serviceRoleKey = edgeRuntime.env.get('SUPABASE_SERVICE_ROLE_KEY')
     if (!supabaseUrl || !serviceRoleKey) {
       return jsonResponse({ error: 'Server misconfigured: missing env vars' }, 500)
     }

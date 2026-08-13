@@ -61,11 +61,13 @@ export function getLupgNavGroups(role: Role): NavGroup[] {
     icon: TrendingUp,
   })
 
-  generalItems.push({
-    title: 'Presentation Mode',
-    url: '/admin/lupg/presentation',
-    icon: Presentation,
-  })
+  if (role !== 'member') {
+    generalItems.push({
+      title: 'Presentasi',
+      url: '/admin/lupg/presentation',
+      icon: Presentation,
+    })
+  }
 
   generalItems.push({
     title: 'Sensus Generus',
@@ -92,8 +94,16 @@ export function getLupgNavGroups(role: Role): NavGroup[] {
           items: [
             { title: 'Profile', url: '/admin/settings', icon: UserCog },
             { title: 'Account', url: '/admin/settings/account', icon: Wrench },
-            { title: 'Appearance', url: '/admin/settings/appearance', icon: Palette },
-            { title: 'Notifications', url: '/admin/settings/notifications', icon: Bell },
+            {
+              title: 'Appearance',
+              url: '/admin/settings/appearance',
+              icon: Palette,
+            },
+            {
+              title: 'Notifications',
+              url: '/admin/settings/notifications',
+              icon: Bell,
+            },
           ],
         },
       ],

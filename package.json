@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && pnpm typecheck:functions && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
     "knip": "knip",
+    "typecheck:functions": "tsc -p supabase/functions/tsconfig.json",
     "doctor": "npx react-doctor@latest"
   },
   "dependencies": {

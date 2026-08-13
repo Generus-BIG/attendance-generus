@@ -53,6 +53,7 @@ import { Route as AdminLupgProgramsIndexRouteImport } from './routes/admin/lupg/
 import { Route as AdminLupgPresentationIndexRouteImport } from './routes/admin/lupg/presentation/index'
 import { Route as AdminLupgMustinIndexRouteImport } from './routes/admin/lupg/mustin/index'
 import { Route as AdminLupgConfigIndexRouteImport } from './routes/admin/lupg/config/index'
+import { Route as ShareLupgPresentationTokenRouteImport } from './routes/share/lupg/presentation/$token'
 import { Route as AdminLupgReportsMonthlyReportIdRouteImport } from './routes/admin/lupg/reports/$monthlyReportId'
 import { Route as AdminLupgRecapPresentRouteImport } from './routes/admin/lupg/recap/present'
 
@@ -279,6 +280,12 @@ const AdminLupgConfigIndexRoute = AdminLupgConfigIndexRouteImport.update({
   path: '/config/',
   getParentRoute: () => AdminLupgRouteRoute,
 } as any)
+const ShareLupgPresentationTokenRoute =
+  ShareLupgPresentationTokenRouteImport.update({
+    id: '/share/lupg/presentation/$token',
+    path: '/share/lupg/presentation/$token',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminLupgReportsMonthlyReportIdRoute =
   AdminLupgReportsMonthlyReportIdRouteImport.update({
     id: '/reports/$monthlyReportId',
@@ -331,6 +338,7 @@ export interface FileRoutesByFullPath {
   '/admin/tasks': typeof AdminTasksIndexRoute
   '/admin/lupg/recap/present': typeof AdminLupgRecapPresentRoute
   '/admin/lupg/reports/$monthlyReportId': typeof AdminLupgReportsMonthlyReportIdRoute
+  '/share/lupg/presentation/$token': typeof ShareLupgPresentationTokenRoute
   '/admin/lupg/config': typeof AdminLupgConfigIndexRoute
   '/admin/lupg/mustin': typeof AdminLupgMustinIndexRoute
   '/admin/lupg/presentation': typeof AdminLupgPresentationIndexRoute
@@ -378,6 +386,7 @@ export interface FileRoutesByTo {
   '/admin/tasks': typeof AdminTasksIndexRoute
   '/admin/lupg/recap/present': typeof AdminLupgRecapPresentRoute
   '/admin/lupg/reports/$monthlyReportId': typeof AdminLupgReportsMonthlyReportIdRoute
+  '/share/lupg/presentation/$token': typeof ShareLupgPresentationTokenRoute
   '/admin/lupg/config': typeof AdminLupgConfigIndexRoute
   '/admin/lupg/mustin': typeof AdminLupgMustinIndexRoute
   '/admin/lupg/presentation': typeof AdminLupgPresentationIndexRoute
@@ -427,6 +436,7 @@ export interface FileRoutesById {
   '/admin/tasks/': typeof AdminTasksIndexRoute
   '/admin/lupg/recap/present': typeof AdminLupgRecapPresentRoute
   '/admin/lupg/reports/$monthlyReportId': typeof AdminLupgReportsMonthlyReportIdRoute
+  '/share/lupg/presentation/$token': typeof ShareLupgPresentationTokenRoute
   '/admin/lupg/config/': typeof AdminLupgConfigIndexRoute
   '/admin/lupg/mustin/': typeof AdminLupgMustinIndexRoute
   '/admin/lupg/presentation/': typeof AdminLupgPresentationIndexRoute
@@ -477,6 +487,7 @@ export interface FileRouteTypes {
     | '/admin/tasks'
     | '/admin/lupg/recap/present'
     | '/admin/lupg/reports/$monthlyReportId'
+    | '/share/lupg/presentation/$token'
     | '/admin/lupg/config'
     | '/admin/lupg/mustin'
     | '/admin/lupg/presentation'
@@ -524,6 +535,7 @@ export interface FileRouteTypes {
     | '/admin/tasks'
     | '/admin/lupg/recap/present'
     | '/admin/lupg/reports/$monthlyReportId'
+    | '/share/lupg/presentation/$token'
     | '/admin/lupg/config'
     | '/admin/lupg/mustin'
     | '/admin/lupg/presentation'
@@ -572,6 +584,7 @@ export interface FileRouteTypes {
     | '/admin/tasks/'
     | '/admin/lupg/recap/present'
     | '/admin/lupg/reports/$monthlyReportId'
+    | '/share/lupg/presentation/$token'
     | '/admin/lupg/config/'
     | '/admin/lupg/mustin/'
     | '/admin/lupg/presentation/'
@@ -598,6 +611,7 @@ export interface RootRouteChildren {
   RegisterAddParticipantRoute: typeof RegisterAddParticipantRoute
   FormsIndexRoute: typeof FormsIndexRoute
   ShareDashboardTokenRoute: typeof ShareDashboardTokenRoute
+  ShareLupgPresentationTokenRoute: typeof ShareLupgPresentationTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -910,6 +924,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLupgConfigIndexRouteImport
       parentRoute: typeof AdminLupgRouteRoute
     }
+    '/share/lupg/presentation/$token': {
+      id: '/share/lupg/presentation/$token'
+      path: '/share/lupg/presentation/$token'
+      fullPath: '/share/lupg/presentation/$token'
+      preLoaderRoute: typeof ShareLupgPresentationTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/lupg/reports/$monthlyReportId': {
       id: '/admin/lupg/reports/$monthlyReportId'
       path: '/reports/$monthlyReportId'
@@ -1033,6 +1054,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterAddParticipantRoute: RegisterAddParticipantRoute,
   FormsIndexRoute: FormsIndexRoute,
   ShareDashboardTokenRoute: ShareDashboardTokenRoute,
+  ShareLupgPresentationTokenRoute: ShareLupgPresentationTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
