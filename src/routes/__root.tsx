@@ -26,8 +26,7 @@ function RootComponent() {
     select: (state) => state.location.pathname,
   })
   const showDevtools =
-    import.meta.env.MODE === 'development' &&
-    !pathname.startsWith('/share/dashboard/')
+    import.meta.env.MODE === 'development' && !pathname.startsWith('/share/')
 
   return (
     <>

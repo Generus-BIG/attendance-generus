@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
+import { useReducedMotion } from 'framer-motion'
 import { getCookie, setCookie } from '@/lib/cookies'
 
 export type AnimationPreset = 'simple' | 'sleek' | 'corporate' | 'chill'
@@ -12,6 +19,7 @@ interface AnimationContextProps {
   speed: number
   setSpeed: (speed: number) => void
   durationScale: number
+  reduceMotion: boolean
 }
 
 const AnimationContext = createContext<AnimationContextProps | undefined>(
@@ -43,6 +51,7 @@ function isValidTrigger(value: unknown): value is AnimationTrigger {
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year
 
 export function AnimationProvider({ children }: { children: ReactNode }) {
+  const reduceMotion = useReducedMotion() ?? false
   const [preset, _setPreset] = useState<AnimationPreset>(() => {
     const stored = getCookie('pres-preset')
     return isValidPreset(stored) ? stored : 'sleek'
@@ -79,19 +88,22 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
 
   // Derived: higher speed means smaller durationScale (faster transitions)
   const durationScale = 1 / speed
+  const value = useMemo(
+    () => ({
+      preset,
+      setPreset,
+      trigger,
+      setTrigger,
+      speed,
+      setSpeed,
+      durationScale,
+      reduceMotion,
+    }),
+    [preset, trigger, speed, durationScale, reduceMotion]
+  )
 
   return (
-    <AnimationContext.Provider
-      value={{
-        preset,
-        setPreset,
-        trigger,
-        setTrigger,
-        speed,
-        setSpeed,
-        durationScale,
-      }}
-    >
+    <AnimationContext.Provider value={value}>
       {children}
     </AnimationContext.Provider>
   )

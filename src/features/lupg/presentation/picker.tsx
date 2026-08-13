@@ -1,16 +1,11 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Presentation as PresentationIcon } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import { type Role } from '@/lib/rbac'
+import { useNavigate } from '@tanstack/react-router'
+import { Presentation as PresentationIcon, Settings2 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
-import { Header } from '@/components/layout/header'
-import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
-import { ConfigDrawer } from '@/components/config-drawer'
+import { type Role } from '@/lib/rbac'
+import { supabase } from '@/lib/supabase'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -18,11 +13,19 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { MonthPicker } from '../components/month-picker'
+import { ConfigDrawer } from '@/components/config-drawer'
+import { Header } from '@/components/layout/header'
+import { Main } from '@/components/layout/main'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+import { Search } from '@/components/search'
+import { ThemeSwitch } from '@/components/theme-switch'
 import { KelompokSelector } from '../components/kelompok-selector'
+import { MonthPicker } from '../components/month-picker'
 import { currentMonthKey } from '../utils/month-utils'
+import { PresentationShareCard } from './presentation-share-card'
+
+const DESA_SELECTION = 'desa'
 
 export function PresentationPicker() {
   const navigate = useNavigate()
@@ -53,6 +56,13 @@ export function PresentationPicker() {
   )
 
   const effectiveKelompokId = isTeamManager ? tmKelompokId : adminKelompokId
+  const selectedKelompok = kelompokOptions.find(
+    (option) => option.id === effectiveKelompokId
+  )
+  const scopeLabel =
+    selectedKelompok?.value ??
+    (isTeamManager ? kelompokName || 'Kelompok Anda' : 'Desa Big')
+  const sharingEnabled = !isTeamManager || Boolean(tmKelompokId)
 
   const launch = () => {
     navigate({
@@ -76,52 +86,75 @@ export function PresentationPicker() {
       </Header>
       <Main className='flex flex-1 flex-col gap-6'>
         <div>
-          <h2 className='text-2xl font-bold tracking-tight'>
+          <h2 className='text-2xl font-bold tracking-tight text-balance'>
             Presentation Mode
           </h2>
-          <p className='text-muted-foreground'>
-            Pilih bulan {isTeamManager ? '' : 'dan kelompok '}lalu jalankan
-            presentasi dalam fullscreen.
+          <p className='text-pretty text-muted-foreground'>
+            Siapkan deck untuk ditampilkan langsung atau bagikan link publik
+            dengan bulan dan scope yang sama.
           </p>
         </div>
 
-        <Card className='max-w-xl'>
-          <CardHeader>
-            <CardTitle>Konfigurasi Presentasi</CardTitle>
-            <CardDescription>
-              {isTeamManager
-                ? `Laporan otomatis difilter ke kelompok ${kelompokName}.`
-                : 'Pilih satu kelompok untuk presentasi per-kelompok, atau kosongkan untuk tampilan desa (semua kelompok).'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className='flex flex-col gap-4'>
-            <div className='flex flex-col gap-1.5'>
-              <Label>Bulan</Label>
-              <MonthPicker monthKey={monthKey} onChange={setMonthKey} />
-            </div>
-            {!isTeamManager && (
-              <div className='flex flex-col gap-1.5'>
-                <Label>Kelompok (opsional)</Label>
-                <KelompokSelector
-                  value={adminKelompokId}
-                  onChange={setAdminKelompokId}
-                />
-                <p className='text-muted-foreground text-xs'>
-                  Kosongkan untuk tampilan desa (semua kelompok sekaligus).
-                </p>
+        <div className='grid max-w-6xl items-stretch gap-6 lg:grid-cols-2'>
+          <Card className='h-full'>
+            <CardHeader>
+              <div className='flex items-start gap-3'>
+                <div className='flex size-10 shrink-0 items-center justify-center rounded-lg border bg-muted/40'>
+                  <Settings2 className='size-5' />
+                </div>
+                <div className='min-w-0'>
+                  <CardTitle className='text-balance'>
+                    Konfigurasi Presentasi
+                  </CardTitle>
+                  <CardDescription className='mt-1 text-pretty'>
+                    {isTeamManager
+                      ? `Laporan otomatis difilter ke kelompok ${kelompokName}.`
+                      : 'Pilih satu kelompok untuk deck per-kelompok, atau gunakan scope Desa.'}
+                  </CardDescription>
+                </div>
               </div>
-            )}
-            <Button
-              onClick={launch}
-              disabled={isTeamManager && !tmKelompokId}
-              size='lg'
-              className='mt-2 self-start'
-            >
-              <PresentationIcon className='mr-2 h-4 w-4' />
-              Start Presentation
-            </Button>
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent className='flex flex-col gap-5'>
+              <div className='flex flex-col gap-1.5'>
+                <Label>Bulan</Label>
+                <MonthPicker monthKey={monthKey} onChange={setMonthKey} />
+              </div>
+              {!isTeamManager && (
+                <div className='flex flex-col gap-1.5'>
+                  <Label>Scope presentasi</Label>
+                  <KelompokSelector
+                    value={adminKelompokId ?? DESA_SELECTION}
+                    onChange={(value) =>
+                      setAdminKelompokId(
+                        value === DESA_SELECTION ? undefined : value
+                      )
+                    }
+                    allOption={{ value: DESA_SELECTION, label: 'Desa Big' }}
+                  />
+                  <p className='text-xs text-pretty text-muted-foreground'>
+                    Pilih Desa untuk tampilan yang mencakup semua kelompok.
+                  </p>
+                </div>
+              )}
+              <Button
+                onClick={launch}
+                disabled={!sharingEnabled}
+                size='lg'
+                className='mt-auto min-h-11 self-start transition-transform active:scale-[0.96]'
+              >
+                <PresentationIcon className='mr-2 h-4 w-4' />
+                Mulai Presentasi
+              </Button>
+            </CardContent>
+          </Card>
+
+          <PresentationShareCard
+            monthKey={monthKey}
+            kelompokId={effectiveKelompokId}
+            scopeLabel={scopeLabel}
+            enabled={sharingEnabled}
+          />
+        </div>
       </Main>
     </>
   )
