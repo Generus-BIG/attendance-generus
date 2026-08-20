@@ -123,7 +123,10 @@ export function renderStatusSlide(args: SlideArgs): Slide {
         slideNumber={slideNumber}
         totalSlides={totalSlides}
       >
-        <StatusBody effectiveKelompokList={effectiveKelompokList} reports={reports} />
+        <StatusBody
+          effectiveKelompokList={effectiveKelompokList}
+          reports={reports}
+        />
       </SlideFrame>
     ),
   }

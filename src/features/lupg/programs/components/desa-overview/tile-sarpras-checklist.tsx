@@ -8,13 +8,13 @@ interface Props {
 
 export function TileSarprasChecklist({ rows }: Props) {
   return (
-    <div className='bg-card flex h-full flex-col rounded-lg border p-4'>
-      <div className='text-muted-foreground mb-3 text-xs font-medium uppercase tracking-wide'>
+    <div className='flex h-full flex-col rounded-lg border bg-card p-4'>
+      <div className='mb-3 text-xs font-medium tracking-wide text-muted-foreground uppercase'>
         Sarpras Checklist
       </div>
       <div className='flex flex-1 flex-col gap-2'>
         {rows.length === 0 ? (
-          <div className='text-muted-foreground text-sm'>
+          <div className='text-sm text-muted-foreground'>
             Tidak ada sarpras item.
           </div>
         ) : (
@@ -23,7 +23,7 @@ export function TileSarprasChecklist({ rows }: Props) {
               key={r.kelompokId}
               to='/admin/lupg/programs'
               search={{ tab: 'kelompok' as const, kelompok: r.kelompokId }}
-              className='hover:bg-muted focus:ring-ring flex items-center gap-2 rounded px-1 py-0.5 focus:ring-2 focus:outline-none'
+              className='flex items-center gap-2 rounded px-1 py-0.5 hover:bg-muted focus:ring-2 focus:ring-ring focus:outline-none'
               title={`${r.kelompokName}: ${r.okCount}/${r.total} item lengkap`}
             >
               <div className='w-16 truncate text-xs font-medium'>

@@ -1,6 +1,10 @@
 import { supabase } from '@/lib/supabase'
-import { type SensusRow, type SensusSnapshotRow, type SensusGender } from '../types'
 import { type CategoryCode } from '../constants'
+import {
+  type SensusRow,
+  type SensusSnapshotRow,
+  type SensusGender,
+} from '../types'
 
 export async function listSensus(kelompokId: string): Promise<SensusRow[]> {
   const { data, error } = await supabase

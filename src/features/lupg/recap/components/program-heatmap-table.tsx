@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { cn } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -7,9 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { cn } from '@/lib/utils'
-import { formatMonthLabel } from '../../utils/month-utils'
 import { bucketClass, getBucket } from '../../utils/heatmap-buckets'
+import { formatMonthLabel } from '../../utils/month-utils'
 import { pointFor, polylinePoints } from '../../utils/sparkline'
 
 export interface HeatmapCell {
@@ -73,7 +73,7 @@ export function ProgramHeatmapTable({
       <Table>
         <TableHeader>
           <TableRow className='hover:bg-transparent'>
-            <TableHead className='bg-card sticky left-0 z-10 text-[0.6875rem] font-medium uppercase tracking-[0.12em] shadow-[1px_0_0_var(--border)]'>
+            <TableHead className='sticky left-0 z-10 bg-card text-[0.6875rem] font-medium tracking-[0.12em] uppercase shadow-[1px_0_0_var(--border)]'>
               Kelompok
             </TableHead>
             {monthKeys.map((mk, i) => {
@@ -82,7 +82,7 @@ export function ProgramHeatmapTable({
                 <TableHead
                   key={mk}
                   className={cn(
-                    'text-center whitespace-nowrap text-[0.6875rem] font-medium uppercase tracking-[0.12em]',
+                    'text-center text-[0.6875rem] font-medium tracking-[0.12em] whitespace-nowrap uppercase',
                     isCurrent && 'text-foreground',
                     !isCurrent && 'text-muted-foreground'
                   )}
@@ -96,10 +96,10 @@ export function ProgramHeatmapTable({
                 </TableHead>
               )
             })}
-            <TableHead className='text-center text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+            <TableHead className='text-center text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
               Trend
             </TableHead>
-            <TableHead className='text-right text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+            <TableHead className='text-right text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
               Avg
             </TableHead>
           </TableRow>
@@ -136,7 +136,7 @@ export function ProgramHeatmapTable({
               >
                 <TableCell
                   className={cn(
-                    'bg-card sticky left-0 z-10 font-medium shadow-[1px_0_0_var(--border)]',
+                    'sticky left-0 z-10 bg-card font-medium shadow-[1px_0_0_var(--border)]',
                     isActive && 'bg-muted/60'
                   )}
                 >
@@ -150,7 +150,9 @@ export function ProgramHeatmapTable({
                       key={i}
                       className={cn(
                         'text-center tabular-nums',
-                        isCurrent ? 'text-sm font-semibold' : 'text-xs font-medium',
+                        isCurrent
+                          ? 'text-sm font-semibold'
+                          : 'text-xs font-medium',
                         bucketClass(b)
                       )}
                     >
@@ -164,7 +166,7 @@ export function ProgramHeatmapTable({
                       width={80}
                       height={28}
                       viewBox='0 0 80 28'
-                      className='text-foreground/70 block'
+                      className='block text-foreground/70'
                       aria-hidden='true'
                     >
                       <polyline
@@ -176,14 +178,19 @@ export function ProgramHeatmapTable({
                         strokeLinejoin='round'
                       />
                       {dot && (
-                        <circle cx={dot.x} cy={dot.y} r={2} fill='currentColor' />
+                        <circle
+                          cx={dot.x}
+                          cy={dot.y}
+                          r={2}
+                          fill='currentColor'
+                        />
                       )}
                     </svg>
                   ) : (
-                    <span className='text-muted-foreground text-xs'>—</span>
+                    <span className='text-xs text-muted-foreground'>—</span>
                   )}
                 </TableCell>
-                <TableCell className='text-right tabular-nums font-medium'>
+                <TableCell className='text-right font-medium tabular-nums'>
                   {avg != null ? `${avg}%` : '—'}
                 </TableCell>
               </TableRow>
@@ -192,7 +199,7 @@ export function ProgramHeatmapTable({
 
           {/* Desa rata² row — summary row with tinted background */}
           <TableRow className='bg-muted/40 font-semibold hover:bg-muted/40'>
-            <TableCell className='bg-muted/40 sticky left-0 z-10 text-[0.6875rem] uppercase tracking-[0.12em] shadow-[1px_0_0_var(--border)]'>
+            <TableCell className='sticky left-0 z-10 bg-muted/40 text-[0.6875rem] tracking-[0.12em] uppercase shadow-[1px_0_0_var(--border)]'>
               Desa rata²
             </TableCell>
             {desaRow.cells.map((v, i) => {

@@ -1,5 +1,5 @@
-import { AnimateContainer, AnimateItem } from './animate-element'
 import { usePresPalette } from '../use-pres-palette'
+import { AnimateContainer, AnimateItem } from './animate-element'
 
 interface ClosingProps {
   tagline: string
@@ -62,4 +62,3 @@ export function Closing({ tagline, metaLines }: ClosingProps) {
     </div>
   )
 }
-

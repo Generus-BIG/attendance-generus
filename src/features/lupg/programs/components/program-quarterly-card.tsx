@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { type Role } from '@/lib/rbac'
 import {
   Card,
   CardContent,
@@ -13,7 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { type Role } from '@/lib/rbac'
 import {
   type MonthlyReportRow,
   type ProgramDefinitionRow,
@@ -41,7 +41,8 @@ interface Props {
 const QUARTERS: Quarter[] = [1, 2, 3, 4]
 
 function notesHeaderLabel(programCode: string): string {
-  if (programCode === 'SHOLAT_ACR' || programCode === 'GMKM') return 'Keterangan'
+  if (programCode === 'SHOLAT_ACR' || programCode === 'GMKM')
+    return 'Keterangan'
   return 'Hasil Temuan'
 }
 
@@ -80,9 +81,7 @@ export function ProgramQuarterlyBody({
         {QUARTERS.map((q) => {
           const endKey = getQuarterEndMonthKey(q, year)
           const report = reportByMonthKey.get(endKey)
-          const row = report
-            ? programRowByReportId.get(report.id)
-            : undefined
+          const row = report ? programRowByReportId.get(report.id) : undefined
           const editability = isQuarterEditable(
             q,
             year,
@@ -113,7 +112,9 @@ export function ProgramQuarterlyBody({
             <TableRow>
               <TableHead>Quarter</TableHead>
               <TableHead>Sensus</TableHead>
-              <TableHead>{program.code === 'GMKM' ? 'Jumlah Kehadiran' : 'Jumlah'}</TableHead>
+              <TableHead>
+                {program.code === 'GMKM' ? 'Jumlah Kehadiran' : 'Jumlah'}
+              </TableHead>
               <TableHead className='text-right'>%</TableHead>
               <TableHead>{notesHeaderLabel(program.code)}</TableHead>
             </TableRow>
@@ -159,7 +160,8 @@ export function ProgramQuarterlyCard(props: Props) {
       <CardHeader>
         <CardTitle>{props.program.name}</CardTitle>
         <CardDescription>
-          {props.program.denominator_label} → {props.program.count_label} · 4x per tahun
+          {props.program.denominator_label} → {props.program.count_label} · 4x
+          per tahun
         </CardDescription>
       </CardHeader>
       <CardContent>

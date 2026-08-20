@@ -54,23 +54,23 @@ export function ProgramStatusStrip({ entries }: Props) {
             type='button'
             onClick={e.onClick}
             className={cn(
-              'group border-border/70 bg-background relative flex flex-col rounded-md border p-3 text-left transition-[border-color,background-color,box-shadow] duration-200',
+              'group relative flex flex-col rounded-md border border-border/70 bg-background p-3 text-left transition-[border-color,background-color,box-shadow] duration-200',
               'hover:border-border hover:bg-muted/30',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0',
+              'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 focus-visible:outline-none',
               e.isActive &&
                 'border-foreground/80 bg-muted/40 shadow-[0_0_0_1px_var(--foreground)]'
             )}
             aria-pressed={e.onClick ? !!e.isActive : undefined}
           >
-            <div className='text-muted-foreground truncate text-[0.6875rem] font-medium uppercase tracking-[0.12em]'>
+            <div className='truncate text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
               {e.kelompokName}
             </div>
             <div className='mt-1.5 flex items-baseline gap-2'>
-              <span className='text-[1.75rem] font-semibold leading-none tabular-nums'>
+              <span className='text-[1.75rem] leading-none font-semibold tabular-nums'>
                 {e.currentPct != null ? e.currentPct : '—'}
               </span>
               {e.currentPct != null && (
-                <span className='text-muted-foreground text-sm font-medium'>
+                <span className='text-sm font-medium text-muted-foreground'>
                   %
                 </span>
               )}

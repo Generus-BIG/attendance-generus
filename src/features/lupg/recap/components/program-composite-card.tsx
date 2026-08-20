@@ -6,17 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { formatMonthLabel } from '../../utils/month-utils'
 import { type ProgramReportRow } from '../../types'
+import { formatMonthLabel } from '../../utils/month-utils'
+import { ProgramDrillDrawer } from './program-drill-drawer'
+import { ProgramHeatmapTable, type HeatmapRow } from './program-heatmap-table'
 import {
   ProgramStatusStrip,
   type StatusStripEntry,
 } from './program-status-strip'
-import {
-  ProgramHeatmapTable,
-  type HeatmapRow,
-} from './program-heatmap-table'
-import { ProgramDrillDrawer } from './program-drill-drawer'
 
 interface ProgramDefLite {
   code: string

@@ -1,7 +1,4 @@
-import {
-  donutSegments,
-  type DonutSlice,
-} from '../../../utils/svg-charts'
+import { donutSegments, type DonutSlice } from '../../../utils/svg-charts'
 import { type SensusCategorySlice } from '../../hooks/use-desa-overview'
 
 interface Props {
@@ -50,13 +47,14 @@ export function TileSensusDonut({ slices, sensusTotal }: Props) {
   })
 
   function colorFor(idx: number): string {
-    if (overflow.length > 0 && idx === displaySlices.length - 1) return OTHER_COLOR
+    if (overflow.length > 0 && idx === displaySlices.length - 1)
+      return OTHER_COLOR
     return PALETTE[idx % PALETTE.length]
   }
 
   return (
-    <div className='bg-card flex h-full flex-col rounded-lg border p-4'>
-      <div className='text-muted-foreground mb-3 text-xs font-medium'>
+    <div className='flex h-full flex-col rounded-lg border bg-card p-4'>
+      <div className='mb-3 text-xs font-medium text-muted-foreground'>
         Sensus per Kategori
       </div>
       <div className='flex min-h-0 flex-1 items-center gap-3'>

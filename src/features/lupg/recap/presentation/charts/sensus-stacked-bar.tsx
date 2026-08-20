@@ -18,10 +18,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
+import { usePresentationAnimation } from '../context/animation-context'
 import { SENSUS_STACK_ORDER, getSensusColor } from '../theme'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
-import { usePresentationAnimation } from '../context/animation-context'
+import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
 
 type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR'
 
@@ -101,8 +101,10 @@ interface InsideLabelProps {
 }
 
 function InsideSegmentLabel(props: InsideLabelProps) {
-  const heightNum = typeof props.height === 'number' ? props.height : Number(props.height)
-  const widthNum = typeof props.width === 'number' ? props.width : Number(props.width)
+  const heightNum =
+    typeof props.height === 'number' ? props.height : Number(props.height)
+  const widthNum =
+    typeof props.width === 'number' ? props.width : Number(props.width)
   const xNum = typeof props.x === 'number' ? props.x : Number(props.x)
   const yNum = typeof props.y === 'number' ? props.y : Number(props.y)
   const valueNum =
@@ -139,10 +141,15 @@ interface TopTotalLabelProps {
 function TopTotalLabel(props: TopTotalLabelProps) {
   const xNum = typeof props.x === 'number' ? props.x : Number(props.x)
   const yNum = typeof props.y === 'number' ? props.y : Number(props.y)
-  const widthNum = typeof props.width === 'number' ? props.width : Number(props.width)
+  const widthNum =
+    typeof props.width === 'number' ? props.width : Number(props.width)
   const idx = typeof props.index === 'number' ? props.index : -1
   if (idx < 0 || idx >= props.data.length) return null
-  if (!Number.isFinite(xNum) || !Number.isFinite(yNum) || !Number.isFinite(widthNum)) {
+  if (
+    !Number.isFinite(xNum) ||
+    !Number.isFinite(yNum) ||
+    !Number.isFinite(widthNum)
+  ) {
     return null
   }
   const total = props.data[idx].total
@@ -238,8 +245,16 @@ export function SensusStackedBar({ data }: SensusStackedBarProps) {
           vertical={false}
           stroke={palette.rule}
         />
-        <XAxis dataKey='kelompok' interval={0} {...hairlineAxisProps(palette, 'x')} />
-        <YAxis ticks={ticks} domain={[0, yMax]} {...hairlineAxisProps(palette, 'y')} />
+        <XAxis
+          dataKey='kelompok'
+          interval={0}
+          {...hairlineAxisProps(palette, 'x')}
+        />
+        <YAxis
+          ticks={ticks}
+          domain={[0, yMax]}
+          {...hairlineAxisProps(palette, 'y')}
+        />
         <Tooltip
           cursor={{ fill: palette.muted, fillOpacity: 0.08 }}
           content={(p) => (
@@ -260,7 +275,10 @@ export function SensusStackedBar({ data }: SensusStackedBarProps) {
         />
         {SENSUS_STACK_ORDER.map((code, idx) => {
           const isTop = idx === SENSUS_STACK_ORDER.length - 1
-          const isModern = typeof window !== 'undefined' && document.documentElement.getAttribute('data-palette') === 'modern-natural'
+          const isModern =
+            typeof window !== 'undefined' &&
+            document.documentElement.getAttribute('data-palette') ===
+              'modern-natural'
           return (
             <Bar
               key={code}
@@ -284,7 +302,10 @@ export function SensusStackedBar({ data }: SensusStackedBarProps) {
                 <LabelList
                   content={(p) => (
                     <TopTotalLabel
-                      {...(p as unknown as Omit<TopTotalLabelProps, 'data' | 'palette'>)}
+                      {...(p as unknown as Omit<
+                        TopTotalLabelProps,
+                        'data' | 'palette'
+                      >)}
                       data={data}
                       palette={palette}
                     />

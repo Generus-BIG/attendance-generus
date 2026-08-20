@@ -1,4 +1,8 @@
-export type ChartValueFormat = 'percent' | 'number' | 'rupiah' | 'rupiah-compact'
+export type ChartValueFormat =
+  | 'percent'
+  | 'number'
+  | 'rupiah'
+  | 'rupiah-compact'
 
 export function formatChartValue(
   value: number | null | undefined,

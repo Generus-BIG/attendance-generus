@@ -10,11 +10,13 @@ import {
   HighlightedBar,
   type BarDatum,
 } from '@/components/charts/highlighted-bar'
+import { MonthSelectionChips } from '../../components/month-selection-chips'
 import {
   type MonthlyReportRow,
   type ProgramDefinitionRow,
   type ProgramReportRow,
 } from '../../types'
+import { formatChartValue } from '../../utils/format-chart-value'
 import {
   allMonthKeysForYear,
   getQuarterEndMonthKey,
@@ -22,8 +24,6 @@ import {
   monthNameFromKey,
   type Quarter,
 } from '../utils/editability'
-import { MonthSelectionChips } from '../../components/month-selection-chips'
-import { formatChartValue } from '../../utils/format-chart-value'
 
 interface Props {
   program: ProgramDefinitionRow
@@ -183,8 +183,8 @@ function quarterOf(monthKey: string): string {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className='bg-muted/30 rounded-md p-3'>
-      <div className='text-muted-foreground text-xs'>{label}</div>
+    <div className='rounded-md bg-muted/30 p-3'>
+      <div className='text-xs text-muted-foreground'>{label}</div>
       <div className='text-lg font-semibold tabular-nums'>{value}</div>
     </div>
   )

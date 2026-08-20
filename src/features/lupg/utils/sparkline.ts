@@ -16,12 +16,11 @@ export interface SparklineOpts {
   padding?: number
 }
 
-export function sparklineDomain(
-  values: Array<number | null | undefined>
-): { yMin: number; yMax: number } {
-  const nums = values.filter(
-    (v): v is number => v != null && !Number.isNaN(v)
-  )
+export function sparklineDomain(values: Array<number | null | undefined>): {
+  yMin: number
+  yMax: number
+} {
+  const nums = values.filter((v): v is number => v != null && !Number.isNaN(v))
   if (nums.length === 0) return { yMin: 0, yMax: 100 }
   const min = Math.min(...nums)
   const max = Math.max(...nums)
@@ -60,8 +59,7 @@ export function polylinePoints(
     if (v == null || Number.isNaN(v)) return
     const x = padding + i * stepX
     // invert y: high value → top
-    const y =
-      padding + innerH - ((v - yMin) / (yMax - yMin)) * innerH
+    const y = padding + innerH - ((v - yMin) / (yMax - yMin)) * innerH
     pts.push(`${x.toFixed(1)},${y.toFixed(1)}`)
   })
 

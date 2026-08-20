@@ -208,16 +208,30 @@ function MetricsDesaTable({
   const p = usePresPalette()
   const maps = buildCurrentMetricMaps(reports, metricReports)
 
-  const isModern = typeof window !== 'undefined' && document.documentElement.getAttribute('data-palette') === 'modern-natural'
+  const isModern =
+    typeof window !== 'undefined' &&
+    document.documentElement.getAttribute('data-palette') === 'modern-natural'
 
-  const colorCatBg = isModern ? '#ffffff' : `color-mix(in oklch, ${p.primary} 3%, ${p.bg})`
-  const colorPiketBg = isModern ? '#ececf4' : `color-mix(in oklch, ${p.primary} 9%, ${p.bg})`
-  const colorSummaryBg = isModern ? '#dae6f2' : `color-mix(in oklch, ${p.primary} 15%, ${p.bg})`
-  const colorLabelSummaryBg = isModern ? '#d3cdca' : `color-mix(in oklch, ${p.primary} 20%, ${p.bg})`
-  const colorDivider = isModern ? '#869fc3' : `color-mix(in oklch, ${p.primary} 35%, ${p.bg})`
+  const colorCatBg = isModern
+    ? '#ffffff'
+    : `color-mix(in oklch, ${p.primary} 3%, ${p.bg})`
+  const colorPiketBg = isModern
+    ? '#ececf4'
+    : `color-mix(in oklch, ${p.primary} 9%, ${p.bg})`
+  const colorSummaryBg = isModern
+    ? '#dae6f2'
+    : `color-mix(in oklch, ${p.primary} 15%, ${p.bg})`
+  const colorLabelSummaryBg = isModern
+    ? '#d3cdca'
+    : `color-mix(in oklch, ${p.primary} 20%, ${p.bg})`
+  const colorDivider = isModern
+    ? '#869fc3'
+    : `color-mix(in oklch, ${p.primary} 35%, ${p.bg})`
 
   const colorTextCat = isModern ? '#0f172a' : p.ink
-  const colorTextPiket = isModern ? '#2a2b77' : `color-mix(in oklch, ${p.primary} 85%, ${p.ink})`
+  const colorTextPiket = isModern
+    ? '#2a2b77'
+    : `color-mix(in oklch, ${p.primary} 85%, ${p.ink})`
   const colorTextSummary = isModern ? '#2a2b77' : p.brandAccent
   const colorFinalAvgBg = isModern ? '#2772b2' : p.primary
 
@@ -387,7 +401,8 @@ function MetricsDesaTable({
                 <td
                   className='px-2 py-1.5'
                   style={{
-                    background: row.tone === 'summary' ? colorLabelSummaryBg : undefined,
+                    background:
+                      row.tone === 'summary' ? colorLabelSummaryBg : undefined,
                     fontWeight: 700,
                   }}
                 >
@@ -446,24 +461,46 @@ function MetricsKelompokTable({
   monthKeys: string[]
   rowsByKategori: Array<{
     kat: KategoriCode
-    kehadiranRow: { label: string; monthly: Array<number | null>; avg: number | null }
-    piketRow: { label: string; monthly: Array<number | null>; avg: number | null }
+    kehadiranRow: {
+      label: string
+      monthly: Array<number | null>
+      avg: number | null
+    }
+    piketRow: {
+      label: string
+      monthly: Array<number | null>
+      avg: number | null
+    }
   }>
   summaryGenerusAvg: number | null
   summaryPiketAvg: number | null
 }) {
   const p = usePresPalette()
 
-  const isModern = typeof window !== 'undefined' && document.documentElement.getAttribute('data-palette') === 'modern-natural'
+  const isModern =
+    typeof window !== 'undefined' &&
+    document.documentElement.getAttribute('data-palette') === 'modern-natural'
 
-  const colorCatBg = isModern ? '#ffffff' : `color-mix(in oklch, ${p.primary} 3%, ${p.bg})`
-  const colorPiketBg = isModern ? '#ececf4' : `color-mix(in oklch, ${p.primary} 9%, ${p.bg})`
-  const colorSummaryBg = isModern ? '#dae6f2' : `color-mix(in oklch, ${p.primary} 15%, ${p.bg})`
-  const colorLabelSummaryBg = isModern ? '#d3cdca' : `color-mix(in oklch, ${p.primary} 20%, ${p.bg})`
-  const colorDivider = isModern ? '#869fc3' : `color-mix(in oklch, ${p.primary} 35%, ${p.bg})`
+  const colorCatBg = isModern
+    ? '#ffffff'
+    : `color-mix(in oklch, ${p.primary} 3%, ${p.bg})`
+  const colorPiketBg = isModern
+    ? '#ececf4'
+    : `color-mix(in oklch, ${p.primary} 9%, ${p.bg})`
+  const colorSummaryBg = isModern
+    ? '#dae6f2'
+    : `color-mix(in oklch, ${p.primary} 15%, ${p.bg})`
+  const colorLabelSummaryBg = isModern
+    ? '#d3cdca'
+    : `color-mix(in oklch, ${p.primary} 20%, ${p.bg})`
+  const colorDivider = isModern
+    ? '#869fc3'
+    : `color-mix(in oklch, ${p.primary} 35%, ${p.bg})`
 
   const colorTextCat = isModern ? '#0f172a' : p.ink
-  const colorTextPiket = isModern ? '#2a2b77' : `color-mix(in oklch, ${p.primary} 85%, ${p.ink})`
+  const colorTextPiket = isModern
+    ? '#2a2b77'
+    : `color-mix(in oklch, ${p.primary} 85%, ${p.ink})`
   const colorTextSummary = isModern ? '#2a2b77' : p.brandAccent
   const colorFinalAvgBg = isModern ? '#2772b2' : p.primary
 
@@ -571,7 +608,8 @@ function MetricsKelompokTable({
                 <td
                   className='px-2 py-1.5'
                   style={{
-                    background: row.tone === 'summary' ? colorLabelSummaryBg : undefined,
+                    background:
+                      row.tone === 'summary' ? colorLabelSummaryBg : undefined,
                     fontWeight: 700,
                   }}
                 >

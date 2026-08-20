@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { PROGRAM_TARGET_PCT } from '../../constants'
 import { formatMonthLabel } from '../../../utils/month-utils'
 import { polylinePoints, sparklineDomain } from '../../../utils/sparkline'
+import { PROGRAM_TARGET_PCT } from '../../constants'
 import {
   type ProgramTrendLine,
   type TrendPoint,
@@ -92,27 +92,29 @@ export function TileFullTrend({ lines, desaTrend, monthKeys }: Props) {
     formatMonthLabel(monthKeys[i] ?? '').slice(0, 3)
 
   return (
-    <div className='bg-card relative flex h-full flex-col rounded-lg border p-4'>
+    <div className='relative flex h-full flex-col rounded-lg border bg-card p-4'>
       <div className='mb-3 flex items-center justify-between gap-3'>
-        <div className='text-foreground text-xs font-medium'>Trend 12 Bulan</div>
-        <div className='text-muted-foreground inline-flex flex-wrap items-center gap-x-3 gap-y-1 text-xs'>
+        <div className='text-xs font-medium text-foreground'>
+          Trend 12 Bulan
+        </div>
+        <div className='inline-flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground'>
           <span className='inline-flex items-center gap-1.5'>
             <span
-              className='bg-chart-1 inline-block h-0.75 w-5 rounded-full'
+              className='inline-block h-0.75 w-5 rounded-full bg-chart-1'
               aria-hidden='true'
             />
             Desa rata-rata
           </span>
           <span className='inline-flex items-center gap-1.5'>
             <span
-              className='bg-muted-foreground/50 inline-block h-0.5 w-5 rounded-full'
+              className='inline-block h-0.5 w-5 rounded-full bg-muted-foreground/50'
               aria-hidden='true'
             />
             Program (per jenis)
           </span>
           <span className='inline-flex items-center gap-1.5'>
             <span
-              className='border-foreground/60 inline-block h-0.5 w-5 border-t border-dashed'
+              className='inline-block h-0.5 w-5 border-t border-dashed border-foreground/60'
               aria-hidden='true'
             />
             Target {PROGRAM_TARGET_PCT}%
@@ -313,20 +315,20 @@ export function TileFullTrend({ lines, desaTrend, monthKeys }: Props) {
         {/* Floating month panel */}
         {hoveredIdx !== null && (
           <div
-            className='bg-popover text-popover-foreground pointer-events-none absolute z-10 min-w-44 max-w-64 -translate-x-1/2 rounded-md border px-3 py-2 text-xs shadow-md'
+            className='pointer-events-none absolute z-10 max-w-64 min-w-44 -translate-x-1/2 rounded-md border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md'
             style={{
               left: `${(xFor(hoveredIdx) / SVG_W) * 100}%`,
               top: 4,
             }}
             role='tooltip'
           >
-            <div className='text-muted-foreground mb-1 text-xs font-medium'>
+            <div className='mb-1 text-xs font-medium text-muted-foreground'>
               {formatMonthLabel(monthKeys[hoveredIdx] ?? '')}
             </div>
-            <div className='border-border mb-1.5 flex items-center justify-between gap-4 border-b pb-1.5'>
+            <div className='mb-1.5 flex items-center justify-between gap-4 border-b border-border pb-1.5'>
               <span className='inline-flex items-center gap-1.5 font-semibold'>
                 <span
-                  className='bg-chart-1 inline-block h-2 w-2 rounded-sm'
+                  className='inline-block h-2 w-2 rounded-sm bg-chart-1'
                   aria-hidden='true'
                 />
                 Desa rata-rata
@@ -343,7 +345,7 @@ export function TileFullTrend({ lines, desaTrend, monthKeys }: Props) {
                   key={p.code}
                   className='flex items-center justify-between gap-4'
                 >
-                  <span className='text-muted-foreground truncate'>
+                  <span className='truncate text-muted-foreground'>
                     {p.name}
                   </span>
                   <span className='font-mono tabular-nums'>

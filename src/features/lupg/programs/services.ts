@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
-import { type MonthlyReportRow, type ProgramReportRow } from '../types'
 import { ensureMonthlyReport } from '../services/monthly-report.service'
+import { type MonthlyReportRow, type ProgramReportRow } from '../types'
 
 export interface YearlyProgramData {
   /** All monthly reports for this kelompok within the year (0..12 rows). */
