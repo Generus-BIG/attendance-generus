@@ -15,6 +15,13 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 }
 
+const assignableRoles = ['admin', 'team_manager', 'mt', 'member'] as const
+type AssignableRole = (typeof assignableRoles)[number]
+
+function isAssignableRole(role: unknown): role is AssignableRole {
+  return typeof role === 'string' && assignableRoles.includes(role as AssignableRole)
+}
+
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -27,12 +34,12 @@ interface ManageUserRequest {
   email?: string
   password?: string
   full_name?: string
-  role?: 'admin' | 'team_manager' | 'member'
+  role?: AssignableRole
   kelompok?: string | null
   user_id?: string
   new_password?: string
   update_fields?: {
-    role?: 'admin' | 'team_manager' | 'member'
+    role?: AssignableRole
     kelompok?: string | null
     full_name?: string
     password?: string
@@ -86,9 +93,12 @@ edgeRuntime.serve(async (req: Request) => {
             400
           )
         }
-        if (body.role === 'team_manager' && !body.kelompok) {
+        if (!isAssignableRole(body.role)) {
+          return jsonResponse({ error: 'Invalid role' }, 400)
+        }
+        if ((body.role === 'team_manager' || body.role === 'mt') && !body.kelompok) {
           return jsonResponse(
-            { error: 'kelompok is required for team_manager' },
+            { error: 'kelompok is required for team_manager or mt' },
             400
           )
         }
@@ -98,7 +108,10 @@ edgeRuntime.serve(async (req: Request) => {
           email_confirm: true,
           app_metadata: {
             role: body.role,
-            kelompok: body.role === 'team_manager' ? body.kelompok : null,
+            kelompok:
+              body.role === 'team_manager' || body.role === 'mt'
+                ? body.kelompok
+                : null,
           },
           user_metadata: { full_name: body.full_name ?? '' },
         })
@@ -114,14 +127,28 @@ edgeRuntime.serve(async (req: Request) => {
         }
         const updatePayload: Record<string, unknown> = {}
         const appMetadata: Record<string, unknown> = {}
-        if (body.update_fields.role) {
-          appMetadata.role = body.update_fields.role
+        if (
+          body.update_fields.role !== undefined ||
+          body.update_fields.kelompok !== undefined
+        ) {
+          const { data: targetUser, error: targetUserError } =
+            await supabaseAdmin.auth.admin.getUserById(body.user_id)
+          if (targetUserError || !targetUser.user) throw targetUserError
+
+          const role = body.update_fields.role ?? targetUser.user.app_metadata.role
+          if (!isAssignableRole(role)) {
+            return jsonResponse({ error: 'Invalid role' }, 400)
+          }
+          const kelompok = body.update_fields.kelompok ?? targetUser.user.app_metadata.kelompok
+          if ((role === 'team_manager' || role === 'mt') && !kelompok) {
+            return jsonResponse(
+              { error: 'kelompok is required for team_manager or mt' },
+              400
+            )
+          }
+          appMetadata.role = role
           appMetadata.kelompok =
-            body.update_fields.role === 'team_manager'
-              ? body.update_fields.kelompok
-              : null
-        } else if (body.update_fields.kelompok !== undefined) {
-          appMetadata.kelompok = body.update_fields.kelompok
+            role === 'team_manager' || role === 'mt' ? kelompok : null
         }
         if (body.update_fields.password) {
           updatePayload.password = body.update_fields.password

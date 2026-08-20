@@ -1,5 +1,11 @@
 // === Role Types ===
-export const ROLES = ['super_admin', 'admin', 'team_manager', 'member'] as const
+export const ROLES = [
+  'super_admin',
+  'admin',
+  'team_manager',
+  'mt',
+  'member',
+] as const
 export type Role = (typeof ROLES)[number]
 
 // === Permission Keys ===
@@ -61,6 +67,20 @@ const PERMISSION_MAP: Record<Role, Record<PermissionKey, boolean>> = {
     editAttendance: true,
     deleteAttendance: true,
   },
+  mt: {
+    manageUsers: false,
+    viewUsers: false,
+    createParticipant: false,
+    editParticipant: false,
+    deleteParticipant: false,
+    createForm: false,
+    editForm: false,
+    deleteForm: false,
+    approveParticipant: false,
+    createAttendance: false,
+    editAttendance: false,
+    deleteAttendance: false,
+  },
   member: {
     manageUsers: false,
     viewUsers: false,
@@ -94,7 +114,18 @@ export interface Permissions {
 // inherits from /admin/lupg/recap). Keep in sync with sidebar-data-lupg.ts
 // visibility gating.
 export const ROUTE_ACCESS: Record<string, Role[]> = {
+  '/admin/dashboard': ['super_admin', 'admin', 'team_manager', 'member'],
+  '/admin/participants': ['super_admin', 'admin', 'team_manager', 'member'],
+  '/admin/attendance': ['super_admin', 'admin', 'team_manager', 'member'],
+  '/admin/forms': ['super_admin', 'admin', 'team_manager', 'member'],
+  '/admin/approvals': ['super_admin', 'admin', 'team_manager', 'member'],
   '/admin/lupg': ['super_admin', 'admin', 'team_manager'],
+  '/admin/lupg/phq/summary': ['super_admin', 'admin', 'mt'],
+  '/admin/lupg/phq/participants': ['super_admin', 'admin', 'mt'],
+  '/admin/lupg/phq/progress': ['super_admin', 'admin', 'mt'],
+  '/admin/lupg/phq/attendance': ['super_admin', 'admin', 'mt'],
+  '/admin/lupg/apr-intensif': ['super_admin', 'admin', 'mt'],
+  '/admin/lupg/ar-intensif': ['super_admin', 'admin', 'mt'],
   '/admin/manage-role': ['super_admin', 'admin'],
   '/admin/forms/create': ['super_admin', 'admin'],
   '/admin/dashboard-sharing': ['super_admin', 'admin'],
@@ -117,5 +148,6 @@ export const ROLE_LABELS: Record<Role, string> = {
   super_admin: 'Super Admin',
   admin: 'Admin',
   team_manager: 'Team Manager',
+  mt: 'MT',
   member: 'Member',
 }
