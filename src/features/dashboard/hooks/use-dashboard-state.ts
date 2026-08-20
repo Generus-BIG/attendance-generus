@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { Route } from '@/routes/admin/dashboard'
 import { format, addMonths, subMonths, startOfMonth, parseISO } from 'date-fns'
+import { Route } from '@/routes/admin/dashboard'
 import { type DashboardTab } from '../types'
 
 export function useDashboardState() {

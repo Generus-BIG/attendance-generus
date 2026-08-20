@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import useDialogState from '@/hooks/use-dialog-state'
 import { type PendingParticipant, type Attendance } from '@/lib/schema'
+import useDialogState from '@/hooks/use-dialog-state'
 
 type ApprovalsDialogType = 'approve' | 'reject' | 'link'
 
@@ -8,7 +8,9 @@ type ApprovalsContextType = {
   open: ApprovalsDialogType | null
   setOpen: (str: ApprovalsDialogType | null) => void
   currentPending: PendingParticipant | null
-  setCurrentPending: React.Dispatch<React.SetStateAction<PendingParticipant | null>>
+  setCurrentPending: React.Dispatch<
+    React.SetStateAction<PendingParticipant | null>
+  >
   currentAttendance: Attendance | null
   setCurrentAttendance: React.Dispatch<React.SetStateAction<Attendance | null>>
   refreshData: () => void
@@ -19,21 +21,26 @@ const ApprovalsContext = React.createContext<ApprovalsContextType | null>(null)
 
 export function ApprovalsProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useDialogState<ApprovalsDialogType>(null)
-  const [currentPending, setCurrentPending] = useState<PendingParticipant | null>(null)
-  const [currentAttendance, setCurrentAttendance] = useState<Attendance | null>(null)
+  const [currentPending, setCurrentPending] =
+    useState<PendingParticipant | null>(null)
+  const [currentAttendance, setCurrentAttendance] = useState<Attendance | null>(
+    null
+  )
   const [refreshData, setRefreshData] = useState<() => void>(() => () => {})
 
   return (
-    <ApprovalsContext value={{
-      open,
-      setOpen,
-      currentPending,
-      setCurrentPending,
-      currentAttendance,
-      setCurrentAttendance,
-      refreshData,
-      setRefreshData
-    }}>
+    <ApprovalsContext
+      value={{
+        open,
+        setOpen,
+        currentPending,
+        setCurrentPending,
+        currentAttendance,
+        setCurrentAttendance,
+        refreshData,
+        setRefreshData,
+      }}
+    >
       {children}
     </ApprovalsContext>
   )

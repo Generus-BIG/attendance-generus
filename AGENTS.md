@@ -6,7 +6,7 @@ This file provides guidance to AI agents (Claude Code, OpenCode, etc.) when work
 
 - **DO NOT commit any changes to git.** No `git add`, `git commit`, or `git push`. The user will handle all git operations manually.
 - **Keep AGENTS.md in sync.** Update this file whenever there's a major change: refactoring, new features that change architecture, new DB triggers/RPCs, or changes to conventions/workflow instructions. Minor bug fixes or typo corrections do NOT require an update.
-- RBAC is live — roles are `super_admin`, `admin`, `team_manager`, `member` (see [src/lib/rbac.ts](src/lib/rbac.ts)). Route access is declared in `ROUTE_ACCESS`, enforced by `String.startsWith` in [src/routes/admin/route.tsx](src/routes/admin/route.tsx), so sub-routes inherit their parent's rule. Claims come from `auth.jwt() -> 'app_metadata'`. Keep `ROUTE_ACCESS` in sync with sidebar visibility gating — hiding a nav item alone is not protection.
+- RBAC is live — roles are `super_admin`, `admin`, `team_manager`, `mt`, `member` (see [src/lib/rbac.ts](src/lib/rbac.ts)). Route access is declared in `ROUTE_ACCESS`, enforced by longest `String.startsWith` prefix in [src/routes/admin/route.tsx](src/routes/admin/route.tsx). MT is default-denied unless that matching entry explicitly includes it (except `/admin`, `/admin/`, and `/admin/403`); other roles preserve legacy allow-by-default behavior. Claims come from `auth.jwt() -> 'app_metadata'`. Keep explicit PHQ child rules and sidebar visibility gating in sync — hiding a nav item alone is not protection.
 - **DATE columns in Supabase**: serialize with `format(d, 'yyyy-MM-dd')` from `date-fns`, deserialize with `parse(s, 'yyyy-MM-dd', new Date())`. Never use `new Date(s)` or `.toISOString().slice(0,10)` — both shift the day for non-UTC users. See `toDateOnly` / `fromDateOnly` in [participants-context.tsx](src/features/participants/context/participants-context.tsx).
 
 ## Skills & MCP Tools
@@ -77,7 +77,7 @@ React 19 + Vite 7 (SWC) + TypeScript ~5.9 + Tailwind CSS v4 (Vite plugin, no `ta
 - `(auth)/` — public auth pages
 - `admin/route.tsx` — auth guard + workspace-default redirect (reads `useWorkspaceStore` + `WORKSPACE_DEFAULT_PATH`) + `ROUTE_ACCESS` enforcement
 - `admin/absensi/*` — attendance workspace routes
-- `admin/lupg/*` — reporting workspace routes; admin-only by default (`dashboard`, `recap`, `recap/present`, `mustin`, `config`). Team managers see `reports`, `programs`, `presentation`, `sensus`
+- `admin/lupg/*` — reporting workspace routes; admin-only by default (`dashboard`, `recap`, `recap/present`, `mustin`, `config`). Team managers see `reports`, `programs`, `presentation`, `sensus`. `super_admin`, `admin`, and `mt` can use PHQ (`phq/summary`, `phq/participants`, `phq/progress`, `phq/attendance`) plus APR/AR Intensif; the PHQ children have explicit access entries.
 - `/absensi/$formId` and `/register/add-participant` — public routes (no auth)
 - Router context passes `queryClient` via `createRootRouteWithContext`
 
@@ -90,6 +90,7 @@ Two parallel sidebars dispatched by active workspace:
 - `src/stores/workspace-store.ts` — Zustand store holding `activeWorkspace: 'absensi' | 'lupg'`, persisted to `active_workspace` cookie
 - `src/hooks/use-active-workspace.ts` — syncs store with URL (reads pathname, updates store if mismatch)
 - `TeamSwitcher` in sidebar header triggers `setActiveWorkspace` + `navigate` to workspace default
+- `getWorkspaceDefaultPath(workspace, role)` — resolves workspace navigation defaults; MT always lands on `/admin/lupg/phq/summary`, while other roles use `WORKSPACE_DEFAULT_PATH`.
 
 ### Data Layer
 
@@ -114,6 +115,8 @@ All LUPG tables prefixed `lupg_`. Container pattern: one `lupg_monthly_reports` 
 - `lupg_sarpras_items` / `lupg_sarpras_reports` (14 seeded items, global checklist)
 - `lupg_shodaqoh` (1:1 with monthly report)
 - `lupg_mustin_notes` + `lupg_mustin_templates` (templates seed the per-report notes; see `mustin-section.tsx`)
+- PHQ uses `lupg_phq_participants`, `lupg_phq_meetings`, `lupg_phq_progress`, `lupg_phq_attendance`, and `lupg_phq_monthly_notes`; APR/AR Intensif use `lupg_intensif_activities` and `lupg_intensif_attendance`. Admins have all-kelompok access; MT is restricted to `user_kelompok_id()` by RLS, including child rows through their meeting/activity parent.
+- `list_lupg_intensif_candidates(p_program_code, p_kelompok_id)` is a `SECURITY DEFINER` RPC with execute granted only to `authenticated`. It accepts only `APR_INTENSIF`/`AR_INTENSIF`; for MT it ignores the supplied `p_kelompok_id` and uses `user_kelompok_id()` server-side. Do not rely on the browser-provided kelompok for MT candidate scope.
 
 **Penerapan 29 Karakter assessment**: `lupg_character_monitoring_reports.status` is nullable (`NULL` = Belum dinilai) and accepts `needs_guidance`, `not_applied`, `in_progress`, `consistent`, or `established`. `needs_guidance` means Perlu Pembinaan and requires a non-empty row-specific note; the note constraint is `NOT VALID` so historical coaching rows without notes remain visible for correction while new/edited rows are enforced. This assessment is collective per `jenjang × konteks penerapan`, not per participant or per individual character. Keep this status model separate from the legacy `lupg_character_target_reports.status` field.
 
@@ -138,6 +141,7 @@ Categories `ACR`, `PENDIDIK_MT`, `PENDIDIK_MS` remain **manual entry** (no corre
 - **`tg_participants_auto_promote_gpn`** on `participants` (BEFORE INSERT OR UPDATE OF birth_date, category_id): rewrites `category_id` from GPN A → GPN B when `calculate_age(NEW.birth_date) >= 23`. `SECURITY INVOKER` + `SET search_path = public, pg_temp`.
 - **`tg_participants_sync_sensus`** on `participants` (AFTER INSERT OR UPDATE OF status_active, category_id, group_id, gender OR DELETE): auto-syncs `lupg_sensus` from participant data for GPN_A, GPN_B, AR, APR via `lupg_sync_derived_sensus()`. The trigger wrapper `fn_participants_sync_sensus()` is `SECURITY DEFINER` + `SET search_path = public, pg_temp` so authenticated participant writes can sync derived counts without granting direct RPC access to `lupg_sync_derived_sensus()`.
 - **`calculate_age(DATE) RETURNS INT`** — day-accurate age helper, IMMUTABLE SQL. Used by the auto-promote trigger.
+- **PHQ controller ruling:** `lupg_phq_participants.kelompok_id` and `lupg_phq_meetings.kelompok_id` are immutable after creation (`tg_lupg_phq_*_kelompok_immutable`). Do not implement a parent kelompok transfer UI or bypass this trigger; create a new correctly scoped record instead. Progress and attendance triggers require their participant and meeting to have the same kelompok.
 
 **When adding new Postgres functions**: always set a fixed `search_path` (`SET search_path = public, pg_temp` or empty string) to satisfy the `function_search_path_mutable` advisor. Prefer `SECURITY INVOKER`. Only use `SECURITY DEFINER` when cross-role access is required, and document the reason.
 
@@ -255,7 +259,7 @@ LUPG presentation decks can be shared per `month × scope` through
 ## Workspace URL Convention
 
 - Existing Absensi routes (Phase 1a did NOT migrate) remain at `/admin/<feature>` — e.g., `/admin/dashboard`, `/admin/participants`, `/admin/attendance`, `/admin/forms`, `/admin/approvals`, `/admin/manage-role`.
-- LUPG routes all under `/admin/lupg/*`: `dashboard`, `reports`, `reports/$monthlyReportId`, `recap`, `recap/present`, `mustin`, `programs`, `presentation`, `sensus`, `config`.
+- LUPG routes all under `/admin/lupg/*`: `dashboard`, `reports`, `reports/$monthlyReportId`, `recap`, `recap/present`, `mustin`, `programs`, `presentation`, `sensus`, `config`, PHQ (`phq/summary`, `phq/participants`, `phq/progress`, `phq/attendance`), `apr-intensif`, and `ar-intensif`.
 - The spec called for migrating Absensi to `/admin/absensi/*`; this is deferred. Current sidebar-data-absensi entries point to `/admin/*` (not `/admin/absensi/*`).
 
 ## Database Migrations
@@ -268,6 +272,7 @@ Schema changes are tracked in `supabase/migrations/` as timestamped `.sql` files
 - `20260719000000_update_lupg_character_assessment_scale.sql` — nullable five-state collective character assessment, conservative legacy mapping, and required coaching-note constraint
 - `20260722000000_harden_browser_authority_surfaces.sql` — removes broad anonymous attendance/participant access, adds form-scoped public RPCs, hardens Absensi/LUPG team boundaries, report audit fields, derived sensus, photo storage paths, and privileged function grants
 - `20260813000000_lupg_presentation_sharing.sql` — per-month/scope presentation shares, role-scoped RLS, token rotation RPC, and public presentation payload RPC
+- `20260820000000_mt_phq_intensif.sql` through `20260820230000_add_intensif_candidate_rpc.sql` — MT role, PHQ and Intensif tables/RLS, scope and attendance triggers, immutable PHQ parent kelompok controller rule, progress mastery percent, and scoped Intensif candidate RPC
 
 ## Known Debt / Future Improvements
 

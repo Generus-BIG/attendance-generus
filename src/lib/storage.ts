@@ -40,7 +40,9 @@ export const participantService = {
     return this.getAll().filter((p) => p.status === 'active')
   },
 
-  create(data: Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>): Participant {
+  create(
+    data: Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>
+  ): Participant {
     const now = new Date()
     const participant: Participant = {
       ...data,
@@ -54,7 +56,10 @@ export const participantService = {
     return participant
   },
 
-  update(id: string, data: Partial<Omit<Participant, 'id' | 'createdAt'>>): Participant | null {
+  update(
+    id: string,
+    data: Partial<Omit<Participant, 'id' | 'createdAt'>>
+  ): Participant | null {
     const all = this.getAll()
     const index = all.findIndex((p) => p.id === id)
     if (index === -1) return null
@@ -135,7 +140,10 @@ export const attendanceService = {
     return attendance
   },
 
-  update(id: string, data: Partial<Omit<Attendance, 'id' | 'createdAt'>>): Attendance | null {
+  update(
+    id: string,
+    data: Partial<Omit<Attendance, 'id' | 'createdAt'>>
+  ): Attendance | null {
     const all = this.getAll()
     const index = all.findIndex((a) => a.id === id)
     if (index === -1) return null
@@ -195,7 +203,9 @@ export const pendingParticipantService = {
     return this.getAll().find((p) => p.id === id)
   },
 
-  create(data: Omit<PendingParticipant, 'id' | 'createdAt' | 'updatedAt' | 'status'>): PendingParticipant {
+  create(
+    data: Omit<PendingParticipant, 'id' | 'createdAt' | 'updatedAt' | 'status'>
+  ): PendingParticipant {
     const now = new Date()
     const pending: PendingParticipant = {
       ...data,
@@ -210,7 +220,11 @@ export const pendingParticipantService = {
     return pending
   },
 
-  approve(id: string, createNew: boolean, mergeToParticipantId?: string): boolean {
+  approve(
+    id: string,
+    createNew: boolean,
+    mergeToParticipantId?: string
+  ): boolean {
     const pending = this.getById(id)
     if (!pending) return false
 
@@ -266,12 +280,14 @@ export function isSeeded(): boolean {
   return localStorage.getItem(STORAGE_KEYS.seeded) === 'true'
 }
 
-export function seedParticipants(data: Array<{
-  name: string
-  gender: 'L' | 'P'
-  kelompok: 'BIG 1' | 'BIG 2' | 'Cakra' | 'Limo' | 'Meruyung'
-  kategori: 'A' | 'B' | 'AR'
-}>): void {
+export function seedParticipants(
+  data: Array<{
+    name: string
+    gender: 'L' | 'P'
+    kelompok: 'BIG 1' | 'BIG 2' | 'Cakra' | 'Limo' | 'Meruyung'
+    kategori: 'A' | 'B' | 'AR'
+  }>
+): void {
   if (isSeeded()) return
 
   const now = new Date()
@@ -301,8 +317,10 @@ export const statsService = {
       total: records.length,
       hadir,
       izin,
-      hadirPercent: records.length > 0 ? Math.round((hadir / records.length) * 100) : 0,
-      izinPercent: records.length > 0 ? Math.round((izin / records.length) * 100) : 0,
+      hadirPercent:
+        records.length > 0 ? Math.round((hadir / records.length) * 100) : 0,
+      izinPercent:
+        records.length > 0 ? Math.round((izin / records.length) * 100) : 0,
     }
   },
 
@@ -313,13 +331,15 @@ export const statsService = {
     const kelompokMap: Record<string, { hadir: number; izin: number }> = {
       'BIG 1': { hadir: 0, izin: 0 },
       'BIG 2': { hadir: 0, izin: 0 },
-      'Cakra': { hadir: 0, izin: 0 },
-      'Limo': { hadir: 0, izin: 0 },
-      'Meruyung': { hadir: 0, izin: 0 },
+      Cakra: { hadir: 0, izin: 0 },
+      Limo: { hadir: 0, izin: 0 },
+      Meruyung: { hadir: 0, izin: 0 },
     }
 
     records.forEach((record) => {
-      const participant = participants.find((p) => p.id === record.participantId)
+      const participant = participants.find(
+        (p) => p.id === record.participantId
+      )
       const kelompok = participant?.kelompok || record.tempKelompok
       if (kelompok && kelompokMap[kelompok]) {
         if (record.status === 'hadir') {
@@ -342,13 +362,15 @@ export const statsService = {
     const participants = participantService.getAll()
 
     const kategoriMap: Record<string, { hadir: number; izin: number }> = {
-      'A': { hadir: 0, izin: 0 },
-      'B': { hadir: 0, izin: 0 },
-      'AR': { hadir: 0, izin: 0 },
+      A: { hadir: 0, izin: 0 },
+      B: { hadir: 0, izin: 0 },
+      AR: { hadir: 0, izin: 0 },
     }
 
     records.forEach((record) => {
-      const participant = participants.find((p) => p.id === record.participantId)
+      const participant = participants.find(
+        (p) => p.id === record.participantId
+      )
       const kategori = participant?.kategori || record.tempKategori
       if (kategori && kategoriMap[kategori]) {
         if (record.status === 'hadir') {
@@ -371,8 +393,12 @@ export const statsService = {
     const participants = participantService.getActive()
 
     return participants.map((participant) => {
-      const participantRecords = records.filter((r) => r.participantId === participant.id)
-      const hadir = participantRecords.filter((r) => r.status === 'hadir').length
+      const participantRecords = records.filter(
+        (r) => r.participantId === participant.id
+      )
+      const hadir = participantRecords.filter(
+        (r) => r.status === 'hadir'
+      ).length
       const izin = participantRecords.filter((r) => r.status === 'izin').length
       const total = hadir + izin
 

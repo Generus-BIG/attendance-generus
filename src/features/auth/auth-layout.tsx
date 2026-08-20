@@ -20,7 +20,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           src={heroMountain}
           alt=''
           aria-hidden='true'
-          className='absolute inset-0 h-full w-full select-none object-cover'
+          className='absolute inset-0 h-full w-full object-cover select-none'
           loading='eager'
           fetchPriority='high'
           draggable={false}
@@ -44,7 +44,10 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
           <span
             className='text-base font-semibold tracking-tight text-[oklch(0.98_0.005_265)] lg:text-lg'
-            style={{ fontFamily: "'Host Grotesk', ui-sans-serif, system-ui, sans-serif" }}
+            style={{
+              fontFamily:
+                "'Host Grotesk', ui-sans-serif, system-ui, sans-serif",
+            }}
           >
             Generus Dashboard
           </span>
@@ -61,16 +64,19 @@ export function AuthLayout({ children }: AuthLayoutProps) {
             aria-hidden='true'
           />
           <h2
-            className='text-[clamp(1.75rem,3vw,2.5rem)] font-semibold leading-[1.15] tracking-tight text-[oklch(0.98_0.005_265)]'
-            style={{ fontFamily: "'Host Grotesk', ui-sans-serif, system-ui, sans-serif" }}
+            className='text-[clamp(1.75rem,3vw,2.5rem)] leading-[1.15] font-semibold tracking-tight text-[oklch(0.98_0.005_265)]'
+            style={{
+              fontFamily:
+                "'Host Grotesk', ui-sans-serif, system-ui, sans-serif",
+            }}
           >
             Kelola kehadiran &amp;
             <br />
             laporan bulanan Desa BIG.
           </h2>
           <p className='mt-5 text-base leading-relaxed text-[oklch(0.78_0.015_258)]'>
-            Pantau kehadiran, kelola peserta, dan susun laporan bulanan
-            kelompok dari satu ruang kerja yang rapi.
+            Pantau kehadiran, kelola peserta, dan susun laporan bulanan kelompok
+            dari satu ruang kerja yang rapi.
           </p>
         </div>
 

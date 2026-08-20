@@ -1,3 +1,4 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -5,10 +6,9 @@ import { PageHeader } from '@/components/page-header'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ApprovalsProvider } from './components/approvals-provider'
-import { PendingParticipantsTab } from './components/pending-participants-tab'
 import { HistoryApprovalTab } from './components/history-approval-tab'
+import { PendingParticipantsTab } from './components/pending-participants-tab'
 import { UnmatchedAttendanceTab } from './components/unmatched-attendance-tab'
 
 export function Approvals() {

@@ -34,7 +34,6 @@ export function SearchProvider({ children }: SearchProviderProps) {
   )
 }
 
- 
 export const useSearch = () => {
   const searchContext = useContext(SearchContext)
 

@@ -22,7 +22,7 @@ export function ChartSegmentTooltip({
   return (
     <div
       className={cn(
-        'border-border/50 bg-background grid min-w-45 gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl',
+        'grid min-w-45 gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl',
         className
       )}
     >
@@ -32,7 +32,7 @@ export function ChartSegmentTooltip({
           className='h-2 w-2 shrink-0 rounded-sm'
           style={{ backgroundColor: color }}
         />
-        <span className='text-foreground font-medium'>{label}</span>
+        <span className='font-medium text-foreground'>{label}</span>
       </div>
       <div className='grid gap-1'>
         {rows.map((r) => (
@@ -41,7 +41,9 @@ export function ChartSegmentTooltip({
             className='flex items-center justify-between gap-3'
           >
             <span className='text-muted-foreground'>{r.label}</span>
-            <span className='font-mono font-medium tabular-nums'>{r.value}</span>
+            <span className='font-mono font-medium tabular-nums'>
+              {r.value}
+            </span>
           </div>
         ))}
       </div>

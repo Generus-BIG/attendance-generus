@@ -1,6 +1,6 @@
 import { Building2, Users } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { type FormTypeEnum } from '@/lib/schema'
+import { cn } from '@/lib/utils'
 
 interface FormTypeSelectorProps {
   value: FormTypeEnum
@@ -59,7 +59,7 @@ export function FormTypeSelector({
             />
             <span
               className={cn(
-                'text-sm font-medium leading-none',
+                'text-sm leading-none font-medium',
                 isSelected ? 'text-primary' : 'text-foreground'
               )}
             >

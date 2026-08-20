@@ -35,9 +35,30 @@ export function IconPaletteModernNatural(props: SVGProps<SVGSVGElement>) {
         rx={1}
         fill='oklch(0.205 0 0)'
       />
-      <rect x={7} y={13} width={11} height={1.8} rx={0.9} fill='oklch(0.56 0 0)' />
-      <rect x={7} y={16.6} width={12} height={1.8} rx={0.9} fill='oklch(0.56 0 0)' />
-      <rect x={7} y={20.2} width={9} height={1.8} rx={0.9} fill='oklch(0.56 0 0)' />
+      <rect
+        x={7}
+        y={13}
+        width={11}
+        height={1.8}
+        rx={0.9}
+        fill='oklch(0.56 0 0)'
+      />
+      <rect
+        x={7}
+        y={16.6}
+        width={12}
+        height={1.8}
+        rx={0.9}
+        fill='oklch(0.56 0 0)'
+      />
+      <rect
+        x={7}
+        y={20.2}
+        width={9}
+        height={1.8}
+        rx={0.9}
+        fill='oklch(0.56 0 0)'
+      />
       <rect
         x={28}
         y={5.5}
@@ -47,8 +68,22 @@ export function IconPaletteModernNatural(props: SVGProps<SVGSVGElement>) {
         fill='oklch(1 0 0)'
         stroke='oklch(0.95 0 0)'
       />
-      <rect x={31} y={8.5} width={10} height={2} rx={1} fill='oklch(0.205 0 0)' />
-      <rect x={31} y={12} width={16} height={1.5} rx={0.75} fill='oklch(0.56 0 0)' />
+      <rect
+        x={31}
+        y={8.5}
+        width={10}
+        height={2}
+        rx={1}
+        fill='oklch(0.205 0 0)'
+      />
+      <rect
+        x={31}
+        y={12}
+        width={16}
+        height={1.5}
+        rx={0.75}
+        fill='oklch(0.56 0 0)'
+      />
       <rect
         x={54}
         y={5.5}
@@ -68,7 +103,14 @@ export function IconPaletteModernNatural(props: SVGProps<SVGSVGElement>) {
         fill='oklch(1 0 0)'
         stroke='oklch(0.95 0 0)'
       />
-      <rect x={32} y={25} width={12} height={2} rx={1} fill='oklch(0.205 0 0)' />
+      <rect
+        x={32}
+        y={25}
+        width={12}
+        height={2}
+        rx={1}
+        fill='oklch(0.205 0 0)'
+      />
       <g fill='oklch(0.62 0.19 260)'>
         <rect x={32} y={39.5} width={3.5} height={3} rx={0.5} />
         <rect x={37} y={36} width={3.5} height={6.5} rx={0.5} />

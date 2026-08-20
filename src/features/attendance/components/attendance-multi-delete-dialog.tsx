@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { type Table } from '@tanstack/react-table'
 import { toast } from 'sonner'
-import { ConfirmDialog } from '@/components/confirm-dialog'
 import { supabase } from '@/lib/supabase'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useAttendance } from './attendance-provider'
 
 type AttendanceMultiDeleteDialogProps<TData> = {
@@ -61,8 +61,8 @@ export function AttendanceMultiDeleteDialog<TData>({
       desc={
         <div className='space-y-4'>
           <p className='mb-2'>
-            Anda yakin ingin menghapus data absensi yang dipilih? Data yang sudah dihapus tidak dapat
-            dikembalikan.
+            Anda yakin ingin menghapus data absensi yang dipilih? Data yang
+            sudah dihapus tidak dapat dikembalikan.
           </p>
         </div>
       }

@@ -6,11 +6,7 @@ type Props = { viewMode: 'desa' | 'kelompok' }
 export function DashboardSkeleton({ viewMode }: Props) {
   const isDesa = viewMode === 'desa'
   return (
-    <div
-      className='flex flex-col gap-5'
-      aria-busy='true'
-      aria-live='polite'
-    >
+    <div className='flex flex-col gap-5' aria-busy='true' aria-live='polite'>
       {/* KPI row */}
       <div
         className='grid gap-2'

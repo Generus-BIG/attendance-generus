@@ -70,11 +70,7 @@ export function HighlightedMultiBar({
   const yAxisWidth = yAxisLabel ? 48 : 38
 
   return (
-    <ChartContainer
-      config={chartConfig}
-      className='w-full'
-      style={{ height }}
-    >
+    <ChartContainer config={chartConfig} className='w-full' style={{ height }}>
       <BarChart
         accessibilityLayer
         data={data}
@@ -161,9 +157,7 @@ export function HighlightedMultiBar({
                 fillOpacity={
                   activeIndex === null ? 1 : activeIndex === index ? 1 : 0.3
                 }
-                stroke={
-                  activeIndex === index ? `var(--color-${s.key})` : ''
-                }
+                stroke={activeIndex === index ? `var(--color-${s.key})` : ''}
                 onMouseEnter={() => setActiveIndex(index)}
               />
             ))}

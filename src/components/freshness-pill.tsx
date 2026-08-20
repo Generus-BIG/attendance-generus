@@ -13,7 +13,10 @@ type Props = {
 }
 
 function formatRelative(from: Date, now: Date): string {
-  const diffSec = Math.max(0, Math.floor((now.getTime() - from.getTime()) / 1000))
+  const diffSec = Math.max(
+    0,
+    Math.floor((now.getTime() - from.getTime()) / 1000)
+  )
   if (diffSec < 45) return 'just now'
   const diffMin = Math.floor(diffSec / 60)
   if (diffMin < 60) return `${diffMin}m ago`
@@ -23,7 +26,10 @@ function formatRelative(from: Date, now: Date): string {
   return `${diffDay}d ago`
 }
 
-export function FreshnessPill({ updatedAt, refreshIntervalMs = 30_000 }: Props) {
+export function FreshnessPill({
+  updatedAt,
+  refreshIntervalMs = 30_000,
+}: Props) {
   const [, force] = useState(0)
 
   useEffect(() => {
@@ -39,7 +45,7 @@ export function FreshnessPill({ updatedAt, refreshIntervalMs = 30_000 }: Props) 
     <TooltipProvider delayDuration={120}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className='text-muted-foreground inline-flex items-center gap-1.5 text-xs'>
+          <span className='inline-flex items-center gap-1.5 text-xs text-muted-foreground'>
             <span
               className='h-1.5 w-1.5 rounded-full bg-success'
               aria-hidden='true'

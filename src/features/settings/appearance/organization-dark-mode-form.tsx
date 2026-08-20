@@ -1,15 +1,15 @@
 import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Loader2, Moon, Sun } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { id as idLocale } from 'date-fns/locale'
+import { Loader2, Moon, Sun } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 import {
   getDefaultTheme,
   setDefaultTheme,
   type ThemeValue,
 } from '@/lib/app-settings.service'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 
@@ -87,8 +87,10 @@ export function OrganizationDarkModeForm() {
   return (
     <div className='space-y-6'>
       <div className='space-y-1'>
-        <h3 className='text-base font-semibold'>Tema Terang/Gelap · Organisasi</h3>
-        <p className='text-muted-foreground text-sm'>
+        <h3 className='text-base font-semibold'>
+          Tema Terang/Gelap · Organisasi
+        </h3>
+        <p className='text-sm text-muted-foreground'>
           Atur mode tampilan default untuk semua pengguna. Perubahan akan
           diterapkan pada sesi mereka berikutnya. Pengguna tetap dapat mengubah
           pilihan secara lokal setelahnya.
@@ -97,7 +99,7 @@ export function OrganizationDarkModeForm() {
 
       {isLoading ? (
         <div
-          className='text-muted-foreground flex items-center py-4'
+          className='flex items-center py-4 text-muted-foreground'
           role='status'
           aria-live='polite'
         >
@@ -126,16 +128,18 @@ export function OrganizationDarkModeForm() {
                     aria-checked={active}
                     onClick={() => setSelected(t.value)}
                     className={cn(
-                      'border-border bg-card flex flex-col items-stretch gap-2 rounded-lg border p-3 text-left transition-colors',
-                      'hover:border-foreground/30 focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
-                      active && 'border-primary ring-primary/30 ring-2'
+                      'flex flex-col items-stretch gap-2 rounded-lg border border-border bg-card p-3 text-left transition-colors',
+                      'hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                      active && 'border-primary ring-2 ring-primary/30'
                     )}
                   >
-                    <div className='overflow-hidden rounded-md'>{t.preview}</div>
+                    <div className='overflow-hidden rounded-md'>
+                      {t.preview}
+                    </div>
                     <div className='flex items-center justify-between'>
                       <span className='text-sm font-medium'>{t.label}</span>
                       {data?.theme === t.value && (
-                        <span className='bg-muted text-muted-foreground rounded-full px-1.5 py-0.5 text-[0.6875rem]'>
+                        <span className='rounded-full bg-muted px-1.5 py-0.5 text-[0.6875rem] text-muted-foreground'>
                           Aktif
                         </span>
                       )}
@@ -146,7 +150,7 @@ export function OrganizationDarkModeForm() {
             </div>
           </div>
 
-          <div className='text-muted-foreground text-xs'>
+          <div className='text-xs text-muted-foreground'>
             {data?.updated_at ? (
               <>
                 Terakhir diperbarui{' '}

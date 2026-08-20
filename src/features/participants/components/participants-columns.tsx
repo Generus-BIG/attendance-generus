@@ -1,11 +1,11 @@
 import { differenceInYears, format } from 'date-fns'
-import { id as idLocale } from 'date-fns/locale'
 import { type ColumnDef } from '@tanstack/react-table'
+import { id as idLocale } from 'date-fns/locale'
+import { type Participant } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
-import { type Participant } from '@/lib/schema'
 import { statusTypes } from '../data/data'
 import { DataTableRowActions } from './data-table-row-actions'
 
@@ -43,7 +43,7 @@ export const participantsColumns: ColumnDef<Participant>[] = [
       <DataTableColumnHeader column={column} title='Nama' />
     ),
     cell: ({ row }) => (
-      <span className='block max-w-[22ch] font-medium whitespace-normal wrap-break-word @4xl/content:max-w-none'>
+      <span className='block max-w-[22ch] font-medium wrap-break-word whitespace-normal @4xl/content:max-w-none'>
         {row.getValue('name')}
       </span>
     ),
@@ -134,7 +134,7 @@ export const participantsColumns: ColumnDef<Participant>[] = [
         : null
 
       return (
-        <span className='block max-w-[20ch] whitespace-normal wrap-break-word tabular-nums'>
+        <span className='block max-w-[20ch] wrap-break-word whitespace-normal tabular-nums'>
           {[birthPlace, formattedDate].filter(Boolean).join(', ')}
         </span>
       )
@@ -160,12 +160,10 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     cell: ({ row }) => {
       const birthDate = row.original.birthDate
       if (!birthDate)
-        return (
-          <span className='text-muted-foreground block text-right'>-</span>
-        )
+        return <span className='block text-right text-muted-foreground'>-</span>
 
       return (
-        <span className='block max-w-[8ch] whitespace-normal wrap-break-word tabular-nums text-right'>
+        <span className='block max-w-[8ch] text-right wrap-break-word whitespace-normal tabular-nums'>
           {differenceInYears(new Date(), birthDate)} tahun
         </span>
       )

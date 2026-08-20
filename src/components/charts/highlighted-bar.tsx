@@ -22,7 +22,8 @@ export interface BarDatum {
 const CHART_TOKEN_COUNT = 5
 
 function chartTokenAt(index: number): string {
-  const slot = ((index % CHART_TOKEN_COUNT) + CHART_TOKEN_COUNT) % CHART_TOKEN_COUNT
+  const slot =
+    ((index % CHART_TOKEN_COUNT) + CHART_TOKEN_COUNT) % CHART_TOKEN_COUNT
   return `var(--chart-${slot + 1})`
 }
 
@@ -102,11 +103,7 @@ export function HighlightedBar({
   }
 
   return (
-    <ChartContainer
-      config={chartConfig}
-      className='w-full'
-      style={{ height }}
-    >
+    <ChartContainer config={chartConfig} className='w-full' style={{ height }}>
       <BarChart
         accessibilityLayer
         data={data}
@@ -121,7 +118,11 @@ export function HighlightedBar({
       >
         {isHorizontal ? (
           <>
-            <XAxis type='number' width={resolvedValueAxisWidth} {...valueAxisProps}>
+            <XAxis
+              type='number'
+              width={resolvedValueAxisWidth}
+              {...valueAxisProps}
+            >
               {yAxisLabel ? (
                 <Label
                   value={yAxisLabel}
@@ -131,11 +132,7 @@ export function HighlightedBar({
                 />
               ) : null}
             </XAxis>
-            <YAxis
-              type='category'
-              width={categoryWidth}
-              {...categoryAxisProps}
-            >
+            <YAxis type='category' width={categoryWidth} {...categoryAxisProps}>
               {xAxisLabel ? (
                 <Label
                   value={xAxisLabel}
@@ -158,7 +155,11 @@ export function HighlightedBar({
                 />
               ) : null}
             </XAxis>
-            <YAxis type='number' width={resolvedValueAxisWidth} {...valueAxisProps}>
+            <YAxis
+              type='number'
+              width={resolvedValueAxisWidth}
+              {...valueAxisProps}
+            >
               {yAxisLabel ? (
                 <Label
                   value={yAxisLabel}

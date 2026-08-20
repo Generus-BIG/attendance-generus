@@ -1,9 +1,9 @@
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import { Calendar as CalendarIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { cn } from '@/lib/utils'
 import {
   Popover,
   PopoverContent,
@@ -29,7 +29,10 @@ export function DatePicker({
         <Button
           variant='outline'
           data-empty={!selected}
-          className={cn('w-60 justify-start text-start font-normal data-[empty=true]:text-muted-foreground', className)}
+          className={cn(
+            'w-60 justify-start text-start font-normal data-[empty=true]:text-muted-foreground',
+            className
+          )}
         >
           {selected ? (
             format(selected, 'dd MMM yyyy', { locale: idLocale })
