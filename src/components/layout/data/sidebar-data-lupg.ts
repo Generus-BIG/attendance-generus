@@ -135,7 +135,7 @@ export function getLupgNavGroups(role: Role): NavGroup[] {
 
   if (isAdmin) {
     generalItems.push({
-      title: 'Konfigurasi',
+      title: 'Konfigurasi Metrik & LUPG',
       url: '/admin/lupg/config',
       icon: Settings2,
     })
