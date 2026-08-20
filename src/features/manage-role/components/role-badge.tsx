@@ -11,6 +11,7 @@ interface Props {
  *   super_admin  → filled (strongest)
  *   admin        → outline
  *   team_manager → subtle tint
+ *   mt           → subtle tint
  *   member       → ghost (lightest)
  *
  * Replaces the rainbow purple/blue/amber/slate palette. See .impeccable.md
@@ -21,6 +22,7 @@ export function RoleBadge({ role, className }: Props) {
     super_admin: 'bg-foreground text-background border-transparent',
     admin: 'border-foreground/60 text-foreground bg-transparent',
     team_manager: 'bg-muted text-foreground border-border',
+    mt: 'bg-muted text-foreground border-border',
     member: 'text-muted-foreground border-border bg-transparent',
   }
   return (

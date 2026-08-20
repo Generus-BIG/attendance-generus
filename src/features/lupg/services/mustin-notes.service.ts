@@ -90,14 +90,10 @@ export async function deleteMustinNote(id: string): Promise<void> {
 
 export async function listOpenMustinNotes(params?: {
   kelompokId?: string
-}): Promise<
-  (MustinNoteRow & { kelompok_id: string; month: string })[]
-> {
+}): Promise<(MustinNoteRow & { kelompok_id: string; month: string })[]> {
   let q = supabase
     .from('lupg_mustin_notes')
-    .select(
-      '*, monthly_report:lupg_monthly_reports!inner(kelompok_id, month)'
-    )
+    .select('*, monthly_report:lupg_monthly_reports!inner(kelompok_id, month)')
     .in('status', ['open', 'in_progress'])
     .order('deadline', { ascending: true, nullsFirst: false })
 

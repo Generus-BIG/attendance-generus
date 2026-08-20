@@ -1,9 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
-import {
-  bucketClass,
-  getBucket,
-} from '../../../utils/heatmap-buckets'
+import { bucketClass, getBucket } from '../../../utils/heatmap-buckets'
 import {
   type KelompokLite,
   type ProgramKelompokMatrixRow,
@@ -29,9 +26,9 @@ function kelompokInitials(name: string): string {
 
 export function TileProgramMatrix({ rows, kelompoks, year }: Props) {
   return (
-    <div className='bg-card flex h-full flex-col rounded-lg border p-4'>
+    <div className='flex h-full flex-col rounded-lg border bg-card p-4'>
       <div className='mb-3 flex items-start justify-between gap-2'>
-        <div className='text-muted-foreground text-xs font-medium'>
+        <div className='text-xs font-medium text-muted-foreground'>
           Matrix Program × Kelompok
         </div>
         <StatusLegend />
@@ -40,7 +37,7 @@ export function TileProgramMatrix({ rows, kelompoks, year }: Props) {
         <table className='w-full border-collapse text-xs'>
           <thead>
             <tr>
-              <th className='bg-card sticky left-0 z-10 px-1 py-1 text-left font-medium'>
+              <th className='sticky left-0 z-10 bg-card px-1 py-1 text-left font-medium'>
                 Program
               </th>
               {kelompoks.map((k) => (
@@ -57,7 +54,7 @@ export function TileProgramMatrix({ rows, kelompoks, year }: Props) {
           <tbody>
             {rows.map((p) => (
               <tr key={p.code}>
-                <td className='bg-card sticky left-0 z-10 truncate px-1 py-1 font-medium'>
+                <td className='sticky left-0 z-10 truncate bg-card px-1 py-1 font-medium'>
                   {p.name}
                 </td>
                 {kelompoks.map((k) => {
@@ -78,7 +75,7 @@ export function TileProgramMatrix({ rows, kelompoks, year }: Props) {
                           kelompok: k.id,
                           year: String(year),
                         }}
-                        className='focus:ring-ring block w-full px-1 py-1 hover:underline focus:ring-2 focus:outline-none'
+                        className='block w-full px-1 py-1 hover:underline focus:ring-2 focus:ring-ring focus:outline-none'
                         title={`${p.name} — ${k.name}: ${v != null ? `${v}%` : 'tidak ada data'}`}
                       >
                         {v != null ? `${v}%` : '·'}

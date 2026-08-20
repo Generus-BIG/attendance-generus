@@ -27,13 +27,13 @@ import { PermissionGate } from '@/components/permission-gate'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { FormActions } from './components/form-actions'
+import { FormTypeBadge } from './components/form-type-badge'
+import { FormsProvider, useFormsContext } from './context/forms-context'
 import {
   formatPublicFormUrlLabel,
   getPublicFormUrl,
 } from './utils/public-form-url'
-import { FormActions } from './components/form-actions'
-import { FormTypeBadge } from './components/form-type-badge'
-import { FormsProvider, useFormsContext } from './context/forms-context'
 
 export function Forms() {
   return (
@@ -59,7 +59,9 @@ function FormsList() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [globalFilter, setGlobalFilter] = useState('')
-  const [typeFilter, setTypeFilter] = useState<'semua' | 'desa' | 'kelompok'>('semua')
+  const [typeFilter, setTypeFilter] = useState<'semua' | 'desa' | 'kelompok'>(
+    'semua'
+  )
 
   const filteredForms = useMemo(
     () =>
@@ -69,73 +71,76 @@ function FormsList() {
     [forms, typeFilter]
   )
 
-  const columns = useMemo<ColumnDef<AttendanceFormConfig>[]>(() => [
-    {
-      accessorKey: 'title',
-      header: 'Judul',
-      cell: ({ row }) => {
-        const title = row.getValue('title') as string
-        const slug = row.original.slug
-        const formUrl = getPublicFormUrl(slug)
-        return (
-          <div className='flex flex-col gap-0.5'>
-            <span className='font-medium'>{title}</span>
-            <span className='flex items-center gap-1 text-xs text-muted-foreground'>
-              <ExternalLink className='h-3 w-3' />
-              {formatPublicFormUrlLabel(formUrl)}
-            </span>
-          </div>
-        )
+  const columns = useMemo<ColumnDef<AttendanceFormConfig>[]>(
+    () => [
+      {
+        accessorKey: 'title',
+        header: 'Judul',
+        cell: ({ row }) => {
+          const title = row.getValue('title') as string
+          const slug = row.original.slug
+          const formUrl = getPublicFormUrl(slug)
+          return (
+            <div className='flex flex-col gap-0.5'>
+              <span className='font-medium'>{title}</span>
+              <span className='flex items-center gap-1 text-xs text-muted-foreground'>
+                <ExternalLink className='h-3 w-3' />
+                {formatPublicFormUrlLabel(formUrl)}
+              </span>
+            </div>
+          )
+        },
       },
-    },
-    {
-      accessorKey: 'formType',
-      header: 'Tipe',
-      cell: ({ row }) => (
-        <FormTypeBadge
-          formType={row.original.formType}
-          kelompokName={row.original.kelompokName}
-        />
-      ),
-    },
-    {
-      accessorKey: 'date',
-      header: 'Tanggal',
-      cell: ({ row }) => {
-        const date = new Date(row.getValue('date'))
-        return (
-          <div className='flex items-center gap-2 text-sm'>
-            <CalendarDays className='h-3.5 w-3.5 text-muted-foreground' />
-            {format(date, 'dd MMM yyyy, HH:mm', { locale: idLocale })}
-          </div>
-        )
+      {
+        accessorKey: 'formType',
+        header: 'Tipe',
+        cell: ({ row }) => (
+          <FormTypeBadge
+            formType={row.original.formType}
+            kelompokName={row.original.kelompokName}
+          />
+        ),
       },
-    },
-    {
-      accessorKey: 'isActive',
-      header: 'Status',
-      cell: ({ row }) => {
-        const active = row.getValue('isActive') as boolean
-        return (
-          <Badge
-            variant='outline'
-            className={cn(
-              active
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400'
-                : 'border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400'
-            )}
-          >
-            {active ? 'Aktif' : 'Nonaktif'}
-          </Badge>
-        )
+      {
+        accessorKey: 'date',
+        header: 'Tanggal',
+        cell: ({ row }) => {
+          const date = new Date(row.getValue('date'))
+          return (
+            <div className='flex items-center gap-2 text-sm'>
+              <CalendarDays className='h-3.5 w-3.5 text-muted-foreground' />
+              {format(date, 'dd MMM yyyy, HH:mm', { locale: idLocale })}
+            </div>
+          )
+        },
       },
-    },
-    {
-      id: 'actions',
-      enableHiding: false,
-      cell: ({ row }) => <FormActions form={row.original} />,
-    },
-  ], [])
+      {
+        accessorKey: 'isActive',
+        header: 'Status',
+        cell: ({ row }) => {
+          const active = row.getValue('isActive') as boolean
+          return (
+            <Badge
+              variant='outline'
+              className={cn(
+                active
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400'
+                  : 'border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400'
+              )}
+            >
+              {active ? 'Aktif' : 'Nonaktif'}
+            </Badge>
+          )
+        },
+      },
+      {
+        id: 'actions',
+        enableHiding: false,
+        cell: ({ row }) => <FormActions form={row.original} />,
+      },
+    ],
+    []
+  )
 
   const table = useReactTable({
     data: filteredForms,
@@ -163,9 +168,7 @@ function FormsList() {
           <h2 className='text-2xl font-bold tracking-tight'>
             Formulir Absensi
           </h2>
-          <p className='text-muted-foreground'>
-            Buat dan kelola sesi absensi.
-          </p>
+          <p className='text-muted-foreground'>Buat dan kelola sesi absensi.</p>
         </div>
       </div>
 

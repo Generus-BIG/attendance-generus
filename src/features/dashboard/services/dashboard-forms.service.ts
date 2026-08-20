@@ -46,8 +46,10 @@ export async function fetchFormsByType(params: {
       title: row.title as string,
       date: row.date as string,
       isActive: row.is_active as boolean,
-      formType: ((row as Record<string, unknown>).form_type as DashboardTab) ?? 'desa',
-      kelompokId: ((row as Record<string, unknown>).kelompok_id as string) ?? null,
+      formType:
+        ((row as Record<string, unknown>).form_type as DashboardTab) ?? 'desa',
+      kelompokId:
+        ((row as Record<string, unknown>).kelompok_id as string) ?? null,
       kelompokName: null,
     }))
   }
@@ -59,8 +61,7 @@ export async function fetchFormsByType(params: {
     isActive: row.is_active as boolean,
     formType: (row.form_type as DashboardTab) ?? 'desa',
     kelompokId: (row.kelompok_id as string) ?? null,
-    kelompokName:
-      (row.kelompok as { value: string } | null)?.value ?? null,
+    kelompokName: (row.kelompok as { value: string } | null)?.value ?? null,
   }))
 }
 

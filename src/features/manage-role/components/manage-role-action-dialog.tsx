@@ -11,7 +11,6 @@ import {
 } from '@/lib/rbac'
 import { KELOMPOK } from '@/lib/schema'
 import { Button } from '@/components/ui/button'
-import { ConfirmDialog } from '@/components/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -29,11 +28,12 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { SelectDropdown } from '@/components/select-dropdown'
 import { useManageRoleCRUD } from '../context/manage-role-context'
 import { type ManagedUser } from '../types'
 
-const ASSIGNABLE_ROLES = ['admin', 'team_manager', 'member'] as const
+const ASSIGNABLE_ROLES = ['admin', 'team_manager', 'mt', 'member'] as const
 
 const PERMISSION_KEYS: PermissionKey[] = [
   'manageUsers',
@@ -96,15 +96,23 @@ function buildSchema(isEdit: boolean) {
       kelompok: z.string().nullable().optional(),
     })
     .superRefine((data, ctx) => {
-      if (data.role === 'team_manager' && !data.kelompok) {
+      if (
+        (data.role === 'team_manager' || data.role === 'mt') &&
+        !data.kelompok
+      ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'Kelompok wajib dipilih untuk Team Manager.',
+          message: 'Kelompok wajib dipilih untuk Team Manager atau MT.',
           path: ['kelompok'],
         })
       }
       // In edit mode, if password is provided it must be >= 7 chars
-      if (isEdit && data.password && data.password.length > 0 && data.password.length < 7) {
+      if (
+        isEdit &&
+        data.password &&
+        data.password.length > 0 &&
+        data.password.length < 7
+      ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Password minimal 7 karakter.',
@@ -123,7 +131,9 @@ type ManageRoleActionDialogProps = {
 }
 
 function StackedField({ children }: { children: React.ReactNode }) {
-  return <FormItem className='flex flex-col gap-1.5 space-y-0'>{children}</FormItem>
+  return (
+    <FormItem className='flex flex-col gap-1.5 space-y-0'>{children}</FormItem>
+  )
 }
 
 export function ManageRoleActionDialog({
@@ -154,7 +164,7 @@ export function ManageRoleActionDialog({
   const watchedRole = form.watch('role')
 
   useEffect(() => {
-    if (watchedRole !== 'team_manager') {
+    if (watchedRole !== 'team_manager' && watchedRole !== 'mt') {
       form.setValue('kelompok', null)
     }
   }, [watchedRole, form])
@@ -171,7 +181,9 @@ export function ManageRoleActionDialog({
           full_name: values.full_name,
           role: values.role,
           kelompok:
-            values.role === 'team_manager' ? (values.kelompok ?? null) : null,
+            values.role === 'team_manager' || values.role === 'mt'
+              ? (values.kelompok ?? null)
+              : null,
           ...(values.password ? { password: values.password } : {}),
         })
       } else {
@@ -181,7 +193,9 @@ export function ManageRoleActionDialog({
           full_name: values.full_name,
           role: values.role,
           kelompok:
-            values.role === 'team_manager' ? (values.kelompok ?? null) : null,
+            values.role === 'team_manager' || values.role === 'mt'
+              ? (values.kelompok ?? null)
+              : null,
         })
       }
       form.reset()
@@ -220,14 +234,10 @@ export function ManageRoleActionDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            id='manage-role-form'
-            onSubmit={onSubmit}
-            className='p-0.5'
-          >
+          <form id='manage-role-form' onSubmit={onSubmit} className='p-0.5'>
             <div className='flex flex-col gap-5'>
               <section className='flex flex-col gap-3'>
-                <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
                   Identitas
                 </div>
                 <FormField
@@ -290,7 +300,7 @@ export function ManageRoleActionDialog({
               </section>
 
               <section className='flex flex-col gap-3'>
-                <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+                <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
                   Akses
                 </div>
                 <FormField
@@ -306,6 +316,7 @@ export function ManageRoleActionDialog({
                         items={[
                           { label: 'Admin', value: 'admin' },
                           { label: 'Team Manager', value: 'team_manager' },
+                          { label: 'MT', value: 'mt' },
                           { label: 'Member', value: 'member' },
                         ]}
                       />
@@ -313,7 +324,7 @@ export function ManageRoleActionDialog({
                     </StackedField>
                   )}
                 />
-                {watchedRole === 'team_manager' && (
+                {(watchedRole === 'team_manager' || watchedRole === 'mt') && (
                   <FormField
                     control={form.control}
                     name='kelompok'
@@ -321,7 +332,8 @@ export function ManageRoleActionDialog({
                       <StackedField>
                         <FormLabel>Kelompok</FormLabel>
                         <SelectDropdown
-                          defaultValue={field.value ?? ''}
+                          value={field.value ?? ''}
+                          isControlled
                           onValueChange={field.onChange}
                           placeholder='Pilih kelompok'
                           items={KELOMPOK.map((k) => ({ label: k, value: k }))}
@@ -350,8 +362,10 @@ export function ManageRoleActionDialog({
           >
             {form.formState.isSubmitting ? (
               <Loader2 className='h-4 w-4 animate-spin' />
+            ) : isEdit ? (
+              'Simpan'
             ) : (
-              isEdit ? 'Simpan' : 'Buat User'
+              'Buat User'
             )}
           </Button>
         </DialogFooter>
@@ -366,10 +380,9 @@ export function ManageRoleActionDialog({
               <p>
                 Role <strong>{ROLE_LABELS[currentRow.role]}</strong> akan diubah
                 ke <strong>{ROLE_LABELS[escalationConfirm.newRole]}</strong>.
-                User akan mendapat {escalationConfirm.granted.length} izin
-                baru:
+                User akan mendapat {escalationConfirm.granted.length} izin baru:
               </p>
-              <ul className='bg-muted/40 rounded-md p-3 text-sm'>
+              <ul className='rounded-md bg-muted/40 p-3 text-sm'>
                 {escalationConfirm.granted.map((k) => (
                   <li key={k} className='flex items-center gap-2 py-0.5'>
                     <span className='text-foreground'>+</span>
@@ -377,7 +390,7 @@ export function ManageRoleActionDialog({
                   </li>
                 ))}
               </ul>
-              <p className='text-muted-foreground text-xs'>
+              <p className='text-xs text-muted-foreground'>
                 Pastikan user memang berhak menerima izin ini.
               </p>
             </div>

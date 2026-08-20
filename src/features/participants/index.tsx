@@ -9,8 +9,8 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { ParticipantsDialogs } from './components/participants-dialogs'
 import { ParticipantsPrimaryButtons } from './components/participants-primary-buttons'
 import { ParticipantsProvider } from './components/participants-provider'
-import { ParticipantsCRUDProvider } from './context/participants-context'
 import { ParticipantsTable } from './components/participants-table'
+import { ParticipantsCRUDProvider } from './context/participants-context'
 
 const route = getRouteApi('/admin/participants/')
 
@@ -21,27 +21,27 @@ export function Participants() {
   return (
     <ParticipantsCRUDProvider>
       <ParticipantsProvider>
-      <Header fixed>
-        <Search />
-        <div className='ms-auto flex items-center space-x-4'>
-          <ThemeSwitch />
-          <ConfigDrawer />
-          <ProfileDropdown />
-        </div>
-      </Header>
+        <Header fixed>
+          <Search />
+          <div className='ms-auto flex items-center space-x-4'>
+            <ThemeSwitch />
+            <ConfigDrawer />
+            <ProfileDropdown />
+          </div>
+        </Header>
 
-      <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
-        <PageHeader
-          kicker='Absensi MuMiBig'
-          title='Daftar Peserta'
-          description='Kelola data peserta GPN MuMiBig di sini.'
-          actions={<ParticipantsPrimaryButtons />}
-        />
-        <ParticipantsTable search={search} navigate={navigate} />
-      </Main>
+        <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+          <PageHeader
+            kicker='Absensi MuMiBig'
+            title='Daftar Peserta'
+            description='Kelola data peserta GPN MuMiBig di sini.'
+            actions={<ParticipantsPrimaryButtons />}
+          />
+          <ParticipantsTable search={search} navigate={navigate} />
+        </Main>
 
-      <ParticipantsDialogs />
-    </ParticipantsProvider>
+        <ParticipantsDialogs />
+      </ParticipantsProvider>
     </ParticipantsCRUDProvider>
   )
 }

@@ -105,14 +105,14 @@ function RatioPill({ label, ratioRight }: RatioPillProps) {
   const p = usePresPalette()
   return (
     <div
-      className='mt-4 rounded border flex items-center justify-between px-5 py-3'
+      className='mt-4 flex items-center justify-between rounded border px-5 py-3'
       style={{
         borderColor: p.rule,
         background: p.cream,
       }}
     >
       <div
-        className='uppercase font-semibold'
+        className='font-semibold uppercase'
         style={{
           fontFamily: p.fontMono,
           fontSize: 'clamp(0.65rem, 0.8cqw, 0.85rem)',
@@ -164,7 +164,8 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
 
   const pendidikL = perKelompok.pendidikMT.L + perKelompok.pendidikMS.L
   const pendidikP = perKelompok.pendidikMT.P + perKelompok.pendidikMS.P
-  const pendidikTotal = perKelompok.pendidikMT.total + perKelompok.pendidikMS.total
+  const pendidikTotal =
+    perKelompok.pendidikMT.total + perKelompok.pendidikMS.total
 
   const pieData: SensusPieDatum[] = GENERUS_DISPLAY_ORDER.map((code) => ({
     code,
@@ -182,9 +183,15 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead>Kategori / Peran</EditorialTableHead>
-                <EditorialTableHead className='text-right'>L</EditorialTableHead>
-                <EditorialTableHead className='text-right'>P</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Jumlah</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  L
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  P
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Jumlah
+                </EditorialTableHead>
               </EditorialTableRow>
             </EditorialTableHeader>
             <EditorialTableBody>
@@ -222,8 +229,10 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
               </TotalRow>
 
               {/* Spacer Row */}
-              <EditorialTableRow style={{ background: 'transparent', height: 12 }}>
-                <EditorialTableCell colSpan={4} className='p-0 border-none' />
+              <EditorialTableRow
+                style={{ background: 'transparent', height: 12 }}
+              >
+                <EditorialTableCell colSpan={4} className='border-none p-0' />
               </EditorialTableRow>
 
               {/* Pendidik Section */}

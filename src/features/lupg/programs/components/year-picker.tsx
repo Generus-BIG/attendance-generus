@@ -8,12 +8,7 @@ interface Props {
   maxYear?: number
 }
 
-export function YearPicker({
-  year,
-  onChange,
-  minYear = 2024,
-  maxYear,
-}: Props) {
+export function YearPicker({ year, onChange, minYear = 2024, maxYear }: Props) {
   const effectiveMax = maxYear ?? new Date().getFullYear()
   return (
     <div className='flex items-center gap-1'>

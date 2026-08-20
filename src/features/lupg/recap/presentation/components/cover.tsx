@@ -1,5 +1,5 @@
-import { AnimateContainer, AnimateItem } from './animate-element'
 import { usePresPalette } from '../use-pres-palette'
+import { AnimateContainer, AnimateItem } from './animate-element'
 
 interface CoverProps {
   modeLabel: string
@@ -50,7 +50,9 @@ export function Cover({
               {line}
             </AnimateItem>
           ))}
-          <AnimateItem style={{ color: p.brandAccent }}>{monthLabel}</AnimateItem>
+          <AnimateItem style={{ color: p.brandAccent }}>
+            {monthLabel}
+          </AnimateItem>
           <AnimateItem className='mt-8 flex flex-col gap-4'>
             <span
               aria-hidden
@@ -88,4 +90,3 @@ export function Cover({
     </div>
   )
 }
-

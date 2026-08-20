@@ -1,9 +1,4 @@
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -34,9 +29,8 @@ export function LupgConfig() {
             Konfigurasi LUPG
           </h2>
           <p className='text-muted-foreground'>
-            Kelola definisi program, metric, item sarpras, dan template
-            resume mustin. Perubahan di sini langsung muncul di form laporan
-            bulanan.
+            Kelola definisi program, metric, item sarpras, dan template resume
+            mustin. Perubahan di sini langsung muncul di form laporan bulanan.
           </p>
         </div>
 

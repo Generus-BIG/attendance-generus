@@ -52,12 +52,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import {
   Table,
   TableBody,
   TableCell,
@@ -65,6 +59,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import {
   DataTableBulkActions,
@@ -80,27 +80,44 @@ import { useApprovals } from './approvals-provider'
 import { PendingReviewDrawer } from './pending-review-drawer'
 
 const checkDuplicate = (pendingName: string, activeList: Participant[]) => {
-  const normPending = pendingName.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
+  const normPending = pendingName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
   if (!normPending) return null
 
   // Exact match (spaces & special chars stripped)
   const exact = activeList.find((p) => {
-    const normActive = p.name.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
+    const normActive = p.name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
     return normActive === normPending
   })
   if (exact) return { type: 'exact' as const, match: exact }
 
   // Similar match
   const similar = activeList.find((p) => {
-    const normActive = p.name.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
-    if (normActive.includes(normPending) || normPending.includes(normActive)) return true
+    const normActive = p.name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+    if (normActive.includes(normPending) || normPending.includes(normActive))
+      return true
 
-    const pWords = pendingName.toLowerCase().split(/\s+/).filter((w) => w.length > 2)
-    const aWords = p.name.toLowerCase().split(/\s+/).filter((w) => w.length > 2)
+    const pWords = pendingName
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w) => w.length > 2)
+    const aWords = p.name
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w) => w.length > 2)
     if (pWords.length > 0 && aWords.length > 0) {
       const common = pWords.filter((w) => aWords.includes(w))
       if (common.length >= 2) return true
-      if (pWords.length === 1 && aWords.length === 1 && pWords[0] === aWords[0]) return true
+      if (pWords.length === 1 && aWords.length === 1 && pWords[0] === aWords[0])
+        return true
     }
     return false
   })
@@ -208,16 +225,19 @@ export function PendingParticipantsTab() {
     setRejectConfirm(null)
   }
 
-  const openMergeDialog = useCallback((pending: PendingParticipant) => {
-    setSelectedPending(pending)
-    const matchResult = checkDuplicate(pending.name, participants)
-    if (matchResult) {
-      setMergeTarget(matchResult.match.id)
-    } else {
-      setMergeTarget(null)
-    }
-    setApproveDialogOpen(true)
-  }, [participants])
+  const openMergeDialog = useCallback(
+    (pending: PendingParticipant) => {
+      setSelectedPending(pending)
+      const matchResult = checkDuplicate(pending.name, participants)
+      if (matchResult) {
+        setMergeTarget(matchResult.match.id)
+      } else {
+        setMergeTarget(null)
+      }
+      setApproveDialogOpen(true)
+    },
+    [participants]
+  )
 
   const executeBulkApprove = async (items: PendingParticipant[]) => {
     let ok = 0
@@ -296,7 +316,10 @@ export function PendingParticipantsTab() {
           const matchResult = checkDuplicate(row.original.name, participants)
           if (!matchResult) {
             return (
-              <Badge variant='outline' className='border-emerald-500 text-emerald-600 bg-emerald-50/50 hover:bg-emerald-50/50'>
+              <Badge
+                variant='outline'
+                className='border-emerald-500 bg-emerald-50/50 text-emerald-600 hover:bg-emerald-50/50'
+              >
                 Data Baru
               </Badge>
             )
@@ -315,7 +338,7 @@ export function PendingParticipantsTab() {
                       openMergeDialog(row.original)
                     }}
                     className={cn(
-                      'inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold border cursor-pointer transition-colors',
+                      'inline-flex cursor-pointer items-center gap-1.5 rounded border px-2 py-0.5 text-xs font-semibold transition-colors',
                       isExact
                         ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
                         : 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
@@ -324,7 +347,10 @@ export function PendingParticipantsTab() {
                     {isExact ? 'Duplikat' : 'Potensi Duplikat'}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent align='start' className='max-w-[280px] p-2 text-xs'>
+                <TooltipContent
+                  align='start'
+                  className='max-w-[280px] p-2 text-xs'
+                >
                   <div className='space-y-1 text-left'>
                     <p className='font-semibold'>
                       {isExact
@@ -332,9 +358,10 @@ export function PendingParticipantsTab() {
                         : 'Nama mirip ditemukan di database:'}
                     </p>
                     <p className='text-muted-foreground'>
-                      • {m.name} ({m.kelompok || 'Tanpa Kelompok'} - {formatKategoriLabel(m.kategori)})
+                      • {m.name} ({m.kelompok || 'Tanpa Kelompok'} -{' '}
+                      {formatKategoriLabel(m.kategori)})
                     </p>
-                    <p className='text-[10px] text-muted-foreground italic mt-1'>
+                    <p className='mt-1 text-[10px] text-muted-foreground italic'>
                       Klik tombol ini untuk membuka dialog gabungkan data.
                     </p>
                   </div>
@@ -427,7 +454,6 @@ export function PendingParticipantsTab() {
       .map((v) => ({ label: v, value: v }))
   }, [pendingList])
 
-   
   const table = useReactTable({
     data: pendingList,
     columns,
@@ -765,7 +791,11 @@ export function PendingParticipantsTab() {
             </DialogDescription>
           </DialogHeader>
           <div className='py-4'>
-            <Popover modal={true} open={openCombobox} onOpenChange={setOpenCombobox}>
+            <Popover
+              modal={true}
+              open={openCombobox}
+              onOpenChange={setOpenCombobox}
+            >
               <PopoverTrigger asChild>
                 <Button
                   variant='outline'

@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-react'
+import { ROLE_LABELS, type Role } from '@/lib/rbac'
 import useDialogState from '@/hooks/use-dialog-state'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -18,7 +19,6 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { SignOutDialog } from '@/components/sign-out-dialog'
-import { ROLE_LABELS, type Role } from '@/lib/rbac'
 
 function getInitials(name: string): string {
   const trimmed = name.trim()

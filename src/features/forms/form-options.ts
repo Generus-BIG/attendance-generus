@@ -14,7 +14,8 @@ export function getFormKelompokOptions(
   kelompokName: string | null | undefined
 ): readonly (typeof KELOMPOK)[number][] {
   const configuredKelompok = getConfiguredKelompok(formType, kelompokName)
-  if (formType === 'kelompok') return configuredKelompok ? [configuredKelompok] : []
+  if (formType === 'kelompok')
+    return configuredKelompok ? [configuredKelompok] : []
   return KELOMPOK
 }
 

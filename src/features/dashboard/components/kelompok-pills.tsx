@@ -50,7 +50,9 @@ export function KelompokPills({
             type='button'
             role='radio'
             aria-checked={selected}
-            tabIndex={selected || (selectedId === undefined && idx === 0) ? 0 : -1}
+            tabIndex={
+              selected || (selectedId === undefined && idx === 0) ? 0 : -1
+            }
             onClick={() => onSelect(k.id)}
             onKeyDown={(e) => handleKey(e, idx)}
             className={cn(

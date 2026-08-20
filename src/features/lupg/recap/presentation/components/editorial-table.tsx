@@ -11,6 +11,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react'
+import { type HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import {
   Table,
@@ -20,6 +21,7 @@ import {
   TableHeader,
 } from '@/components/ui/table'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { AnimateTableRow } from './animate-element'
 
 type HeaderVariant = 'navy' | 'hairline'
 type TableDensity = 'regular' | 'compact' | 'micro'
@@ -78,9 +80,6 @@ export function EditorialTableHeader({
 export function EditorialTableBody(props: ComponentProps<'tbody'>) {
   return <TableBody {...props} />
 }
-
-import { AnimateTableRow } from './animate-element'
-import { type HTMLMotionProps } from 'framer-motion'
 
 export function EditorialTableRow({
   className,

@@ -13,9 +13,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
-import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import { usePresentationAnimation } from '../context/animation-context'
+import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
 
 export interface SarprasStackedBarDatum {
   kelompok: string
@@ -40,7 +40,13 @@ interface TipProps {
   palette: PresPalette
 }
 
-function CustomTooltip({ active, payload, label, totalItems, palette }: TipProps) {
+function CustomTooltip({
+  active,
+  payload,
+  label,
+  totalItems,
+  palette,
+}: TipProps) {
   if (!active || !payload || payload.length === 0) return null
   const datum = payload[0]?.payload
   if (!datum) return null
@@ -64,16 +70,29 @@ interface TopPctLabelProps {
   palette: PresPalette
 }
 
-function TopPctLabel({ x, y, width, index, data, totalItems, palette }: TopPctLabelProps) {
+function TopPctLabel({
+  x,
+  y,
+  width,
+  index,
+  data,
+  totalItems,
+  palette,
+}: TopPctLabelProps) {
   const xNum = typeof x === 'number' ? x : Number(x)
   const yNum = typeof y === 'number' ? y : Number(y)
   const widthNum = typeof width === 'number' ? width : Number(width)
   const idx = typeof index === 'number' ? index : -1
   if (idx < 0 || idx >= data.length) return null
-  if (!Number.isFinite(xNum) || !Number.isFinite(yNum) || !Number.isFinite(widthNum)) {
+  if (
+    !Number.isFinite(xNum) ||
+    !Number.isFinite(yNum) ||
+    !Number.isFinite(widthNum)
+  ) {
     return null
   }
-  const pct = totalItems > 0 ? Math.round((data[idx].sudah / totalItems) * 100) : 0
+  const pct =
+    totalItems > 0 ? Math.round((data[idx].sudah / totalItems) * 100) : 0
   return (
     <text
       x={xNum + widthNum / 2}
@@ -133,7 +152,10 @@ function CustomLegend({ payload, palette }: CustomLegendProps) {
   )
 }
 
-export function SarprasStackedBar({ data, totalItems }: SarprasStackedBarProps) {
+export function SarprasStackedBar({
+  data,
+  totalItems,
+}: SarprasStackedBarProps) {
   const palette = usePresPalette()
   const { durationScale } = usePresentationAnimation()
   const colorSudah = palette.success
@@ -154,9 +176,20 @@ export function SarprasStackedBar({ data, totalItems }: SarprasStackedBarProps) 
   }
   return (
     <ResponsiveContainer width='100%' height='100%'>
-      <BarChart data={data} margin={{ top: 28, right: 24, bottom: 36, left: 36 }}>
-        <CartesianGrid strokeDasharray='3 3' vertical={false} stroke={palette.rule} />
-        <XAxis dataKey='kelompok' interval={0} {...hairlineAxisProps(palette, 'x')} />
+      <BarChart
+        data={data}
+        margin={{ top: 28, right: 24, bottom: 36, left: 36 }}
+      >
+        <CartesianGrid
+          strokeDasharray='3 3'
+          vertical={false}
+          stroke={palette.rule}
+        />
+        <XAxis
+          dataKey='kelompok'
+          interval={0}
+          {...hairlineAxisProps(palette, 'x')}
+        />
         <YAxis
           domain={[0, totalItems]}
           allowDecimals={false}
@@ -200,7 +233,10 @@ export function SarprasStackedBar({ data, totalItems }: SarprasStackedBarProps) 
           <LabelList
             content={(p) => (
               <TopPctLabel
-                {...(p as Omit<TopPctLabelProps, 'data' | 'totalItems' | 'palette'>)}
+                {...(p as Omit<
+                  TopPctLabelProps,
+                  'data' | 'totalItems' | 'palette'
+                >)}
                 data={data}
                 totalItems={totalItems}
                 palette={palette}

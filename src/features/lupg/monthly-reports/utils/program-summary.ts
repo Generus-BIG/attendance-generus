@@ -14,7 +14,9 @@ export function programSummary(params: {
 }): ProgramSummary {
   const { currentMonthKey, reportByMonthKey, programRowByReportId } = params
 
-  const monthToPct = (mk: string): {
+  const monthToPct = (
+    mk: string
+  ): {
     pct: number | null
     count: number | null
     denom: number | null

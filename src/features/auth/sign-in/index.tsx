@@ -11,7 +11,10 @@ export function SignIn() {
         <div className='space-y-1.5'>
           <h1
             className='text-2xl font-semibold tracking-tight'
-            style={{ fontFamily: "'Host Grotesk', ui-sans-serif, system-ui, sans-serif" }}
+            style={{
+              fontFamily:
+                "'Host Grotesk', ui-sans-serif, system-ui, sans-serif",
+            }}
           >
             Selamat datang kembali
           </h1>

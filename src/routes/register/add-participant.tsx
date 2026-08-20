@@ -1,12 +1,10 @@
- 
-
-import { createFileRoute } from '@tanstack/react-router'
+import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import { getFormBySlug } from '@/features/forms/services'
-import { RegisterParticipantForm } from '@/features/forms/components/RegisterParticipantForm'
+import { createFileRoute } from '@tanstack/react-router'
 import { Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { z } from 'zod'
+import { RegisterParticipantForm } from '@/features/forms/components/RegisterParticipantForm'
+import { getFormBySlug } from '@/features/forms/services'
 
 const searchSchema = z.object({
   slug: z.string(),
@@ -20,7 +18,12 @@ export const Route = createFileRoute('/register/add-participant')({
 function RegisterPage() {
   const { slug } = Route.useSearch()
 
-  const { data: formConfig, isLoading, error, refetch } = useQuery({
+  const {
+    data: formConfig,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['public_form', slug],
     queryFn: () => getFormBySlug(slug),
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -30,7 +33,9 @@ function RegisterPage() {
     return (
       <div className='flex h-screen w-full flex-col items-center justify-center gap-4 bg-muted/30 p-4'>
         <Loader2 className='h-12 w-12 animate-spin text-primary' />
-        <p className='text-lg font-medium text-muted-foreground'>Memuat formulir...</p>
+        <p className='text-lg font-medium text-muted-foreground'>
+          Memuat formulir...
+        </p>
       </div>
     )
   }
@@ -44,7 +49,8 @@ function RegisterPage() {
         <div className='max-w-md space-y-2'>
           <h1 className='text-2xl font-bold'>Formulir Tidak Ditemukan</h1>
           <p className='text-muted-foreground'>
-            Tautan yang Anda ikuti mungkin salah, atau formulir ini sudah tidak aktif lagi.
+            Tautan yang Anda ikuti mungkin salah, atau formulir ini sudah tidak
+            aktif lagi.
           </p>
         </div>
         <Button onClick={() => refetch()} variant='outline'>
@@ -55,11 +61,11 @@ function RegisterPage() {
   }
 
   return (
-    <div className='min-h-dvh w-full bg-background sm:bg-zinc-50/50 dark:sm:bg-zinc-950/50 p-0 sm:p-8 md:p-12 flex flex-col'>
-      <div className='mx-auto max-w-2xl w-full flex-1 flex flex-col justify-center sm:block'>
+    <div className='flex min-h-dvh w-full flex-col bg-background p-0 sm:bg-zinc-50/50 sm:p-8 md:p-12 dark:sm:bg-zinc-950/50'>
+      <div className='mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center sm:block'>
         <RegisterParticipantForm formConfig={formConfig} />
 
-        <div className='mt-8 pb-8 sm:pb-0 text-center'>
+        <div className='mt-8 pb-8 text-center sm:pb-0'>
           <p className='text-[13px] font-medium text-zinc-400 dark:text-zinc-500'>
             &copy; {new Date().getFullYear()} Crafted for everyone 💌
           </p>

@@ -19,7 +19,9 @@ const FontContext = createContext<FontContextType | null>(null)
 export function FontProvider({ children }: { children: React.ReactNode }) {
   const [font, _setFont] = useState<Font>(() => {
     const savedFont = getCookie(FONT_COOKIE_NAME)
-    return fonts.includes(savedFont as Font) ? (savedFont as Font) : DEFAULT_FONT
+    return fonts.includes(savedFont as Font)
+      ? (savedFont as Font)
+      : DEFAULT_FONT
   })
 
   useEffect(() => {
@@ -49,7 +51,6 @@ export function FontProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
- 
 export const useFont = () => {
   const context = useContext(FontContext)
   if (!context) {

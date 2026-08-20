@@ -12,6 +12,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
+import { usePermissions } from '@/hooks/use-permissions'
 import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
 import {
   Table,
@@ -23,7 +24,6 @@ import {
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { TableSkeleton } from '@/components/data-table/table-skeleton'
-import { usePermissions } from '@/hooks/use-permissions'
 import { useParticipantsCRUD } from '../context/participants-context'
 import { kelompokOptions, kategoriOptions, statusOptions } from '../data/data'
 import { DataTableBulkActions } from './data-table-bulk-actions'
@@ -63,7 +63,6 @@ export function ParticipantsTable({ search, navigate }: DataTableProps) {
     ],
   })
 
-   
   const table = useReactTable({
     data,
     columns,
@@ -110,19 +109,28 @@ export function ParticipantsTable({ search, navigate }: DataTableProps) {
                 {
                   columnId: 'kelompok',
                   title: 'Kelompok',
-                  options: kelompokOptions.map((k) => ({ label: k.label, value: k.value })),
+                  options: kelompokOptions.map((k) => ({
+                    label: k.label,
+                    value: k.value,
+                  })),
                 },
               ]
             : []),
           {
             columnId: 'kategori',
             title: 'Kategori',
-            options: kategoriOptions.map((k) => ({ label: k.label, value: k.value })),
+            options: kategoriOptions.map((k) => ({
+              label: k.label,
+              value: k.value,
+            })),
           },
           {
             columnId: 'status',
             title: 'Status',
-            options: statusOptions.map((s) => ({ label: s.label, value: s.value })),
+            options: statusOptions.map((s) => ({
+              label: s.label,
+              value: s.value,
+            })),
           },
         ]}
       />
@@ -145,9 +153,9 @@ export function ParticipantsTable({ search, navigate }: DataTableProps) {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   )
                 })}

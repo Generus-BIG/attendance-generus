@@ -39,7 +39,6 @@ export function OtpForm({ className, ...props }: OtpFormProps) {
     defaultValues: { otp: '' },
   })
 
-   
   const otp = form.watch('otp')
 
   function onSubmit(data: z.infer<typeof formSchema>) {
@@ -48,7 +47,13 @@ export function OtpForm({ className, ...props }: OtpFormProps) {
 
     setTimeout(() => {
       setIsLoading(false)
-      navigate({ to: '/admin/dashboard', search: { tab: 'desa', month: new Date().toLocaleDateString('sv').slice(0, 7) } })
+      navigate({
+        to: '/admin/dashboard',
+        search: {
+          tab: 'desa',
+          month: new Date().toLocaleDateString('sv').slice(0, 7),
+        },
+      })
     }, 1000)
   }
 

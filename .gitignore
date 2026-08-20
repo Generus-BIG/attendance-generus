@@ -50,3 +50,4 @@ docs/*
 !.env.example
 !.env.template
 *docs/
+testsprite_tests/

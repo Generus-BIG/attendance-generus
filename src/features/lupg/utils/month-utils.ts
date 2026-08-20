@@ -6,6 +6,10 @@ export function currentMonthKey(date: Date = new Date()): string {
   return format(date, 'yyyy-MM')
 }
 
+export function isCalendarMonthKey(monthKey: string): boolean {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(monthKey)
+}
+
 /** Returns 'YYYY-MM-01' for given month key 'YYYY-MM' */
 export function firstDayOfMonth(monthKey: string): string {
   return `${monthKey}-01`

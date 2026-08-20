@@ -24,19 +24,19 @@ Administration dashboard for managing attendance, participants, forms, and appro
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | React 19 + Vite 7 (SWC) |
-| Language | TypeScript ~5.9 |
-| Routing | TanStack Router v1 (file-based) |
-| Data Fetching | TanStack Query v5 |
-| Tables | TanStack Table v8 |
-| State | Zustand v5 |
-| Backend | Supabase (Postgres, Auth, Edge Functions, RLS) |
-| Styling | Tailwind CSS v4 + shadcn/ui (new-york) |
-| Forms | react-hook-form v7 + Zod v4 |
-| Charts | Recharts |
-| Icons | Lucide React |
+| Layer         | Technology                                     |
+| ------------- | ---------------------------------------------- |
+| Framework     | React 19 + Vite 7 (SWC)                        |
+| Language      | TypeScript ~5.9                                |
+| Routing       | TanStack Router v1 (file-based)                |
+| Data Fetching | TanStack Query v5                              |
+| Tables        | TanStack Table v8                              |
+| State         | Zustand v5                                     |
+| Backend       | Supabase (Postgres, Auth, Edge Functions, RLS) |
+| Styling       | Tailwind CSS v4 + shadcn/ui (new-york)         |
+| Forms         | react-hook-form v7 + Zod v4                    |
+| Charts        | Recharts                                       |
+| Icons         | Lucide React                                   |
 
 ## Getting Started
 
@@ -78,23 +78,23 @@ src/
 
 ## RBAC Roles
 
-| Role | Scope |
-|------|-------|
-| Super Admin | Full access + user management |
-| Admin | Full data access, view-only on Manage Role |
-| Team Manager | CRUD scoped to own kelompok |
-| Member | Read-only |
+| Role         | Scope                                      |
+| ------------ | ------------------------------------------ |
+| Super Admin  | Full access + user management              |
+| Admin        | Full data access, view-only on Manage Role |
+| Team Manager | CRUD scoped to own kelompok                |
+| Member       | Read-only                                  |
 
 Roles stored in Supabase `app_metadata` (server-only, tamper-proof). Enforced at DB level via RLS policies and at UI level via `usePermissions` hook + `PermissionGate` component.
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start dev server |
-| `pnpm build` | TypeScript check + Vite production build |
-| `pnpm lint` | ESLint |
-| `pnpm format` | Prettier auto-fix |
-| `pnpm knip` | Find unused exports/dependencies |
+| Command       | Description                              |
+| ------------- | ---------------------------------------- |
+| `pnpm dev`    | Start dev server                         |
+| `pnpm build`  | TypeScript check + Vite production build |
+| `pnpm lint`   | ESLint                                   |
+| `pnpm format` | Prettier auto-fix                        |
+| `pnpm knip`   | Find unused exports/dependencies         |
 
 Created by Royanrosyad

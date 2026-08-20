@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/auth-store'
 import { useWorkspaceStore } from '@/stores/workspace-store'
 import { ROUTE_ACCESS, type Role } from '@/lib/rbac'
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout'
-import { WORKSPACE_DEFAULT_PATH } from '@/components/layout/data/sidebar-data'
+import { getWorkspaceDefaultPath } from '@/components/layout/data/sidebar-data'
 
 export const Route = createFileRoute('/admin')({
   beforeLoad: async ({ location }) => {
@@ -31,14 +31,24 @@ export const Route = createFileRoute('/admin')({
         bestPath = path
       }
     }
-    if (bestPath !== null && !ROUTE_ACCESS[bestPath].includes(role)) {
+    const isAdminRoot =
+      location.pathname === '/admin' || location.pathname === '/admin/'
+    const isMtDenied =
+      role === 'mt' &&
+      !isAdminRoot &&
+      location.pathname !== '/admin/403' &&
+      (bestPath === null || !ROUTE_ACCESS[bestPath].includes(role))
+    if (
+      (bestPath !== null && !ROUTE_ACCESS[bestPath].includes(role)) ||
+      isMtDenied
+    ) {
       throw redirect({ to: '/admin/403' })
     }
 
     // Redirect /admin (no child) to active workspace's default page
-    if (location.pathname === '/admin' || location.pathname === '/admin/') {
+    if (isAdminRoot) {
       const { activeWorkspace } = useWorkspaceStore.getState()
-      const target = WORKSPACE_DEFAULT_PATH[activeWorkspace]
+      const target = getWorkspaceDefaultPath(activeWorkspace, role)
       throw redirect({ to: target })
     }
   },

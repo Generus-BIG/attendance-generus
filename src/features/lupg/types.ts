@@ -180,3 +180,25 @@ export interface UpsertMetricMonthInput {
 
 export type ActivityPhotoRow = Tables['lupg_activity_photos']['Row']
 export type ActivityPhotoInsert = Tables['lupg_activity_photos']['Insert']
+
+export type PhqCategory = 'ACR' | 'APR' | 'AR' | 'GPN_A' | 'GPN_B'
+export type AttendanceStatus = 'hadir' | 'izin' | 'sakit' | 'alpa'
+export type HafalanPredicate =
+  | 'Mumtaz'
+  | 'Jayyid Jiddan'
+  | 'Jayyid'
+  | 'Maqbul'
+  | 'Dhaif'
+export type IntensifProgramCode = 'APR_INTENSIF' | 'AR_INTENSIF'
+
+export type PhqParticipantRow = Tables['lupg_phq_participants']['Row']
+export type PhqMeetingRow = Tables['lupg_phq_meetings']['Row']
+export type PhqProgressRow = Tables['lupg_phq_progress']['Row']
+export type PhqAttendanceRow = Tables['lupg_phq_attendance']['Row']
+export type PhqMonthlyNoteRow = Tables['lupg_phq_monthly_notes']['Row']
+export type PhqSummaryRow =
+  Database['public']['Views']['lupg_phq_summary']['Row']
+export type IntensifActivityRow = Tables['lupg_intensif_activities']['Row']
+export type IntensifAttendanceRow = Tables['lupg_intensif_attendance']['Row']
+export type IntensifSummaryRow =
+  Database['public']['Views']['lupg_intensif_summary']['Row']

@@ -1,17 +1,15 @@
 // Resume Mustin slide renderer — per-kelompok cards (2-col desa, single full-width kelompok).
-import {
-  MUSTIN_STATUS_LABELS,
-} from '../../../constants'
+import { MUSTIN_STATUS_LABELS } from '../../../constants'
 import {
   type MonthlyReportRow,
   type MustinNoteRow,
   type MustinStatus,
   type MustinTemplateRow,
 } from '../../../types'
+import { AnimateItem } from '../components/animate-element'
 import { SlideFrame } from '../components/slide-frame'
 import { type Slide } from '../slides'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
-import { AnimateItem } from '../components/animate-element'
 
 interface SlideArgs {
   monthLabel: string
@@ -217,9 +215,7 @@ export function renderMustinSlide(args: SlideArgs): Slide {
         >
           {effectiveKelompokList.map((k) => {
             const report = reportByKelompok.get(k.id)
-            const rawNotes = report
-              ? (notesByReport.get(report.id) ?? [])
-              : []
+            const rawNotes = report ? (notesByReport.get(report.id) ?? []) : []
             const notes = sortNotes(rawNotes, templateByCode)
             return <KelompokCard key={k.id} name={k.value} notes={notes} />
           })}

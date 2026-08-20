@@ -46,22 +46,22 @@ export function TileShodaqohBars({ rows }: Props) {
     PAD_T + CHART_H - (value / yMax) * CHART_H
 
   return (
-    <div className='bg-card relative flex h-full flex-col rounded-lg border p-4'>
+    <div className='relative flex h-full flex-col rounded-lg border bg-card p-4'>
       <div className='mb-2 flex items-start justify-between gap-3'>
         <div>
-          <div className='text-foreground text-xs font-medium'>
+          <div className='text-xs font-medium text-foreground'>
             Shodaqoh PPG per Kelompok
           </div>
-          <div className='text-muted-foreground mt-0.5 text-xs'>
+          <div className='mt-0.5 text-xs text-muted-foreground'>
             Total Desa MTD{' '}
-            <span className='text-foreground font-mono font-semibold tabular-nums'>
+            <span className='font-mono font-semibold text-foreground tabular-nums'>
               {formatRupiahShort(total)}
             </span>
           </div>
         </div>
-        <div className='text-muted-foreground inline-flex items-center gap-1.5 text-xs'>
+        <div className='inline-flex items-center gap-1.5 text-xs text-muted-foreground'>
           <span
-            className='bg-chart-1 inline-block h-2 w-2 rounded-sm'
+            className='inline-block h-2 w-2 rounded-sm bg-chart-1'
             aria-hidden='true'
           />
           Nominal (Rp)
@@ -70,7 +70,7 @@ export function TileShodaqohBars({ rows }: Props) {
 
       <div className='relative min-h-0 flex-1'>
         {rows.length === 0 ? (
-          <div className='text-muted-foreground flex h-full items-center justify-center text-sm'>
+          <div className='flex h-full items-center justify-center text-sm text-muted-foreground'>
             Tidak ada data shodaqoh.
           </div>
         ) : (
@@ -129,8 +129,7 @@ export function TileShodaqohBars({ rows }: Props) {
               {/* Bars + outside labels + x-axis names */}
               {rows.map((r, i) => {
                 const barX = PAD_L + i * groupW + (groupW - barW) / 2
-                const barH =
-                  r.nominal > 0 ? (r.nominal / yMax) * CHART_H : 0
+                const barH = r.nominal > 0 ? (r.nominal / yMax) * CHART_H : 0
                 const barY = PAD_T + CHART_H - barH
                 const isHovered = hoveredIdx === i
                 const labelY = r.nominal > 0 ? barY - 7 : yFor(0) - 7
@@ -146,9 +145,7 @@ export function TileShodaqohBars({ rows }: Props) {
                         rx={3}
                         ry={3}
                         className={
-                          isHovered
-                            ? 'fill-chart-1'
-                            : 'fill-chart-1 opacity-85'
+                          isHovered ? 'fill-chart-1' : 'fill-chart-1 opacity-85'
                         }
                         style={{ transition: 'opacity 150ms ease' }}
                       />
@@ -221,7 +218,7 @@ export function TileShodaqohBars({ rows }: Props) {
                     tab: 'kelompok' as const,
                     kelompok: r.kelompokId,
                   }}
-                  className='focus-visible:ring-ring flex flex-1 cursor-pointer rounded-sm focus-visible:ring-2 focus-visible:outline-none'
+                  className='flex flex-1 cursor-pointer rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
                   aria-label={`Buka ${r.kelompokName}, Shodaqoh Rp ${r.nominal.toLocaleString('id-ID')}`}
                   onMouseEnter={() => setHoveredIdx(i)}
                   onMouseLeave={() => setHoveredIdx(null)}
@@ -234,7 +231,7 @@ export function TileShodaqohBars({ rows }: Props) {
             {/* Floating tooltip — single instance, repositions on hover. */}
             {hoveredIdx !== null && (
               <div
-                className='bg-popover text-popover-foreground pointer-events-none absolute z-10 min-w-36 -translate-x-1/2 rounded-md border px-3 py-2 text-xs shadow-md'
+                className='pointer-events-none absolute z-10 min-w-36 -translate-x-1/2 rounded-md border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md'
                 style={{
                   left: `${((PAD_L + hoveredIdx * groupW + groupW / 2) / SVG_W) * 100}%`,
                   top: 0,
@@ -246,15 +243,14 @@ export function TileShodaqohBars({ rows }: Props) {
                 </div>
                 <div className='mt-1 flex items-center gap-2'>
                   <span
-                    className='bg-chart-1 inline-block h-2 w-2 rounded-sm'
+                    className='inline-block h-2 w-2 rounded-sm bg-chart-1'
                     aria-hidden='true'
                   />
                   <span className='font-mono tabular-nums'>
-                    Rp{' '}
-                    {rows[hoveredIdx].nominal.toLocaleString('id-ID')}
+                    Rp {rows[hoveredIdx].nominal.toLocaleString('id-ID')}
                   </span>
                 </div>
-                <div className='text-muted-foreground mt-0.5'>
+                <div className='mt-0.5 text-muted-foreground'>
                   {total > 0 && rows[hoveredIdx].nominal > 0
                     ? `${Math.round((rows[hoveredIdx].nominal / total) * 100)}% dari total desa`
                     : 'Belum ada kontribusi'}

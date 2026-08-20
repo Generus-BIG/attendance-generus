@@ -20,7 +20,7 @@ export function DesaOverviewTab({ year, monthKey }: Props) {
 
   if (isLoading) {
     return (
-      <div className='text-muted-foreground flex items-center justify-center py-16'>
+      <div className='flex items-center justify-center py-16 text-muted-foreground'>
         <Loader2 className='mr-2 h-5 w-5 animate-spin' />
         Memuat data desa overview...
       </div>
@@ -37,7 +37,7 @@ export function DesaOverviewTab({ year, monthKey }: Props) {
           ? String((error as { message: unknown }).message)
           : 'Tidak diketahui'
     return (
-      <div className='text-destructive rounded-lg border border-dashed p-10 text-center'>
+      <div className='rounded-lg border border-dashed p-10 text-center text-destructive'>
         Gagal memuat data: {msg}
       </div>
     )
@@ -51,41 +51,41 @@ export function DesaOverviewTab({ year, monthKey }: Props) {
       <div
         aria-live='polite'
         aria-busy={false}
-        className='grid grid-cols-1 gap-3 auto-rows-[minmax(120px,auto)] @md/desa:grid-cols-6'
+        className='grid auto-rows-[minmax(120px,auto)] grid-cols-1 gap-3 @md/desa:grid-cols-6'
       >
-        <div className='@md/desa:col-span-6 @3xl/desa:col-span-4 row-span-2'>
+        <div className='row-span-2 @md/desa:col-span-6 @3xl/desa:col-span-4'>
           <TileHeroTrend
             summary={data.summary}
             trend={data.trendRataDesa}
             currentMonthKey={monthKey}
           />
         </div>
-        <div className='@md/desa:col-span-6 @3xl/desa:col-span-2 row-span-2'>
+        <div className='row-span-2 @md/desa:col-span-6 @3xl/desa:col-span-2'>
           <TileSensusDonut
             slices={data.sensusByCategory}
             sensusTotal={sensusTotal}
           />
         </div>
-        <div className='@md/desa:col-span-6 @2xl/desa:col-span-3 row-span-2'>
+        <div className='row-span-2 @md/desa:col-span-6 @2xl/desa:col-span-3'>
           <TileKehadiranMetrics rows={data.kehadiranMetrics} />
         </div>
-        <div className='@md/desa:col-span-6 @2xl/desa:col-span-3 row-span-2'>
+        <div className='row-span-2 @md/desa:col-span-6 @2xl/desa:col-span-3'>
           <TileProgramRanked rows={data.programRanked} />
         </div>
-        <div className='@md/desa:col-span-6 @2xl/desa:col-span-3 row-span-2'>
+        <div className='row-span-2 @md/desa:col-span-6 @2xl/desa:col-span-3'>
           <TileProgramMatrix
             rows={data.programKelompokMatrix}
             kelompoks={data.kelompoks}
             year={year}
           />
         </div>
-        <div className='@md/desa:col-span-6 @2xl/desa:col-span-3 row-span-2'>
+        <div className='row-span-2 @md/desa:col-span-6 @2xl/desa:col-span-3'>
           <TileSarprasChecklist rows={data.sarprasCompleteness} />
         </div>
-        <div className='@md/desa:col-span-6 row-span-2'>
+        <div className='row-span-2 @md/desa:col-span-6'>
           <TileShodaqohBars rows={data.shodaqohPerKelompok} />
         </div>
-        <div className='@md/desa:col-span-6 row-span-1'>
+        <div className='row-span-1 @md/desa:col-span-6'>
           <TileFullTrend
             lines={data.programTrendLines}
             desaTrend={data.trendRataDesa}

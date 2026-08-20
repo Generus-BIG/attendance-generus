@@ -17,7 +17,19 @@ export function ForbiddenError() {
           <Button variant='outline' onClick={() => history.go(-1)}>
             Go Back
           </Button>
-          <Button onClick={() => navigate({ to: '/admin/dashboard', search: { tab: 'desa', month: new Date().toLocaleDateString('sv').slice(0, 7) } })}>Back to Home</Button>
+          <Button
+            onClick={() =>
+              navigate({
+                to: '/admin/dashboard',
+                search: {
+                  tab: 'desa',
+                  month: new Date().toLocaleDateString('sv').slice(0, 7),
+                },
+              })
+            }
+          >
+            Back to Home
+          </Button>
         </div>
       </div>
     </div>

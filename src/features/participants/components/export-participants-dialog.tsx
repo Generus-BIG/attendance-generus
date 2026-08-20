@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
-import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { exportToExcel } from '@/lib/export'
 import { Button } from '@/components/ui/button'
@@ -108,19 +108,39 @@ export function ExportParticipantsDialog() {
       const dataToExport = filtered.map((p) => ({
         Nama: p.name || '-',
         Kelompok: p.kelompok || '-',
-        Kategori: p.kategori === 'A' ? 'GPN A' : p.kategori === 'B' ? 'GPN B' : p.kategori || '-',
+        Kategori:
+          p.kategori === 'A'
+            ? 'GPN A'
+            : p.kategori === 'B'
+              ? 'GPN B'
+              : p.kategori || '-',
         Gender: p.gender === 'L' ? 'Laki-laki' : 'Perempuan',
         Status: p.status === 'active' ? 'Aktif' : 'Nonaktif',
         'Tempat Lahir': p.birthPlace || '-',
-        'Tanggal Lahir': p.birthDate ? format(p.birthDate, 'dd MMMM yyyy', { locale: idLocale }) : '-',
-        'Tanggal Dibuat': p.createdAt instanceof Date ? format(p.createdAt, 'dd MMMM yyyy', { locale: idLocale }) : '-',
+        'Tanggal Lahir': p.birthDate
+          ? format(p.birthDate, 'dd MMMM yyyy', { locale: idLocale })
+          : '-',
+        'Tanggal Dibuat':
+          p.createdAt instanceof Date
+            ? format(p.createdAt, 'dd MMMM yyyy', { locale: idLocale })
+            : '-',
       }))
 
       // Subtitle meta
       const activeKelompokTitle =
-        (role === 'team_manager' ? userKelompok : selectedKelompok !== 'all' ? selectedKelompok : 'Semua Kelompok') || undefined
+        (role === 'team_manager'
+          ? userKelompok
+          : selectedKelompok !== 'all'
+            ? selectedKelompok
+            : 'Semua Kelompok') || undefined
       const activeKategoriTitle =
-        selectedKategori !== 'all' ? (selectedKategori === 'A' ? 'GPN A' : selectedKategori === 'B' ? 'GPN B' : selectedKategori) : 'Semua Kategori'
+        selectedKategori !== 'all'
+          ? selectedKategori === 'A'
+            ? 'GPN A'
+            : selectedKategori === 'B'
+              ? 'GPN B'
+              : selectedKategori
+          : 'Semua Kategori'
 
       await exportToExcel(dataToExport, 'Daftar_Peserta_MuMiBig', {
         title: 'Laporan Daftar Peserta GPN',
@@ -128,10 +148,22 @@ export function ExportParticipantsDialog() {
         metadata: {
           Kelompok: activeKelompokTitle,
           Kategori: activeKategoriTitle,
-          Status: selectedStatus !== 'all' ? (selectedStatus === 'active' ? 'Aktif' : 'Nonaktif') : 'Semua Status',
-          Gender: selectedGender !== 'all' ? (selectedGender === 'L' ? 'Laki-laki' : 'Perempuan') : 'Semua Gender',
+          Status:
+            selectedStatus !== 'all'
+              ? selectedStatus === 'active'
+                ? 'Aktif'
+                : 'Nonaktif'
+              : 'Semua Status',
+          Gender:
+            selectedGender !== 'all'
+              ? selectedGender === 'L'
+                ? 'Laki-laki'
+                : 'Perempuan'
+              : 'Semua Gender',
           'Jumlah Peserta': `${filtered.length} Orang`,
-          'Tanggal Unduh': format(new Date(), 'dd MMMM yyyy HH:mm', { locale: idLocale }),
+          'Tanggal Unduh': format(new Date(), 'dd MMMM yyyy HH:mm', {
+            locale: idLocale,
+          }),
         },
       })
 
@@ -141,7 +173,9 @@ export function ExportParticipantsDialog() {
     } catch (err: any) {
       // eslint-disable-next-line no-console
       console.error('Export failed:', err)
-      toast.error(`Gagal export peserta: ${err.message || 'Error tidak diketahui'}`)
+      toast.error(
+        `Gagal export peserta: ${err.message || 'Error tidak diketahui'}`
+      )
     } finally {
       setIsExporting(false)
     }
@@ -153,7 +187,8 @@ export function ExportParticipantsDialog() {
         <DialogHeader>
           <DialogTitle>Kustomisasi Export Peserta</DialogTitle>
           <DialogDescription>
-            Pilih filter peserta untuk diunduh sebagai file Microsoft Excel (.xlsx).
+            Pilih filter peserta untuk diunduh sebagai file Microsoft Excel
+            (.xlsx).
           </DialogDescription>
         </DialogHeader>
 
@@ -161,10 +196,16 @@ export function ExportParticipantsDialog() {
           {/* Kelompok (Admin Only) */}
           {role !== 'team_manager' && (
             <div className='grid gap-2'>
-              <Label htmlFor='export-kelompok-p' className='text-[13px] font-medium'>
+              <Label
+                htmlFor='export-kelompok-p'
+                className='text-[13px] font-medium'
+              >
                 Kelompok
               </Label>
-              <Select value={selectedKelompok} onValueChange={setSelectedKelompok}>
+              <Select
+                value={selectedKelompok}
+                onValueChange={setSelectedKelompok}
+              >
                 <SelectTrigger id='export-kelompok-p'>
                   <SelectValue placeholder='Pilih Kelompok' />
                 </SelectTrigger>
@@ -182,10 +223,16 @@ export function ExportParticipantsDialog() {
 
           {/* Kategori */}
           <div className='grid gap-2'>
-            <Label htmlFor='export-kategori-p' className='text-[13px] font-medium'>
+            <Label
+              htmlFor='export-kategori-p'
+              className='text-[13px] font-medium'
+            >
               Kategori
             </Label>
-            <Select value={selectedKategori} onValueChange={setSelectedKategori}>
+            <Select
+              value={selectedKategori}
+              onValueChange={setSelectedKategori}
+            >
               <SelectTrigger id='export-kategori-p'>
                 <SelectValue placeholder='Pilih Kategori' />
               </SelectTrigger>
@@ -201,7 +248,10 @@ export function ExportParticipantsDialog() {
 
           {/* Status */}
           <div className='grid gap-2'>
-            <Label htmlFor='export-status-p' className='text-[13px] font-medium'>
+            <Label
+              htmlFor='export-status-p'
+              className='text-[13px] font-medium'
+            >
               Status Keanggotaan
             </Label>
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
@@ -218,7 +268,10 @@ export function ExportParticipantsDialog() {
 
           {/* Gender */}
           <div className='grid gap-2'>
-            <Label htmlFor='export-gender-p' className='text-[13px] font-medium'>
+            <Label
+              htmlFor='export-gender-p'
+              className='text-[13px] font-medium'
+            >
               Jenis Kelamin
             </Label>
             <Select value={selectedGender} onValueChange={setSelectedGender}>
@@ -235,10 +288,18 @@ export function ExportParticipantsDialog() {
         </div>
 
         <DialogFooter>
-          <Button variant='outline' onClick={() => setOpen(null)} disabled={isExporting}>
+          <Button
+            variant='outline'
+            onClick={() => setOpen(null)}
+            disabled={isExporting}
+          >
             Batal
           </Button>
-          <Button onClick={handleExportSubmit} disabled={isExporting} className='bg-[#9A3412] hover:bg-[#7C2D12] text-white'>
+          <Button
+            onClick={handleExportSubmit}
+            disabled={isExporting}
+            className='bg-[#9A3412] text-white hover:bg-[#7C2D12]'
+          >
             {isExporting ? (
               <>
                 <Loader2 className='mr-2 h-4 w-4 animate-spin' />

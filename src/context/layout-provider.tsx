@@ -75,7 +75,7 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
 }
 
 // Define the hook for the provider
- 
+
 export function useLayout() {
   const context = useContext(LayoutContext)
   if (!context) {

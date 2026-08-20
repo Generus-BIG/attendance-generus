@@ -24,15 +24,13 @@ export type DefaultThemeSetting = {
 
 function isThemeValue(v: unknown): v is ThemeValue {
   return (
-    typeof v === 'string' &&
-    (THEME_VALUES as readonly string[]).includes(v)
+    typeof v === 'string' && (THEME_VALUES as readonly string[]).includes(v)
   )
 }
 
 function isPaletteValue(v: unknown): v is PaletteValue {
   return (
-    typeof v === 'string' &&
-    (PALETTE_VALUES as readonly string[]).includes(v)
+    typeof v === 'string' && (PALETTE_VALUES as readonly string[]).includes(v)
   )
 }
 
@@ -67,15 +65,13 @@ export async function getDefaultPalette(): Promise<DefaultPaletteSetting | null>
  * Bumping the row's updated_at forces all clients to pick up the change on next load.
  */
 export async function setDefaultPalette(palette: PaletteValue): Promise<void> {
-  const { error } = await supabase
-    .from('app_settings')
-    .upsert(
-      {
-        key: 'default_palette',
-        value: { palette },
-      },
-      { onConflict: 'key' }
-    )
+  const { error } = await supabase.from('app_settings').upsert(
+    {
+      key: 'default_palette',
+      value: { palette },
+    },
+    { onConflict: 'key' }
+  )
   if (error) throw error
 }
 
@@ -108,14 +104,12 @@ export async function getDefaultTheme(): Promise<DefaultThemeSetting | null> {
  * Bumping updated_at forces all clients to pick up the change on next load.
  */
 export async function setDefaultTheme(theme: ThemeValue): Promise<void> {
-  const { error } = await supabase
-    .from('app_settings')
-    .upsert(
-      {
-        key: 'default_theme',
-        value: { theme },
-      },
-      { onConflict: 'key' }
-    )
+  const { error } = await supabase.from('app_settings').upsert(
+    {
+      key: 'default_theme',
+      value: { theme },
+    },
+    { onConflict: 'key' }
+  )
   if (error) throw error
 }

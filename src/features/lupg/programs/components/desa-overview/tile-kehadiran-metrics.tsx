@@ -16,13 +16,13 @@ function barColor(pct: number | null): string {
 
 export function TileKehadiranMetrics({ rows }: Props) {
   return (
-    <div className='bg-card flex h-full flex-col rounded-lg border p-4'>
-      <div className='text-muted-foreground mb-3 text-xs font-medium uppercase tracking-wide'>
+    <div className='flex h-full flex-col rounded-lg border bg-card p-4'>
+      <div className='mb-3 text-xs font-medium tracking-wide text-muted-foreground uppercase'>
         Rata² Kehadiran
       </div>
       <div className='flex flex-1 flex-col gap-2'>
         {rows.length === 0 ? (
-          <div className='text-muted-foreground text-sm'>
+          <div className='text-sm text-muted-foreground'>
             Tidak ada metric aktif.
           </div>
         ) : (
@@ -39,7 +39,7 @@ export function TileKehadiranMetrics({ rows }: Props) {
             return (
               <div key={m.code} className='flex items-center gap-2'>
                 <div className='min-w-0 flex-1 truncate text-xs'>{m.name}</div>
-                <div className='bg-muted h-1.5 w-24 overflow-hidden rounded'>
+                <div className='h-1.5 w-24 overflow-hidden rounded bg-muted'>
                   <div
                     className={cn('h-full', barColor(m.pct))}
                     style={{ width: `${Math.min(100, pct)}%` }}

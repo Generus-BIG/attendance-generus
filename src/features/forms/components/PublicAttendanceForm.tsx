@@ -141,18 +141,21 @@ export function PublicAttendanceForm({
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  const { data: participants = [], isLoading: isLoadingParticipants } =
-    useQuery({
-      queryKey: [
-        'participants',
-        debouncedQuery,
-        formConfig.allowedCategories,
-        formConfig.id,
-      ],
-      queryFn: () => searchParticipants(formConfig.id, debouncedQuery),
-      enabled: open, // Fetch when popover is open, even with empty query
-      staleTime: 1000 * 60, // 1 minute
-    })
+  const {
+    data: participants = [],
+    isError: isParticipantSearchError,
+    isLoading: isLoadingParticipants,
+  } = useQuery({
+    queryKey: [
+      'participants',
+      debouncedQuery,
+      formConfig.allowedCategories,
+      formConfig.id,
+    ],
+    queryFn: () => searchParticipants(formConfig.id, debouncedQuery),
+    enabled: open, // Fetch when popover is open, even with empty query
+    staleTime: 1000 * 60, // 1 minute
+  })
 
   async function onSubmit(data: PublicFormValues) {
     setIsSubmitting(true)
@@ -360,6 +363,16 @@ export function PublicAttendanceForm({
                               </CommandGroup>
                             )}
                             {!isLoadingParticipants &&
+                              isParticipantSearchError && (
+                                <CommandEmpty className='py-4 text-center text-[15px]'>
+                                  <span className='font-medium text-destructive'>
+                                    Pencarian peserta sedang tidak tersedia.
+                                    Silakan coba lagi.
+                                  </span>
+                                </CommandEmpty>
+                              )}
+                            {!isLoadingParticipants &&
+                              !isParticipantSearchError &&
                               participants.length === 0 && (
                                 <CommandEmpty className='py-4 text-center text-[15px]'>
                                   <div className='flex flex-col items-center justify-center gap-3 px-4 py-2'>

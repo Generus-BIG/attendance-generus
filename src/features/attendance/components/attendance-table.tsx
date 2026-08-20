@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { format, parseISO } from 'date-fns'
 import { useQuery } from '@tanstack/react-query'
 import {
   type SortingState,
@@ -12,7 +13,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { format, parseISO } from 'date-fns'
 import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
 import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
@@ -28,7 +28,10 @@ import {
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { TableSkeleton } from '@/components/data-table/table-skeleton'
 import { DatePicker } from '@/components/date-picker'
-import { kelompokOptions, kategoriOptions } from '@/features/participants/data/data'
+import {
+  kelompokOptions,
+  kategoriOptions,
+} from '@/features/participants/data/data'
 import { attendanceStatusOptions } from '../data/data'
 import { getAttendanceList } from '../services'
 import {
@@ -81,8 +84,7 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
     isLoading,
   } = useQuery<AttendanceWithParticipant[]>({
     queryKey: ['attendance_list', tmGroupId, fromDate, toDate],
-    queryFn: () =>
-      getAttendanceList(tmGroupId, { from: fromDate, to: toDate }),
+    queryFn: () => getAttendanceList(tmGroupId, { from: fromDate, to: toDate }),
     enabled: isTmReady,
   })
 
@@ -141,7 +143,6 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
     ],
   })
 
-   
   const table = useReactTable({
     data,
     columns,
@@ -178,7 +179,7 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
       )}
     >
       <div className='flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2'>
-        <span className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+        <span className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
           Periode
         </span>
         <div className='flex w-full items-center gap-1.5 sm:w-auto'>
@@ -195,7 +196,7 @@ export function AttendanceTable({ search, navigate }: DataTableProps) {
             placeholder='Dari'
             className='flex-1 sm:w-44 sm:flex-none'
           />
-          <span className='text-muted-foreground text-xs'>—</span>
+          <span className='text-xs text-muted-foreground'>—</span>
           <DatePicker
             selected={toDate ? parseISO(toDate) : undefined}
             onSelect={(d) =>

@@ -2,8 +2,8 @@ import { Download, Plus } from 'lucide-react'
 import { usePermissions } from '@/hooks/use-permissions'
 import { Button } from '@/components/ui/button'
 import { PermissionGate } from '@/components/permission-gate'
-import { useParticipants } from './participants-provider'
 import { useParticipantsCRUD } from '../context/participants-context'
+import { useParticipants } from './participants-provider'
 
 export function ParticipantsPrimaryButtons() {
   const { setOpen } = useParticipants()

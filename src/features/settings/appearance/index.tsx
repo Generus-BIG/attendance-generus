@@ -1,8 +1,8 @@
 import { useAuthStore } from '@/stores/auth-store'
 import { Separator } from '@/components/ui/separator'
 import { ContentSection } from '../components/content-section'
-import { OrganizationThemeForm } from './organization-theme-form'
 import { OrganizationDarkModeForm } from './organization-dark-mode-form'
+import { OrganizationThemeForm } from './organization-theme-form'
 
 export function SettingsAppearance() {
   const role = useAuthStore((s) => s.auth.role)
@@ -16,7 +16,8 @@ export function SettingsAppearance() {
         desc='Customize the appearance of the organization.'
       >
         <div className='text-sm text-muted-foreground'>
-          Anda tidak memiliki akses untuk mengubah pengaturan tampilan organisasi.
+          Anda tidak memiliki akses untuk mengubah pengaturan tampilan
+          organisasi.
         </div>
       </ContentSection>
     )

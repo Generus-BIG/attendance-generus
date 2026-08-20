@@ -4,7 +4,6 @@ export function isFormsSubdomain(hostname = window.location.hostname) {
 
 export function shouldRenderFormsSubdomainRouter() {
   return (
-    import.meta.env.VITE_FORCE_FORMS_SUBDOMAIN === 'true' ||
-    isFormsSubdomain()
+    import.meta.env.VITE_FORCE_FORMS_SUBDOMAIN === 'true' || isFormsSubdomain()
   )
 }

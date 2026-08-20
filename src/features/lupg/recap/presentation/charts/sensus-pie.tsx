@@ -1,8 +1,8 @@
 // Sensus pie chart (kelompok mode) — solid pie of the 5 generus categories with external labels.
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
+import { usePresentationAnimation } from '../context/animation-context'
 import { getSensusColor } from '../theme'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
-import { usePresentationAnimation } from '../context/animation-context'
 import { EditorialTooltipShell } from './chart-primitives'
 
 type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR'
@@ -172,10 +172,11 @@ export function SensusPie({ data }: SensusPieProps) {
           labelLine={false}
         >
           {enriched.map((d) => {
-            const isModern = typeof window !== 'undefined' && document.documentElement.getAttribute('data-palette') === 'modern-natural'
-            return (
-              <Cell key={d.code} fill={getSensusColor(d.code, isModern)} />
-            )
+            const isModern =
+              typeof window !== 'undefined' &&
+              document.documentElement.getAttribute('data-palette') ===
+                'modern-natural'
+            return <Cell key={d.code} fill={getSensusColor(d.code, isModern)} />
           })}
         </Pie>
       </PieChart>

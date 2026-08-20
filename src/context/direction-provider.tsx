@@ -51,7 +51,6 @@ export function DirectionProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
- 
 export function useDirection() {
   const context = useContext(DirectionContext)
   if (!context) {

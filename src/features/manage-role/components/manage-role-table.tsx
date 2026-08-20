@@ -58,7 +58,6 @@ export function ManageRoleTable({ search, navigate }: DataTableProps) {
     ],
   })
 
-   
   const table = useReactTable({
     data,
     columns,

@@ -12,8 +12,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import { usePresentationAnimation } from '../context/animation-context'
+import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import {
   EditorialTooltipShell,
   hairlineAxisProps,

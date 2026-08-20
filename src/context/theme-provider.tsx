@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useMemo } from 'react'
-import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 import { getDefaultTheme } from '@/lib/app-settings.service'
+import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 
 type Theme = 'dark' | 'light' | 'system'
 type ResolvedTheme = Exclude<Theme, 'system'>
@@ -134,7 +134,6 @@ export function ThemeProvider({
   )
 }
 
- 
 export const useTheme = () => {
   const context = useContext(ThemeContext)
 

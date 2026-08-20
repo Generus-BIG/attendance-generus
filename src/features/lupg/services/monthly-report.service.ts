@@ -1,8 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import {
-  type MonthlyReportRow,
-  type MonthlyReportInsert,
-} from '../types'
+import { type MonthlyReportRow, type MonthlyReportInsert } from '../types'
 
 function firstDayOfMonth(month: string | Date): string {
   const d = typeof month === 'string' ? new Date(`${month}-01`) : month

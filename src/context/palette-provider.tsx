@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 import { getDefaultPalette } from '@/lib/app-settings.service'
+import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 
 export type Palette = 'modern-natural' | 'anthropic-claude' | 'sage-green'
 
@@ -111,7 +111,6 @@ export function PaletteProvider({
   )
 }
 
- 
 export const usePalette = () => {
   const context = useContext(PaletteContext)
   if (!context)

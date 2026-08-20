@@ -52,7 +52,10 @@
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://generusbig.my.id" />
-    <meta property="twitter:title" content="Generus Desa BIG - Admin Dashboard" />
+    <meta
+      property="twitter:title"
+      content="Generus Desa BIG - Admin Dashboard"
+    />
     <meta
       property="twitter:description"
       content="Keep participant data, attendance tracking, absence records, and monthly reports organized in one dynamic dashboard."
@@ -63,7 +66,11 @@
     />
 
     <!-- Preconnect to Supabase API (heaviest critical-path origin) -->
-    <link rel="preconnect" href="https://obvvznynkrkgxuckgncz.supabase.co" crossorigin />
+    <link
+      rel="preconnect"
+      href="https://obvvznynkrkgxuckgncz.supabase.co"
+      crossorigin
+    />
 
     <!-- Font families — baseline Geist + palette fonts (DM Sans, Outfit, Plus Jakarta Sans, Lora, JetBrains Mono, IBM Plex Mono) + Archivo Black (LUPG presentation display) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -72,7 +79,10 @@
       rel="preload"
       as="style"
       href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Archivo+Black&display=swap"
-      onload="this.onload=null;this.rel='stylesheet'"
+      onload="
+        this.onload = null
+        this.rel = 'stylesheet'
+      "
     />
     <noscript>
       <link
@@ -106,7 +116,8 @@
             if (!(target instanceof HTMLElement)) return
 
             const assetUrl =
-              target instanceof HTMLScriptElement || target instanceof HTMLImageElement
+              target instanceof HTMLScriptElement ||
+              target instanceof HTMLImageElement
                 ? target.src
                 : target instanceof HTMLLinkElement
                   ? target.href

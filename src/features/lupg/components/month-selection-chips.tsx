@@ -125,7 +125,7 @@ export function MonthSelectionChips({
   return (
     <div
       className={cn(
-        'bg-background inline-flex max-w-full items-center gap-0.5 rounded-full border px-1 py-0.5 shadow-sm',
+        'inline-flex max-w-full items-center gap-0.5 rounded-full border bg-background px-1 py-0.5 shadow-sm',
         className
       )}
       role='group'
@@ -137,7 +137,7 @@ export function MonthSelectionChips({
           aria-label='Geser kiri'
           onClick={() => scrollByAmount(-step)}
           disabled={!canScrollLeft}
-          className='text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-150 active:scale-90 focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-25'
+          className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-all duration-150 hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-90 disabled:pointer-events-none disabled:opacity-25'
         >
           <ChevronLeft className='h-3.5 w-3.5' />
         </button>
@@ -165,7 +165,7 @@ export function MonthSelectionChips({
               aria-pressed={active}
               style={{ scrollSnapAlign: 'start' }}
               className={cn(
-                'focus-visible:ring-ring flex h-7 shrink-0 items-center justify-center rounded-full px-3 text-xs font-medium whitespace-nowrap transition-all duration-150 focus-visible:ring-2 focus-visible:outline-none',
+                'flex h-7 shrink-0 items-center justify-center rounded-full px-3 text-xs font-medium whitespace-nowrap transition-all duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                 active
                   ? 'bg-foreground text-background shadow-sm'
                   : 'text-muted-foreground hover:text-foreground',
@@ -185,7 +185,7 @@ export function MonthSelectionChips({
           aria-label='Geser kanan'
           onClick={() => scrollByAmount(step)}
           disabled={!canScrollRight}
-          className='text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-150 active:scale-90 focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-25'
+          className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-all duration-150 hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-90 disabled:pointer-events-none disabled:opacity-25'
         >
           <ChevronRight className='h-3.5 w-3.5' />
         </button>

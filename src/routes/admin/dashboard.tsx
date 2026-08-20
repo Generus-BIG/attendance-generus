@@ -1,7 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
-import { Dashboard } from '@/features/dashboard'
 import { format } from 'date-fns'
+import { createFileRoute } from '@tanstack/react-router'
+import { Dashboard } from '@/features/dashboard'
 
 const dashboardSearchSchema = z.object({
   tab: z.enum(['desa', 'kelompok']).catch('desa'),
