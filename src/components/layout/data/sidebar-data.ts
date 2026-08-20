@@ -1,7 +1,7 @@
-import { Command, GalleryVerticalEnd } from 'lucide-react'
 import { type LinkProps } from '@tanstack/react-router'
-import { type Role } from '@/lib/rbac'
+import { Command, GalleryVerticalEnd } from 'lucide-react'
 import { type Workspace } from '@/stores/workspace-store'
+import { type Role } from '@/lib/rbac'
 import { type SidebarData, type WorkspaceTeam } from '../types'
 import { getAbsensiNavGroups } from './sidebar-data-absensi'
 import { getLupgNavGroups } from './sidebar-data-lupg'
@@ -33,6 +33,14 @@ export const WORKSPACE_DEFAULT_PATH: Record<Workspace, LinkProps['to']> = {
   lupg: '/admin/lupg/reports',
 }
 
+export function getWorkspaceDefaultPath(
+  workspace: Workspace,
+  role: Role
+): LinkProps['to'] | (string & {}) {
+  if (role === 'mt') return '/admin/lupg/phq/summary'
+  return WORKSPACE_DEFAULT_PATH[workspace]
+}
+
 export function getSidebarData(
   role: Role,
   _kelompok: string | null,
@@ -40,7 +48,7 @@ export function getSidebarData(
   workspace: Workspace
 ): SidebarData {
   const navGroups =
-    workspace === 'lupg'
+    workspace === 'lupg' || role === 'mt'
       ? getLupgNavGroups(role)
       : getAbsensiNavGroups(role)
 
