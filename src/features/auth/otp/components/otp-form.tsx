@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useTransition } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -32,7 +32,7 @@ type OtpFormProps = React.HTMLAttributes<HTMLFormElement>
 
 export function OtpForm({ className, ...props }: OtpFormProps) {
   const navigate = useNavigate()
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, startTransition] = useTransition()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,11 +42,10 @@ export function OtpForm({ className, ...props }: OtpFormProps) {
   const otp = form.watch('otp')
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    setIsLoading(true)
-    showSubmittedData(data)
+    startTransition(async () => {
+      showSubmittedData(data)
 
-    setTimeout(() => {
-      setIsLoading(false)
+      await new Promise((resolve) => setTimeout(resolve, 1000))
       navigate({
         to: '/admin/dashboard',
         search: {
@@ -54,7 +53,7 @@ export function OtpForm({ className, ...props }: OtpFormProps) {
           month: new Date().toLocaleDateString('sv').slice(0, 7),
         },
       })
-    }, 1000)
+    })
   }
 
   return (

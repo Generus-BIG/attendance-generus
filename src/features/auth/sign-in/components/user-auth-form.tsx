@@ -62,12 +62,11 @@ export function UserAuthForm({
         password: data.password,
       })
 
-      if (error) {
-        analytics.signInFailed(data.email, error.message)
-        toast.error(error.message)
-        setIsLoading(false)
-        return
-      }
+        if (error) {
+          analytics.signInFailed(data.email, error.message)
+          toast.error(error.message)
+          return
+        }
 
       analytics.signIn(data.email, true)
       toast.success('Berhasil masuk')
@@ -78,6 +77,7 @@ export function UserAuthForm({
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'
       analytics.signInFailed(data.email, errorMessage)
       toast.error('Terjadi kesalahan')
+    } finally {
       setIsLoading(false)
     }
   }
