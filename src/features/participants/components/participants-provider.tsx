@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { type Participant } from '@/lib/schema'
 import useDialogState from '@/hooks/use-dialog-state'
 
@@ -25,17 +25,21 @@ export function ParticipantsProvider({
   const [open, setOpen] = useDialogState<ParticipantsDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Participant | null>(null)
   const [refreshData, setRefreshData] = useState<() => void>(() => () => {})
+  const contextValue = useMemo(
+    () => ({
+      open,
+      setOpen,
+      currentRow,
+      setCurrentRow,
+      refreshData,
+      setRefreshData,
+    }),
+    [open, setOpen, currentRow, refreshData]
+  )
 
   return (
     <ParticipantsContext
-      value={{
-        open,
-        setOpen,
-        currentRow,
-        setCurrentRow,
-        refreshData,
-        setRefreshData,
-      }}
+      value={contextValue}
     >
       {children}
     </ParticipantsContext>

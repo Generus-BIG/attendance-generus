@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { type ManagedUser } from '../types'
 
@@ -22,9 +22,13 @@ export function ManageRoleProvider({
 }) {
   const [open, setOpen] = useDialogState<ManageRoleDialogType>(null)
   const [currentRow, setCurrentRow] = useState<ManagedUser | null>(null)
+  const contextValue = useMemo(
+    () => ({ open, setOpen, currentRow, setCurrentRow }),
+    [open, setOpen, currentRow]
+  )
 
   return (
-    <ManageRoleContext value={{ open, setOpen, currentRow, setCurrentRow }}>
+    <ManageRoleContext value={contextValue}>
       {children}
     </ManageRoleContext>
   )
