@@ -1,5 +1,11 @@
 import { useMemo } from 'react'
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import {
   Card,
   CardContent,

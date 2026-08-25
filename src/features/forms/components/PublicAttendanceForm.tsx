@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useReducer } from 'react'
 import { z } from 'zod'
 import { format } from 'date-fns'
 import { useForm } from 'react-hook-form'
@@ -99,17 +99,38 @@ interface PublicAttendanceFormProps {
 export function PublicAttendanceForm({
   formConfig,
 }: PublicAttendanceFormProps) {
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submittedName, setSubmittedName] = useState('')
-  const [submittedGender, setSubmittedGender] = useState<
-    'L' | 'P' | undefined
-  >()
-
-  // Search state
-  const [open, setOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [state, setState] = useReducer(
+    (
+      current: {
+        isSubmitted: boolean
+        isSubmitting: boolean
+        submittedName: string
+        submittedGender: 'L' | 'P' | undefined
+        open: boolean
+        searchQuery: string
+        debouncedQuery: string
+      },
+      change: Partial<typeof current>
+    ) => ({ ...current, ...change }),
+    {
+      isSubmitted: false,
+      isSubmitting: false,
+      submittedName: '',
+      submittedGender: undefined,
+      open: false,
+      searchQuery: '',
+      debouncedQuery: '',
+    }
+  )
+  const {
+    isSubmitted,
+    isSubmitting,
+    submittedName,
+    submittedGender,
+    open,
+    searchQuery,
+    debouncedQuery,
+  } = state
 
   const form = useForm<PublicFormValues>({
     resolver: zodResolver(publicFormSchema),
@@ -136,7 +157,7 @@ export function PublicAttendanceForm({
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedQuery(searchQuery)
+      setState({ debouncedQuery: searchQuery })
     }, 300)
     return () => clearTimeout(timer)
   }, [searchQuery])
@@ -158,7 +179,7 @@ export function PublicAttendanceForm({
   })
 
   async function onSubmit(data: PublicFormValues) {
-    setIsSubmitting(true)
+    setState({ isSubmitting: true })
     try {
       await submitAttendanceForm(formConfig.id, {
         participantId: data.participantId ?? undefined,
@@ -170,14 +191,16 @@ export function PublicAttendanceForm({
         tempKategori: data.tempKategori,
         tempGender: data.tempGender,
       })
-      setSubmittedName(data.tempName)
-      setSubmittedGender(data.tempGender)
-      setIsSubmitted(true)
+      setState({
+        submittedName: data.tempName,
+        submittedGender: data.tempGender,
+        isSubmitted: true,
+      })
       toast.success('Absensi berhasil dikirim!')
     } catch (_error) {
       toast.error('Gagal mengirim absensi. Silakan coba lagi.')
     } finally {
-      setIsSubmitting(false)
+      setState({ isSubmitting: false })
     }
   }
 
@@ -214,7 +237,7 @@ export function PublicAttendanceForm({
       form.setValue('tempKategori', category as (typeof KATEGORI)[number])
     }
 
-    setOpen(false)
+    setState({ open: false })
   }
 
   if (isSubmitted) {
@@ -230,7 +253,7 @@ export function PublicAttendanceForm({
         <CardContent className='flex flex-col items-center gap-6 px-6 pt-10 pb-8 text-center sm:px-10 sm:pt-12'>
           <div className='flex h-16 w-16 items-center justify-center rounded-full bg-green-50'>
             <CheckCircle2
-              className='h-10 w-10 animate-in text-green-500 duration-300 ease-out zoom-in motion-reduce:animate-none'
+              className='h-10 w-10 animate-in text-green-500 transition-[transform] duration-300 ease-out zoom-in motion-reduce:animate-none'
               strokeWidth={1.75}
             />
           </div>
@@ -269,9 +292,11 @@ export function PublicAttendanceForm({
             variant='outline'
             className='h-11 min-w-40 rounded-lg px-6 text-[14px] font-semibold'
             onClick={() => {
-              setIsSubmitted(false)
-              setSubmittedName('')
-              setSubmittedGender(undefined)
+              setState({
+                isSubmitted: false,
+                submittedName: '',
+                submittedGender: undefined,
+              })
               form.reset({
                 participantId: undefined,
                 tempName: '',
@@ -282,8 +307,7 @@ export function PublicAttendanceForm({
                 permissionReason: undefined,
                 notes: '',
               })
-              setSearchQuery('')
-              setDebouncedQuery('')
+              setState({ searchQuery: '', debouncedQuery: '' })
             }}
           >
             Kirim absensi lain
@@ -322,7 +346,10 @@ export function PublicAttendanceForm({
                     <FormLabel className='text-[15px] font-semibold text-foreground'>
                       Nama Lengkap
                     </FormLabel>
-                    <Popover open={open} onOpenChange={setOpen}>
+                    <Popover
+                      open={open}
+                      onOpenChange={(open) => setState({ open })}
+                    >
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -347,7 +374,9 @@ export function PublicAttendanceForm({
                           <CommandInput
                             placeholder='Cari nama...'
                             value={searchQuery}
-                            onValueChange={setSearchQuery}
+                            onValueChange={(searchQuery) =>
+                              setState({ searchQuery })
+                            }
                             autoCapitalize='words'
                             autoCorrect='off'
                             spellCheck={false}
@@ -596,7 +625,7 @@ export function PublicAttendanceForm({
               />
 
               {attendanceStatus === 'izin' && (
-                <div className='animate-in space-y-6 pt-2 duration-200 ease-out fade-in slide-in-from-top-2 motion-reduce:animate-none'>
+                <div className='animate-in space-y-6 pt-2 transition-[opacity,transform] duration-200 ease-out fade-in slide-in-from-top-2 motion-reduce:animate-none'>
                   <FormField
                     control={form.control}
                     name='permissionReason'
@@ -639,7 +668,7 @@ export function PublicAttendanceForm({
                       control={form.control}
                       name='notes'
                       render={({ field }) => (
-                        <FormItem className='flex animate-in flex-col space-y-2 duration-200 ease-out fade-in slide-in-from-top-2 motion-reduce:animate-none'>
+                        <FormItem className='flex animate-in flex-col space-y-2 transition-[opacity,transform] duration-200 ease-out fade-in slide-in-from-top-2 motion-reduce:animate-none'>
                           <FormLabel className='text-[15px] font-semibold text-foreground'>
                             Detail Izin{' '}
                             <span className='text-destructive'>*</span>

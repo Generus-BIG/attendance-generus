@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { type Task } from '../data/schema'
 
@@ -16,9 +16,13 @@ const TasksContext = React.createContext<TasksContextType | null>(null)
 export function TasksProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useDialogState<TasksDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Task | null>(null)
+  const contextValue = useMemo(
+    () => ({ open, setOpen, currentRow, setCurrentRow }),
+    [open, setOpen, currentRow]
+  )
 
   return (
-    <TasksContext value={{ open, setOpen, currentRow, setCurrentRow }}>
+    <TasksContext value={contextValue}>
       {children}
     </TasksContext>
   )

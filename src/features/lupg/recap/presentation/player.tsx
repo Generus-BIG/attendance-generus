@@ -1,5 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  AnimatePresence,
+  domAnimation,
+  LazyMotion,
+  m,
+  useReducedMotion,
+} from 'framer-motion'
 import {
   ChevronLeft,
   ChevronRight,
@@ -33,9 +39,11 @@ interface PresentationPlayerProps {
 
 export function PresentationPlayer(props: PresentationPlayerProps) {
   return (
-    <AnimationProvider>
-      <PresentationPlayerInner {...props} />
-    </AnimationProvider>
+    <LazyMotion features={domAnimation}>
+      <AnimationProvider>
+        <PresentationPlayerInner {...props} />
+      </AnimationProvider>
+    </LazyMotion>
   )
 }
 
@@ -166,7 +174,7 @@ function ControlChoices<T extends string>({
                 {choiceLabel}
               </span>
               {active && (
-                <motion.span
+                <m.span
                   layoutId={layoutId}
                   className='absolute right-0 bottom-1 left-0 h-0.5 rounded-full bg-primary'
                   transition={
@@ -219,20 +227,16 @@ function PresentationPlayerInner({
   }, [])
 
   const handleNext = useCallback(() => {
-    setSlideIndex((current) => {
-      if (current >= slides.length - 1) return current
-      setDirection(1)
-      return current + 1
-    })
-  }, [slides.length])
+    if (slideIndex >= slides.length - 1) return
+    setDirection(1)
+    setSlideIndex(slideIndex + 1)
+  }, [slideIndex, slides.length])
 
   const handlePrev = useCallback(() => {
-    setSlideIndex((current) => {
-      if (current <= 0) return current
-      setDirection(-1)
-      return current - 1
-    })
-  }, [])
+    if (slideIndex <= 0) return
+    setDirection(-1)
+    setSlideIndex(slideIndex - 1)
+  }, [slideIndex])
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -347,27 +351,26 @@ function PresentationPlayerInner({
           ref={parentRef}
           className='relative flex min-w-0 flex-1 items-center justify-center overflow-hidden'
         >
-          {isLoading || !currentSlide ? (
-            <div className='flex h-full items-center justify-center text-muted-foreground'>
-              <Loader2 className='mr-2 h-6 w-6 animate-spin' />
-              Memuat...
-            </div>
-          ) : (
-            <>
-              <div
-                style={{
-                  width: '1280px',
-                  height: '720px',
-                  transform: `scale(${scale})`,
-                  transformOrigin: 'center center',
-                  flexShrink: 0,
-                  containerType: 'size',
-                  background: p.bg,
-                }}
-                className='relative flex items-center justify-center overflow-hidden'
-              >
-                <AnimatePresence mode='wait' custom={direction}>
-                  <motion.div
+          <div
+            style={{
+              width: '1280px',
+              height: '720px',
+              transform: `scale(${scale})`,
+              transformOrigin: 'center center',
+              flexShrink: 0,
+              containerType: 'size',
+              background: p.bg,
+            }}
+            className='relative flex items-center justify-center overflow-hidden'
+          >
+            <AnimatePresence mode='wait' custom={direction}>
+              {isLoading || !currentSlide ? (
+                <div className='flex h-full items-center justify-center text-muted-foreground'>
+                  <Loader2 className='mr-2 h-6 w-6 animate-spin' />
+                  Memuat...
+                </div>
+              ) : (
+                  <m.div
                     key={clampedIndex}
                     custom={direction}
                     variants={{
@@ -406,14 +409,22 @@ function PresentationPlayerInner({
                     }
                     className='h-full w-full overflow-hidden'
                   >
-                    <div className='h-full w-full select-none'>
-                      {currentSlide.render()}
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </>
-          )}
+                    <Suspense
+                      fallback={
+                        <div className='flex h-full w-full items-center justify-center text-muted-foreground'>
+                          <Loader2 className='mr-2 h-6 w-6 animate-spin' />
+                          Memuat...
+                        </div>
+                      }
+                    >
+                      <div className='h-full w-full select-none'>
+                        {currentSlide.render()}
+                      </div>
+                    </Suspense>
+                  </m.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
         <Button
           variant='ghost'

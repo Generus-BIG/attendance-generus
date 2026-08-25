@@ -1,6 +1,12 @@
 // Sarpras donut chart (kelompok mode) — % fulfilled with center label and
 // 2-slice legend. Sudah uses palette.success, Belum uses palette.muted at 35%.
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
+import {
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts'
 import { usePresentationAnimation } from '../context/animation-context'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import { EditorialTooltipShell } from './chart-primitives'

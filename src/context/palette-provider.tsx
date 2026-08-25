@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { getDefaultPalette } from '@/lib/app-settings.service'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 
@@ -91,19 +91,25 @@ export function PaletteProvider({
     }
   }, [storageKey])
 
-  const setPalette = (next: Palette) => {
-    setCookie(storageKey, next, PALETTE_COOKIE_MAX_AGE)
-    _setPalette(next)
-  }
-
-  const resetPalette = () => {
-    removeCookie(storageKey)
-    _setPalette(defaultPalette)
-  }
+  const contextValue = useMemo(
+    () => ({
+      defaultPalette,
+      palette,
+      setPalette: (next: Palette) => {
+        setCookie(storageKey, next, PALETTE_COOKIE_MAX_AGE)
+        _setPalette(next)
+      },
+      resetPalette: () => {
+        removeCookie(storageKey)
+        _setPalette(defaultPalette)
+      },
+    }),
+    [defaultPalette, palette, storageKey]
+  )
 
   return (
     <PaletteContext
-      value={{ defaultPalette, palette, setPalette, resetPalette }}
+      value={contextValue}
       {...props}
     >
       {children}

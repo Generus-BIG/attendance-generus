@@ -83,9 +83,10 @@ export const participantService = {
 
   bulkUpdateStatus(ids: string[], status: 'active' | 'inactive'): number {
     const all = this.getAll()
+    const idSet = new Set(ids)
     let count = 0
     const updated = all.map((p) => {
-      if (ids.includes(p.id)) {
+      if (idSet.has(p.id)) {
         count++
         return { ...p, status, updatedAt: new Date() }
       }

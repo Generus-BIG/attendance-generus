@@ -89,21 +89,22 @@ export function PhqSummaryPage({ initialMonthKey, initialKelompokId }: Props) {
   const data = scopes.flatMap((scope) => (scope.data ? [scope.data] : []))
   const nameByGroup = new Map(groups.map((group) => [group.id, group.value]))
   const rows = data.flatMap((scope) =>
-    scope.participants
-      .filter((participant) => participant.status_active)
-      .map((participant) => {
-        const statuses = scope.meetings.flatMap((meeting) => {
-          const status = scope.attendance.find(
-            (row) =>
-              row.participant_id === participant.id &&
-              row.meeting_id === meeting.id
-          )?.status
-          return [status as AttendanceStatus | undefined]
-        })
-        const scores = scope.progress
-          .filter((row) => row.participant_id === participant.id)
-          .map((row) => row.score)
-        return {
+    scope.participants.flatMap((participant) => {
+      if (!participant.status_active) return []
+      const statuses = scope.meetings.flatMap((meeting) => {
+        const status = scope.attendance.find(
+          (row) =>
+            row.participant_id === participant.id &&
+            row.meeting_id === meeting.id
+        )?.status
+        return [status as AttendanceStatus | undefined]
+      })
+      const scores = scope.progress.reduce<number[]>((scores, row) => {
+        if (row.participant_id === participant.id) scores.push(row.score)
+        return scores
+      }, [])
+      return [
+        {
           participant,
           kelompok: nameByGroup.get(scope.id) ?? '-',
           attendance: calculateAttendancePercent(
@@ -126,14 +127,17 @@ export function PhqSummaryPage({ initialMonthKey, initialKelompokId }: Props) {
               )
             )
             .find(Boolean),
-        }
-      })
+        },
+      ]
+    })
   )
   const activeCount =
     rows.length ||
     (scope.kelompokId && !isDesa
-      ? localParticipants.filter((participant) => participant.status_active)
-          .length
+      ? localParticipants.reduce(
+          (count, participant) => count + Number(participant.status_active),
+          0
+        )
       : 0)
   const averageAttendance = calculateAverageAttendancePercent(rows)
   const scoredRows = rows.filter((row) => row.score !== null)
@@ -143,28 +147,33 @@ export function PhqSummaryPage({ initialMonthKey, initialKelompokId }: Props) {
     : 0
   const meetingTrends = data.flatMap((scope) =>
     scope.meetings.map((meeting, index) => {
-      const scores = scope.progress
-        .filter((row) => row.meeting_id === meeting.id)
-        .map((row) => row.score)
+      const scores = scope.progress.reduce<number[]>((scores, row) => {
+        if (row.meeting_id === meeting.id) scores.push(row.score)
+        return scores
+      }, [])
       return {
         label: `${nameByGroup.get(scope.id) ?? '-'} M${index + 1}`,
         score: scores.length
           ? scores.reduce((sum, score) => sum + score, 0) / scores.length
           : null,
         attendance: calculateAverageAttendancePercent(
-          scope.participants
-            .filter((participant) => participant.status_active)
-            .map((participant) => ({
-              attendance: scope.attendance.some(
-                (row) =>
-                  row.participant_id === participant.id &&
-                  row.meeting_id === meeting.id &&
-                  row.status === 'hadir'
-              )
-                ? 100
-                : 0,
-              meetingCount: 1,
-            }))
+          scope.participants.flatMap((participant) =>
+            participant.status_active
+              ? [
+                  {
+                    attendance: scope.attendance.some(
+                      (row) =>
+                        row.participant_id === participant.id &&
+                        row.meeting_id === meeting.id &&
+                        row.status === 'hadir'
+                    )
+                      ? 100
+                      : 0,
+                    meetingCount: 1,
+                  },
+                ]
+              : []
+          )
         ),
       }
     })

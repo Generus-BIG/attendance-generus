@@ -29,10 +29,10 @@ export function ProgramEditableRow({
 }: Props) {
   const upsert = useUpsertProgramMonth()
   const [denominator, setDenominator] = useState(
-    existing?.denominator?.toString() ?? ''
+    () => existing?.denominator?.toString() ?? ''
   )
   const [count, setCount] = useState(
-    existing?.count_this_month?.toString() ?? ''
+    () => existing?.count_this_month?.toString() ?? ''
   )
   const [notes, setNotes] = useState(existing?.notes ?? '')
 

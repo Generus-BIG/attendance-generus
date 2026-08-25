@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 import { getCookie, setCookie } from '@/lib/cookies'
 
 export type Collapsible = 'offcanvas' | 'icon' | 'none'
@@ -42,34 +42,41 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
     return (saved as Variant) || DEFAULT_VARIANT
   })
 
-  const setCollapsible = (newCollapsible: Collapsible) => {
-    _setCollapsible(newCollapsible)
-    setCookie(
-      LAYOUT_COLLAPSIBLE_COOKIE_NAME,
-      newCollapsible,
-      LAYOUT_COOKIE_MAX_AGE
-    )
-  }
-
-  const setVariant = (newVariant: Variant) => {
-    _setVariant(newVariant)
-    setCookie(LAYOUT_VARIANT_COOKIE_NAME, newVariant, LAYOUT_COOKIE_MAX_AGE)
-  }
-
-  const resetLayout = () => {
-    setCollapsible(DEFAULT_COLLAPSIBLE)
-    setVariant(DEFAULT_VARIANT)
-  }
-
-  const contextValue: LayoutContextType = {
-    resetLayout,
-    defaultCollapsible: DEFAULT_COLLAPSIBLE,
-    collapsible,
-    setCollapsible,
-    defaultVariant: DEFAULT_VARIANT,
-    variant,
-    setVariant,
-  }
+  const contextValue = useMemo<LayoutContextType>(
+    () => ({
+      resetLayout: () => {
+        _setCollapsible(DEFAULT_COLLAPSIBLE)
+        setCookie(
+          LAYOUT_COLLAPSIBLE_COOKIE_NAME,
+          DEFAULT_COLLAPSIBLE,
+          LAYOUT_COOKIE_MAX_AGE
+        )
+        _setVariant(DEFAULT_VARIANT)
+        setCookie(
+          LAYOUT_VARIANT_COOKIE_NAME,
+          DEFAULT_VARIANT,
+          LAYOUT_COOKIE_MAX_AGE
+        )
+      },
+      defaultCollapsible: DEFAULT_COLLAPSIBLE,
+      collapsible,
+      setCollapsible: (newCollapsible: Collapsible) => {
+        _setCollapsible(newCollapsible)
+        setCookie(
+          LAYOUT_COLLAPSIBLE_COOKIE_NAME,
+          newCollapsible,
+          LAYOUT_COOKIE_MAX_AGE
+        )
+      },
+      defaultVariant: DEFAULT_VARIANT,
+      variant,
+      setVariant: (newVariant: Variant) => {
+        _setVariant(newVariant)
+        setCookie(LAYOUT_VARIANT_COOKIE_NAME, newVariant, LAYOUT_COOKIE_MAX_AGE)
+      },
+    }),
+    [collapsible, variant]
+  )
 
   return <LayoutContext value={contextValue}>{children}</LayoutContext>
 }

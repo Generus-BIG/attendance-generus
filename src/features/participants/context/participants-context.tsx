@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import { format, parse } from 'date-fns'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -208,6 +208,7 @@ export function ParticipantsCRUDProvider({
       toast.error(`Gagal menambah peserta: ${error.message}`)
     },
   })
+  const { mutateAsync: createParticipantMutation } = createMutation
 
   // Update participant mutation
   const updateMutation = useMutation({
@@ -285,6 +286,7 @@ export function ParticipantsCRUDProvider({
       toast.error(`Gagal memperbarui peserta: ${error.message}`)
     },
   })
+  const { mutateAsync: updateParticipantMutation } = updateMutation
 
   // Delete single participant mutation
   const deleteMutation = useMutation({
@@ -304,6 +306,7 @@ export function ParticipantsCRUDProvider({
       toast.error(`Gagal menghapus peserta: ${error.message}`)
     },
   })
+  const { mutateAsync: deleteParticipantMutation } = deleteMutation
 
   // Delete multiple participants mutation
   const deleteMultipleMutation = useMutation({
@@ -323,22 +326,42 @@ export function ParticipantsCRUDProvider({
       toast.error(`Gagal menghapus peserta: ${error.message}`)
     },
   })
+  const { mutateAsync: deleteParticipantsMutation } = deleteMultipleMutation
+
+  const contextValue = useMemo(
+    () => ({
+      participants,
+      isLoading,
+      createParticipant: async (
+        data: Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>
+      ) => {
+        await createParticipantMutation(data)
+      },
+      updateParticipant: async (
+        id: string,
+        data: Partial<Omit<Participant, 'id' | 'createdAt' | 'updatedAt'>>
+      ) => {
+        await updateParticipantMutation({ id, data })
+      },
+      deleteParticipant: async (id: string) => {
+        await deleteParticipantMutation(id)
+      },
+      deleteParticipants: async (ids: string[]) => {
+        await deleteParticipantsMutation(ids)
+      },
+    }),
+    [
+      participants,
+      isLoading,
+      createParticipantMutation,
+      updateParticipantMutation,
+      deleteParticipantMutation,
+      deleteParticipantsMutation,
+    ]
+  )
 
   return (
-    <ParticipantsCRUDContext.Provider
-      value={{
-        participants,
-        isLoading,
-        createParticipant: async (data) => {
-          await createMutation.mutateAsync(data)
-        },
-        updateParticipant: async (id, data) => {
-          await updateMutation.mutateAsync({ id, data })
-        },
-        deleteParticipant: (id) => deleteMutation.mutateAsync(id),
-        deleteParticipants: (ids) => deleteMultipleMutation.mutateAsync(ids),
-      }}
-    >
+    <ParticipantsCRUDContext.Provider value={contextValue}>
       {children}
     </ParticipantsCRUDContext.Provider>
   )

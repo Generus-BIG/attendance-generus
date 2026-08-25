@@ -16,18 +16,13 @@ import {
   type ProgramReportRow,
   type SarprasItemRow,
   type SarprasReportRow,
+  type SensusRow,
   type SensusSnapshotRow,
   type ShodaqohRow,
 } from '../../types'
 import { formatMonthLabel } from '../../utils/month-utils'
-import {
-  renderCharacterAgendaSlide,
-  renderCharacterSummarySlide,
-} from './slide-renderers/render-character-monitoring'
-import {
-  renderCharacterTargetAgendaSlide,
-  renderCharacterTargetSummarySlide,
-} from './slide-renderers/render-character-targets'
+import { renderCharacterMonitoringRecapSlide } from './slide-renderers/render-character-monitoring'
+import { renderCharacterTargetRecapSlide } from './slide-renderers/render-character-targets'
 import { renderClosingSlide } from './slide-renderers/render-closing'
 import { renderCoverSlide } from './slide-renderers/render-cover'
 import {
@@ -65,6 +60,11 @@ export interface PresentationData {
   metrics: MetricDefinitionRow[]
   sarprasItems: SarprasItemRow[]
   sensusSnapshots: SensusSnapshotRow[]
+  monitoringMasterSensus?: SensusRow[]
+  monitoringDerivedSensus?: Pick<
+    SensusSnapshotRow,
+    'kelompok_id' | 'category_code' | 'count'
+  >[]
   programReports: ProgramReportRow[]
   metricReports: MetricReportRow[]
   sarprasReports: SarprasReportRow[]
@@ -109,6 +109,8 @@ export function buildSlides(data: PresentationData): Slide[] {
     metrics,
     sarprasItems,
     sensusSnapshots,
+    monitoringMasterSensus = [],
+    monitoringDerivedSensus = [],
     programReports,
     metricReports,
     sarprasReports,
@@ -146,6 +148,7 @@ export function buildSlides(data: PresentationData): Slide[] {
 
   const orderedPrograms = orderPrograms(programs)
   const hasMetrics = metrics.length > 0
+  const activityPhotos = data.activityPhotos ?? []
 
   // Two-pass build so SlideFrame footer can show "N / T".
   // Pass 1: collect descriptors.
@@ -164,10 +167,11 @@ export function buildSlides(data: PresentationData): Slide[] {
     | { kind: 'sarpras' }
     | { kind: 'shodaqoh' }
     | { kind: 'program'; program: ProgramDefinitionRow }
-    | { kind: 'character-target-summary' }
-    | { kind: 'character-target-agenda' }
-    | { kind: 'character-agenda' }
-    | { kind: 'character-summary' }
+    | { kind: 'character-target-recap'; level: 'ACR' | 'APR' | 'AR' | 'GPN' }
+    | {
+        kind: 'character-monitoring-recap'
+        level?: 'ACR' | 'APR' | 'AR' | 'GPN'
+      }
     | { kind: 'mustin' }
     | { kind: 'dokumentasi' }
     | { kind: 'closing' }
@@ -197,17 +201,19 @@ export function buildSlides(data: PresentationData): Slide[] {
   for (const program of orderedPrograms) {
     descriptors.push({ kind: 'program', program })
   }
+  descriptors.push({ kind: 'character-monitoring-recap' })
+  for (const level of ['ACR', 'APR', 'AR', 'GPN'] as const) {
+    descriptors.push({ kind: 'character-target-recap', level })
+  }
   descriptors.push({ kind: 'mustin' })
-  descriptors.push({ kind: 'character-target-summary' })
-  descriptors.push({ kind: 'character-target-agenda' })
-  descriptors.push({ kind: 'character-summary' })
-  descriptors.push({ kind: 'character-agenda' })
-  if ((data.activityPhotos ?? []).length > 0) {
+  if (activityPhotos.length > 0) {
     descriptors.push({ kind: 'dokumentasi' })
   }
   descriptors.push({ kind: 'closing' })
 
-  const totalSlides = descriptors.length
+  const totalSlides =
+    descriptors.length +
+    (activityPhotos.length ? Math.ceil(activityPhotos.length / 2) - 1 : 0)
 
   // Pass 2: materialize.
   const slides: Slide[] = []
@@ -369,9 +375,9 @@ export function buildSlides(data: PresentationData): Slide[] {
         )
         break
       }
-      case 'character-target-summary': {
+      case 'character-target-recap': {
         slides.push(
-          renderCharacterTargetSummarySlide({
+          renderCharacterTargetRecapSlide({
             monthLabel,
             scope,
             isSingleKelompok,
@@ -379,31 +385,16 @@ export function buildSlides(data: PresentationData): Slide[] {
             reports,
             targetItems: characterTargetItems,
             targetReports: characterTargetReports,
+            level: d.level,
             slideNumber,
             totalSlides,
           })
         )
         break
       }
-      case 'character-target-agenda': {
+      case 'character-monitoring-recap': {
         slides.push(
-          renderCharacterTargetAgendaSlide({
-            monthLabel,
-            scope,
-            isSingleKelompok,
-            effectiveKelompokList,
-            reports,
-            targetItems: characterTargetItems,
-            targetReports: characterTargetReports,
-            slideNumber,
-            totalSlides,
-          })
-        )
-        break
-      }
-      case 'character-agenda': {
-        slides.push(
-          renderCharacterAgendaSlide({
+          renderCharacterMonitoringRecapSlide({
             monthLabel,
             scope,
             isSingleKelompok,
@@ -411,22 +402,10 @@ export function buildSlides(data: PresentationData): Slide[] {
             reports,
             activities: characterActivities,
             characterReports,
-            slideNumber,
-            totalSlides,
-          })
-        )
-        break
-      }
-      case 'character-summary': {
-        slides.push(
-          renderCharacterSummarySlide({
-            monthLabel,
-            scope,
-            isSingleKelompok,
-            effectiveKelompokList,
-            reports,
-            activities: characterActivities,
-            characterReports,
+            sensusSnapshots,
+            masterSensus: monitoringMasterSensus,
+            derivedSensus: monitoringDerivedSensus,
+            level: d.level,
             slideNumber,
             totalSlides,
           })
@@ -453,7 +432,7 @@ export function buildSlides(data: PresentationData): Slide[] {
         const docSlides = renderDokumentasiSlides({
           monthLabel,
           scope,
-          photos: data.activityPhotos ?? [],
+          photos: activityPhotos,
           slideNumber,
           totalSlides,
         })

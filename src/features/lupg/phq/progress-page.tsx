@@ -220,53 +220,52 @@ export function PhqProgressPage({ initialMonthKey, initialKelompokId }: Props) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {participants
-                  .filter((participant) => participant.status_active)
-                  .map((participant) => {
-                    const scores = meetings
-                      .map(
-                        (meeting) =>
-                          byCell.get(`${participant.id}:${meeting.id}`)?.score
-                      )
-                      .filter((score): score is number => score !== undefined)
-                    const average = scores.length
-                      ? scores.reduce((sum, score) => sum + score, 0) /
-                        scores.length
-                      : null
-                    return (
-                      <TableRow key={participant.id}>
-                        <TableCell className='font-medium'>
-                          {participant.name}
-                        </TableCell>
-                        <TableCell>{participant.category_code}</TableCell>
-                        {meetings.map((meeting) => {
-                          const item = byCell.get(
-                            `${participant.id}:${meeting.id}`
-                          )
-                          return (
-                            <TableCell key={meeting.id}>
-                              <Button
-                                variant='outline'
-                                size='sm'
-                                onClick={() =>
-                                  setCell({
-                                    participant,
-                                    meeting,
-                                    progress: item,
-                                  })
-                                }
-                              >
-                                {progressLabel(item)}
-                              </Button>
-                            </TableCell>
-                          )
-                        })}
-                        <TableCell>
-                          {average === null ? '-' : average.toFixed(1)}
-                        </TableCell>
-                      </TableRow>
+                {participants.flatMap((participant) => {
+                  if (!participant.status_active) return []
+                  const scores = meetings
+                    .map(
+                      (meeting) =>
+                        byCell.get(`${participant.id}:${meeting.id}`)?.score
                     )
-                  })}
+                    .filter((score): score is number => score !== undefined)
+                  const average = scores.length
+                    ? scores.reduce((sum, score) => sum + score, 0) /
+                      scores.length
+                    : null
+                  return [
+                    <TableRow key={participant.id}>
+                      <TableCell className='font-medium'>
+                        {participant.name}
+                      </TableCell>
+                      <TableCell>{participant.category_code}</TableCell>
+                      {meetings.map((meeting) => {
+                        const item = byCell.get(
+                          `${participant.id}:${meeting.id}`
+                        )
+                        return (
+                          <TableCell key={meeting.id}>
+                            <Button
+                              variant='outline'
+                              size='sm'
+                              onClick={() =>
+                                setCell({
+                                  participant,
+                                  meeting,
+                                  progress: item,
+                                })
+                              }
+                            >
+                              {progressLabel(item)}
+                            </Button>
+                          </TableCell>
+                        )
+                      })}
+                      <TableCell>
+                        {average === null ? '-' : average.toFixed(1)}
+                      </TableCell>
+                    </TableRow>,
+                  ]
+                })}
               </TableBody>
             </Table>
           </>

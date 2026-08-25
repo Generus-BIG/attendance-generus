@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 // Assuming initialized client
 import { toast } from 'sonner'
@@ -124,6 +124,7 @@ export function FormsProvider({ children }: { children: ReactNode }) {
       toast.success('Form created successfully')
     },
   })
+  const { mutateAsync: createForm } = createFormMutation
 
   const updateFormMutation = useMutation({
     mutationFn: async (updatedForm: AttendanceFormConfig) => {
@@ -152,6 +153,7 @@ export function FormsProvider({ children }: { children: ReactNode }) {
       toast.success('Form updated successfully')
     },
   })
+  const { mutateAsync: updateForm } = updateFormMutation
 
   const deleteFormMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -180,20 +182,26 @@ export function FormsProvider({ children }: { children: ReactNode }) {
       toast.error(`Failed to delete form: ${error.message}`)
     },
   })
+  const { mutateAsync: deleteForm } = deleteFormMutation
 
-  return (
-    <FormsContext.Provider
-      value={{
-        forms,
-        isLoading,
-        createForm: async (data) => createFormMutation.mutateAsync(data),
-        updateForm: async (data) => updateFormMutation.mutateAsync(data),
-        deleteForm: async (id) => deleteFormMutation.mutateAsync(id),
-      }}
-    >
-      {children}
-    </FormsContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      forms,
+      isLoading,
+      createForm,
+      updateForm,
+      deleteForm,
+    }),
+    [
+      forms,
+      isLoading,
+      createForm,
+      updateForm,
+      deleteForm,
+    ]
   )
+
+  return <FormsContext.Provider value={contextValue}>{children}</FormsContext.Provider>
 }
 
 export function useFormsContext() {

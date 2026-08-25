@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { type Role } from '@/lib/rbac'
@@ -57,6 +57,7 @@ export function ManageRoleCRUDProvider({ children }: { children: ReactNode }) {
       toast.error(`Gagal membuat user: ${error.message}`)
     },
   })
+  const { mutateAsync: createUserMutation } = createMutation
 
   const updateMutation = useMutation({
     mutationFn: ({
@@ -79,6 +80,7 @@ export function ManageRoleCRUDProvider({ children }: { children: ReactNode }) {
       toast.error(`Gagal memperbarui user: ${error.message}`)
     },
   })
+  const { mutateAsync: updateUserMutation } = updateMutation
 
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
@@ -90,6 +92,7 @@ export function ManageRoleCRUDProvider({ children }: { children: ReactNode }) {
       toast.error(`Gagal menghapus user: ${error.message}`)
     },
   })
+  const { mutateAsync: deleteUserMutation } = deleteMutation
 
   const changePasswordMutation = useMutation({
     mutationFn: ({
@@ -107,23 +110,40 @@ export function ManageRoleCRUDProvider({ children }: { children: ReactNode }) {
       toast.error(`Gagal mengubah password: ${error.message}`)
     },
   })
+  const { mutateAsync: changePasswordMutationAsync } = changePasswordMutation
+
+  const contextValue = useMemo(
+    () => ({
+      users,
+      isLoading,
+      createUser: async (params: Parameters<typeof createUser>[0]) => {
+        await createUserMutation(params)
+      },
+      updateUser: async (
+        userId: string,
+        fields: Parameters<typeof updateUser>[1]
+      ) => {
+        await updateUserMutation({ userId, fields })
+      },
+      deleteUser: async (userId: string) => {
+        await deleteUserMutation(userId)
+      },
+      changePassword: async (userId: string, newPassword: string) => {
+        await changePasswordMutationAsync({ userId, newPassword })
+      },
+    }),
+    [
+      users,
+      isLoading,
+      createUserMutation,
+      updateUserMutation,
+      deleteUserMutation,
+      changePasswordMutationAsync,
+    ]
+  )
 
   return (
-    <ManageRoleCRUDContext.Provider
-      value={{
-        users,
-        isLoading,
-        createUser: async (params) => {
-          await createMutation.mutateAsync(params)
-        },
-        updateUser: async (userId, fields) => {
-          await updateMutation.mutateAsync({ userId, fields })
-        },
-        deleteUser: (userId) => deleteMutation.mutateAsync(userId),
-        changePassword: (userId, newPassword) =>
-          changePasswordMutation.mutateAsync({ userId, newPassword }),
-      }}
-    >
+    <ManageRoleCRUDContext.Provider value={contextValue}>
       {children}
     </ManageRoleCRUDContext.Provider>
   )

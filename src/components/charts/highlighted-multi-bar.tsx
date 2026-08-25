@@ -1,5 +1,13 @@
 import React from 'react'
-import { Bar, BarChart, Cell, Label, LabelList, XAxis, YAxis } from 'recharts'
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Label,
+  LabelList,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import {
   type ChartConfig,
   ChartContainer,
@@ -153,7 +161,7 @@ export function HighlightedMultiBar({
             {data.map((_, index) => (
               <Cell
                 key={`cell-${s.key}-${index}`}
-                className='duration-200'
+                className='transition-[fill-opacity,stroke] duration-200'
                 fillOpacity={
                   activeIndex === null ? 1 : activeIndex === index ? 1 : 0.3
                 }

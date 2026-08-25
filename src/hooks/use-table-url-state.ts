@@ -164,9 +164,10 @@ export function useTableUrlState(
     setColumnFilters(next)
 
     const patch: Record<string, unknown> = {}
+    const filterByColumnId = new Map(next.map((filter) => [filter.id, filter]))
 
     for (const cfg of columnFiltersCfg) {
-      const found = next.find((f) => f.id === cfg.columnId)
+      const found = filterByColumnId.get(cfg.columnId)
       const serialize = cfg.serialize ?? ((v: unknown) => v)
       if (cfg.type === 'string') {
         const value =

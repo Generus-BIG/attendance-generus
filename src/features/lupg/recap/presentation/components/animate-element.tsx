@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react'
-import { motion, type Variants, type HTMLMotionProps } from 'framer-motion'
+import { m, type Variants, type HTMLMotionProps } from 'framer-motion'
 import {
   usePresentationAnimation,
   type AnimationPreset,
@@ -39,7 +39,7 @@ export function AnimateContainer({ children, className, style }: WrapperProps) {
   }
 
   return (
-    <motion.div
+    <m.div
       initial={trigger === 'exit' ? 'visible' : 'hidden'}
       animate='visible'
       exit={trigger === 'enter' ? 'visible' : 'exit'}
@@ -48,7 +48,7 @@ export function AnimateContainer({ children, className, style }: WrapperProps) {
       style={style}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -65,14 +65,14 @@ export function AnimateItem({ children, className, style }: WrapperProps) {
   )
 
   return (
-    <motion.div
+    <m.div
       variants={config.variants}
       transition={config.transition}
       className={className}
       style={style}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -94,7 +94,7 @@ export function AnimateTableRow({
   )
 
   return (
-    <motion.tr
+    <m.tr
       variants={config.variants}
       transition={config.transition}
       className={className}
@@ -102,7 +102,7 @@ export function AnimateTableRow({
       {...props}
     >
       {children}
-    </motion.tr>
+    </m.tr>
   )
 }
 

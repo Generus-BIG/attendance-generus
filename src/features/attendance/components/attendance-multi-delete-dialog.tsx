@@ -30,18 +30,21 @@ export function AttendanceMultiDeleteDialog<TData>({
     }
 
     setIsDeleting(true)
-    const { error } = await supabase.from('attendance').delete().in('id', ids)
-    setIsDeleting(false)
+    try {
+      const { error } = await supabase.from('attendance').delete().in('id', ids)
 
-    if (error) {
-      toast.error('Gagal menghapus data: ' + error.message)
-      return
+      if (error) {
+        toast.error('Gagal menghapus data: ' + error.message)
+        return
+      }
+
+      toast.success(`${ids.length} data absensi berhasil dihapus`)
+      table.resetRowSelection()
+      refreshData()
+      onOpenChange(false)
+    } finally {
+      setIsDeleting(false)
     }
-
-    toast.success(`${ids.length} data absensi berhasil dihapus`)
-    table.resetRowSelection()
-    refreshData()
-    onOpenChange(false)
   }
 
   return (

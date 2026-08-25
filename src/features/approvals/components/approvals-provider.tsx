@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { type PendingParticipant, type Attendance } from '@/lib/schema'
 import useDialogState from '@/hooks/use-dialog-state'
 
@@ -27,19 +27,23 @@ export function ApprovalsProvider({ children }: { children: React.ReactNode }) {
     null
   )
   const [refreshData, setRefreshData] = useState<() => void>(() => () => {})
+  const contextValue = useMemo(
+    () => ({
+      open,
+      setOpen,
+      currentPending,
+      setCurrentPending,
+      currentAttendance,
+      setCurrentAttendance,
+      refreshData,
+      setRefreshData,
+    }),
+    [open, setOpen, currentPending, currentAttendance, refreshData]
+  )
 
   return (
     <ApprovalsContext
-      value={{
-        open,
-        setOpen,
-        currentPending,
-        setCurrentPending,
-        currentAttendance,
-        setCurrentAttendance,
-        refreshData,
-        setRefreshData,
-      }}
+      value={contextValue}
     >
       {children}
     </ApprovalsContext>

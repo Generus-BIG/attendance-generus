@@ -50,7 +50,7 @@ export function YearlyProgramTracker({
   // Admin default = 'desa'; TM forced to 'kelompok' (Desa Overview hidden).
   const defaultTab: 'desa' | 'kelompok' = initialTab ?? 'desa'
   const [tab, setTabState] = useState<'desa' | 'kelompok'>(defaultTab)
-  const [monthKey, setMonthKey] = useState<string>(currentMonthKey())
+  const [monthKey, setMonthKey] = useState<string>(() => currentMonthKey())
 
   // Sync tab to URL so admins can bookmark either view.
   const navigate = useNavigate()

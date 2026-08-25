@@ -1,5 +1,11 @@
 // Sensus pie chart (kelompok mode) — solid pie of the 5 generus categories with external labels.
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
+import {
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts'
 import { usePresentationAnimation } from '../context/animation-context'
 import { getSensusColor } from '../theme'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'

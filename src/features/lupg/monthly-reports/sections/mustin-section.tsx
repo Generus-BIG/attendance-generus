@@ -1,4 +1,4 @@
-import { useMemo, useState, type KeyboardEvent } from 'react'
+import { useMemo, useRef, type KeyboardEvent } from 'react'
 import { Plus, Trash2, Loader2, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -380,18 +380,32 @@ function MustinTemplateRowView({
   monthlyReportId,
   readOnly,
 }: TemplateRowProps) {
+  return (
+    <MustinTemplateRowDraft
+      key={note.updated_at}
+      {...{ template, note, monthlyReportId, readOnly }}
+    />
+  )
+}
+
+function MustinTemplateRowDraft({
+  template,
+  note,
+  monthlyReportId,
+  readOnly,
+}: TemplateRowProps) {
   const update = useUpdateMustinNote()
   const del = useDeleteMustinNote()
-  const [keputusan, setKeputusan] = useState(note.keputusan_rencana)
+  const keputusan = useRef(note.keputusan_rencana)
   const subs = subItemsArray(template.sub_items)
 
   const save = () => {
-    if (keputusan === note.keputusan_rencana) return
+    if (keputusan.current === note.keputusan_rencana) return
     update.mutate(
       {
         id: note.id,
         monthlyReportId,
-        patch: { keputusan_rencana: keputusan },
+        patch: { keputusan_rencana: keputusan.current },
       },
       {
         onError: (e: unknown) => {
@@ -420,8 +434,8 @@ function MustinTemplateRowView({
         </div>
         {subs.length > 0 && (
           <ol className='mt-2 list-[lower-alpha] pl-5 text-xs leading-relaxed text-muted-foreground'>
-            {subs.map((s, i) => (
-              <li key={i}>{s}</li>
+            {subs.map((s) => (
+              <li key={s}>{s}</li>
             ))}
           </ol>
         )}
@@ -443,9 +457,15 @@ function MustinTemplateRowView({
           )}
         </div>
         <Textarea
-          value={keputusan}
-          onChange={(e) => setKeputusan(e.target.value)}
-          onKeyDown={(e) => handleSmartListKeyDown(e, setKeputusan)}
+          defaultValue={note.keputusan_rencana}
+          onChange={(e) => {
+            keputusan.current = e.target.value
+          }}
+          onKeyDown={(e) =>
+            handleSmartListKeyDown(e, (value) => {
+              keputusan.current = value
+            })
+          }
           onBlur={save}
           disabled={readOnly}
           rows={6}
@@ -464,15 +484,24 @@ interface FreeRowProps {
 }
 
 function MustinFreeRowView({ note, monthlyReportId, readOnly }: FreeRowProps) {
+  return (
+    <MustinFreeRowDraft
+      key={note.updated_at}
+      {...{ note, monthlyReportId, readOnly }}
+    />
+  )
+}
+
+function MustinFreeRowDraft({ note, monthlyReportId, readOnly }: FreeRowProps) {
   const update = useUpdateMustinNote()
   const del = useDeleteMustinNote()
-  const [pokokMasalah, setPokokMasalah] = useState(note.pokok_masalah)
-  const [keputusan, setKeputusan] = useState(note.keputusan_rencana)
+  const pokokMasalah = useRef(note.pokok_masalah)
+  const keputusan = useRef(note.keputusan_rencana)
 
   const save = () => {
     if (
-      pokokMasalah === note.pokok_masalah &&
-      keputusan === note.keputusan_rencana
+      pokokMasalah.current === note.pokok_masalah &&
+      keputusan.current === note.keputusan_rencana
     ) {
       return
     }
@@ -481,8 +510,8 @@ function MustinFreeRowView({ note, monthlyReportId, readOnly }: FreeRowProps) {
         id: note.id,
         monthlyReportId,
         patch: {
-          pokok_masalah: pokokMasalah,
-          keputusan_rencana: keputusan,
+          pokok_masalah: pokokMasalah.current,
+          keputusan_rencana: keputusan.current,
         },
       },
       {
@@ -509,8 +538,10 @@ function MustinFreeRowView({ note, monthlyReportId, readOnly }: FreeRowProps) {
       <div className='flex flex-col gap-1'>
         <Label className='text-xs'>Pokok Masalah</Label>
         <Input
-          value={pokokMasalah}
-          onChange={(e) => setPokokMasalah(e.target.value)}
+          defaultValue={note.pokok_masalah}
+          onChange={(e) => {
+            pokokMasalah.current = e.target.value
+          }}
           onBlur={save}
           disabled={readOnly}
           placeholder='Judul pembahasan...'
@@ -533,9 +564,15 @@ function MustinFreeRowView({ note, monthlyReportId, readOnly }: FreeRowProps) {
           )}
         </div>
         <Textarea
-          value={keputusan}
-          onChange={(e) => setKeputusan(e.target.value)}
-          onKeyDown={(e) => handleSmartListKeyDown(e, setKeputusan)}
+          defaultValue={note.keputusan_rencana}
+          onChange={(e) => {
+            keputusan.current = e.target.value
+          }}
+          onKeyDown={(e) =>
+            handleSmartListKeyDown(e, (value) => {
+              keputusan.current = value
+            })
+          }
           onBlur={save}
           disabled={readOnly}
           rows={4}

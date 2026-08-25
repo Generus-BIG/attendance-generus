@@ -2,6 +2,8 @@ import {
   type CharacterMonitoringActivityRow,
   type CharacterMonitoringReportRow,
   type MonthlyReportRow,
+  type SensusRow,
+  type SensusSnapshotRow,
 } from '../../../types'
 import {
   CHARACTER_LEVELS,
@@ -13,11 +15,24 @@ import {
   normalizeCharacterStatus,
   sortCharacterActivities,
   sortCharacterAgendaRows,
+  type CharacterLevelCode,
 } from '../../../utils/character-monitoring'
 import { DataPane } from '../components/data-pane'
+import {
+  EditorialTable,
+  EditorialTableBody,
+  EditorialTableCell,
+  EditorialTableHead,
+  EditorialTableHeader,
+  EditorialTableRow,
+} from '../components/editorial-table'
 import { SlideFrame } from '../components/slide-frame'
 import { type Slide } from '../slides'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import {
+  buildMonitoringRecapRows,
+  monitoringSensusTotal,
+} from './character-recap-utils'
 
 interface SlideArgs {
   monthLabel: string
@@ -27,6 +42,12 @@ interface SlideArgs {
   reports: MonthlyReportRow[]
   activities: CharacterMonitoringActivityRow[]
   characterReports: CharacterMonitoringReportRow[]
+  sensusSnapshots: SensusSnapshotRow[]
+  masterSensus: SensusRow[]
+  derivedSensus: Pick<
+    SensusSnapshotRow,
+    'kelompok_id' | 'category_code' | 'count'
+  >[]
   slideNumber: number
   totalSlides: number
 }
@@ -628,6 +649,180 @@ export function renderCharacterSummarySlide(args: SlideArgs): Slide {
           activities={activities}
           characterReports={characterReports}
         />
+      </SlideFrame>
+    ),
+  }
+}
+
+function MonitoringValue({
+  status,
+}: {
+  status: CharacterMonitoringStatus | null
+}) {
+  const p = usePresPalette()
+  if (!status) {
+    return (
+      <EditorialTableCell className='text-right' style={{ color: p.muted }}>
+        Belum
+      </EditorialTableCell>
+    )
+  }
+  return (
+    <EditorialTableCell
+      className='max-w-[14ch] text-right wrap-break-word whitespace-normal'
+      style={{ color: statusColors(status, p).color, fontWeight: 700 }}
+    >
+      {CHARACTER_STATUS_META[status].label}
+    </EditorialTableCell>
+  )
+}
+
+function MonitoringRecapBody({
+  isSingleKelompok,
+  effectiveKelompokList,
+  reports,
+  activities,
+  characterReports,
+  masterSensus,
+  derivedSensus,
+  level,
+}: Pick<
+  SlideArgs,
+  | 'isSingleKelompok'
+  | 'effectiveKelompokList'
+  | 'reports'
+  | 'activities'
+  | 'characterReports'
+  | 'masterSensus'
+  | 'derivedSensus'
+> & { level?: CharacterLevelCode }) {
+  const levels = level ? [level] : CHARACTER_LEVELS
+  const p = usePresPalette()
+  return (
+    <DataPane>
+      <EditorialTable density='micro'>
+        <EditorialTableHeader>
+          <EditorialTableRow>
+            <EditorialTableHead>Kategori</EditorialTableHead>
+            <EditorialTableHead>Kegiatan</EditorialTableHead>
+            {isSingleKelompok ? (
+              <>
+                <EditorialTableHead className='text-right'>
+                  Sensus
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Status
+                </EditorialTableHead>
+              </>
+            ) : (
+              <>
+                <EditorialTableHead className='text-right'>
+                  Sensus
+                </EditorialTableHead>
+                {effectiveKelompokList.map((kelompok) => (
+                  <EditorialTableHead key={kelompok.id} className='text-right'>
+                    {kelompok.value}
+                  </EditorialTableHead>
+                ))}
+                <EditorialTableHead className='text-right'>
+                  Desa
+                </EditorialTableHead>
+              </>
+            )}
+          </EditorialTableRow>
+        </EditorialTableHeader>
+        <EditorialTableBody>
+          {levels.flatMap((currentLevel) => {
+            const sensus = monitoringSensusTotal(
+              currentLevel,
+              masterSensus,
+              derivedSensus,
+              effectiveKelompokList
+            )
+            const rows = buildMonitoringRecapRows(
+              currentLevel,
+              activities,
+              characterReports,
+              reports,
+              effectiveKelompokList
+            )
+            return [
+              ...rows.map((row, index) => (
+                <EditorialTableRow key={row.activity.id}>
+                  {index === 0 ? (
+                    <EditorialTableCell
+                      rowSpan={rows.length}
+                      className='align-middle font-semibold'
+                      style={{
+                        background: `color-mix(in oklch, ${p.success} 10%, transparent)`,
+                      }}
+                    >
+                      {currentLevel}
+                    </EditorialTableCell>
+                  ) : null}
+                  <EditorialTableCell className='max-w-[30ch] wrap-break-word whitespace-normal'>
+                    {row.activity.activity_label}
+                  </EditorialTableCell>
+                  {isSingleKelompok ? (
+                    <>
+                      {index === 0 ? (
+                        <EditorialTableCell
+                          rowSpan={rows.length}
+                          className='text-right align-middle tabular-nums'
+                        >
+                          {sensus}
+                        </EditorialTableCell>
+                      ) : null}
+                      <MonitoringValue status={row.statuses[0] ?? null} />
+                    </>
+                  ) : (
+                    <>
+                      {index === 0 ? (
+                        <EditorialTableCell
+                          rowSpan={rows.length}
+                          className='text-right align-middle tabular-nums'
+                        >
+                          {sensus}
+                        </EditorialTableCell>
+                      ) : null}
+                      {row.statuses.map((status, statusIndex) => (
+                        <MonitoringValue
+                          key={effectiveKelompokList[statusIndex].id}
+                          status={status}
+                        />
+                      ))}
+                      <EditorialTableCell className='max-w-[16ch] text-right wrap-break-word whitespace-normal'>
+                        {row.desa}
+                      </EditorialTableCell>
+                    </>
+                  )}
+                </EditorialTableRow>
+              )),
+            ]
+          })}
+        </EditorialTableBody>
+      </EditorialTable>
+    </DataPane>
+  )
+}
+
+export function renderCharacterMonitoringRecapSlide(
+  args: SlideArgs & { level?: CharacterLevelCode }
+): Slide {
+  const category = args.level ? ` | ${args.level}` : ''
+  return {
+    key: `character-monitoring-recap${args.level ? `-${args.level}` : ''}`,
+    title: `Target 29 Karakter | Monitoring${category}`,
+    render: () => (
+      <SlideFrame
+        eyebrow='PENERAPAN 29 KARAKTER'
+        title={`Target 29 Karakter | Monitoring${category}`}
+        meta={args.monthLabel}
+        scope={args.scope}
+        slideNumber={args.slideNumber}
+        totalSlides={args.totalSlides}
+      >
+        <MonitoringRecapBody {...args} />
       </SlideFrame>
     ),
   }

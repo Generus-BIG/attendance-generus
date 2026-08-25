@@ -143,7 +143,8 @@ export function AttendanceCharts({
 
   // Don't render chips for months the user cannot pick yet.
   const visibleMonths = allMonths.filter((mk) => mk <= currentMonthKey)
-  const effectiveSelected = selected.filter((m) => visibleMonths.includes(m))
+  const visibleMonthSet = new Set(visibleMonths)
+  const effectiveSelected = selected.filter((m) => visibleMonthSet.has(m))
   const monthsForChart =
     effectiveSelected.length > 0
       ? effectiveSelected

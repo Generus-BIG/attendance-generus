@@ -66,6 +66,7 @@ export function DokumentasiSection({ report, readOnly }: Props) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [deleteMultipleTarget, setDeleteMultipleTarget] = useState(false)
   const isSelectMode = selectedIds.length > 0
+  const selectedIdSet = new Set(selectedIds)
 
   // Drag and Drop states
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
@@ -80,33 +81,41 @@ export function DokumentasiSection({ report, readOnly }: Props) {
       const toUpload = Array.from(files).slice(0, remaining)
 
       setUploading(true)
-      let successCount = 0
-
-      for (const rawFile of toUpload) {
-        try {
-          setCompressProgress(0)
-          const compressed = await compressImage(rawFile, setCompressProgress)
-          await uploadMutation.mutateAsync({
-            reportId: report.id,
-            kelompokId: report.kelompok_id,
-            monthKey: monthKeyFromDate(report.month),
-            file: compressed,
-            sortOrder: photos.length + successCount,
+      try {
+        const results = await Promise.all(
+          toUpload.map(async (rawFile, index) => {
+            try {
+              setCompressProgress(0)
+              const compressed = await compressImage(
+                rawFile,
+                setCompressProgress
+              )
+              await uploadMutation.mutateAsync({
+                reportId: report.id,
+                kelompokId: report.kelompok_id,
+                monthKey: monthKeyFromDate(report.month),
+                file: compressed,
+                sortOrder: photos.length + index,
+              })
+              return true
+            } catch (e) {
+              toast.error(
+                `Gagal upload ${rawFile.name}: ${e instanceof Error ? e.message : 'Unknown error'}`
+              )
+              return false
+            }
           })
-          successCount++
-        } catch (e) {
-          toast.error(
-            `Gagal upload ${rawFile.name}: ${e instanceof Error ? e.message : 'Unknown error'}`
-          )
-        }
-      }
+        )
+        const successCount = results.filter(Boolean).length
 
-      if (successCount > 0) {
-        toast.success(`${successCount} foto berhasil diupload`)
+        if (successCount > 0) {
+          toast.success(`${successCount} foto berhasil diupload`)
+        }
+      } finally {
+        setUploading(false)
+        setCompressProgress(0)
+        if (fileInputRef.current) fileInputRef.current.value = ''
       }
-      setUploading(false)
-      setCompressProgress(0)
-      if (fileInputRef.current) fileInputRef.current.value = ''
     },
     [photos.length, report.id, report.kelompok_id, report.month, uploadMutation]
   )
@@ -153,7 +162,7 @@ export function DokumentasiSection({ report, readOnly }: Props) {
   }
 
   const handleBulkDelete = () => {
-    const selectedPhotos = photos.filter((p) => selectedIds.includes(p.id))
+    const selectedPhotos = photos.filter((p) => selectedIdSet.has(p.id))
     const storagePaths = selectedPhotos.map((p) => p.storage_path)
 
     deletePhotosMutation.mutate(
@@ -242,7 +251,7 @@ export function DokumentasiSection({ report, readOnly }: Props) {
           description={`Upload foto dokumentasi kegiatan bulan ini (maks ${MAX_PHOTOS_PER_REPORT} foto).`}
           action={
             !readOnly && isSelectMode ? (
-              <div className='flex animate-in items-center gap-2 duration-200 fade-in slide-in-from-top-1'>
+              <div className='flex animate-in items-center gap-2 [animation-duration:200ms] fade-in slide-in-from-top-1'>
                 <Button
                   variant='destructive'
                   size='sm'
@@ -311,7 +320,7 @@ export function DokumentasiSection({ report, readOnly }: Props) {
         {photos.length > 0 && (
           <div className='grid grid-cols-2 gap-3 sm:grid-cols-3'>
             {photos.map((photo, i) => {
-              const isSelected = selectedIds.includes(photo.id)
+              const isSelected = selectedIdSet.has(photo.id)
               const isDragging = i === draggedIndex
               const isDragOver = i === dragOverIndex
 

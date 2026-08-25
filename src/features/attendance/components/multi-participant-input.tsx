@@ -38,10 +38,12 @@ export function MultiParticipantInput({
   const [open, setOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const selectedIdSet = useMemo(() => new Set(value), [value])
 
   const selectedParticipants = useMemo(
-    () => participants.filter((participant) => value.includes(participant.id)),
-    [participants, value]
+    () =>
+      participants.filter((participant) => selectedIdSet.has(participant.id)),
+    [participants, selectedIdSet]
   )
 
   const toggleParticipant = (participantId: string) => {
@@ -137,7 +139,7 @@ export function MultiParticipantInput({
             <CommandEmpty>Peserta tidak ditemukan.</CommandEmpty>
             <CommandGroup>
               {participants.map((participant) => {
-                const isSelected = value.includes(participant.id)
+                const isSelected = selectedIdSet.has(participant.id)
                 return (
                   <CommandItem
                     key={participant.id}

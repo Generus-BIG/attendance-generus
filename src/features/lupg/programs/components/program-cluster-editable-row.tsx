@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useReducer } from 'react'
 import { Lock, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
@@ -19,7 +19,17 @@ interface Props {
   layout?: 'row' | 'card'
 }
 
-export function ProgramClusterEditableRow({
+export function ProgramClusterEditableRow({ existing, ...props }: Props) {
+  return (
+    <ProgramClusterEditableRowDraft
+      key={existing?.updated_at}
+      existing={existing}
+      {...props}
+    />
+  )
+}
+
+function ProgramClusterEditableRowDraft({
   rowLabel,
   kelompokId,
   monthKey,
@@ -29,28 +39,21 @@ export function ProgramClusterEditableRow({
   layout = 'row',
 }: Props) {
   const upsert = useUpsertProgramMonth()
-  const initExtras = parseNikahClusterExtras(existing?.extras)
-  const [denominator, setDenominator] = useState(
-    existing?.denominator?.toString() ?? ''
+  const extras = parseNikahClusterExtras(existing?.extras)
+  const [values, setValues] = useReducer(
+    (current: Record<string, string>, change: Record<string, string>) => ({
+      ...current,
+      ...change,
+    }),
+    {
+      denominator: existing?.denominator?.toString() ?? '',
+      notReady: extras.not_ready.toString(),
+      ready: extras.ready.toString(),
+      married: extras.married.toString(),
+      notes: existing?.notes ?? '',
+    }
   )
-  const [notReady, setNotReady] = useState(initExtras.not_ready.toString())
-  const [ready, setReady] = useState(initExtras.ready.toString())
-  const [married, setMarried] = useState(initExtras.married.toString())
-  const [notes, setNotes] = useState(existing?.notes ?? '')
-
-  useEffect(() => {
-    // Sync local form state to server row when the row identity or revision
-    // changes. Intentional "form mirrors server data" pattern.
-    const e = parseNikahClusterExtras(existing?.extras)
-
-    setDenominator(existing?.denominator?.toString() ?? '')
-    setNotReady(e.not_ready.toString())
-    setReady(e.ready.toString())
-    setMarried(e.married.toString())
-    setNotes(existing?.notes ?? '')
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existing?.id, existing?.updated_at])
+  const { denominator, notReady, ready, married, notes } = values
 
   const denomNum = parseInt(denominator, 10) || 0
   const notReadyNum = parseInt(notReady, 10) || 0
@@ -93,14 +96,19 @@ export function ProgramClusterEditableRow({
       {
         label: 'Belum Siap',
         value: notReady,
-        setValue: setNotReady,
+        setValue: (notReady: string) => setValues({ notReady }),
         count: notReadyNum,
       },
-      { label: 'Siap', value: ready, setValue: setReady, count: readyNum },
+      {
+        label: 'Siap',
+        value: ready,
+        setValue: (ready: string) => setValues({ ready }),
+        count: readyNum,
+      },
       {
         label: 'Menikah',
         value: married,
-        setValue: setMarried,
+        setValue: (married: string) => setValues({ married }),
         count: marriedNum,
       },
     ]
@@ -130,7 +138,7 @@ export function ProgramClusterEditableRow({
             type='number'
             min={0}
             value={denominator}
-            onChange={(event) => setDenominator(event.target.value)}
+            onChange={(event) => setValues({ denominator: event.target.value })}
             onBlur={() => save(false)}
             disabled={disabled}
             className='min-h-10 w-full'
@@ -165,7 +173,7 @@ export function ProgramClusterEditableRow({
           <span className='text-muted-foreground'>Hasil Temuan</span>
           <Textarea
             value={notes}
-            onChange={(event) => setNotes(event.target.value)}
+            onChange={(event) => setValues({ notes: event.target.value })}
             onBlur={() => save(true)}
             disabled={disabled}
             rows={2}
@@ -208,7 +216,7 @@ export function ProgramClusterEditableRow({
             type='number'
             min={0}
             value={denominator}
-            onChange={(e) => setDenominator(e.target.value)}
+            onChange={(e) => setValues({ denominator: e.target.value })}
             onBlur={() => save(false)}
             disabled={disabled}
             className='w-20'
@@ -220,7 +228,7 @@ export function ProgramClusterEditableRow({
             type='number'
             min={0}
             value={notReady}
-            onChange={(e) => setNotReady(e.target.value)}
+            onChange={(e) => setValues({ notReady: e.target.value })}
             onBlur={() => save(false)}
             disabled={disabled}
             className='w-20'
@@ -235,7 +243,7 @@ export function ProgramClusterEditableRow({
             type='number'
             min={0}
             value={ready}
-            onChange={(e) => setReady(e.target.value)}
+            onChange={(e) => setValues({ ready: e.target.value })}
             onBlur={() => save(false)}
             disabled={disabled}
             className='w-20'
@@ -250,7 +258,7 @@ export function ProgramClusterEditableRow({
             type='number'
             min={0}
             value={married}
-            onChange={(e) => setMarried(e.target.value)}
+            onChange={(e) => setValues({ married: e.target.value })}
             onBlur={() => save(false)}
             disabled={disabled}
             className='w-20'
@@ -263,7 +271,7 @@ export function ProgramClusterEditableRow({
         <TableCell>
           <Textarea
             value={notes ?? ''}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={(e) => setValues({ notes: e.target.value })}
             onBlur={() => save(true)}
             disabled={disabled}
             rows={2}

@@ -224,6 +224,9 @@ async function fetchDesaOverview(
   for (const r of monthlyReports) {
     reportByKelompokMonth.set(`${r.kelompok_id}__${r.month.slice(0, 7)}`, r)
   }
+  const reportById = new Map(
+    monthlyReports.map((report) => [report.id, report])
+  )
 
   // ---- Per-month program aggregates (for trend + ranked + matrix + weighted desa avg) ----
   const monthKeysYear: string[] = []
@@ -240,7 +243,7 @@ async function fetchDesaOverview(
     progMonthTotals.set(p.code, new Map())
   }
   for (const pr of programReports) {
-    const parent = monthlyReports.find((m) => m.id === pr.monthly_report_id)
+    const parent = reportById.get(pr.monthly_report_id)
     if (!parent) continue
     const mk = parent.month.slice(0, 7)
     const bucket = progMonthTotals.get(pr.program_code)
