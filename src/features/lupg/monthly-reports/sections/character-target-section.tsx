@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Check, ChevronDown, Loader2, MessageSquareText, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -140,16 +140,6 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
     const nextCategory = firstIncomplete?.[0] ?? null
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpenCategory(nextCategory)
-    const firstIncompleteItem = firstIncomplete?.[1].find(
-      (item) => !isTargetComplete(reportByItem.get(item.id))
-    )
-    if (firstIncompleteItem && nextCategory) {
-      const key = `${activeLevel}:${nextCategory}`
-      setExpandedByCategory((current) => ({
-        ...current,
-        [key]: current[key] ?? firstIncompleteItem.id,
-      }))
-    }
   }, [activeLevel, grouped, itemsLoading, reportByItem, reportsLoading])
 
   const activeCategoryMap = activeLevel ? grouped.get(activeLevel) : undefined
@@ -241,6 +231,12 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
                   isTargetComplete(reportByItem.get(item.id))
                 ).length
                 const categoryKey = `${activeLevel}:${category}`
+                const expandedItemId =
+                  expandedByCategory[categoryKey] ??
+                  rows.find(
+                    (item) => !isTargetComplete(reportByItem.get(item.id))
+                  )?.id ??
+                  null
                 const isOpen = openCategory === category
                 return (
                   <Collapsible
@@ -288,9 +284,7 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
                             item={item}
                             existing={reportByItem.get(item.id)}
                             readOnly={readOnly}
-                            expanded={
-                              expandedByCategory[categoryKey] === item.id
-                            }
+                            expanded={expandedItemId === item.id}
                             onAdjust={() =>
                               setExpandedByCategory((current) => ({
                                 ...current,
@@ -428,6 +422,27 @@ function TargetFillAll({
 }
 
 function CharacterTargetRow({
+  existing,
+  ...props
+}: {
+  report: MonthlyReportRow
+  item: CharacterTargetItemRow
+  existing: CharacterTargetReportRow | undefined
+  readOnly: boolean
+  expanded: boolean
+  onAdjust: () => void
+  onCollapse: () => void
+}) {
+  return (
+    <CharacterTargetRowDraft
+      key={existing?.updated_at}
+      existing={existing}
+      {...props}
+    />
+  )
+}
+
+function CharacterTargetRowDraft({
   report,
   item,
   existing,
@@ -445,15 +460,27 @@ function CharacterTargetRow({
   onCollapse: () => void
 }) {
   const upsert = useUpsertCharacterTargetReport()
-  const [realization, setRealization] = useState(
-    existing?.realization_percent?.toString() ?? ''
+  const [values, setValues] = useReducer(
+    (
+      current: {
+        realization: string
+        materialGap: string
+        notes: string
+        notesVisible: boolean
+        materialGapVisible: boolean
+      },
+      change: Partial<typeof current>
+    ) => ({ ...current, ...change }),
+    {
+      realization: existing?.realization_percent?.toString() ?? '',
+      materialGap: existing?.material_gap ?? '',
+      notes: existing?.notes ?? '',
+      notesVisible: Boolean(existing?.notes),
+      materialGapVisible: Boolean(existing?.material_gap),
+    }
   )
-  const [materialGap, setMaterialGap] = useState(existing?.material_gap ?? '')
-  const [notes, setNotes] = useState(existing?.notes ?? '')
-  const [notesVisible, setNotesVisible] = useState(Boolean(existing?.notes))
-  const [materialGapVisible, setMaterialGapVisible] = useState(
-    Boolean(existing?.material_gap)
-  )
+  const { realization, materialGap, notes, notesVisible, materialGapVisible } =
+    values
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>(
     'idle'
   )
@@ -464,21 +491,6 @@ function CharacterTargetRow({
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
     }
   }, [])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setRealization(existing?.realization_percent?.toString() ?? '')
-    setMaterialGap(existing?.material_gap ?? '')
-    setNotes(existing?.notes ?? '')
-    setNotesVisible(Boolean(existing?.notes))
-    setMaterialGapVisible(Boolean(existing?.material_gap))
-  }, [
-    existing?.id,
-    existing?.updated_at,
-    existing?.realization_percent,
-    existing?.material_gap,
-    existing?.notes,
-  ])
 
   const save = (next?: {
     realization?: string
@@ -586,7 +598,9 @@ function CharacterTargetRow({
               min={0}
               max={100}
               value={realization}
-              onChange={(event) => setRealization(event.target.value)}
+              onChange={(event) =>
+                setValues({ realization: event.target.value })
+              }
               onBlur={() => save({ realization })}
               disabled={upsert.isPending}
               placeholder='0–100'
@@ -597,12 +611,12 @@ function CharacterTargetRow({
           {materialGapVisible ? (
             <OptionalInput
               value={materialGap}
-              onChange={setMaterialGap}
+              onChange={(materialGap) => setValues({ materialGap })}
               onBlur={() => save({ materialGap })}
               onRemove={() => {
-                setMaterialGap('')
+                setValues({ materialGap: '' })
                 save({ materialGap: '' })
-                setMaterialGapVisible(false)
+                setValues({ materialGapVisible: false })
               }}
               placeholder='Kurang materi (opsional)'
               disabled={upsert.isPending}
@@ -612,12 +626,12 @@ function CharacterTargetRow({
           {notesVisible ? (
             <OptionalInput
               value={notes}
-              onChange={setNotes}
+              onChange={(notes) => setValues({ notes })}
               onBlur={() => save({ notes })}
               onRemove={() => {
-                setNotes('')
+                setValues({ notes: '' })
                 save({ notes: '' })
-                setNotesVisible(false)
+                setValues({ notesVisible: false })
               }}
               placeholder='Catatan singkat (opsional)'
               disabled={upsert.isPending}
@@ -633,7 +647,7 @@ function CharacterTargetRow({
                   variant='ghost'
                   size='sm'
                   className='min-h-10'
-                  onClick={() => setMaterialGapVisible(true)}
+                  onClick={() => setValues({ materialGapVisible: true })}
                 >
                   + Material gap
                 </Button>
@@ -644,7 +658,7 @@ function CharacterTargetRow({
                   variant='ghost'
                   size='sm'
                   className='min-h-10'
-                  onClick={() => setNotesVisible(true)}
+                  onClick={() => setValues({ notesVisible: true })}
                 >
                   <MessageSquareText data-icon='inline-start' /> + Note
                 </Button>

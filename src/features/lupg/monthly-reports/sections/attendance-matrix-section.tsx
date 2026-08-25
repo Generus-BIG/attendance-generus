@@ -282,7 +282,9 @@ function MatrixCell({
   showLock,
 }: MatrixCellProps) {
   const upsert = useUpsertMetricMonth()
-  const [val, setVal] = useState(existing?.current_value?.toString() ?? '')
+  const [val, setVal] = useState(
+    () => existing?.current_value?.toString() ?? ''
+  )
 
   useEffect(() => {
     // Sync local input to server row when the row identity or revision

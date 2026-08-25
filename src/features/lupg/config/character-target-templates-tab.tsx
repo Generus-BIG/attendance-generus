@@ -130,6 +130,7 @@ interface ParseResult {
 type EditableItem = ParsedItem & { localId: string }
 
 interface LogEntry {
+  id: string
   timestamp: string
   level: 'info' | 'success' | 'warning' | 'error'
   message: string
@@ -147,6 +148,8 @@ interface ParserHistoryItem {
   logs: LogEntry[]
 }
 
+const PARSER_HISTORY_STORAGE_KEY = 'lupg_parser_history:v1'
+
 export function CharacterTargetTemplatesTab() {
   const { data: templates = [], isLoading } = useCharacterTargetTemplates()
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -157,16 +160,25 @@ export function CharacterTargetTemplatesTab() {
   const [logHistory, setLogHistory] = useState<ParserHistoryItem[]>(() => {
     try {
       const saved =
+        localStorage.getItem(PARSER_HISTORY_STORAGE_KEY) ??
         localStorage.getItem('lupg_parser_history') ??
         localStorage.getItem('lupg_ai_parser_history')
-      return saved ? JSON.parse(saved) : []
+      return saved
+        ? (JSON.parse(saved) as ParserHistoryItem[]).map((item) => ({
+            ...item,
+            logs: item.logs.map((log) => ({
+              ...log,
+              id: log.id ?? crypto.randomUUID(),
+            })),
+          }))
+        : []
     } catch {
       return []
     }
   })
 
   useEffect(() => {
-    localStorage.setItem('lupg_parser_history', JSON.stringify(logHistory))
+    localStorage.setItem(PARSER_HISTORY_STORAGE_KEY, JSON.stringify(logHistory))
   }, [logHistory])
 
   const handleAddLogHistory = (item: ParserHistoryItem) => {
@@ -307,7 +319,7 @@ export function CharacterTargetTemplatesTab() {
                   key={item.id}
                   type='button'
                   onClick={() => setSelectedLogItem(item)}
-                  className='group flex w-full flex-col gap-1 rounded-md border border-border/40 bg-card/45 px-2.5 py-2 text-left text-xs transition-all hover:border-border/70 hover:bg-muted/70'
+                  className='group flex w-full flex-col gap-1 rounded-md border border-border/40 bg-card/45 px-2.5 py-2 text-left text-xs transition-[background-color,border-color] hover:border-border/70 hover:bg-muted/70'
                 >
                   <div className='flex w-full items-start justify-between gap-2'>
                     <span className='block max-w-[15ch] truncate font-medium text-foreground transition-colors group-hover:text-primary'>
@@ -474,9 +486,9 @@ function LogDetailDialog({
               Terminal Trace Logs
             </p>
             <div className='scrollbar-thin max-h-72 overflow-y-auto rounded-lg border border-zinc-800 bg-zinc-950 p-4 font-mono text-[10px] leading-relaxed text-zinc-300'>
-              {item.logs.map((log, index) => (
+              {item.logs.map((log) => (
                 <div
-                  key={index}
+                  key={log.id}
                   className='mb-1.5 flex items-start gap-2 last:mb-0'
                 >
                   <span className='shrink-0 text-zinc-600 select-none'>
@@ -584,7 +596,12 @@ function TemplateImportCard({
         minute: '2-digit',
         second: '2-digit',
       })
-      tempLogs.push({ timestamp: timeStr, level, message })
+      tempLogs.push({
+        id: crypto.randomUUID(),
+        timestamp: timeStr,
+        level,
+        message,
+      })
       setCurrentLogs([...tempLogs])
     }
 
@@ -923,8 +940,8 @@ function TemplateImportCard({
                 </span>
               </div>
               <div className='scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent max-h-60 space-y-1.5 overflow-y-auto pr-1'>
-                {currentLogs.map((log, index) => (
-                  <div key={index} className='flex items-start gap-2'>
+                {currentLogs.map((log) => (
+                  <div key={log.id} className='flex items-start gap-2'>
                     <span className='shrink-0 text-zinc-600 select-none'>
                       [{log.timestamp}]
                     </span>

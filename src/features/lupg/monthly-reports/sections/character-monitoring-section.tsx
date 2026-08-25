@@ -296,7 +296,7 @@ function CharacterMonitoringRow({
 }: RowProps) {
   const upsert = useUpsertCharacterMonitoringReport()
   const [status, setStatus] = useState<CharacterMonitoringStatus | null>(
-    normalizeCharacterStatus(existing?.status)
+    () => normalizeCharacterStatus(existing?.status)
   )
   const [notes, setNotes] = useState(existing?.notes ?? '')
   const [notesVisible, setNotesVisible] = useState(
