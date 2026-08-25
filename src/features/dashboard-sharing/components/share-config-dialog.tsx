@@ -89,6 +89,7 @@ function ShareConfigDialogContent({
   }, [share?.token])
 
   const effectiveFormMode = displayMode === 'forms' ? 'selected' : formMode
+  const formIdSet = new Set(formIds)
   const canSubmit =
     name.trim().length >= 2 &&
     (effectiveFormMode === 'all' || formIds.length > 0)
@@ -199,7 +200,7 @@ function ShareConfigDialogContent({
             {forms.map((form) => (
               <label key={form.id} className='flex items-center gap-2 text-sm'>
                 <Checkbox
-                  checked={formIds.includes(form.id)}
+                  checked={formIdSet.has(form.id)}
                   onCheckedChange={(checked) => {
                     setFormIds((current) =>
                       checked

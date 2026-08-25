@@ -58,6 +58,7 @@ export async function fetchCensusParticipants(
   }
 
   // Filter by allowed categories
+  const allowedCategorySet = new Set(allowedCategories)
   return (data ?? []).reduce<CensusParticipant[]>((participants, row) => {
     const category = row.category as unknown as { value: string } | null
     const group = row.group as unknown as { value: string } | null
@@ -68,10 +69,7 @@ export async function fetchCensusParticipants(
       group: group?.value ?? null,
       gender: (row.gender ?? null) as 'L' | 'P' | null,
     }
-    if (
-      participant.category &&
-      allowedCategories.includes(participant.category)
-    ) {
+    if (participant.category && allowedCategorySet.has(participant.category)) {
       participants.push(participant)
     }
     return participants

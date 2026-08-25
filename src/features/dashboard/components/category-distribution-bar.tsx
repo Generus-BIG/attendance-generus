@@ -1,4 +1,11 @@
-import { Bar, BarChart, Cell, LabelList, XAxis, YAxis } from 'recharts'
+import {
+  Bar,
+  BarChart,
+  Cell,
+  LabelList,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { useIsMobile } from '@/hooks/use-mobile'
 import {
   Card,
