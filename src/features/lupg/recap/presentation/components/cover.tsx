@@ -45,8 +45,8 @@ export function Cover({
             letterSpacing: '-0.03em',
           }}
         >
-          {titleLines.map((line, i) => (
-            <AnimateItem key={i} style={{ color: p.ink }}>
+          {titleLines.map((line) => (
+            <AnimateItem key={line} style={{ color: p.ink }}>
               {line}
             </AnimateItem>
           ))}

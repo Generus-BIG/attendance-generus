@@ -151,13 +151,18 @@ export function TrendBar({
           animationDuration={Math.round(800 * durationScale)}
           maxBarSize={48}
         >
-          {data.map((d, idx) => {
+          {data.map((d) => {
             const fill = d.isHighlighted
               ? palette.chart[1]
               : d.isPlaceholder
                 ? placeholderFill
                 : palette.chart[0]
-            return <Cell key={idx} fill={fill} />
+            return (
+              <Cell
+                key={`${d.label}-${d.value}-${d.isHighlighted ?? false}-${d.isPlaceholder ?? false}`}
+                fill={fill}
+              />
+            )
           })}
           <LabelList
             dataKey='value'
