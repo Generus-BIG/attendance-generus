@@ -1,5 +1,13 @@
 import React from 'react'
-import { Bar, BarChart, Cell, Label, LabelList, XAxis, YAxis } from 'recharts'
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Label,
+  LabelList,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import {
   type ChartConfig,
   ChartContainer,
@@ -202,8 +210,8 @@ export function HighlightedBar({
               : activeOpacity
             return (
               <Cell
-                key={`cell-${index}`}
-                className='duration-200'
+                key={`${d.label}-${d.value}-${d.colorIndex ?? ''}-${d.isPlaceholder ?? false}`}
+                className='transition-[fill,fill-opacity,stroke] duration-200'
                 fill={baseFill}
                 fillOpacity={opacity}
                 stroke={
