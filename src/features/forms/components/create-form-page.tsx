@@ -470,7 +470,7 @@ export function CreateFormPage() {
             {/* The Preview Card Wrapper */}
             <div className='relative overflow-hidden rounded-lg border bg-background/50 p-4 backdrop-blur-sm md:p-8'>
               {/* Mock Browser Bar or simple wrapper */}
-              <div className='pointer-events-none origin-top scale-95 transform-gpu opacity-80 transition-all select-none'>
+              <div className='pointer-events-none origin-top scale-95 transform-gpu opacity-80 transition-[opacity,transform] select-none'>
                 {/* We use the PublicAttendanceForm component here but pass mock config */}
                 <PublicAttendanceForm
                   formConfig={{
