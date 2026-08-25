@@ -130,9 +130,9 @@ edgeRuntime.serve(async (request) => {
   }
 
   const signedByPath = new Map(
-    signedRows
-      .filter((row) => row.path && row.signedUrl)
-      .map((row) => [row.path, row.signedUrl])
+    signedRows.flatMap((row) =>
+      row.path && row.signedUrl ? [[row.path, row.signedUrl]] : []
+    )
   )
   if (photos.some((photo) => !signedByPath.has(photo.storagePath))) {
     return json({ status: 'error' }, 502)
