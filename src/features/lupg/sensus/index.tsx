@@ -4,7 +4,14 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { id as idLocale } from 'date-fns/locale'
 import { Loader2, UsersRound } from 'lucide-react'
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { supabase } from '@/lib/supabase'
@@ -612,7 +619,7 @@ function DerivedCell({ count }: { count: number }) {
 }
 
 function SensusCell({ kelompokId, categoryCode, gender, initial }: CellProps) {
-  const [value, setValue] = useState(initial.toString())
+  const [value, setValue] = useState(() => initial.toString())
   const upsert = useUpsertSensusCell()
 
   useEffect(() => {

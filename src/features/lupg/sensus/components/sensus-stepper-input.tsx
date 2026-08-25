@@ -27,7 +27,7 @@ export function SensusStepperInput({
   initial,
   className,
 }: Props) {
-  const [value, setValue] = useState(initial.toString())
+  const [value, setValue] = useState(() => initial.toString())
   const upsert = useUpsertSensusCell()
 
   useEffect(() => {
