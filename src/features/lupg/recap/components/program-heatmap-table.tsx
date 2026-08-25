@@ -147,7 +147,7 @@ export function ProgramHeatmapTable({
                   const isCurrent = i === currentMonthIdx
                   return (
                     <TableCell
-                      key={i}
+                      key={monthKeys[i]}
                       className={cn(
                         'text-center tabular-nums',
                         isCurrent
@@ -207,7 +207,7 @@ export function ProgramHeatmapTable({
               const isCurrent = i === currentMonthIdx
               return (
                 <TableCell
-                  key={i}
+                  key={monthKeys[i]}
                   className={cn(
                     'text-center tabular-nums',
                     isCurrent ? 'text-sm' : 'text-xs',
