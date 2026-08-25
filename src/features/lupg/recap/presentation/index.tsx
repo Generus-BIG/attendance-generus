@@ -23,6 +23,7 @@ import {
   type MustinNoteRow,
   type ProgramReportRow,
   type SarprasReportRow,
+  type SensusRow,
   type SensusSnapshotRow,
   type ShodaqohRow,
 } from '../../types'
@@ -301,6 +302,42 @@ function PresentationLoader({
   } = useActiveCharacterMonitoringActivities()
   const { data: characterReports = [], isLoading: characterReportsLoading } =
     useCharacterMonitoringReportsBatch(reportIds)
+  const monitoringSensusQ = useQuery({
+    queryKey: [
+      'lupg',
+      'present',
+      'monitoring-sensus',
+      kelompokFilter ?? 'desa',
+    ],
+    queryFn: async () => {
+      const kelompokIds = kelompokFilter
+        ? [kelompokFilter]
+        : kelompokList.map((kelompok) => kelompok.id)
+      if (kelompokIds.length === 0) {
+        return {
+          masterSensus: [] as SensusRow[],
+          derivedSensus: [] as SensusSnapshotRow[],
+        }
+      }
+      const [master, derived] = await Promise.all([
+        supabase.from('lupg_sensus').select('*').in('kelompok_id', kelompokIds),
+        supabase
+          .from('lupg_sensus_participant_derived')
+          .select('*')
+          .in('kelompok_id', kelompokIds),
+      ])
+      if (master.error) throw master.error
+      if (derived.error) throw derived.error
+      return {
+        masterSensus: (master.data ?? []) as SensusRow[],
+        derivedSensus: (derived.data ?? []) as Pick<
+          SensusSnapshotRow,
+          'kelompok_id' | 'category_code' | 'count'
+        >[],
+      }
+    },
+    enabled: kelompokList.length > 0,
+  })
 
   // Activity photos for dokumentasi slide
   const activityPhotosQ = useQuery({
@@ -367,6 +404,7 @@ function PresentationLoader({
     characterTargetReportsLoading ||
     characterActivitiesLoading ||
     characterReportsLoading ||
+    monitoringSensusQ.isLoading ||
     activityPhotosQ.isLoading
 
   const slides = useMemo(
@@ -379,6 +417,8 @@ function PresentationLoader({
         metrics,
         sarprasItems,
         sensusSnapshots: sensusQ.data ?? [],
+        monitoringMasterSensus: monitoringSensusQ.data?.masterSensus ?? [],
+        monitoringDerivedSensus: monitoringSensusQ.data?.derivedSensus ?? [],
         programReports: programsQ.data ?? [],
         metricReports: metricsQ.data ?? [],
         sarprasReports: sarprasQ.data ?? [],
@@ -405,6 +445,7 @@ function PresentationLoader({
       metrics,
       sarprasItems,
       sensusQ.data,
+      monitoringSensusQ.data,
       programsQ.data,
       metricsQ.data,
       sarprasQ.data,
