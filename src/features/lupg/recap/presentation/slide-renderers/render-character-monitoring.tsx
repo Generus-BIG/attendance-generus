@@ -662,14 +662,14 @@ function MonitoringValue({
   const p = usePresPalette()
   if (!status) {
     return (
-      <EditorialTableCell className='text-right' style={{ color: p.muted }}>
+      <EditorialTableCell className='text-center' style={{ color: p.muted }}>
         Belum
       </EditorialTableCell>
     )
   }
   return (
     <EditorialTableCell
-      className='max-w-[14ch] text-right wrap-break-word whitespace-normal'
+      className='max-w-[14ch] text-center wrap-break-word whitespace-normal'
       style={{ color: statusColors(status, p).color, fontWeight: 700 }}
     >
       {CHARACTER_STATUS_META[status].label}
@@ -697,7 +697,6 @@ function MonitoringRecapBody({
   | 'derivedSensus'
 > & { level?: CharacterLevelCode }) {
   const levels = level ? [level] : CHARACTER_LEVELS
-  const p = usePresPalette()
   return (
     <DataPane>
       <EditorialTable density='micro'>
@@ -707,24 +706,24 @@ function MonitoringRecapBody({
             <EditorialTableHead>Kegiatan</EditorialTableHead>
             {isSingleKelompok ? (
               <>
-                <EditorialTableHead className='text-right'>
+                <EditorialTableHead className='text-center'>
                   Sensus
                 </EditorialTableHead>
-                <EditorialTableHead className='text-right'>
+                <EditorialTableHead className='text-center'>
                   Status
                 </EditorialTableHead>
               </>
             ) : (
               <>
-                <EditorialTableHead className='text-right'>
+                <EditorialTableHead className='text-center'>
                   Sensus
                 </EditorialTableHead>
                 {effectiveKelompokList.map((kelompok) => (
-                  <EditorialTableHead key={kelompok.id} className='text-right'>
+                  <EditorialTableHead key={kelompok.id} className='text-center'>
                     {kelompok.value}
                   </EditorialTableHead>
                 ))}
-                <EditorialTableHead className='text-right'>
+                <EditorialTableHead className='text-center'>
                   Desa
                 </EditorialTableHead>
               </>
@@ -752,10 +751,7 @@ function MonitoringRecapBody({
                   {index === 0 ? (
                     <EditorialTableCell
                       rowSpan={rows.length}
-                      className='align-middle font-semibold'
-                      style={{
-                        background: `color-mix(in oklch, ${p.success} 10%, transparent)`,
-                      }}
+                      className='text-center align-middle font-semibold'
                     >
                       {currentLevel}
                     </EditorialTableCell>
@@ -768,7 +764,7 @@ function MonitoringRecapBody({
                       {index === 0 ? (
                         <EditorialTableCell
                           rowSpan={rows.length}
-                          className='text-right align-middle tabular-nums'
+                          className='text-center align-middle tabular-nums'
                         >
                           {sensus}
                         </EditorialTableCell>
@@ -780,7 +776,7 @@ function MonitoringRecapBody({
                       {index === 0 ? (
                         <EditorialTableCell
                           rowSpan={rows.length}
-                          className='text-right align-middle tabular-nums'
+                          className='text-center align-middle tabular-nums'
                         >
                           {sensus}
                         </EditorialTableCell>
@@ -791,7 +787,7 @@ function MonitoringRecapBody({
                           status={status}
                         />
                       ))}
-                      <EditorialTableCell className='max-w-[16ch] text-right wrap-break-word whitespace-normal'>
+                      <EditorialTableCell className='max-w-[16ch] text-center wrap-break-word whitespace-normal'>
                         {row.desa}
                       </EditorialTableCell>
                     </>

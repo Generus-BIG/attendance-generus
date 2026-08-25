@@ -51,3 +51,4 @@ docs/*
 !.env.template
 *docs/
 testsprite_tests/
+graphify-out

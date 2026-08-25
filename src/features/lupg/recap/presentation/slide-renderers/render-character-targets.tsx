@@ -685,7 +685,6 @@ function TargetRecapBody({
   | 'targetItems'
   | 'targetReports'
 > & { level: CharacterLevelCode }) {
-  const p = usePresPalette()
   const groups = buildTargetRecapLevel(
     targetItems,
     targetReports,
@@ -711,8 +710,11 @@ function TargetRecapBody({
             <EditorialTableHead rowSpan={isSingleKelompok ? 1 : 2}>
               Materi
             </EditorialTableHead>
+            <EditorialTableHead rowSpan={isSingleKelompok ? 1 : 2}>
+              Detail materi
+            </EditorialTableHead>
             {isSingleKelompok ? (
-              <EditorialTableHead className='text-right'>
+              <EditorialTableHead className='text-center'>
                 Capaian
               </EditorialTableHead>
             ) : (
@@ -723,7 +725,7 @@ function TargetRecapBody({
                 >
                   Realisasi (%)
                 </EditorialTableHead>
-                <EditorialTableHead rowSpan={2} className='text-right'>
+                <EditorialTableHead rowSpan={2} className='text-center'>
                   Desa (%)
                 </EditorialTableHead>
               </>
@@ -732,7 +734,10 @@ function TargetRecapBody({
           {!isSingleKelompok ? (
             <EditorialTableRow>
               {effectiveKelompokList.map((kelompok) => (
-                <EditorialTableHead key={kelompok.id} className='text-right'>
+                <EditorialTableHead
+                  key={kelompok.id}
+                  className='text-center'
+                >
                   {kelompok.value}
                 </EditorialTableHead>
               ))}
@@ -747,15 +752,15 @@ function TargetRecapBody({
                   <EditorialTableCell
                     rowSpan={group.rows.length}
                     className='align-middle font-semibold'
-                    style={{
-                      background: `color-mix(in oklch, ${p.success} 10%, transparent)`,
-                    }}
                   >
                     {group.category}
                   </EditorialTableCell>
                 ) : null}
                 <EditorialTableCell className='max-w-[30ch] wrap-break-word whitespace-normal'>
                   {row.item.material_label}
+                </EditorialTableCell>
+                <EditorialTableCell className='max-w-[54ch] wrap-break-word whitespace-normal'>
+                  {row.item.detail_label?.trim() || '—'}
                 </EditorialTableCell>
                 {isSingleKelompok ? (
                   <TargetValue value={row.values[0] ?? null} />
@@ -783,7 +788,7 @@ function TargetValue({ value }: { value: number | null }) {
   const p = usePresPalette()
   return (
     <EditorialTableCell
-      className='text-right font-semibold'
+      className='text-center font-semibold'
       style={{ color: progressTone(value, p) }}
     >
       {value === null ? 'Belum' : `${value}%`}
