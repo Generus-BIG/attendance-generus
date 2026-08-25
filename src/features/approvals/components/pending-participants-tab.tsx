@@ -1,6 +1,13 @@
 'use client'
 
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { format } from 'date-fns'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -114,7 +121,8 @@ const checkDuplicate = (pendingName: string, activeList: Participant[]) => {
       .split(/\s+/)
       .filter((w) => w.length > 2)
     if (pWords.length > 0 && aWords.length > 0) {
-      const common = pWords.filter((w) => aWords.includes(w))
+      const aWordSet = new Set(aWords)
+      const common = pWords.filter((w) => aWordSet.has(w))
       if (common.length >= 2) return true
       if (pWords.length === 1 && aWords.length === 1 && pWords[0] === aWords[0])
         return true
@@ -130,8 +138,7 @@ export function PendingParticipantsTab() {
   const { setRefreshData } = useApprovals()
   const { can } = usePermissions()
   const [approveDialogOpen, setApproveDialogOpen] = useState(false)
-  const [selectedPending, setSelectedPending] =
-    useState<PendingParticipant | null>(null)
+  const selectedPending = useRef<PendingParticipant | null>(null)
   const [mergeTarget, setMergeTarget] = useState<string | null>(null)
   const [openCombobox, setOpenCombobox] = useState(false)
   const [rejectConfirm, setRejectConfirm] = useState<PendingParticipant | null>(
@@ -197,16 +204,16 @@ export function PendingParticipantsTab() {
   }
 
   const handleApproveMerge = async () => {
-    if (!selectedPending || !mergeTarget) return
+    if (!selectedPending.current || !mergeTarget) return
 
     try {
-      await approvalService.approve(selectedPending, false, mergeTarget)
+      await approvalService.approve(selectedPending.current, false, mergeTarget)
       const targetParticipant = participants.find((p) => p.id === mergeTarget)
       toast.success(
         `Absensi berhasil dihubungkan ke "${targetParticipant?.name}"`
       )
       setApproveDialogOpen(false)
-      setSelectedPending(null)
+      selectedPending.current = null
       setMergeTarget(null)
       void queryClient.invalidateQueries({ queryKey: ['approvals'] })
     } catch (_error) {
@@ -227,7 +234,7 @@ export function PendingParticipantsTab() {
 
   const openMergeDialog = useCallback(
     (pending: PendingParticipant) => {
-      setSelectedPending(pending)
+      selectedPending.current = pending
       const matchResult = checkDuplicate(pending.name, participants)
       if (matchResult) {
         setMergeTarget(matchResult.match.id)
@@ -240,16 +247,16 @@ export function PendingParticipantsTab() {
   )
 
   const executeBulkApprove = async (items: PendingParticipant[]) => {
-    let ok = 0
-    let fail = 0
-    for (const p of items) {
-      try {
-        await approvalService.approve(p, true)
-        ok++
-      } catch (_e) {
-        fail++
-      }
-    }
+    const results = await Promise.all(
+      items.map((p) =>
+        approvalService.approve(p, true).then(
+          () => true,
+          () => false
+        )
+      )
+    )
+    const ok = results.filter(Boolean).length
+    const fail = results.length - ok
     if (ok > 0) toast.success(`${ok} pengajuan disetujui`)
     if (fail > 0) toast.error(`${fail} pengajuan gagal`)
     void queryClient.invalidateQueries({ queryKey: ['approvals'] })
@@ -258,16 +265,16 @@ export function PendingParticipantsTab() {
   }
 
   const executeBulkReject = async (items: PendingParticipant[]) => {
-    let ok = 0
-    let fail = 0
-    for (const p of items) {
-      try {
-        await approvalService.reject(p.id)
-        ok++
-      } catch (_e) {
-        fail++
-      }
-    }
+    const results = await Promise.all(
+      items.map((p) =>
+        approvalService.reject(p.id).then(
+          () => true,
+          () => false
+        )
+      )
+    )
+    const ok = results.filter(Boolean).length
+    const fail = results.length - ok
     if (ok > 0) toast.success(`${ok} pengajuan ditolak`)
     if (fail > 0) toast.error(`${fail} pengajuan gagal ditolak`)
     void queryClient.invalidateQueries({ queryKey: ['approvals'] })
