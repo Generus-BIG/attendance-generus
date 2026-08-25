@@ -583,8 +583,9 @@ export function AttendanceActionDialog({
       const participantIds = values.isNewParticipant
         ? []
         : values.participantIds || []
+      const participantIdSet = new Set(participantIds)
       const selectedParticipants = filteredParticipants.filter((p) =>
-        participantIds.includes(p.id)
+        participantIdSet.has(p.id)
       )
       const selectedParticipantSummary =
         selectedParticipants.length === 1 ? selectedParticipants[0] : null

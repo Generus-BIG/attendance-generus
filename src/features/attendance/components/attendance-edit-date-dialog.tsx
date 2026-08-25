@@ -28,7 +28,7 @@ export function AttendanceEditDateDialog({
   onOpenChange,
 }: AttendanceEditDateDialogProps) {
   const { refreshData } = useAttendance()
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() =>
     currentRow?.date instanceof Date
       ? currentRow.date
       : currentRow?.date
