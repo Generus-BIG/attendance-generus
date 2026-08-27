@@ -7,6 +7,7 @@ import {
   type MustinTemplateRow,
 } from '../../../types'
 import { AnimateItem } from '../components/animate-element'
+import { DataPane } from '../components/data-pane'
 import { SlideFrame } from '../components/slide-frame'
 import { type Slide } from '../slides'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
@@ -95,7 +96,7 @@ function NoteItem({ note, index }: NoteItemProps) {
             fontWeight,
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
-            fontFamily: p.fontMono,
+            fontFamily: p.fontSans,
             width: 'fit-content',
           }}
         >
@@ -139,7 +140,8 @@ function KelompokCard({ name, notes }: KelompokCardProps) {
       >
         <h3
           style={{
-            fontFamily: '"Archivo Black", Impact, sans-serif',
+            fontFamily: p.fontSans,
+            fontWeight: 700,
             fontSize: 'clamp(1rem, 1.4vw, 1.5rem)',
             color: p.primary,
           }}
@@ -165,6 +167,21 @@ function KelompokCard({ name, notes }: KelompokCardProps) {
         </div>
       )}
     </div>
+  )
+}
+
+function OverflowNotice({ count }: { count: number }) {
+  const p = usePresPalette()
+  return (
+    <p
+      style={{
+        color: p.muted,
+        fontFamily: p.fontSans,
+        fontSize: 'clamp(0.8rem, 1vw, 1rem)',
+      }}
+    >
+      +{count} catatan lainnya
+    </p>
   )
 }
 
@@ -206,20 +223,32 @@ export function renderMustinSlide(args: SlideArgs): Slide {
         slideNumber={slideNumber}
         totalSlides={totalSlides}
       >
-        <div
-          className={
-            isSingleKelompok
-              ? 'h-full overflow-auto'
-              : 'grid h-full grid-cols-2 gap-6 overflow-auto'
-          }
-        >
-          {effectiveKelompokList.map((k) => {
-            const report = reportByKelompok.get(k.id)
-            const rawNotes = report ? (notesByReport.get(report.id) ?? []) : []
-            const notes = sortNotes(rawNotes, templateByCode)
-            return <KelompokCard key={k.id} name={k.value} notes={notes} />
-          })}
-        </div>
+        <DataPane>
+          <div
+            className={
+              isSingleKelompok ? 'h-full' : 'grid h-full grid-cols-2 gap-6'
+            }
+          >
+            {effectiveKelompokList.map((k) => {
+              const report = reportByKelompok.get(k.id)
+              const rawNotes = report
+                ? (notesByReport.get(report.id) ?? [])
+                : []
+              const notes = sortNotes(rawNotes, templateByCode)
+              const visibleNotes = notes.slice(0, 4)
+              return (
+                <div key={k.id}>
+                  <KelompokCard name={k.value} notes={visibleNotes} />
+                  {notes.length > visibleNotes.length ? (
+                    <OverflowNotice
+                      count={notes.length - visibleNotes.length}
+                    />
+                  ) : null}
+                </div>
+              )
+            })}
+          </div>
+        </DataPane>
       </SlideFrame>
     ),
   }

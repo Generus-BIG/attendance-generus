@@ -98,8 +98,9 @@ export function EditorialTooltipShell({
   return (
     <div
       style={{
-        background: palette.primary,
-        color: palette.primaryFg,
+        background: palette.popover,
+        color: palette.popoverFg,
+        border: `1px solid ${palette.rule}`,
         padding: '6px 10px',
         borderRadius: 4,
         fontFamily: palette.fontSans,
@@ -111,7 +112,7 @@ export function EditorialTooltipShell({
         style={{
           fontFamily: palette.fontSans,
           fontWeight: 700,
-          color: palette.brandAccent,
+          color: palette.ink,
           fontSize: '13px',
           marginBottom: 2,
         }}

@@ -24,6 +24,7 @@ import {
   EditorialTableRow,
   TotalRow,
 } from '../components/editorial-table'
+import { ReportSplit } from '../components/report-split'
 import { SlideFrame } from '../components/slide-frame'
 import { type Slide } from '../slides'
 import { usePresPalette } from '../use-pres-palette'
@@ -207,7 +208,7 @@ function ProgramKelompokBody(props: SlideArgs) {
       slideNumber={slideNumber}
       totalSlides={totalSlides}
     >
-      <div className='grid h-full grid-cols-[1.25fr_0.75fr] gap-12 overflow-hidden'>
+      <ReportSplit>
         <DataPane>
           <EditorialTable headerVariant='hairline'>
             <EditorialTableHeader>
@@ -249,9 +250,9 @@ function ProgramKelompokBody(props: SlideArgs) {
           </EditorialTable>
         </DataPane>
         <ChartPane>
-          <TrendBar data={chartData} yAxisTitle='JUMLAH' />
+          <TrendBar data={chartData} yAxisTitle='JUMLAH' valueLabel='Jumlah' />
         </ChartPane>
-      </div>
+      </ReportSplit>
     </SlideFrame>
   )
 }
@@ -292,7 +293,7 @@ function ProgramDesaBody(props: SlideArgs) {
       slideNumber={slideNumber}
       totalSlides={totalSlides}
     >
-      <div className='grid h-full grid-cols-[1.25fr_0.75fr] gap-12 overflow-hidden'>
+      <ReportSplit>
         <DataPane>
           <EditorialTable headerVariant='hairline'>
             <EditorialTableHeader>
@@ -352,12 +353,13 @@ function ProgramDesaBody(props: SlideArgs) {
           <TrendBar
             data={chartData}
             yAxisTitle='%'
+            valueLabel='Capaian'
             valueDomain={[0, 100]}
             valueFormatter={(n) => `${n}%`}
             labelFormatter={(n) => `${n}%`}
           />
         </ChartPane>
-      </div>
+      </ReportSplit>
     </SlideFrame>
   )
 }
@@ -554,7 +556,7 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
       slideNumber={slideNumber}
       totalSlides={totalSlides}
     >
-      <div className='grid h-full grid-cols-[1.25fr_0.75fr] gap-12 overflow-hidden'>
+      <ReportSplit>
         <DataPane>
           <EditorialTable headerVariant='hairline'>
             <EditorialTableHeader>
@@ -605,9 +607,10 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
           <TrendBar
             data={chartData}
             yAxisTitle={program.code === 'GMKM' ? 'KEHADIRAN' : 'JUMLAH'}
+            valueLabel={program.code === 'GMKM' ? 'Kehadiran' : 'Jumlah'}
           />
         </ChartPane>
-      </div>
+      </ReportSplit>
     </SlideFrame>
   )
 }
@@ -656,7 +659,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
       slideNumber={slideNumber}
       totalSlides={totalSlides}
     >
-      <div className='grid h-full grid-cols-[1.25fr_0.75fr] gap-12 overflow-hidden'>
+      <ReportSplit>
         <DataPane>
           <EditorialTable headerVariant='hairline'>
             <EditorialTableHeader>
@@ -716,12 +719,13 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
           <TrendBar
             data={chartData}
             yAxisTitle='%'
+            valueLabel='Capaian'
             valueDomain={[0, 100]}
             valueFormatter={(n) => `${n}%`}
             labelFormatter={(n) => `${n}%`}
           />
         </ChartPane>
-      </div>
+      </ReportSplit>
     </SlideFrame>
   )
 }

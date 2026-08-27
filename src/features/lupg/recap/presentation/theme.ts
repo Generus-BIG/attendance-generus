@@ -4,37 +4,44 @@
 // `usePresPalette()` hook (see ./use-pres-palette.ts) — they're palette-aware
 // and resolved at runtime from CSS custom properties.
 //
-// Only canonical category content-colors stay here as fixed hex literals:
-// the kategori → color mapping is content (the eye learns it across slides),
-// not chrome.
+// Sensus category colors use five tonal steps from the active palette. The
+// kategori order stays stable while the treatment belongs to the slide theme.
 
-// Canonical Sensus kategori palette — fixed across all 3 product palettes
-// because the mapping IS the data. Same colors used in pie + stacked bar.
-export const SENSUS_CATEGORY_COLORS = {
-  GPN_A: '#fbcf3a', // yellow
-  GPN_B: '#a3d977', // light green
-  AR: '#5cb85c', // medium green
-  APR: '#3a9943', // dark green
-  ACR: '#1f7a30', // darkest green
-} as const
+type SensusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR'
+type PresentationPalette = 'modern-natural' | 'anthropic-claude' | 'sage-green'
 
-// Modern Blue Sensus category palette — used specifically in Modern theme
-export const MODERN_SENSUS_CATEGORY_COLORS = {
-  ACR: '#1d1e5a', // darkest blue
-  APR: '#2f3e8f', // dark blue
-  AR: '#4b6cb7', // medium blue
-  GPN_A: '#7b9cd6', // light blue
-  GPN_B: '#b9cde5', // lightest blue
+const SENSUS_CATEGORY_COLORS: Record<
+  PresentationPalette,
+  Record<SensusCode, string>
+> = {
+  'sage-green': {
+    ACR: '#45643f',
+    APR: '#62835b',
+    AR: '#81a477',
+    GPN_A: '#a8c399',
+    GPN_B: '#cadbbf',
+  },
+  'anthropic-claude': {
+    ACR: '#ad552f',
+    APR: '#be6a46',
+    AR: '#d18462',
+    GPN_A: '#d7d0b4',
+    GPN_B: '#e4dfca',
+  },
+  'modern-natural': {
+    ACR: '#1d1e5a',
+    APR: '#2f3e8f',
+    AR: '#4b6cb7',
+    GPN_A: '#7b9cd6',
+    GPN_B: '#b9cde5',
+  },
 } as const
 
 export function getSensusColor(
-  code: 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR',
-  isModern: boolean
+  code: SensusCode,
+  palette: PresentationPalette
 ): string {
-  if (isModern) {
-    return MODERN_SENSUS_CATEGORY_COLORS[code]
-  }
-  return SENSUS_CATEGORY_COLORS[code]
+  return SENSUS_CATEGORY_COLORS[palette][code]
 }
 
 // Stack order for the desa stacked bar (bottom-to-top: youngest → oldest, ACR → GPN B)

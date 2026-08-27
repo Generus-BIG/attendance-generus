@@ -158,7 +158,7 @@ export function SarprasStackedBar({
 }: SarprasStackedBarProps) {
   const palette = usePresPalette()
   const { durationScale } = usePresentationAnimation()
-  const colorSudah = palette.success
+  const colorSudah = palette.sarprasPrimary
   const colorBelum = `color-mix(in oklch, ${palette.muted} 35%, ${palette.bg})`
   if (totalItems <= 0 || data.length === 0) {
     return (

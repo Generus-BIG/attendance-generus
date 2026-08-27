@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { Check, Hourglass, Minus } from 'lucide-react'
 import { type MonthlyReportRow } from '../../../types'
+import { DataPane } from '../components/data-pane'
 import {
   EditorialTable,
   EditorialTableBody,
@@ -36,8 +37,8 @@ function StatusBody({ effectiveKelompokList, reports }: StatusBodyProps) {
   for (const r of reports) reportByKelompok.set(r.kelompok_id, r)
 
   return (
-    <div className='h-full overflow-auto'>
-      <EditorialTable headerVariant='navy'>
+    <DataPane>
+      <EditorialTable headerVariant='hairline'>
         <EditorialTableHeader>
           <EditorialTableRow>
             <EditorialTableHead>Kelompok</EditorialTableHead>
@@ -97,7 +98,7 @@ function StatusBody({ effectiveKelompokList, reports }: StatusBodyProps) {
           })}
         </EditorialTableBody>
       </EditorialTable>
-    </div>
+    </DataPane>
   )
 }
 

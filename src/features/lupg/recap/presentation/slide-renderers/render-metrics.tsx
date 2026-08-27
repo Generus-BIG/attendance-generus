@@ -1,4 +1,5 @@
 // Metrics slide renderers — table, kategori comparison (3/5 months), and 12-month aggregate.
+import { type ReactNode } from 'react'
 import { addMonths, format, parse } from 'date-fns'
 import {
   allMonthKeysForYear,
@@ -321,8 +322,8 @@ function MetricsDesaTable({
   })
 
   const headerStyle = {
-    background: p.primary,
-    color: p.primaryFg,
+    background: p.tableHeader,
+    color: p.tableHeaderFg,
     fontFamily: p.fontMono,
     fontSize: 'clamp(0.65rem, 0.8cqw, 0.85rem)',
     fontWeight: 700,
@@ -333,7 +334,10 @@ function MetricsDesaTable({
 
   return (
     <div className='h-full overflow-hidden'>
-      <table className='h-full w-full table-fixed border-collapse tabular-nums'>
+      <table
+        className='h-full w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums'
+        style={{ borderColor: p.rule }}
+      >
         <thead>
           <tr>
             <th
@@ -385,7 +389,7 @@ function MetricsDesaTable({
                   background: rowBg,
                   borderTop:
                     row.startsGroup && row.key !== 'ACR-attendance'
-                      ? `clamp(0.4rem, 1vh, 0.8rem) solid ${colorDivider}`
+                      ? `2px solid ${colorDivider}`
                       : undefined,
                   color:
                     row.tone === 'category'
@@ -399,10 +403,11 @@ function MetricsDesaTable({
                 }}
               >
                 <td
-                  className='px-2 py-1.5'
+                  className='border-b px-2 py-2'
                   style={{
                     background:
                       row.tone === 'summary' ? colorLabelSummaryBg : undefined,
+                    borderColor: p.rule,
                     fontWeight: 700,
                   }}
                 >
@@ -411,21 +416,24 @@ function MetricsDesaTable({
                 {row.values.map((value, index) => (
                   <td
                     key={`${row.key}-${kelompokList[index]?.id ?? index}`}
-                    className='px-2 py-1.5 text-center'
+                    className='border-b px-2 py-2 text-center'
+                    style={{ borderColor: p.rule }}
                   >
                     {formatPct(value)}
                   </td>
                 ))}
                 <td
-                  className='px-2 py-1.5 text-center'
+                  className='border-b px-2 py-2 text-center'
                   style={
                     row.tone === 'summary'
                       ? {
                           background: colorFinalAvgBg,
+                          borderColor: p.rule,
                           color: p.primaryFg,
                           fontWeight: 800,
                         }
                       : {
+                          borderColor: p.rule,
                           fontWeight: 700,
                         }
                   }
@@ -547,8 +555,8 @@ function MetricsKelompokTable({
   })
 
   const headerStyle = {
-    background: p.primary,
-    color: p.primaryFg,
+    background: p.tableHeader,
+    color: p.tableHeaderFg,
     fontFamily: p.fontMono,
     fontSize: 'clamp(0.65rem, 0.8cqw, 0.85rem)',
     fontWeight: 700,
@@ -559,7 +567,10 @@ function MetricsKelompokTable({
 
   return (
     <div className='h-full overflow-hidden'>
-      <table className='h-full w-full table-fixed border-collapse tabular-nums'>
+      <table
+        className='h-full w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums'
+        style={{ borderColor: p.rule }}
+      >
         <thead>
           <tr>
             <th className='w-[18%] px-2 py-2 text-left' style={headerStyle}>
@@ -590,9 +601,9 @@ function MetricsKelompokTable({
                   background: rowBg,
                   borderTop:
                     row.startsGroup && row.key !== 'summary-generus'
-                      ? `clamp(0.4rem, 1vh, 0.8rem) solid ${colorDivider}`
+                      ? `2px solid ${colorDivider}`
                       : row.key === 'summary-generus'
-                        ? `clamp(0.5rem, 1.2vh, 1rem) solid ${colorDivider}`
+                        ? `2px solid ${colorDivider}`
                         : undefined,
                   color:
                     row.tone === 'category'
@@ -606,10 +617,11 @@ function MetricsKelompokTable({
                 }}
               >
                 <td
-                  className='px-2 py-1.5'
+                  className='border-b px-2 py-2'
                   style={{
                     background:
                       row.tone === 'summary' ? colorLabelSummaryBg : undefined,
+                    borderColor: p.rule,
                     fontWeight: 700,
                   }}
                 >
@@ -618,21 +630,24 @@ function MetricsKelompokTable({
                 {row.values.map((value, index) => (
                   <td
                     key={`${row.key}-${monthKeys[index]}`}
-                    className='px-1 py-1.5 text-center'
+                    className='border-b px-1 py-2 text-center'
+                    style={{ borderColor: p.rule }}
                   >
                     {formatPct(value)}
                   </td>
                 ))}
                 <td
-                  className='px-2 py-1.5 text-center'
+                  className='border-b px-2 py-2 text-center'
                   style={
                     row.tone === 'summary'
                       ? {
                           background: colorFinalAvgBg,
+                          borderColor: p.rule,
                           color: p.primaryFg,
                           fontWeight: 800,
                         }
                       : {
+                          borderColor: p.rule,
                           fontWeight: 700,
                         }
                   }
@@ -689,7 +704,7 @@ export function renderMetricsTableSlide(args: RenderMetricsTableArgs): Slide {
       render: () => (
         <SlideFrame
           eyebrow='METRIK KEHADIRAN'
-          title='Tabel Rata-rata Kehadiran'
+          title='Persentase Kehadiran Perkelompok'
           meta={monthLabel}
           scope={scope}
           slideNumber={slideNumber}
@@ -759,7 +774,7 @@ export function renderMetricsTableSlide(args: RenderMetricsTableArgs): Slide {
     render: () => (
       <SlideFrame
         eyebrow='METRIK KEHADIRAN'
-        title='Tabel Rata-rata Kehadiran'
+        title='Persentase Kehadiran Generus'
         meta={monthLabel}
         scope={scope}
         slideNumber={slideNumber}
@@ -802,7 +817,7 @@ export function renderMetricsCompareSlide(
   const {
     monthKey,
     monthLabel,
-    scope,
+    scope: _scope,
     isSingleKelompok,
     kelompokFilter,
     kategoriCodes,
@@ -810,8 +825,8 @@ export function renderMetricsCompareSlide(
     titleSuffix,
     yearlyMonthlyReports,
     yearlyMetricReports,
-    slideNumber,
-    totalSlides,
+    slideNumber: _slideNumber,
+    totalSlides: _totalSlides,
   } = args
 
   const lookups = buildLookups(yearlyMonthlyReports, yearlyMetricReports)
@@ -834,50 +849,97 @@ export function renderMetricsCompareSlide(
     key: `metrics-compare-${kategoriCodes.join('-')}`,
     title: `Metrik · ${titleSuffix}`,
     render: () => (
-      <SlideFrame
-        eyebrow='METRIK KEHADIRAN'
-        title={`Perbandingan ${monthsBack} Bulan Terakhir`}
-        meta={`${monthLabel} · ${titleSuffix}`}
-        scope={scope}
-        slideNumber={slideNumber}
-        totalSlides={totalSlides}
+      <AttendanceComparisonSlide
+        monthLabel={monthLabel}
+        titleSuffix={titleSuffix}
+        gridColsClass={gridColsClass}
       >
-        <div className={`grid h-full ${gridColsClass} gap-8`}>
-          {kategoriCodes.map((kat) => {
-            const kehadiranCode = KATEGORI_TO_KEHADIRAN[kat]
-            const piketCode = KATEGORI_TO_PIKET[kat]
-            const kehadiran = monthKeys.map((mk) =>
-              getMonthValue(
-                kehadiranCode,
-                mk,
-                isSingleKelompok,
-                kelompokFilter,
-                lookups
-              )
+        {kategoriCodes.map((kat) => {
+          const kehadiranCode = KATEGORI_TO_KEHADIRAN[kat]
+          const piketCode = KATEGORI_TO_PIKET[kat]
+          const kehadiran = monthKeys.map((mk) =>
+            getMonthValue(
+              kehadiranCode,
+              mk,
+              isSingleKelompok,
+              kelompokFilter,
+              lookups
             )
-            const piket = monthKeys.map((mk) =>
-              getMonthValue(
-                piketCode,
-                mk,
-                isSingleKelompok,
-                kelompokFilter,
-                lookups
-              )
+          )
+          const piket = monthKeys.map((mk) =>
+            getMonthValue(
+              piketCode,
+              mk,
+              isSingleKelompok,
+              kelompokFilter,
+              lookups
             )
-            return (
-              <PairedMonthBars
-                key={kat}
-                title={KATEGORI_LABELS[kat] ?? kat}
-                monthLabels={monthLabels}
-                kehadiran={kehadiran}
-                piket={piket}
-              />
-            )
-          })}
-        </div>
-      </SlideFrame>
+          )
+          return (
+            <PairedMonthBars
+              key={kat}
+              title={KATEGORI_LABELS[kat] ?? kat}
+              monthLabels={monthLabels}
+              kehadiran={kehadiran}
+              piket={piket}
+            />
+          )
+        })}
+      </AttendanceComparisonSlide>
     ),
   }
+}
+
+function AttendanceComparisonSlide({
+  monthLabel,
+  titleSuffix,
+  gridColsClass,
+  children,
+}: {
+  monthLabel: string
+  titleSuffix: string
+  gridColsClass: string
+  children: ReactNode
+}) {
+  const palette = usePresPalette()
+  return (
+    <div
+      className='flex h-full flex-col overflow-hidden p-[clamp(2.5rem,5cqw,5rem)]'
+      style={{
+        background: palette.bg,
+        color: palette.ink,
+        fontFamily: palette.fontSans,
+      }}
+    >
+      <header className='flex shrink-0 items-start justify-between gap-8'>
+        <h1
+          style={{
+            fontFamily: palette.fontSans,
+            fontSize: 'clamp(2.5rem, 4.2cqw, 5rem)',
+            fontWeight: 700,
+            lineHeight: 1.04,
+            letterSpacing: '-0.045em',
+          }}
+        >
+          Grafik Kehadiran | {titleSuffix.split(' · ').join(', ')}
+        </h1>
+        <time
+          className='shrink-0 pt-2'
+          style={{
+            fontSize: 'clamp(1rem, 1.25cqw, 1.5rem)',
+            color: palette.muted,
+          }}
+        >
+          {monthLabel}
+        </time>
+      </header>
+      <div
+        className={`mt-[clamp(2rem,4cqh,4rem)] grid min-h-0 flex-1 ${gridColsClass} gap-6`}
+      >
+        {children}
+      </div>
+    </div>
+  )
 }
 
 // ---------- Metrics Aggregate Slide ----------
@@ -901,13 +963,13 @@ export function renderMetricsAggregateSlide(
   const {
     monthKey,
     monthLabel,
-    scope,
+    scope: _scope,
     isSingleKelompok,
     kelompokFilter,
     yearlyMonthlyReports,
     yearlyMetricReports,
-    slideNumber,
-    totalSlides,
+    slideNumber: _slideNumber,
+    totalSlides: _totalSlides,
   } = args
 
   const year = parseInt(monthKey.slice(0, 4), 10)
@@ -947,22 +1009,17 @@ export function renderMetricsAggregateSlide(
     key: 'metrics-aggregate',
     title: 'Rata-rata Kehadiran Generus vs Piket LUPG',
     render: () => (
-      <SlideFrame
-        eyebrow='METRIK KEHADIRAN'
-        title='Rata-rata Generus vs Piket LUPG'
-        meta={monthLabel}
-        scope={scope}
-        slideNumber={slideNumber}
-        totalSlides={totalSlides}
+      <AttendanceComparisonSlide
+        monthLabel={monthLabel}
+        titleSuffix='Generus Desa'
+        gridColsClass='grid-cols-1'
       >
-        <div className='h-full'>
-          <GenerusPiketAggregateBars
-            monthLabels={monthLabels}
-            generusValues={generusValues}
-            piketValues={piketValues}
-          />
-        </div>
-      </SlideFrame>
+        <GenerusPiketAggregateBars
+          monthLabels={monthLabels}
+          generusValues={generusValues}
+          piketValues={piketValues}
+        />
+      </AttendanceComparisonSlide>
     ),
   }
 }

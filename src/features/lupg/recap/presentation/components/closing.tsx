@@ -16,13 +16,19 @@ export function Closing({ tagline, metaLines }: ClosingProps) {
       <AnimateContainer className='flex h-full w-full flex-col'>
         <div className='flex flex-1 flex-col items-center justify-center gap-6 text-center'>
           <AnimateItem
-            aria-hidden
-            style={{ width: 60, height: 3, background: p.brandAccent }}
-          />
+            style={{
+              fontFamily: p.fontSans,
+              fontSize: 'clamp(1.25rem, 1.8cqw, 1.75rem)',
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              color: p.ink,
+            }}
+          >
+            Penutup
+          </AnimateItem>
           <AnimateItem
             style={{
-              fontFamily: p.fontSerif,
-              fontStyle: 'italic',
+              fontFamily: p.fontSans,
               fontSize: 'clamp(1.75rem, 3cqw, 2.5rem)',
               fontWeight: 400,
               color: p.primary,

@@ -12,7 +12,7 @@ export function renderCoverSlide(args: {
   const { monthLabel, isSingleKelompok, scope, pertemuanCount } = args
 
   const modeLabel = `LAPORAN BULANAN — ${isSingleKelompok ? 'KELOMPOK' : 'DESA'}`
-  const titleLines = ['LAPORAN', 'PEMBINAAN', 'GENERUS']
+  const titleLines = ['LAPORAN PEMBINAAN', 'GENERUS']
   const tagline = 'Generus Sukses, kita semua Sukses.'
   const metaLines =
     pertemuanCount !== undefined

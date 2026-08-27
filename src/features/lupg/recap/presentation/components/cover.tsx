@@ -39,8 +39,9 @@ export function Cover({
         <div
           className='flex flex-col'
           style={{
-            fontFamily: '"Archivo Black", Impact, sans-serif',
+            fontFamily: p.fontSans,
             fontSize: 'clamp(3.5rem, 8cqw, 6.5rem)',
+            fontWeight: 700,
             lineHeight: 1.0,
             letterSpacing: '-0.03em',
           }}
@@ -55,13 +56,8 @@ export function Cover({
           </AnimateItem>
           <AnimateItem className='mt-8 flex flex-col gap-4'>
             <span
-              aria-hidden
-              style={{ width: 48, height: 2, background: p.brandAccent }}
-            />
-            <span
               style={{
-                fontFamily: p.fontSerif,
-                fontStyle: 'italic',
+                fontFamily: p.fontSans,
                 fontSize: 'clamp(1.25rem, 2cqw, 2rem)',
                 fontWeight: 400,
                 letterSpacing: 0,

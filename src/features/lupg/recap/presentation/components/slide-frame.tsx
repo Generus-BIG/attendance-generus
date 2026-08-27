@@ -3,7 +3,7 @@ import { usePresPalette } from '../use-pres-palette'
 import { AnimateContainer, AnimateItem } from './animate-element'
 
 export interface SlideFrameProps {
-  eyebrow: string
+  eyebrow?: string
   title: string
   meta?: ReactNode
   scope: string
@@ -13,7 +13,6 @@ export interface SlideFrameProps {
 }
 
 export function SlideFrame({
-  eyebrow,
   title,
   meta,
   scope,
@@ -23,17 +22,10 @@ export function SlideFrame({
 }: SlideFrameProps) {
   const p = usePresPalette()
 
-  const eyebrowStyle = {
-    fontFamily: p.fontMono,
-    fontSize: 'clamp(0.75rem, 1cqw, 1.125rem)',
-    fontWeight: 700,
-    letterSpacing: '0.28em',
-    color: p.muted,
-  } as const
-
   const titleStyle = {
-    fontFamily: '"Archivo Black", Impact, sans-serif',
-    fontSize: 'clamp(2rem, 4cqw, 4rem)',
+    fontFamily: p.fontSans,
+    fontSize: 'clamp(2.25rem, 4cqw, 4rem)',
+    fontWeight: 700,
     lineHeight: 1.05,
     letterSpacing: '-0.018em',
     color: p.ink,
@@ -79,16 +71,7 @@ export function SlideFrame({
               'clamp(1.25rem, 3cqh, 2.5rem) clamp(2rem, 4cqw, 4rem) clamp(0.75rem, 1.7cqh, 1.25rem)',
           }}
         >
-          <div className='flex flex-col gap-2'>
-            <AnimateItem className='flex items-center gap-3'>
-              <span
-                aria-hidden
-                style={{ width: 48, height: 3, background: p.brandAccent }}
-              />
-              <span className='uppercase' style={eyebrowStyle}>
-                {eyebrow}
-              </span>
-            </AnimateItem>
+          <div className='flex flex-col'>
             <AnimateItem>
               <h1 style={titleStyle}>{title}</h1>
             </AnimateItem>

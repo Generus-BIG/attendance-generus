@@ -3,7 +3,6 @@ import {
   type CharacterMonitoringReportRow,
   type MonthlyReportRow,
   type SensusRow,
-  type SensusSnapshotRow,
 } from '../../../types'
 import {
   CHARACTER_LEVELS,
@@ -42,12 +41,8 @@ interface SlideArgs {
   reports: MonthlyReportRow[]
   activities: CharacterMonitoringActivityRow[]
   characterReports: CharacterMonitoringReportRow[]
-  sensusSnapshots: SensusSnapshotRow[]
   masterSensus: SensusRow[]
-  derivedSensus: Pick<
-    SensusSnapshotRow,
-    'kelompok_id' | 'category_code' | 'count'
-  >[]
+  derivedSensus: Pick<SensusRow, 'kelompok_id' | 'category_code' | 'count'>[]
   slideNumber: number
   totalSlides: number
 }

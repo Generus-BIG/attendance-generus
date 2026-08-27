@@ -16,8 +16,8 @@ import {
   type ProgramReportRow,
   type SarprasItemRow,
   type SarprasReportRow,
+  type SensusCellRow,
   type SensusRow,
-  type SensusSnapshotRow,
   type ShodaqohRow,
 } from '../../types'
 import { formatMonthLabel } from '../../utils/month-utils'
@@ -59,10 +59,10 @@ export interface PresentationData {
   programs: ProgramDefinitionRow[]
   metrics: MetricDefinitionRow[]
   sarprasItems: SarprasItemRow[]
-  sensusSnapshots: SensusSnapshotRow[]
+  sensusCells: SensusCellRow[]
   monitoringMasterSensus?: SensusRow[]
   monitoringDerivedSensus?: Pick<
-    SensusSnapshotRow,
+    SensusCellRow,
     'kelompok_id' | 'category_code' | 'count'
   >[]
   programReports: ProgramReportRow[]
@@ -108,7 +108,7 @@ export function buildSlides(data: PresentationData): Slide[] {
     programs,
     metrics,
     sarprasItems,
-    sensusSnapshots,
+    sensusCells,
     monitoringMasterSensus = [],
     monitoringDerivedSensus = [],
     programReports,
@@ -220,7 +220,9 @@ export function buildSlides(data: PresentationData): Slide[] {
 
   for (let i = 0; i < descriptors.length; i++) {
     const d = descriptors[i]
-    const slideNumber = i + 1
+    // Documentation may expand into multiple slides, so use the materialized
+    // count rather than descriptor position for continuous footer numbering.
+    const slideNumber = slides.length + 1
 
     switch (d.kind) {
       case 'cover': {
@@ -256,7 +258,7 @@ export function buildSlides(data: PresentationData): Slide[] {
             scope,
             isSingleKelompok,
             effectiveKelompokList,
-            sensusSnapshots,
+            sensusCells,
             slideNumber,
             totalSlides,
           })
@@ -402,7 +404,6 @@ export function buildSlides(data: PresentationData): Slide[] {
             reports,
             activities: characterActivities,
             characterReports,
-            sensusSnapshots,
             masterSensus: monitoringMasterSensus,
             derivedSensus: monitoringDerivedSensus,
             level: d.level,
