@@ -1,9 +1,9 @@
 // Renderer for activity documentation photos slide.
 // Displays photos in a 1 or 2 photo layout optimized for projector/presentation.
-import { SlideFrame } from '../components/slide-frame'
-import { usePresPalette } from '../use-pres-palette'
-import { type Slide } from '../slides'
 import { AnimateItem } from '../components/animate-element'
+import { SlideFrame } from '../components/slide-frame'
+import { type Slide } from '../slides'
+import { usePresPalette } from '../use-pres-palette'
 
 export interface ActivityPhotoWithUrl {
   id: string
@@ -28,10 +28,7 @@ function DokumentasiGrid({ photos }: { photos: ActivityPhotoWithUrl[] }) {
     const photo = photos[0]
     return (
       <div className='mx-auto flex h-full max-w-4xl flex-col items-center justify-center gap-3'>
-        <AnimateItem
-          className='flex flex-1 items-center justify-center overflow-hidden rounded-lg p-2 w-full h-full'
-          style={{ background: p.bg }}
-        >
+        <AnimateItem className='flex h-full w-full flex-1 items-center justify-center'>
           <img
             src={photo.signedUrl}
             alt={photo.caption ?? ''}
@@ -58,12 +55,8 @@ function DokumentasiGrid({ photos }: { photos: ActivityPhotoWithUrl[] }) {
   return (
     <div className='grid h-full grid-cols-2 gap-6'>
       {photos.map((photo) => (
-        <AnimateItem
-          key={photo.id}
-          className='flex flex-col gap-3 overflow-hidden rounded-lg p-2 h-full'
-          style={{ background: p.bg }}
-        >
-          <div className='flex flex-1 items-center justify-center overflow-hidden w-full h-full'>
+        <AnimateItem key={photo.id} className='flex h-full flex-col gap-3'>
+          <div className='flex h-full w-full flex-1 items-center justify-center overflow-hidden'>
             <img
               src={photo.signedUrl}
               alt={photo.caption ?? ''}
@@ -72,7 +65,7 @@ function DokumentasiGrid({ photos }: { photos: ActivityPhotoWithUrl[] }) {
           </div>
           {photo.caption && (
             <p
-              className='px-3 text-center line-clamp-2'
+              className='line-clamp-2 px-3 text-center'
               style={{
                 fontFamily: p.fontSans,
                 fontSize: 'clamp(0.8rem, 1.1vw, 1.125rem)',
@@ -88,9 +81,7 @@ function DokumentasiGrid({ photos }: { photos: ActivityPhotoWithUrl[] }) {
   )
 }
 
-export function renderDokumentasiSlides(
-  args: DokumentasiSlideArgs
-): Slide[] {
+export function renderDokumentasiSlides(args: DokumentasiSlideArgs): Slide[] {
   const { monthLabel, scope, photos, slideNumber, totalSlides } = args
 
   if (photos.length === 0) return []

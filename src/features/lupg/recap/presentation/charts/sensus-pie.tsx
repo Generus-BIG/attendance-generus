@@ -1,8 +1,14 @@
 // Sensus pie chart (kelompok mode) — solid pie of the 5 generus categories with external labels.
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
+import {
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts'
+import { usePresentationAnimation } from '../context/animation-context'
 import { getSensusColor } from '../theme'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
-import { usePresentationAnimation } from '../context/animation-context'
 import { EditorialTooltipShell } from './chart-primitives'
 
 type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR'
@@ -140,6 +146,12 @@ export function SensusPie({ data }: SensusPieProps) {
     )
   }
   const enriched = data.map((d) => ({ ...d, _grandTotal: grandTotal }))
+  const paletteName =
+    document.documentElement.getAttribute('data-palette') === 'anthropic-claude'
+      ? 'anthropic-claude'
+      : document.documentElement.getAttribute('data-palette') === 'sage-green'
+        ? 'sage-green'
+        : 'modern-natural'
   return (
     <ResponsiveContainer width='100%' height='100%'>
       <PieChart margin={{ top: 36, right: 96, bottom: 36, left: 96 }}>
@@ -171,12 +183,9 @@ export function SensusPie({ data }: SensusPieProps) {
           )}
           labelLine={false}
         >
-          {enriched.map((d) => {
-            const isModern = typeof window !== 'undefined' && document.documentElement.getAttribute('data-palette') === 'modern-natural'
-            return (
-              <Cell key={d.code} fill={getSensusColor(d.code, isModern)} />
-            )
-          })}
+          {enriched.map((d) => (
+            <Cell key={d.code} fill={getSensusColor(d.code, paletteName)} />
+          ))}
         </Pie>
       </PieChart>
     </ResponsiveContainer>

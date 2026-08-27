@@ -12,12 +12,11 @@ export function renderCoverSlide(args: {
   const { monthLabel, isSingleKelompok, scope, pertemuanCount } = args
 
   const modeLabel = `LAPORAN BULANAN — ${isSingleKelompok ? 'KELOMPOK' : 'DESA'}`
-  const titleLines = ['LAPORAN', 'PEMBINAAN', 'GENERUS']
-  const tagline = 'Generus Sukses, kita semua Sukses.'
+  const titleLines = ['LAPORAN PEMBINAAN', 'GENERUS']
+  const scopePeriodLabel = `${scope} — ${monthLabel}`
+  const tagline = 'Sukseskan Gerakan Menanamkan 29 Karakter Luhur Jamaah'
   const metaLines =
-    pertemuanCount !== undefined
-      ? [scope, `${pertemuanCount} PERTEMUAN`]
-      : [scope]
+    pertemuanCount !== undefined ? [`${pertemuanCount} PERTEMUAN`] : []
 
   return {
     key: 'cover',
@@ -26,7 +25,7 @@ export function renderCoverSlide(args: {
       <Cover
         modeLabel={modeLabel}
         titleLines={titleLines}
-        monthLabel={monthLabel}
+        scopePeriodLabel={scopePeriodLabel}
         tagline={tagline}
         metaLines={metaLines}
       />

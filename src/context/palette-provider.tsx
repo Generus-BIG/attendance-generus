@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { getDefaultPalette } from '@/lib/app-settings.service'
+import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 
 export type Palette = 'modern-natural' | 'anthropic-claude' | 'sage-green'
 
@@ -91,19 +91,25 @@ export function PaletteProvider({
     }
   }, [storageKey])
 
-  const setPalette = (next: Palette) => {
-    setCookie(storageKey, next, PALETTE_COOKIE_MAX_AGE)
-    _setPalette(next)
-  }
-
-  const resetPalette = () => {
-    removeCookie(storageKey)
-    _setPalette(defaultPalette)
-  }
+  const contextValue = useMemo(
+    () => ({
+      defaultPalette,
+      palette,
+      setPalette: (next: Palette) => {
+        setCookie(storageKey, next, PALETTE_COOKIE_MAX_AGE)
+        _setPalette(next)
+      },
+      resetPalette: () => {
+        removeCookie(storageKey)
+        _setPalette(defaultPalette)
+      },
+    }),
+    [defaultPalette, palette, storageKey]
+  )
 
   return (
     <PaletteContext
-      value={{ defaultPalette, palette, setPalette, resetPalette }}
+      value={contextValue}
       {...props}
     >
       {children}
@@ -111,7 +117,6 @@ export function PaletteProvider({
   )
 }
 
- 
 export const usePalette = () => {
   const context = useContext(PaletteContext)
   if (!context)

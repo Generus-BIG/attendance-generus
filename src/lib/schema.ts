@@ -8,11 +8,7 @@ export const ATTENDANCE_STATUS = ['hadir', 'izin'] as const
 export const PARTICIPANT_STATUS = ['active', 'inactive'] as const
 export const PENDING_STATUS = ['pending', 'approved', 'rejected'] as const
 
-export const PERMISSION_REASONS = [
-  'Sakit',
-  'Kerja',
-  'Lainnya',
-] as const
+export const PERMISSION_REASONS = ['Sakit', 'Kerja', 'Lainnya'] as const
 
 export const FORM_TYPE = ['desa', 'kelompok'] as const
 export type FormTypeEnum = (typeof FORM_TYPE)[number]
@@ -60,7 +56,9 @@ export const attendanceFormConfigSchema = z.object({
 })
 
 export type AttendanceFormConfig = z.infer<typeof attendanceFormConfigSchema>
-export const attendanceFormConfigListSchema = z.array(attendanceFormConfigSchema)
+export const attendanceFormConfigListSchema = z.array(
+  attendanceFormConfigSchema
+)
 
 // === Attendance Schema ===
 export const attendanceSchema = z.object({

@@ -1,11 +1,11 @@
 import { supabase } from '@/lib/supabase'
+import { ensureMonthlyReport } from '../services/monthly-report.service'
 import {
   type MetricReportRow,
   type MonthlyReportRow,
   type UpsertMetricMonthInput,
   type YearlyMatrixData,
 } from '../types'
-import { ensureMonthlyReport } from '../services/monthly-report.service'
 
 /**
  * Fetch all monthly reports for (kelompokId, year) and their metric_reports in 2 queries.

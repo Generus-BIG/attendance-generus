@@ -1,10 +1,10 @@
-import { AnimateContainer, AnimateItem } from './animate-element'
 import { usePresPalette } from '../use-pres-palette'
+import { AnimateContainer, AnimateItem } from './animate-element'
 
 interface CoverProps {
   modeLabel: string
   titleLines: string[]
-  monthLabel: string
+  scopePeriodLabel: string
   tagline: string
   metaLines: string[]
 }
@@ -12,7 +12,7 @@ interface CoverProps {
 export function Cover({
   modeLabel,
   titleLines,
-  monthLabel,
+  scopePeriodLabel,
   tagline,
   metaLines,
 }: CoverProps) {
@@ -39,32 +39,37 @@ export function Cover({
         <div
           className='flex flex-col'
           style={{
-            fontFamily: '"Archivo Black", Impact, sans-serif',
+            fontFamily: p.fontSans,
             fontSize: 'clamp(3.5rem, 8cqw, 6.5rem)',
+            fontWeight: 700,
             lineHeight: 1.0,
             letterSpacing: '-0.03em',
           }}
         >
-          {titleLines.map((line, i) => (
-            <AnimateItem key={i} style={{ color: p.ink }}>
+          {titleLines.map((line) => (
+            <AnimateItem key={line} style={{ color: p.ink }}>
               {line}
             </AnimateItem>
           ))}
-          <AnimateItem style={{ color: p.brandAccent }}>{monthLabel}</AnimateItem>
+          <AnimateItem
+            className='mt-3'
+            style={{
+              color: p.coverAccent,
+              fontSize: 'clamp(2rem, 4.5cqw, 3.75rem)',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {scopePeriodLabel}
+          </AnimateItem>
           <AnimateItem className='mt-8 flex flex-col gap-4'>
             <span
-              aria-hidden
-              style={{ width: 48, height: 2, background: p.brandAccent }}
-            />
-            <span
               style={{
-                fontFamily: p.fontSerif,
-                fontStyle: 'italic',
+                fontFamily: p.fontSans,
                 fontSize: 'clamp(1.25rem, 2cqw, 2rem)',
                 fontWeight: 400,
                 letterSpacing: 0,
                 lineHeight: 1.3,
-                color: p.primary,
+                color: p.ink,
               }}
             >
               {tagline}
@@ -77,7 +82,7 @@ export function Cover({
           style={{
             fontFamily: p.fontMono,
             fontSize: 'clamp(0.875rem, 1.1cqw, 1.125rem)',
-            fontWeight: 600,
+            fontWeight: 500,
             letterSpacing: '0.2em',
             color: p.muted,
           }}
@@ -88,4 +93,3 @@ export function Cover({
     </div>
   )
 }
-

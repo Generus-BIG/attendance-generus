@@ -100,11 +100,11 @@ export function ProgramSectionCard({
           {deltaLabel}
         </div>
         <div className='flex items-center gap-2'>
-          {displayCount && (
+          {displayCount ? (
             <span className='text-xs text-muted-foreground tabular-nums'>
               {displayCount}
             </span>
-          )}
+          ) : null}
         </div>
       </div>
       <div className='border-t border-border/60 px-4 py-4 sm:px-5'>

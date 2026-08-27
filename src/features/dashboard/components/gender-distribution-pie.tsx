@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Cell, Legend, Pie, PieChart } from 'recharts'
 import { useIsMobile } from '@/hooks/use-mobile'
 import {
   Card,
@@ -13,6 +12,7 @@ import {
   ChartContainer,
   ChartTooltip,
 } from '@/components/ui/chart'
+import { Cell, Legend, Pie, PieChart } from 'recharts'
 import { PIE_LABEL_MIN_FRACTION } from '../constants'
 import type { GenderBreakdownRow } from '../types'
 import { ChartSegmentTooltip } from './chart-segment-tooltip'

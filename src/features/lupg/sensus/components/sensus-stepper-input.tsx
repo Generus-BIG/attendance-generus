@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
-import { useUpsertSensusCell } from '../../hooks/use-lupg-queries'
 import { DERIVED_SENSUS_CATEGORIES, type CategoryCode } from '../../constants'
+import { useUpsertSensusCell } from '../../hooks/use-lupg-queries'
 import { type SensusGender } from '../../types'
 
 interface Props {
@@ -27,7 +27,7 @@ export function SensusStepperInput({
   initial,
   className,
 }: Props) {
-  const [value, setValue] = useState(initial.toString())
+  const [value, setValue] = useState(() => initial.toString())
   const upsert = useUpsertSensusCell()
 
   useEffect(() => {
@@ -39,7 +39,12 @@ export function SensusStepperInput({
     if (next < 0) return
     if (next === initial) return
     upsert.mutate(
-      { kelompok_id: kelompokId, category_code: categoryCode, gender, count: next },
+      {
+        kelompok_id: kelompokId,
+        category_code: categoryCode,
+        gender,
+        count: next,
+      },
       {
         onError: (e: unknown) => {
           toast.error(e instanceof Error ? e.message : 'Gagal menyimpan')

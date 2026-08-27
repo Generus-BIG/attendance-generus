@@ -1,17 +1,17 @@
 import { useMemo, useState } from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 import { type Role } from '@/lib/rbac'
 import { supabase } from '@/lib/supabase'
-import { useAuthStore } from '@/stores/auth-store'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { KelompokSelector } from '../components/kelompok-selector'
 import { MonthPicker } from '../components/month-picker'
 import {
@@ -50,7 +50,7 @@ export function YearlyProgramTracker({
   // Admin default = 'desa'; TM forced to 'kelompok' (Desa Overview hidden).
   const defaultTab: 'desa' | 'kelompok' = initialTab ?? 'desa'
   const [tab, setTabState] = useState<'desa' | 'kelompok'>(defaultTab)
-  const [monthKey, setMonthKey] = useState<string>(currentMonthKey())
+  const [monthKey, setMonthKey] = useState<string>(() => currentMonthKey())
 
   // Sync tab to URL so admins can bookmark either view.
   const navigate = useNavigate()
@@ -128,7 +128,10 @@ export function YearlyProgramTracker({
           </div>
           <div className='flex flex-wrap items-center gap-2'>
             {effectiveTab === 'desa' ? (
-              <MonthPicker monthKey={effectiveMonthKey} onChange={setMonthKey} />
+              <MonthPicker
+                monthKey={effectiveMonthKey}
+                onChange={setMonthKey}
+              />
             ) : !isTeamManager ? (
               <KelompokSelector value={kelompokId} onChange={setKelompokId} />
             ) : null}
@@ -150,16 +153,18 @@ export function YearlyProgramTracker({
         {effectiveTab === 'desa' ? (
           <DesaOverviewTab year={year} monthKey={effectiveMonthKey} />
         ) : !resolvedKelompokId ? (
-          <div className='text-muted-foreground rounded-lg border border-dashed p-10 text-center'>
-            {isTeamManager ? 'Memuat kelompok...' : 'Pilih kelompok untuk mulai.'}
+          <div className='rounded-lg border border-dashed p-10 text-center text-muted-foreground'>
+            {isTeamManager
+              ? 'Memuat kelompok...'
+              : 'Pilih kelompok untuk mulai.'}
           </div>
         ) : isLoading ? (
-          <div className='text-muted-foreground flex items-center justify-center py-16'>
+          <div className='flex items-center justify-center py-16 text-muted-foreground'>
             <Loader2 className='mr-2 h-5 w-5 animate-spin' />
             Memuat data program...
           </div>
         ) : programs.length === 0 ? (
-          <div className='text-muted-foreground rounded-lg border border-dashed p-10 text-center'>
+          <div className='rounded-lg border border-dashed p-10 text-center text-muted-foreground'>
             Belum ada program aktif.
           </div>
         ) : (

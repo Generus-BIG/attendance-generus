@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
-import useDialogState from '@/hooks/use-dialog-state'
+import React, { useMemo, useState } from 'react'
 import { type PendingParticipant, type Attendance } from '@/lib/schema'
+import useDialogState from '@/hooks/use-dialog-state'
 
 type ApprovalsDialogType = 'approve' | 'reject' | 'link'
 
@@ -8,7 +8,9 @@ type ApprovalsContextType = {
   open: ApprovalsDialogType | null
   setOpen: (str: ApprovalsDialogType | null) => void
   currentPending: PendingParticipant | null
-  setCurrentPending: React.Dispatch<React.SetStateAction<PendingParticipant | null>>
+  setCurrentPending: React.Dispatch<
+    React.SetStateAction<PendingParticipant | null>
+  >
   currentAttendance: Attendance | null
   setCurrentAttendance: React.Dispatch<React.SetStateAction<Attendance | null>>
   refreshData: () => void
@@ -19,12 +21,14 @@ const ApprovalsContext = React.createContext<ApprovalsContextType | null>(null)
 
 export function ApprovalsProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useDialogState<ApprovalsDialogType>(null)
-  const [currentPending, setCurrentPending] = useState<PendingParticipant | null>(null)
-  const [currentAttendance, setCurrentAttendance] = useState<Attendance | null>(null)
+  const [currentPending, setCurrentPending] =
+    useState<PendingParticipant | null>(null)
+  const [currentAttendance, setCurrentAttendance] = useState<Attendance | null>(
+    null
+  )
   const [refreshData, setRefreshData] = useState<() => void>(() => () => {})
-
-  return (
-    <ApprovalsContext value={{
+  const contextValue = useMemo(
+    () => ({
       open,
       setOpen,
       currentPending,
@@ -32,8 +36,15 @@ export function ApprovalsProvider({ children }: { children: React.ReactNode }) {
       currentAttendance,
       setCurrentAttendance,
       refreshData,
-      setRefreshData
-    }}>
+      setRefreshData,
+    }),
+    [open, setOpen, currentPending, currentAttendance, refreshData]
+  )
+
+  return (
+    <ApprovalsContext
+      value={contextValue}
+    >
       {children}
     </ApprovalsContext>
   )

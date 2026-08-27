@@ -18,24 +18,24 @@ export function SummaryStrip({
   return (
     <div
       className={cn(
-        'text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-sm',
+        'flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground',
         className
       )}
       aria-label='Ringkasan status laporan'
     >
       <span>
-        <span className='text-foreground font-semibold'>{submitted}</span>
+        <span className='font-semibold text-foreground'>{submitted}</span>
         <span>/</span>
-        <span className='text-foreground font-semibold'>{total}</span>
+        <span className='font-semibold text-foreground'>{total}</span>
         <span className='ml-1'>selesai</span>
       </span>
       <span aria-hidden='true'>·</span>
       <span>
-        <span className='text-foreground font-semibold'>{draft}</span> draft
+        <span className='font-semibold text-foreground'>{draft}</span> draft
       </span>
       <span aria-hidden='true'>·</span>
       <span>
-        <span className='text-foreground font-semibold'>{notStarted}</span>{' '}
+        <span className='font-semibold text-foreground'>{notStarted}</span>{' '}
         belum dibuka
       </span>
     </div>

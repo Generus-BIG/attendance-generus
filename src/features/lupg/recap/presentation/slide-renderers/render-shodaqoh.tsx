@@ -1,9 +1,23 @@
 // Shodaqoh slide renderer — kelompok mode (12-month nominal trend) and desa mode (per-kelompok comparison).
 import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  LabelList,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import {
   allMonthKeysForYear,
   monthNameFromKey,
 } from '../../../programs/utils/editability'
 import { type MonthlyReportRow, type ShodaqohRow } from '../../../types'
+import {
+  EditorialTooltipShell,
+  hairlineAxisProps,
+} from '../charts/chart-primitives'
 import { TrendBar, type TrendBarDatum } from '../charts/trend-bar'
 import { ChartPane } from '../components/chart-pane'
 import { DataPane } from '../components/data-pane'
@@ -16,6 +30,7 @@ import {
   EditorialTableRow,
   TotalRow,
 } from '../components/editorial-table'
+import { ReportSplit } from '../components/report-split'
 import { SlideFrame } from '../components/slide-frame'
 import { type Slide } from '../slides'
 import { usePresPalette } from '../use-pres-palette'
@@ -44,6 +59,10 @@ function formatRupiahFull(n: number): string {
   return `Rp ${Math.round(n).toLocaleString('id-ID')}`
 }
 
+function formatTrendLabel(n: number): string {
+  return `${Math.round(n / 1_000)}k`
+}
+
 // ---------- Row shapes ----------
 
 interface KelompokModeRow {
@@ -60,6 +79,141 @@ interface DesaModeRow {
   nominal: number
   kk: number
   rata: number
+}
+
+interface ShodaqohTrendProps {
+  data: (TrendBarDatum & { showLabel: boolean })[]
+}
+
+interface TrendLabelProps {
+  x?: number | string
+  y?: number | string
+  width?: number | string
+  value?: number | string
+  index?: number
+  data: ShodaqohTrendProps['data']
+  palette: ReturnType<typeof usePresPalette>
+}
+
+function TrendLabel({
+  x,
+  y,
+  width,
+  value,
+  index,
+  data,
+  palette,
+}: TrendLabelProps) {
+  const amount = Number(value)
+  const xNum = Number(x)
+  const yNum = Number(y)
+  const widthNum = Number(width)
+  if (
+    !Number.isFinite(amount) ||
+    !Number.isFinite(xNum) ||
+    !Number.isFinite(yNum) ||
+    !Number.isFinite(widthNum) ||
+    index == null ||
+    !data[index]?.showLabel
+  ) {
+    return null
+  }
+  return (
+    <text
+      x={xNum + widthNum / 2}
+      y={yNum - 12}
+      textAnchor='middle'
+      style={{
+        fontFamily: palette.fontMono,
+        fontSize: '10px',
+        fontWeight: 600,
+        fill: palette.ink,
+      }}
+    >
+      {formatTrendLabel(amount)}
+    </text>
+  )
+}
+
+function ShodaqohTrend({ data }: ShodaqohTrendProps) {
+  const p = usePresPalette()
+  const maxValue = Math.max(...data.map((item) => item.value), 1)
+  const yMax = Math.ceil(maxValue / 100_000) * 100_000
+  const ticks = [0, yMax / 4, yMax / 2, (yMax * 3) / 4, yMax]
+
+  return (
+    <ResponsiveContainer width='100%' height='100%'>
+      <AreaChart
+        data={data}
+        margin={{ top: 44, right: 24, bottom: 14, left: 24 }}
+      >
+        <defs>
+          <linearGradient id='shodaqoh-trend-fill' x1='0' x2='0' y1='0' y2='1'>
+            <stop
+              offset='0%'
+              stopColor={p.shodaqohPrimary}
+              stopOpacity={0.22}
+            />
+            <stop
+              offset='100%'
+              stopColor={p.shodaqohPrimary}
+              stopOpacity={0.02}
+            />
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray='3 3' vertical={false} stroke={p.rule} />
+        <XAxis dataKey='label' interval={0} {...hairlineAxisProps(p, 'x')} />
+        <YAxis
+          width={72}
+          domain={[0, yMax]}
+          ticks={ticks}
+          tickFormatter={formatRupiahShort}
+          {...hairlineAxisProps(p, 'y')}
+        />
+        <Tooltip
+          content={({ active, payload, label }) => {
+            const value = payload?.[0]?.value
+            if (!active || typeof value !== 'number') return null
+            return (
+              <EditorialTooltipShell title={String(label ?? '')} palette={p}>
+                <div>Nominal: {formatRupiahFull(value)}</div>
+              </EditorialTooltipShell>
+            )
+          }}
+        />
+        <Area
+          type='linear'
+          dataKey='value'
+          stroke={p.shodaqohPrimary}
+          strokeWidth={2}
+          fill='url(#shodaqoh-trend-fill)'
+          dot={{
+            r: 4,
+            fill: p.bg,
+            stroke: p.shodaqohPrimary,
+            strokeWidth: 2.5,
+          }}
+          activeDot={{
+            r: 5,
+            fill: p.bg,
+            stroke: p.shodaqohPrimary,
+            strokeWidth: 3,
+          }}
+        >
+          <LabelList
+            dataKey='value'
+            content={(props) => (
+              <TrendLabel
+                {...(props as Omit<TrendLabelProps, 'data' | 'palette'>)}
+                data={data}
+                palette={p}
+              />
+            )}
+          />
+        </Area>
+      </AreaChart>
+    </ResponsiveContainer>
+  )
 }
 
 // ---------- Builders ----------
@@ -165,12 +319,17 @@ function ShodaqohKelompokBody(props: SlideArgs) {
     yearlyShodaqohRows
   )
   const tableRows = allRows.filter((r) => r.monthKey <= monthKey)
-  const chartData: TrendBarDatum[] = allRows.map((r) => ({
-    label: monthNameFromKey(r.monthKey).slice(0, 3),
-    value: r.monthKey > monthKey ? 0 : r.nominal,
-    isHighlighted: r.monthKey === monthKey,
-    isPlaceholder: r.monthKey > monthKey,
-  }))
+  const chartData = allRows.map((r, index) => {
+    const value = r.monthKey > monthKey ? 0 : r.nominal
+    const previousValue = index > 0 ? allRows[index - 1].nominal : undefined
+    return {
+      label: monthNameFromKey(r.monthKey).slice(0, 3),
+      value,
+      isHighlighted: r.monthKey === monthKey,
+      isPlaceholder: r.monthKey > monthKey,
+      showLabel: value > 0 && value !== previousValue,
+    }
+  })
 
   return (
     <SlideFrame
@@ -181,19 +340,40 @@ function ShodaqohKelompokBody(props: SlideArgs) {
       slideNumber={slideNumber}
       totalSlides={totalSlides}
     >
-      <div className='grid h-full grid-cols-2 gap-12 overflow-hidden'>
+      <div className='grid h-full min-h-0 grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] gap-6'>
         <DataPane>
           <EditorialTable headerVariant='hairline' density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
-                <EditorialTableHead>Bulan</EditorialTableHead>
-                <EditorialTableHead className='text-right'>
+                <EditorialTableHead
+                  style={{
+                    background: `color-mix(in oklch, ${p.shodaqohPrimary} 16%, ${p.bg})`,
+                  }}
+                >
+                  Bulan
+                </EditorialTableHead>
+                <EditorialTableHead
+                  className='text-right'
+                  style={{
+                    background: `color-mix(in oklch, ${p.shodaqohPrimary} 16%, ${p.bg})`,
+                  }}
+                >
                   Nominal (Rp)
                 </EditorialTableHead>
-                <EditorialTableHead className='text-right'>
+                <EditorialTableHead
+                  className='text-right'
+                  style={{
+                    background: `color-mix(in oklch, ${p.shodaqohPrimary} 16%, ${p.bg})`,
+                  }}
+                >
                   KK
                 </EditorialTableHead>
-                <EditorialTableHead className='text-right'>
+                <EditorialTableHead
+                  className='text-right'
+                  style={{
+                    background: `color-mix(in oklch, ${p.shodaqohPrimary} 16%, ${p.bg})`,
+                  }}
+                >
                   Rata per KK
                 </EditorialTableHead>
               </EditorialTableRow>
@@ -204,7 +384,7 @@ function ShodaqohKelompokBody(props: SlideArgs) {
                 return (
                   <EditorialTableRow
                     key={r.monthKey}
-                    style={isCurrent ? { background: p.cream } : undefined}
+                    className={isCurrent ? 'font-semibold' : undefined}
                   >
                     <EditorialTableCell>{r.monthLabel}</EditorialTableCell>
                     <EditorialTableCell className='text-right'>
@@ -213,7 +393,12 @@ function ShodaqohKelompokBody(props: SlideArgs) {
                     <EditorialTableCell className='text-right'>
                       {r.kk}
                     </EditorialTableCell>
-                    <EditorialTableCell className='text-right font-semibold'>
+                    <EditorialTableCell
+                      className='text-right font-semibold'
+                      style={
+                        isCurrent ? { color: p.shodaqohPrimary } : undefined
+                      }
+                    >
                       {r.kk > 0 ? formatRupiahFull(r.rata) : '—'}
                     </EditorialTableCell>
                   </EditorialTableRow>
@@ -223,12 +408,7 @@ function ShodaqohKelompokBody(props: SlideArgs) {
           </EditorialTable>
         </DataPane>
         <ChartPane>
-          <TrendBar
-            data={chartData}
-            yAxisTitle='NOMINAL'
-            valueFormatter={formatRupiahShort}
-            labelFormatter={formatRupiahShort}
-          />
+          <ShodaqohTrend data={chartData} />
         </ChartPane>
       </div>
     </SlideFrame>
@@ -236,6 +416,7 @@ function ShodaqohKelompokBody(props: SlideArgs) {
 }
 
 function ShodaqohDesaBody(props: SlideArgs) {
+  const p = usePresPalette()
   const {
     monthLabel,
     scope,
@@ -267,7 +448,7 @@ function ShodaqohDesaBody(props: SlideArgs) {
       slideNumber={slideNumber}
       totalSlides={totalSlides}
     >
-      <div className='grid h-full grid-cols-2 gap-12 overflow-hidden'>
+      <ReportSplit>
         <DataPane>
           <EditorialTable headerVariant='hairline' density='compact'>
             <EditorialTableHeader>
@@ -317,12 +498,14 @@ function ShodaqohDesaBody(props: SlideArgs) {
         <ChartPane>
           <TrendBar
             data={chartData}
+            color={p.shodaqohPrimary}
             yAxisTitle='NOMINAL'
+            valueLabel='Nominal'
             valueFormatter={formatRupiahShort}
             labelFormatter={formatRupiahShort}
           />
         </ChartPane>
-      </div>
+      </ReportSplit>
     </SlideFrame>
   )
 }

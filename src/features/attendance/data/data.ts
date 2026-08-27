@@ -3,7 +3,10 @@ import { type Attendance } from '@/lib/schema'
 
 export const attendanceStatusTypes = new Map<Attendance['status'], string>([
   ['hadir', 'bg-teal-100/30 text-teal-900 dark:text-teal-200 border-teal-200'],
-  ['izin', 'bg-amber-100/30 text-amber-900 dark:text-amber-200 border-amber-200'],
+  [
+    'izin',
+    'bg-amber-100/30 text-amber-900 dark:text-amber-200 border-amber-200',
+  ],
 ])
 
 export const attendanceStatusOptions = [

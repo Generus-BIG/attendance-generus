@@ -23,7 +23,8 @@ import {
   type MustinNoteRow,
   type ProgramReportRow,
   type SarprasReportRow,
-  type SensusSnapshotRow,
+  type SensusCellRow,
+  type SensusRow,
   type ShodaqohRow,
 } from '../../types'
 import { firstDayOfMonth } from '../../utils/month-utils'
@@ -85,132 +86,111 @@ function PresentationLoader({
   const reportIds = reports.map((r) => r.id)
   const reportIdsKey = reportIds.join(',')
 
-  const [sensusQ, programsQ, metricsQ, sarprasQ, shodaqohQ, mustinQ] =
-    useQueries({
-      queries: [
-        {
-          queryKey: [
-            'lupg',
-            'present',
-            'sensus',
-            monthKey,
-            reportIdsKey,
-            reportIds,
-          ] as const,
-          queryFn: async () => {
-            if (reportIds.length === 0) return [] as SensusSnapshotRow[]
-            const { data, error } = await supabase
-              .from('lupg_sensus_snapshots')
-              .select('*')
-              .in('monthly_report_id', reportIds)
-            if (error) throw error
-            return (data ?? []) as SensusSnapshotRow[]
-          },
-          enabled: reportIds.length > 0,
+  const [programsQ, metricsQ, sarprasQ, shodaqohQ, mustinQ] = useQueries({
+    queries: [
+      {
+        queryKey: [
+          'lupg',
+          'present',
+          'programs',
+          monthKey,
+          reportIdsKey,
+          reportIds,
+        ] as const,
+        queryFn: async () => {
+          if (reportIds.length === 0) return [] as ProgramReportRow[]
+          const { data, error } = await supabase
+            .from('lupg_program_reports')
+            .select('*')
+            .in('monthly_report_id', reportIds)
+          if (error) throw error
+          return (data ?? []) as ProgramReportRow[]
         },
-        {
-          queryKey: [
-            'lupg',
-            'present',
-            'programs',
-            monthKey,
-            reportIdsKey,
-            reportIds,
-          ] as const,
-          queryFn: async () => {
-            if (reportIds.length === 0) return [] as ProgramReportRow[]
-            const { data, error } = await supabase
-              .from('lupg_program_reports')
-              .select('*')
-              .in('monthly_report_id', reportIds)
-            if (error) throw error
-            return (data ?? []) as ProgramReportRow[]
-          },
-          enabled: reportIds.length > 0,
+        enabled: reportIds.length > 0,
+      },
+      {
+        queryKey: [
+          'lupg',
+          'present',
+          'metrics',
+          monthKey,
+          reportIdsKey,
+          reportIds,
+        ] as const,
+        queryFn: async () => {
+          if (reportIds.length === 0) return [] as MetricReportRow[]
+          const { data, error } = await supabase
+            .from('lupg_metric_reports')
+            .select('*')
+            .in('monthly_report_id', reportIds)
+          if (error) throw error
+          return (data ?? []) as MetricReportRow[]
         },
-        {
-          queryKey: [
-            'lupg',
-            'present',
-            'metrics',
-            monthKey,
-            reportIdsKey,
-            reportIds,
-          ] as const,
-          queryFn: async () => {
-            if (reportIds.length === 0) return [] as MetricReportRow[]
-            const { data, error } = await supabase
-              .from('lupg_metric_reports')
-              .select('*')
-              .in('monthly_report_id', reportIds)
-            if (error) throw error
-            return (data ?? []) as MetricReportRow[]
-          },
-          enabled: reportIds.length > 0,
+        enabled: reportIds.length > 0,
+      },
+      {
+        queryKey: [
+          'lupg',
+          'present',
+          'sarpras',
+          monthKey,
+          reportIdsKey,
+          reportIds,
+        ] as const,
+        queryFn: async () => {
+          if (reportIds.length === 0) return [] as SarprasReportRow[]
+          const { data, error } = await supabase
+            .from('lupg_sarpras_reports')
+            .select('*')
+            .in('monthly_report_id', reportIds)
+          if (error) throw error
+          return (data ?? []) as SarprasReportRow[]
         },
-        {
-          queryKey: [
-            'lupg',
-            'present',
-            'sarpras',
-            monthKey,
-            reportIdsKey,
-            reportIds,
-          ] as const,
-          queryFn: async () => {
-            if (reportIds.length === 0) return [] as SarprasReportRow[]
-            const { data, error } = await supabase
-              .from('lupg_sarpras_reports')
-              .select('*')
-              .in('monthly_report_id', reportIds)
-            if (error) throw error
-            return (data ?? []) as SarprasReportRow[]
-          },
-          enabled: reportIds.length > 0,
+        enabled: reportIds.length > 0,
+      },
+      {
+        queryKey: [
+          'lupg',
+          'present',
+          'shodaqoh',
+          monthKey,
+          reportIdsKey,
+          reportIds,
+        ] as const,
+        queryFn: async () => {
+          if (reportIds.length === 0) return [] as ShodaqohRow[]
+          const { data, error } = await supabase
+            .from('lupg_shodaqoh')
+            .select('*')
+            .in('monthly_report_id', reportIds)
+          if (error) throw error
+          return (data ?? []) as ShodaqohRow[]
         },
-        {
-          queryKey: [
-            'lupg',
-            'present',
-            'shodaqoh',
-            monthKey,
-            reportIdsKey,
-            reportIds,
-          ] as const,
-          queryFn: async () => {
-            if (reportIds.length === 0) return [] as ShodaqohRow[]
-            const { data, error } = await supabase
-              .from('lupg_shodaqoh')
-              .select('*')
-              .in('monthly_report_id', reportIds)
-            if (error) throw error
-            return (data ?? []) as ShodaqohRow[]
-          },
-          enabled: reportIds.length > 0,
+        enabled: reportIds.length > 0,
+      },
+      {
+        queryKey: [
+          'lupg',
+          'present',
+          'mustin',
+          monthKey,
+          reportIdsKey,
+          reportIds,
+        ] as const,
+        queryFn: async () => {
+          if (reportIds.length === 0) return [] as MustinNoteRow[]
+          const { data, error } = await supabase
+            .from('lupg_mustin_notes')
+            .select('*')
+            .in('monthly_report_id', reportIds)
+            .order('sort_order')
+          if (error) throw error
+          return (data ?? []) as MustinNoteRow[]
         },
-        {
-          queryKey: [
-            'lupg',
-            'present',
-            'mustin',
-            monthKey,
-            reportIdsKey,
-            reportIds,
-          ] as const,
-          queryFn: async () => {
-            if (reportIds.length === 0) return [] as MustinNoteRow[]
-            const { data, error } = await supabase
-              .from('lupg_mustin_notes')
-              .select('*')
-              .in('monthly_report_id', reportIds)
-              .order('sort_order')
-            if (error) throw error
-            return (data ?? []) as MustinNoteRow[]
-          },
-          enabled: reportIds.length > 0,
-        },
-      ],
-    })
+        enabled: reportIds.length > 0,
+      },
+    ],
+  })
 
   const year = parseInt(monthKey.slice(0, 4), 10)
   const monthIndex = parseInt(monthKey.slice(5, 7), 10)
@@ -301,6 +281,49 @@ function PresentationLoader({
   } = useActiveCharacterMonitoringActivities()
   const { data: characterReports = [], isLoading: characterReportsLoading } =
     useCharacterMonitoringReportsBatch(reportIds)
+  const monitoringSensusQ = useQuery({
+    queryKey: [
+      'lupg',
+      'present',
+      'monitoring-sensus',
+      kelompokFilter ?? 'desa',
+    ],
+    queryFn: async () => {
+      const kelompokIds = kelompokFilter
+        ? [kelompokFilter]
+        : kelompokList.map((kelompok) => kelompok.id)
+      if (kelompokIds.length === 0) {
+        return {
+          masterSensus: [] as SensusRow[],
+          derivedSensus: [] as SensusCellRow[],
+        }
+      }
+      const [master, derived] = await Promise.all([
+        supabase.from('lupg_sensus').select('*').in('kelompok_id', kelompokIds),
+        supabase
+          .from('lupg_sensus_participant_derived')
+          .select('*')
+          .in('kelompok_id', kelompokIds),
+      ])
+      if (master.error) throw master.error
+      if (derived.error) throw derived.error
+      return {
+        masterSensus: (master.data ?? []) as SensusRow[],
+        derivedSensus: (derived.data ?? []) as SensusCellRow[],
+      }
+    },
+    enabled: kelompokList.length > 0,
+  })
+
+  const sensusCells = useMemo<SensusCellRow[]>(
+    () => [
+      ...(monitoringSensusQ.data?.masterSensus ?? []).filter(
+        (row) => !['APR', 'AR', 'GPN_A', 'GPN_B'].includes(row.category_code)
+      ),
+      ...(monitoringSensusQ.data?.derivedSensus ?? []),
+    ],
+    [monitoringSensusQ.data]
+  )
 
   // Activity photos for dokumentasi slide
   const activityPhotosQ = useQuery({
@@ -348,7 +371,6 @@ function PresentationLoader({
   const isLoading =
     kelompokListLoading ||
     reportsLoading ||
-    sensusQ.isLoading ||
     programsQ.isLoading ||
     metricsQ.isLoading ||
     (kelompokFilter
@@ -367,6 +389,7 @@ function PresentationLoader({
     characterTargetReportsLoading ||
     characterActivitiesLoading ||
     characterReportsLoading ||
+    monitoringSensusQ.isLoading ||
     activityPhotosQ.isLoading
 
   const slides = useMemo(
@@ -378,7 +401,9 @@ function PresentationLoader({
         programs,
         metrics,
         sarprasItems,
-        sensusSnapshots: sensusQ.data ?? [],
+        sensusCells,
+        monitoringMasterSensus: monitoringSensusQ.data?.masterSensus ?? [],
+        monitoringDerivedSensus: monitoringSensusQ.data?.derivedSensus ?? [],
         programReports: programsQ.data ?? [],
         metricReports: metricsQ.data ?? [],
         sarprasReports: sarprasQ.data ?? [],
@@ -404,7 +429,8 @@ function PresentationLoader({
       programs,
       metrics,
       sarprasItems,
-      sensusQ.data,
+      sensusCells,
+      monitoringSensusQ.data,
       programsQ.data,
       metricsQ.data,
       sarprasQ.data,

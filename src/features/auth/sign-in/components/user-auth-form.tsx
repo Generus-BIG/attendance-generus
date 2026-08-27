@@ -5,10 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-
-import { cn } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'
 import { analytics } from '@/lib/analytics'
+import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -63,12 +62,11 @@ export function UserAuthForm({
         password: data.password,
       })
 
-      if (error) {
-        analytics.signInFailed(data.email, error.message)
-        toast.error(error.message)
-        setIsLoading(false)
-        return
-      }
+        if (error) {
+          analytics.signInFailed(data.email, error.message)
+          toast.error(error.message)
+          return
+        }
 
       analytics.signIn(data.email, true)
       toast.success('Berhasil masuk')
@@ -76,10 +74,10 @@ export function UserAuthForm({
       const targetPath = redirectTo || '/admin/dashboard'
       navigate({ to: targetPath, replace: true })
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Unknown error'
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
       analytics.signInFailed(data.email, errorMessage)
       toast.error('Terjadi kesalahan')
+    } finally {
       setIsLoading(false)
     }
   }

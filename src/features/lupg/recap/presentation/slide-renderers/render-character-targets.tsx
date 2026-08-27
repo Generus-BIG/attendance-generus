@@ -8,9 +8,18 @@ import {
   type CharacterLevelCode,
 } from '../../../utils/character-monitoring'
 import { DataPane } from '../components/data-pane'
+import {
+  EditorialTable,
+  EditorialTableBody,
+  EditorialTableCell,
+  EditorialTableHead,
+  EditorialTableHeader,
+  EditorialTableRow,
+} from '../components/editorial-table'
 import { SlideFrame } from '../components/slide-frame'
 import { type Slide } from '../slides'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { buildTargetRecapLevel } from './character-recap-utils'
 
 interface SlideArgs {
   monthLabel: string
@@ -656,6 +665,153 @@ export function renderCharacterTargetAgendaSlide(args: SlideArgs): Slide {
           targetItems={targetItems}
           targetReports={targetReports}
         />
+      </SlideFrame>
+    ),
+  }
+}
+
+function TargetRecapBody({
+  isSingleKelompok,
+  effectiveKelompokList,
+  reports,
+  targetItems,
+  targetReports,
+  level,
+}: Pick<
+  SlideArgs,
+  | 'isSingleKelompok'
+  | 'effectiveKelompokList'
+  | 'reports'
+  | 'targetItems'
+  | 'targetReports'
+> & { level: CharacterLevelCode }) {
+  const groups = buildTargetRecapLevel(
+    targetItems,
+    targetReports,
+    reports,
+    effectiveKelompokList,
+    level
+  )
+
+  if (groups.length === 0) {
+    return (
+      <EmptyState>{`Belum ada target materi aktif untuk ${level}.`}</EmptyState>
+    )
+  }
+
+  return (
+    <DataPane>
+      <EditorialTable density='micro'>
+        <EditorialTableHeader>
+          <EditorialTableRow>
+            <EditorialTableHead rowSpan={isSingleKelompok ? 1 : 2}>
+              Kategori
+            </EditorialTableHead>
+            <EditorialTableHead rowSpan={isSingleKelompok ? 1 : 2}>
+              Materi
+            </EditorialTableHead>
+            <EditorialTableHead rowSpan={isSingleKelompok ? 1 : 2}>
+              Detail materi
+            </EditorialTableHead>
+            {isSingleKelompok ? (
+              <EditorialTableHead className='text-center'>
+                Capaian
+              </EditorialTableHead>
+            ) : (
+              <>
+                <EditorialTableHead
+                  colSpan={effectiveKelompokList.length}
+                  className='text-center'
+                >
+                  Realisasi (%)
+                </EditorialTableHead>
+                <EditorialTableHead rowSpan={2} className='text-center'>
+                  Desa (%)
+                </EditorialTableHead>
+              </>
+            )}
+          </EditorialTableRow>
+          {!isSingleKelompok ? (
+            <EditorialTableRow>
+              {effectiveKelompokList.map((kelompok) => (
+                <EditorialTableHead
+                  key={kelompok.id}
+                  className='text-center'
+                >
+                  {kelompok.value}
+                </EditorialTableHead>
+              ))}
+            </EditorialTableRow>
+          ) : null}
+        </EditorialTableHeader>
+        <EditorialTableBody>
+          {groups.flatMap((group) =>
+            group.rows.map((row, index) => (
+              <EditorialTableRow key={row.item.id}>
+                {index === 0 ? (
+                  <EditorialTableCell
+                    rowSpan={group.rows.length}
+                    className='align-middle font-semibold'
+                  >
+                    {group.category}
+                  </EditorialTableCell>
+                ) : null}
+                <EditorialTableCell className='max-w-[30ch] wrap-break-word whitespace-normal'>
+                  {row.item.material_label}
+                </EditorialTableCell>
+                <EditorialTableCell className='max-w-[54ch] wrap-break-word whitespace-normal'>
+                  {row.item.detail_label?.trim() || '—'}
+                </EditorialTableCell>
+                {isSingleKelompok ? (
+                  <TargetValue value={row.values[0] ?? null} />
+                ) : (
+                  <>
+                    {row.values.map((value, valueIndex) => (
+                      <TargetValue
+                        key={effectiveKelompokList[valueIndex].id}
+                        value={value}
+                      />
+                    ))}
+                    <TargetValue value={row.average} />
+                  </>
+                )}
+              </EditorialTableRow>
+            ))
+          )}
+        </EditorialTableBody>
+      </EditorialTable>
+    </DataPane>
+  )
+}
+
+function TargetValue({ value }: { value: number | null }) {
+  const p = usePresPalette()
+  return (
+    <EditorialTableCell
+      className='text-center font-semibold'
+      style={{ color: progressTone(value, p) }}
+    >
+      {value === null ? 'Belum' : `${value}%`}
+    </EditorialTableCell>
+  )
+}
+
+export function renderCharacterTargetRecapSlide(
+  args: SlideArgs & { level: CharacterLevelCode }
+): Slide {
+  return {
+    key: `character-target-recap-${args.level}`,
+    title: `Rekap Target Capaian Materi | ${args.level}`,
+    render: () => (
+      <SlideFrame
+        eyebrow='TARGET CAPAIAN MATERI'
+        title={`Rekap Target Capaian Materi | ${args.level}`}
+        meta={args.monthLabel}
+        scope={args.scope}
+        slideNumber={args.slideNumber}
+        totalSlides={args.totalSlides}
+      >
+        <TargetRecapBody {...args} />
       </SlideFrame>
     ),
   }

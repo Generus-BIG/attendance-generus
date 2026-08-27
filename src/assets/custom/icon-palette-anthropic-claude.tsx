@@ -91,14 +91,7 @@ export function IconPaletteAnthropicClaude(props: SVGProps<SVGSVGElement>) {
         rx={2}
         fill='oklch(0.6171 0.1375 39.0427)'
       />
-      <rect
-        x={58}
-        y={10.5}
-        width={13}
-        height={2}
-        rx={1}
-        fill='oklch(1 0 0)'
-      />
+      <rect x={58} y={10.5} width={13} height={2} rx={1} fill='oklch(1 0 0)' />
       <rect
         x={28}
         y={21}

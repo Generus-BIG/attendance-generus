@@ -272,7 +272,7 @@ export function CharacterTargetRecap({
                           </p>
                           <div className='mt-2 h-2 overflow-hidden rounded-full bg-muted/70'>
                             <div
-                              className='h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-300 group-hover:brightness-105'
+                              className='h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-[filter,width] duration-300 group-hover:brightness-105'
                               style={{
                                 width: `${average ?? 0}%`,
                               }}

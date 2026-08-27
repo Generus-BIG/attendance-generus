@@ -4,7 +4,9 @@ import { type MustinTemplateRow } from '../types'
 
 type Tables = Database['public']['Tables']
 
-export async function listActiveMustinTemplates(): Promise<MustinTemplateRow[]> {
+export async function listActiveMustinTemplates(): Promise<
+  MustinTemplateRow[]
+> {
   const { data, error } = await supabase
     .from('lupg_mustin_templates')
     .select('*')

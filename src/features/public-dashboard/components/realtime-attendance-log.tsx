@@ -417,7 +417,14 @@ function LogPagination({
             </Button>
 
             {pageNumbers.map((pageNumber, index) => (
-              <div key={`${pageNumber}-${index}`} className='flex items-center'>
+              <div
+                key={
+                  pageNumber === '...'
+                    ? `ellipsis-${pageNumbers[index - 1]}-${pageNumbers[index + 1]}`
+                    : `page-${pageNumber}`
+                }
+                className='flex items-center'
+              >
                 {pageNumber === '...' ? (
                   <span className='px-1.5 text-xs text-muted-foreground'>
                     ...
@@ -783,7 +790,7 @@ export function RealtimeAttendanceLog({ records }: RealtimeAttendanceLogProps) {
                     return (
                       <TableRow
                         key={record.id}
-                        className='slide-in-from-top-1.5 animate-in transition-all duration-200 fade-in hover:bg-muted/30'
+                        className='slide-in-from-top-1.5 animate-in transition-[background-color,opacity,transform] duration-200 fade-in hover:bg-muted/30'
                       >
                         <TableCell className='ps-4 text-xs font-medium text-foreground/90 tabular-nums'>
                           {dateStr}

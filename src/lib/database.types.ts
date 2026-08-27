@@ -480,6 +480,98 @@ export type Database = {
         }
         Relationships: []
       }
+      lupg_intensif_activities: {
+        Row: {
+          activity_date: string
+          created_at: string
+          id: string
+          kelompok_id: string
+          notes: string | null
+          program_code: string
+          updated_at: string
+        }
+        Insert: {
+          activity_date: string
+          created_at?: string
+          id?: string
+          kelompok_id: string
+          notes?: string | null
+          program_code: string
+          updated_at?: string
+        }
+        Update: {
+          activity_date?: string
+          created_at?: string
+          id?: string
+          kelompok_id?: string
+          notes?: string | null
+          program_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'lupg_intensif_activities_kelompok_id_fkey'
+            columns: ['kelompok_id']
+            isOneToOne: false
+            referencedRelation: 'lookup_values'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      lupg_intensif_attendance: {
+        Row: {
+          activity_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          participant_category_code: string
+          participant_gender: string | null
+          participant_id: string
+          participant_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          participant_category_code: string
+          participant_gender?: string | null
+          participant_id: string
+          participant_name: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          participant_category_code?: string
+          participant_gender?: string | null
+          participant_id?: string
+          participant_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'lupg_intensif_attendance_activity_id_fkey'
+            columns: ['activity_id']
+            isOneToOne: false
+            referencedRelation: 'lupg_intensif_activities'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'lupg_intensif_attendance_participant_id_fkey'
+            columns: ['participant_id']
+            isOneToOne: false
+            referencedRelation: 'participants'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       lupg_metric_definitions: {
         Row: {
           active: boolean
@@ -709,6 +801,243 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      lupg_phq_attendance: {
+        Row: {
+          created_at: string
+          id: string
+          meeting_id: string
+          notes: string | null
+          participant_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meeting_id: string
+          notes?: string | null
+          participant_id: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meeting_id?: string
+          notes?: string | null
+          participant_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'lupg_phq_attendance_meeting_id_fkey'
+            columns: ['meeting_id']
+            isOneToOne: false
+            referencedRelation: 'lupg_phq_meetings'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'lupg_phq_attendance_participant_id_fkey'
+            columns: ['participant_id']
+            isOneToOne: false
+            referencedRelation: 'lupg_phq_participants'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      lupg_phq_meetings: {
+        Row: {
+          activity_date: string
+          created_at: string
+          id: string
+          kelompok_id: string
+          month: string | null
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          activity_date: string
+          created_at?: string
+          id?: string
+          kelompok_id: string
+          month?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activity_date?: string
+          created_at?: string
+          id?: string
+          kelompok_id?: string
+          month?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'lupg_phq_meetings_kelompok_id_fkey'
+            columns: ['kelompok_id']
+            isOneToOne: false
+            referencedRelation: 'lookup_values'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      lupg_phq_monthly_notes: {
+        Row: {
+          created_at: string
+          id: string
+          kelompok_id: string
+          month: string
+          notes: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kelompok_id: string
+          month: string
+          notes?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kelompok_id?: string
+          month?: string
+          notes?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'lupg_phq_monthly_notes_kelompok_id_fkey'
+            columns: ['kelompok_id']
+            isOneToOne: false
+            referencedRelation: 'lookup_values'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      lupg_phq_participants: {
+        Row: {
+          birth_date: string | null
+          category_code: string
+          created_at: string
+          gender: string
+          highest_ayat_from: number | null
+          highest_ayat_to: number | null
+          highest_juz: number | null
+          highest_juz_mastery_percent: number | null
+          highest_surat: string | null
+          id: string
+          kelompok_id: string
+          name: string
+          status_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          birth_date?: string | null
+          category_code: string
+          created_at?: string
+          gender: string
+          highest_ayat_from?: number | null
+          highest_ayat_to?: number | null
+          highest_juz?: number | null
+          highest_juz_mastery_percent?: number | null
+          highest_surat?: string | null
+          id?: string
+          kelompok_id: string
+          name: string
+          status_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          birth_date?: string | null
+          category_code?: string
+          created_at?: string
+          gender?: string
+          highest_ayat_from?: number | null
+          highest_ayat_to?: number | null
+          highest_juz?: number | null
+          highest_juz_mastery_percent?: number | null
+          highest_surat?: string | null
+          id?: string
+          kelompok_id?: string
+          name?: string
+          status_active?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'lupg_phq_participants_kelompok_id_fkey'
+            columns: ['kelompok_id']
+            isOneToOne: false
+            referencedRelation: 'lookup_values'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      lupg_phq_progress: {
+        Row: {
+          ayat_from: number | null
+          ayat_to: number | null
+          created_at: string
+          id: string
+          juz: number | null
+          juz_mastery_percent: number | null
+          meeting_id: string
+          notes: string | null
+          participant_id: string
+          score: number
+          surat: string | null
+          updated_at: string
+        }
+        Insert: {
+          ayat_from?: number | null
+          ayat_to?: number | null
+          created_at?: string
+          id?: string
+          juz?: number | null
+          juz_mastery_percent?: number | null
+          meeting_id: string
+          notes?: string | null
+          participant_id: string
+          score: number
+          surat?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ayat_from?: number | null
+          ayat_to?: number | null
+          created_at?: string
+          id?: string
+          juz?: number | null
+          juz_mastery_percent?: number | null
+          meeting_id?: string
+          notes?: string | null
+          participant_id?: string
+          score?: number
+          surat?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'lupg_phq_progress_meeting_id_fkey'
+            columns: ['meeting_id']
+            isOneToOne: false
+            referencedRelation: 'lupg_phq_meetings'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'lupg_phq_progress_participant_id_fkey'
+            columns: ['participant_id']
+            isOneToOne: false
+            referencedRelation: 'lupg_phq_participants'
+            referencedColumns: ['id']
+          },
+        ]
       }
       lupg_presentation_shares: {
         Row: {
@@ -1177,6 +1506,43 @@ export type Database = {
       }
     }
     Views: {
+      lupg_intensif_summary: {
+        Row: {
+          activity_count: number | null
+          kelompok_id: string | null
+          month: string | null
+          present_participant_count: number | null
+          program_code: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'lupg_intensif_activities_kelompok_id_fkey'
+            columns: ['kelompok_id']
+            isOneToOne: false
+            referencedRelation: 'lookup_values'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      lupg_phq_summary: {
+        Row: {
+          average_score: number | null
+          kelompok_id: string | null
+          meeting_count: number | null
+          month: string | null
+          present_participant_count: number | null
+          progressed_participant_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'lupg_phq_meetings_kelompok_id_fkey'
+            columns: ['kelompok_id']
+            isOneToOne: false
+            referencedRelation: 'lookup_values'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       lupg_sensus_participant_derived: {
         Row: {
           category_code: string | null
@@ -1213,11 +1579,45 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: string
       }
+      list_lupg_intensif_candidates: {
+        Args: { p_kelompok_id: string; p_program_code: string }
+        Returns: {
+          birth_date: string | null
+          birth_place: string | null
+          category_code: string
+          gender: string
+          id: string
+          kelompok_id: string
+          name: string
+          status_active: boolean
+        }[]
+      }
       lupg_mr_readable: { Args: { p_mr_id: string }; Returns: boolean }
       lupg_mr_writable: { Args: { p_mr_id: string }; Returns: boolean }
       lupg_sync_derived_sensus: {
         Args: { p_kelompok_id: string }
         Returns: undefined
+      }
+      update_lupg_intensif_participant: {
+        Args: {
+          p_birth_date: string | null
+          p_birth_place: string
+          p_category_code: string
+          p_gender: string
+          p_name: string
+          p_participant_id: string
+          p_status_active: boolean
+        }
+        Returns: {
+          birth_date: string | null
+          birth_place: string | null
+          category_code: string
+          gender: string
+          id: string
+          kelompok_id: string
+          name: string
+          status_active: boolean
+        }[]
       }
       normalize_participant_name: { Args: { input: string }; Returns: string }
       promote_eligible_gpn: { Args: never; Returns: undefined }

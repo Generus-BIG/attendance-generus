@@ -17,11 +17,7 @@ export type NikahClusterExtras = z.infer<typeof nikahClusterExtrasSchema>
  * Parse extras field from DB row. Returns zeroed cluster on parse failure
  * so UI renders without crashing for legacy rows or malformed data.
  */
-export function parseNikahClusterExtras(
-  value: unknown
-): NikahClusterExtras {
+export function parseNikahClusterExtras(value: unknown): NikahClusterExtras {
   const result = nikahClusterExtrasSchema.safeParse(value)
-  return result.success
-    ? result.data
-    : { not_ready: 0, ready: 0, married: 0 }
+  return result.success ? result.data : { not_ready: 0, ready: 0, married: 0 }
 }

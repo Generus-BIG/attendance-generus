@@ -1,4 +1,5 @@
 // Metrics slide renderers — table, kategori comparison (3/5 months), and 12-month aggregate.
+import { type ReactNode } from 'react'
 import { addMonths, format, parse } from 'date-fns'
 import {
   allMonthKeysForYear,
@@ -196,6 +197,57 @@ interface DesaMetricTableRow {
   startsGroup?: boolean
 }
 
+function getMetricsTableStyle() {
+  const palette =
+    typeof window === 'undefined'
+      ? 'modern-natural'
+      : document.documentElement.getAttribute('data-palette')
+
+  if (palette === 'anthropic-claude') {
+    return {
+      headerBg: '#3d3428',
+      headerFg: '#fffaf0',
+      categoryBg: '#fffdf8',
+      piketBg: '#f4e8dc',
+      summaryBg: '#ead7c5',
+      summaryLabelBg: '#e2c5ad',
+      avgBg: '#9c4e2d',
+      divider: '#c69a7d',
+      categoryText: '#3d3428',
+      piketText: '#9c4e2d',
+      summaryText: '#6f3722',
+    }
+  }
+  if (palette === 'sage-green') {
+    return {
+      headerBg: '#314a38',
+      headerFg: '#f7fbf5',
+      categoryBg: '#fbfdf9',
+      piketBg: '#e8f0e3',
+      summaryBg: '#d9e6d2',
+      summaryLabelBg: '#cadbc1',
+      avgBg: '#496b50',
+      divider: '#91aa93',
+      categoryText: '#25352a',
+      piketText: '#496b50',
+      summaryText: '#314a38',
+    }
+  }
+  return {
+    headerBg: '#243f73',
+    headerFg: '#f8fbff',
+    categoryBg: '#fbfcff',
+    piketBg: '#e7effb',
+    summaryBg: '#d7e4f6',
+    summaryLabelBg: '#c7d9f1',
+    avgBg: '#315b9a',
+    divider: '#8ca7d0',
+    categoryText: '#172338',
+    piketText: '#315b9a',
+    summaryText: '#243f73',
+  }
+}
+
 function MetricsDesaTable({
   kelompokList,
   reports,
@@ -206,20 +258,8 @@ function MetricsDesaTable({
   metricReports: MetricReportRow[]
 }) {
   const p = usePresPalette()
+  const tableStyle = getMetricsTableStyle()
   const maps = buildCurrentMetricMaps(reports, metricReports)
-
-  const isModern = typeof window !== 'undefined' && document.documentElement.getAttribute('data-palette') === 'modern-natural'
-
-  const colorCatBg = isModern ? '#ffffff' : `color-mix(in oklch, ${p.primary} 3%, ${p.bg})`
-  const colorPiketBg = isModern ? '#ececf4' : `color-mix(in oklch, ${p.primary} 9%, ${p.bg})`
-  const colorSummaryBg = isModern ? '#dae6f2' : `color-mix(in oklch, ${p.primary} 15%, ${p.bg})`
-  const colorLabelSummaryBg = isModern ? '#d3cdca' : `color-mix(in oklch, ${p.primary} 20%, ${p.bg})`
-  const colorDivider = isModern ? '#869fc3' : `color-mix(in oklch, ${p.primary} 35%, ${p.bg})`
-
-  const colorTextCat = isModern ? '#0f172a' : p.ink
-  const colorTextPiket = isModern ? '#2a2b77' : `color-mix(in oklch, ${p.primary} 85%, ${p.ink})`
-  const colorTextSummary = isModern ? '#2a2b77' : p.brandAccent
-  const colorFinalAvgBg = isModern ? '#2772b2' : p.primary
 
   const groups: Array<{
     key: KategoriCode
@@ -307,38 +347,41 @@ function MetricsDesaTable({
   })
 
   const headerStyle = {
-    background: p.primary,
-    color: p.primaryFg,
+    background: tableStyle.headerBg,
+    color: tableStyle.headerFg,
     fontFamily: p.fontMono,
-    fontSize: 'clamp(0.65rem, 0.8cqw, 0.85rem)',
-    fontWeight: 700,
-    letterSpacing: '0.05em',
-    lineHeight: 1.2,
+    fontSize: 'clamp(0.75rem, 0.96cqw, 1.04rem)',
+    fontWeight: 800,
+    letterSpacing: '0.07em',
+    lineHeight: 1.15,
     textTransform: 'uppercase' as const,
   }
 
   return (
     <div className='h-full overflow-hidden'>
-      <table className='h-full w-full table-fixed border-collapse tabular-nums'>
+      <table
+        className='h-full w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums'
+        style={{ borderColor: p.rule }}
+      >
         <thead>
           <tr>
             <th
               rowSpan={2}
-              className='w-[18%] px-2 py-2 text-left'
+              className='w-[18%] px-2 py-3 text-left'
               style={headerStyle}
             >
               KATEGORI
             </th>
             <th
               colSpan={kelompokList.length}
-              className='px-2 py-1.5 text-center'
+              className='px-2 py-2.5 text-center'
               style={headerStyle}
             >
               RATA-RATA KEHADIRAN SEBULAN %
             </th>
             <th
               rowSpan={2}
-              className='w-[12%] px-2 py-2 text-center'
+              className='w-[12%] px-2 py-3 text-center'
               style={headerStyle}
             >
               RATA² SE-DESA %
@@ -348,7 +391,7 @@ function MetricsDesaTable({
             {kelompokList.map((k) => (
               <th
                 key={k.id}
-                className='px-2 py-1.5 text-center'
+                className='px-2 py-2.5 text-center'
                 style={headerStyle}
               >
                 {k.value.replace(/^kel\.?\s*/i, '').toUpperCase()}
@@ -360,10 +403,10 @@ function MetricsDesaTable({
           {rows.map((row) => {
             const rowBg =
               row.tone === 'summary'
-                ? colorSummaryBg
+                ? tableStyle.summaryBg
                 : row.tone === 'piket'
-                  ? colorPiketBg
-                  : colorCatBg
+                  ? tableStyle.piketBg
+                  : tableStyle.categoryBg
             return (
               <tr
                 key={row.key}
@@ -371,24 +414,27 @@ function MetricsDesaTable({
                   background: rowBg,
                   borderTop:
                     row.startsGroup && row.key !== 'ACR-attendance'
-                      ? `clamp(0.4rem, 1vh, 0.8rem) solid ${colorDivider}`
+                      ? `2px solid ${tableStyle.divider}`
                       : undefined,
                   color:
                     row.tone === 'category'
-                      ? colorTextCat
+                      ? tableStyle.categoryText
                       : row.tone === 'summary'
-                        ? colorTextSummary
-                        : colorTextPiket,
+                        ? tableStyle.summaryText
+                        : tableStyle.piketText,
                   fontSize: 'clamp(0.62rem, 0.82vw, 0.96rem)',
-                  fontWeight: row.tone === 'summary' ? 800 : 600,
+                  fontWeight: 400,
                   lineHeight: 1.18,
                 }}
               >
                 <td
-                  className='px-2 py-1.5'
+                  className='border-b px-2 py-2'
                   style={{
-                    background: row.tone === 'summary' ? colorLabelSummaryBg : undefined,
-                    fontWeight: 700,
+                    background:
+                      row.tone === 'summary'
+                        ? tableStyle.summaryLabelBg
+                        : undefined,
+                    borderColor: p.rule,
                   }}
                 >
                   {row.label}
@@ -396,22 +442,23 @@ function MetricsDesaTable({
                 {row.values.map((value, index) => (
                   <td
                     key={`${row.key}-${kelompokList[index]?.id ?? index}`}
-                    className='px-2 py-1.5 text-center'
+                    className='border-b px-2 py-2 text-center'
+                    style={{ borderColor: p.rule }}
                   >
                     {formatPct(value)}
                   </td>
                 ))}
                 <td
-                  className='px-2 py-1.5 text-center'
+                  className='border-b px-2 py-2 text-center'
                   style={
                     row.tone === 'summary'
                       ? {
-                          background: colorFinalAvgBg,
-                          color: p.primaryFg,
-                          fontWeight: 800,
+                          background: tableStyle.avgBg,
+                          borderColor: p.rule,
+                          color: tableStyle.headerFg,
                         }
                       : {
-                          fontWeight: 700,
+                          borderColor: p.rule,
                         }
                   }
                 >
@@ -446,26 +493,22 @@ function MetricsKelompokTable({
   monthKeys: string[]
   rowsByKategori: Array<{
     kat: KategoriCode
-    kehadiranRow: { label: string; monthly: Array<number | null>; avg: number | null }
-    piketRow: { label: string; monthly: Array<number | null>; avg: number | null }
+    kehadiranRow: {
+      label: string
+      monthly: Array<number | null>
+      avg: number | null
+    }
+    piketRow: {
+      label: string
+      monthly: Array<number | null>
+      avg: number | null
+    }
   }>
   summaryGenerusAvg: number | null
   summaryPiketAvg: number | null
 }) {
   const p = usePresPalette()
-
-  const isModern = typeof window !== 'undefined' && document.documentElement.getAttribute('data-palette') === 'modern-natural'
-
-  const colorCatBg = isModern ? '#ffffff' : `color-mix(in oklch, ${p.primary} 3%, ${p.bg})`
-  const colorPiketBg = isModern ? '#ececf4' : `color-mix(in oklch, ${p.primary} 9%, ${p.bg})`
-  const colorSummaryBg = isModern ? '#dae6f2' : `color-mix(in oklch, ${p.primary} 15%, ${p.bg})`
-  const colorLabelSummaryBg = isModern ? '#d3cdca' : `color-mix(in oklch, ${p.primary} 20%, ${p.bg})`
-  const colorDivider = isModern ? '#869fc3' : `color-mix(in oklch, ${p.primary} 35%, ${p.bg})`
-
-  const colorTextCat = isModern ? '#0f172a' : p.ink
-  const colorTextPiket = isModern ? '#2a2b77' : `color-mix(in oklch, ${p.primary} 85%, ${p.ink})`
-  const colorTextSummary = isModern ? '#2a2b77' : p.brandAccent
-  const colorFinalAvgBg = isModern ? '#2772b2' : p.primary
+  const tableStyle = getMetricsTableStyle()
 
   const rows: KelompokMetricTableRow[] = []
   rowsByKategori.forEach((g, gi) => {
@@ -510,30 +553,33 @@ function MetricsKelompokTable({
   })
 
   const headerStyle = {
-    background: p.primary,
-    color: p.primaryFg,
+    background: tableStyle.headerBg,
+    color: tableStyle.headerFg,
     fontFamily: p.fontMono,
-    fontSize: 'clamp(0.65rem, 0.8cqw, 0.85rem)',
-    fontWeight: 700,
-    letterSpacing: '0.05em',
-    lineHeight: 1.2,
+    fontSize: 'clamp(0.75rem, 0.96cqw, 1.04rem)',
+    fontWeight: 800,
+    letterSpacing: '0.07em',
+    lineHeight: 1.15,
     textTransform: 'uppercase' as const,
   }
 
   return (
     <div className='h-full overflow-hidden'>
-      <table className='h-full w-full table-fixed border-collapse tabular-nums'>
+      <table
+        className='h-full w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums'
+        style={{ borderColor: p.rule }}
+      >
         <thead>
           <tr>
-            <th className='w-[18%] px-2 py-2 text-left' style={headerStyle}>
+            <th className='w-[18%] px-2 py-3 text-left' style={headerStyle}>
               KATEGORI
             </th>
             {SHORT_MONTH_LABELS.map((m) => (
-              <th key={m} className='px-1 py-2 text-center' style={headerStyle}>
+              <th key={m} className='px-1 py-3 text-center' style={headerStyle}>
                 {m}
               </th>
             ))}
-            <th className='w-[10%] px-2 py-2 text-center' style={headerStyle}>
+            <th className='w-[10%] px-2 py-3 text-center' style={headerStyle}>
               RATA²
             </th>
           </tr>
@@ -542,10 +588,10 @@ function MetricsKelompokTable({
           {rows.map((row) => {
             const rowBg =
               row.tone === 'summary'
-                ? colorSummaryBg
+                ? tableStyle.summaryBg
                 : row.tone === 'piket'
-                  ? colorPiketBg
-                  : colorCatBg
+                  ? tableStyle.piketBg
+                  : tableStyle.categoryBg
             return (
               <tr
                 key={row.key}
@@ -553,26 +599,29 @@ function MetricsKelompokTable({
                   background: rowBg,
                   borderTop:
                     row.startsGroup && row.key !== 'summary-generus'
-                      ? `clamp(0.4rem, 1vh, 0.8rem) solid ${colorDivider}`
+                      ? `2px solid ${tableStyle.divider}`
                       : row.key === 'summary-generus'
-                        ? `clamp(0.5rem, 1.2vh, 1rem) solid ${colorDivider}`
+                        ? `2px solid ${tableStyle.divider}`
                         : undefined,
                   color:
                     row.tone === 'category'
-                      ? colorTextCat
+                      ? tableStyle.categoryText
                       : row.tone === 'summary'
-                        ? colorTextSummary
-                        : colorTextPiket,
+                        ? tableStyle.summaryText
+                        : tableStyle.piketText,
                   fontSize: 'clamp(0.62rem, 0.82vw, 0.96rem)',
-                  fontWeight: row.tone === 'summary' ? 800 : 600,
+                  fontWeight: 400,
                   lineHeight: 1.18,
                 }}
               >
                 <td
-                  className='px-2 py-1.5'
+                  className='border-b px-2 py-2'
                   style={{
-                    background: row.tone === 'summary' ? colorLabelSummaryBg : undefined,
-                    fontWeight: 700,
+                    background:
+                      row.tone === 'summary'
+                        ? tableStyle.summaryLabelBg
+                        : undefined,
+                    borderColor: p.rule,
                   }}
                 >
                   {row.label}
@@ -580,22 +629,23 @@ function MetricsKelompokTable({
                 {row.values.map((value, index) => (
                   <td
                     key={`${row.key}-${monthKeys[index]}`}
-                    className='px-1 py-1.5 text-center'
+                    className='border-b px-1 py-2 text-center'
+                    style={{ borderColor: p.rule }}
                   >
                     {formatPct(value)}
                   </td>
                 ))}
                 <td
-                  className='px-2 py-1.5 text-center'
+                  className='border-b px-2 py-2 text-center'
                   style={
                     row.tone === 'summary'
                       ? {
-                          background: colorFinalAvgBg,
-                          color: p.primaryFg,
-                          fontWeight: 800,
+                          background: tableStyle.avgBg,
+                          borderColor: p.rule,
+                          color: tableStyle.headerFg,
                         }
                       : {
-                          fontWeight: 700,
+                          borderColor: p.rule,
                         }
                   }
                 >
@@ -651,7 +701,7 @@ export function renderMetricsTableSlide(args: RenderMetricsTableArgs): Slide {
       render: () => (
         <SlideFrame
           eyebrow='METRIK KEHADIRAN'
-          title='Tabel Rata-rata Kehadiran'
+          title='Persentase Kehadiran Perkelompok'
           meta={monthLabel}
           scope={scope}
           slideNumber={slideNumber}
@@ -721,7 +771,7 @@ export function renderMetricsTableSlide(args: RenderMetricsTableArgs): Slide {
     render: () => (
       <SlideFrame
         eyebrow='METRIK KEHADIRAN'
-        title='Tabel Rata-rata Kehadiran'
+        title='Persentase Kehadiran Generus'
         meta={monthLabel}
         scope={scope}
         slideNumber={slideNumber}
@@ -764,7 +814,7 @@ export function renderMetricsCompareSlide(
   const {
     monthKey,
     monthLabel,
-    scope,
+    scope: _scope,
     isSingleKelompok,
     kelompokFilter,
     kategoriCodes,
@@ -772,8 +822,8 @@ export function renderMetricsCompareSlide(
     titleSuffix,
     yearlyMonthlyReports,
     yearlyMetricReports,
-    slideNumber,
-    totalSlides,
+    slideNumber: _slideNumber,
+    totalSlides: _totalSlides,
   } = args
 
   const lookups = buildLookups(yearlyMonthlyReports, yearlyMetricReports)
@@ -796,50 +846,97 @@ export function renderMetricsCompareSlide(
     key: `metrics-compare-${kategoriCodes.join('-')}`,
     title: `Metrik · ${titleSuffix}`,
     render: () => (
-      <SlideFrame
-        eyebrow='METRIK KEHADIRAN'
-        title={`Perbandingan ${monthsBack} Bulan Terakhir`}
-        meta={`${monthLabel} · ${titleSuffix}`}
-        scope={scope}
-        slideNumber={slideNumber}
-        totalSlides={totalSlides}
+      <AttendanceComparisonSlide
+        monthLabel={monthLabel}
+        titleSuffix={titleSuffix}
+        gridColsClass={gridColsClass}
       >
-        <div className={`grid h-full ${gridColsClass} gap-8`}>
-          {kategoriCodes.map((kat) => {
-            const kehadiranCode = KATEGORI_TO_KEHADIRAN[kat]
-            const piketCode = KATEGORI_TO_PIKET[kat]
-            const kehadiran = monthKeys.map((mk) =>
-              getMonthValue(
-                kehadiranCode,
-                mk,
-                isSingleKelompok,
-                kelompokFilter,
-                lookups
-              )
+        {kategoriCodes.map((kat) => {
+          const kehadiranCode = KATEGORI_TO_KEHADIRAN[kat]
+          const piketCode = KATEGORI_TO_PIKET[kat]
+          const kehadiran = monthKeys.map((mk) =>
+            getMonthValue(
+              kehadiranCode,
+              mk,
+              isSingleKelompok,
+              kelompokFilter,
+              lookups
             )
-            const piket = monthKeys.map((mk) =>
-              getMonthValue(
-                piketCode,
-                mk,
-                isSingleKelompok,
-                kelompokFilter,
-                lookups
-              )
+          )
+          const piket = monthKeys.map((mk) =>
+            getMonthValue(
+              piketCode,
+              mk,
+              isSingleKelompok,
+              kelompokFilter,
+              lookups
             )
-            return (
-              <PairedMonthBars
-                key={kat}
-                title={KATEGORI_LABELS[kat] ?? kat}
-                monthLabels={monthLabels}
-                kehadiran={kehadiran}
-                piket={piket}
-              />
-            )
-          })}
-        </div>
-      </SlideFrame>
+          )
+          return (
+            <PairedMonthBars
+              key={kat}
+              title={KATEGORI_LABELS[kat] ?? kat}
+              monthLabels={monthLabels}
+              kehadiran={kehadiran}
+              piket={piket}
+            />
+          )
+        })}
+      </AttendanceComparisonSlide>
     ),
   }
+}
+
+function AttendanceComparisonSlide({
+  monthLabel,
+  titleSuffix,
+  gridColsClass,
+  children,
+}: {
+  monthLabel: string
+  titleSuffix: string
+  gridColsClass: string
+  children: ReactNode
+}) {
+  const palette = usePresPalette()
+  return (
+    <div
+      className='flex h-full flex-col overflow-hidden p-[clamp(2.5rem,5cqw,5rem)]'
+      style={{
+        background: palette.bg,
+        color: palette.ink,
+        fontFamily: palette.fontSans,
+      }}
+    >
+      <header className='flex shrink-0 items-start justify-between gap-8'>
+        <h1
+          style={{
+            fontFamily: palette.fontSans,
+            fontSize: 'clamp(2.5rem, 4.2cqw, 5rem)',
+            fontWeight: 700,
+            lineHeight: 1.04,
+            letterSpacing: '-0.045em',
+          }}
+        >
+          Grafik Kehadiran | {titleSuffix.split(' · ').join(', ')}
+        </h1>
+        <time
+          className='shrink-0 pt-2'
+          style={{
+            fontSize: 'clamp(1rem, 1.25cqw, 1.5rem)',
+            color: palette.muted,
+          }}
+        >
+          {monthLabel}
+        </time>
+      </header>
+      <div
+        className={`mt-[clamp(2rem,4cqh,4rem)] grid min-h-0 flex-1 ${gridColsClass} gap-6`}
+      >
+        {children}
+      </div>
+    </div>
+  )
 }
 
 // ---------- Metrics Aggregate Slide ----------
@@ -863,13 +960,13 @@ export function renderMetricsAggregateSlide(
   const {
     monthKey,
     monthLabel,
-    scope,
+    scope: _scope,
     isSingleKelompok,
     kelompokFilter,
     yearlyMonthlyReports,
     yearlyMetricReports,
-    slideNumber,
-    totalSlides,
+    slideNumber: _slideNumber,
+    totalSlides: _totalSlides,
   } = args
 
   const year = parseInt(monthKey.slice(0, 4), 10)
@@ -909,22 +1006,17 @@ export function renderMetricsAggregateSlide(
     key: 'metrics-aggregate',
     title: 'Rata-rata Kehadiran Generus vs Piket LUPG',
     render: () => (
-      <SlideFrame
-        eyebrow='METRIK KEHADIRAN'
-        title='Rata-rata Generus vs Piket LUPG'
-        meta={monthLabel}
-        scope={scope}
-        slideNumber={slideNumber}
-        totalSlides={totalSlides}
+      <AttendanceComparisonSlide
+        monthLabel={monthLabel}
+        titleSuffix='Generus Desa'
+        gridColsClass='grid-cols-1'
       >
-        <div className='h-full'>
-          <GenerusPiketAggregateBars
-            monthLabels={monthLabels}
-            generusValues={generusValues}
-            piketValues={piketValues}
-          />
-        </div>
-      </SlideFrame>
+        <GenerusPiketAggregateBars
+          monthLabels={monthLabels}
+          generusValues={generusValues}
+          piketValues={piketValues}
+        />
+      </AttendanceComparisonSlide>
     ),
   }
 }

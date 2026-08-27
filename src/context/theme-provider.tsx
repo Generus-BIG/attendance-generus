@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useMemo } from 'react'
-import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 import { getDefaultTheme } from '@/lib/app-settings.service'
+import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 
 type Theme = 'dark' | 'light' | 'system'
 type ResolvedTheme = Exclude<Theme, 'system'>
@@ -109,23 +109,22 @@ export function ThemeProvider({
     }
   }, [storageKey])
 
-  const setTheme = (theme: Theme) => {
-    setCookie(storageKey, theme, THEME_COOKIE_MAX_AGE)
-    _setTheme(theme)
-  }
-
-  const resetTheme = () => {
-    removeCookie(storageKey)
-    _setTheme(DEFAULT_THEME)
-  }
-
-  const contextValue = {
-    defaultTheme,
-    resolvedTheme,
-    resetTheme,
-    theme,
-    setTheme,
-  }
+  const contextValue = useMemo(
+    () => ({
+      defaultTheme,
+      resolvedTheme,
+      resetTheme: () => {
+        removeCookie(storageKey)
+        _setTheme(DEFAULT_THEME)
+      },
+      theme,
+      setTheme: (next: Theme) => {
+        setCookie(storageKey, next, THEME_COOKIE_MAX_AGE)
+        _setTheme(next)
+      },
+    }),
+    [defaultTheme, resolvedTheme, storageKey, theme]
+  )
 
   return (
     <ThemeContext value={contextValue} {...props}>
@@ -134,7 +133,6 @@ export function ThemeProvider({
   )
 }
 
- 
 export const useTheme = () => {
   const context = useContext(ThemeContext)
 

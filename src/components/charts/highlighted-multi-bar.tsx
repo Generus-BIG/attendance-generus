@@ -1,5 +1,4 @@
 import React from 'react'
-import { Bar, BarChart, Cell, Label, LabelList, XAxis, YAxis } from 'recharts'
 import {
   type ChartConfig,
   ChartContainer,
@@ -8,6 +7,15 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Label,
+  LabelList,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
 export interface MultiBarRow {
   label: string
@@ -70,11 +78,7 @@ export function HighlightedMultiBar({
   const yAxisWidth = yAxisLabel ? 48 : 38
 
   return (
-    <ChartContainer
-      config={chartConfig}
-      className='w-full'
-      style={{ height }}
-    >
+    <ChartContainer config={chartConfig} className='w-full' style={{ height }}>
       <BarChart
         accessibilityLayer
         data={data}
@@ -157,13 +161,11 @@ export function HighlightedMultiBar({
             {data.map((_, index) => (
               <Cell
                 key={`cell-${s.key}-${index}`}
-                className='duration-200'
+                className='transition-[fill-opacity,stroke] duration-200'
                 fillOpacity={
                   activeIndex === null ? 1 : activeIndex === index ? 1 : 0.3
                 }
-                stroke={
-                  activeIndex === index ? `var(--color-${s.key})` : ''
-                }
+                stroke={activeIndex === index ? `var(--color-${s.key})` : ''}
                 onMouseEnter={() => setActiveIndex(index)}
               />
             ))}

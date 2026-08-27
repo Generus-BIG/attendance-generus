@@ -1,4 +1,3 @@
-import { Bar, BarChart, Cell, LabelList, XAxis, YAxis } from 'recharts'
 import { useIsMobile } from '@/hooks/use-mobile'
 import {
   Card,
@@ -12,6 +11,14 @@ import {
   ChartContainer,
   ChartTooltip,
 } from '@/components/ui/chart'
+import {
+  Bar,
+  BarChart,
+  Cell,
+  LabelList,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import type { CategoryBreakdownRow } from '../types'
 import { ChartSegmentTooltip } from './chart-segment-tooltip'
 

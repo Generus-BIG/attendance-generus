@@ -1,11 +1,11 @@
-import { type ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
+import { type ColumnDef } from '@tanstack/react-table'
 import { id as idLocale } from 'date-fns/locale'
+import { type Attendance, type Participant } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
-import { type Attendance, type Participant } from '@/lib/schema'
 import { attendanceStatusTypes } from '../data/data'
 import { DataTableRowActions } from './data-table-row-actions'
 
@@ -69,10 +69,10 @@ export const attendanceColumns: ColumnDef<AttendanceWithParticipant>[] = [
     cell: ({ row }) => {
       const timestamp = row.original.timestamp || row.original.date
       if (!timestamp)
-        return <span className='text-muted-foreground block text-right'>-</span>
+        return <span className='block text-right text-muted-foreground'>-</span>
       const date = new Date(timestamp)
       return (
-        <span className='whitespace-nowrap text-muted-foreground tabular-nums block text-right'>
+        <span className='block text-right whitespace-nowrap text-muted-foreground tabular-nums'>
           {format(date, 'HH:mm', { locale: idLocale })}
         </span>
       )
@@ -116,11 +116,13 @@ export const attendanceColumns: ColumnDef<AttendanceWithParticipant>[] = [
       <DataTableColumnHeader column={column} title='Kelompok' />
     ),
     cell: ({ row }) => {
-      const kelompok = row.original.participant?.kelompok || row.original.tempKelompok
+      const kelompok =
+        row.original.participant?.kelompok || row.original.tempKelompok
       return <span>{kelompok || '-'}</span>
     },
     filterFn: (row, _id, value) => {
-      const kelompok = row.original.participant?.kelompok || row.original.tempKelompok
+      const kelompok =
+        row.original.participant?.kelompok || row.original.tempKelompok
       return Array.isArray(value) && value.includes(kelompok)
     },
   },
@@ -131,7 +133,8 @@ export const attendanceColumns: ColumnDef<AttendanceWithParticipant>[] = [
       <DataTableColumnHeader column={column} title='Kategori' />
     ),
     cell: ({ row }) => {
-      const kategori = row.original.participant?.kategori || row.original.tempKategori
+      const kategori =
+        row.original.participant?.kategori || row.original.tempKategori
       if (!kategori || (kategori as string) === '-') return <span>-</span>
       return (
         <Badge variant='outline'>
@@ -140,7 +143,8 @@ export const attendanceColumns: ColumnDef<AttendanceWithParticipant>[] = [
       )
     },
     filterFn: (row, _id, value) => {
-      const kategori = row.original.participant?.kategori || row.original.tempKategori
+      const kategori =
+        row.original.participant?.kategori || row.original.tempKategori
       return Array.isArray(value) && value.includes(kategori)
     },
   },
@@ -176,7 +180,7 @@ export const attendanceColumns: ColumnDef<AttendanceWithParticipant>[] = [
         <div className='flex flex-col gap-1 py-2'>
           <span>{reason || '-'}</span>
           {notes && (
-            <span className='text-muted-foreground text-xs whitespace-pre-wrap break-words'>
+            <span className='text-xs break-words whitespace-pre-wrap text-muted-foreground'>
               {notes}
             </span>
           )}

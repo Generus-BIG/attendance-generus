@@ -1,5 +1,7 @@
-import { ChevronsUpDown } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
+import { ChevronsUpDown } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
+import { useActiveWorkspace } from '@/hooks/use-active-workspace'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +16,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { WORKSPACE_DEFAULT_PATH } from './data/sidebar-data'
+import { getWorkspaceDefaultPath } from './data/sidebar-data'
 import { type WorkspaceTeam } from './types'
-import { useActiveWorkspace } from '@/hooks/use-active-workspace'
 
 type TeamSwitcherProps = {
   teams: WorkspaceTeam[]
@@ -26,14 +27,16 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
   const { activeWorkspace, setActiveWorkspace } = useActiveWorkspace()
+  const role = useAuthStore((state) => state.auth.role)
+  const visibleTeams =
+    role === 'mt' ? teams.filter((team) => team.key === 'lupg') : teams
 
-  const activeTeam =
-    teams.find((t) => t.key === activeWorkspace) ?? teams[0]
+  const activeTeam = teams.find((t) => t.key === activeWorkspace) ?? teams[0]
 
   const handleSelectTeam = (team: WorkspaceTeam) => {
     if (team.key === activeWorkspace) return
     setActiveWorkspace(team.key)
-    const target = WORKSPACE_DEFAULT_PATH[team.key]
+    const target = getWorkspaceDefaultPath(team.key, role)
     navigate({ to: target })
   }
 
@@ -67,7 +70,7 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
             <DropdownMenuLabel className='text-xs text-muted-foreground'>
               Workspaces
             </DropdownMenuLabel>
-            {teams.map((team, index) => (
+            {visibleTeams.map((team, index) => (
               <DropdownMenuItem
                 key={team.key}
                 onClick={() => handleSelectTeam(team)}

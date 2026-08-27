@@ -67,9 +67,11 @@ function MultiSelect({
     }
   }
 
-  const selectedLabels = selected
-    .map((val) => options.find((opt) => opt.value === val)?.label)
-    .filter(Boolean) as string[]
+  const selectedLabels = selected.flatMap((val) => {
+    const label = options.find((opt) => opt.value === val)?.label
+    return label ? [label] : []
+  })
+  const selectedSet = new Set(selected)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -138,7 +140,7 @@ function MultiSelect({
                 Pilih Semua
               </CommandItem>
               {options.map((option) => {
-                const isSelected = selected.includes(option.value)
+                const isSelected = selectedSet.has(option.value)
                 return (
                   <CommandItem
                     key={option.value}
@@ -228,6 +230,13 @@ export function ExportAttendanceDialog() {
   const handleExportSubmit = async () => {
     setIsExporting(true)
     try {
+      const selectedKelompokSet = new Set(selectedKelompoks)
+      const selectedKategoriSet = new Set(selectedKategoris)
+      const mappedSelectedKategoriSet = new Set(
+        selectedKategoris.map((kat) =>
+          kat === 'A' ? 'GPN A' : kat === 'B' ? 'GPN B' : kat
+        )
+      )
       let query = supabase
         .from('attendance')
         .select(
@@ -307,7 +316,7 @@ export function ExportAttendanceDialog() {
         } else if (selectedKelompoks.length > 0) {
           if (
             !normalized.groupId ||
-            !selectedKelompoks.includes(normalized.groupId)
+            !selectedKelompokSet.has(normalized.groupId)
           )
             return rows
         }
@@ -315,12 +324,9 @@ export function ExportAttendanceDialog() {
         // Category check
         if (selectedKategoris.length > 0) {
           // Map selected values ('A', 'B', etc.) to DB lookup values
-          const mappedSelected = selectedKategoris.map((kat) =>
-            kat === 'A' ? 'GPN A' : kat === 'B' ? 'GPN B' : kat
-          )
           if (
-            !mappedSelected.includes(normalized.kategoriRaw) &&
-            !selectedKategoris.includes(normalized.kategoriRaw)
+            !mappedSelectedKategoriSet.has(normalized.kategoriRaw) &&
+            !selectedKategoriSet.has(normalized.kategoriRaw)
           )
             return rows
         }
@@ -372,8 +378,10 @@ export function ExportAttendanceDialog() {
         selectedForms.length === 0
           ? 'Semua Form'
           : selectedForms
-              .map((id) => forms.find((f) => f.id === id)?.title)
-              .filter(Boolean)
+              .flatMap((id) => {
+                const title = forms.find((f) => f.id === id)?.title
+                return title ? [title] : []
+              })
               .join(', ')
 
       const activeKelompokTitle =
@@ -382,8 +390,10 @@ export function ExportAttendanceDialog() {
           : selectedKelompoks.length === 0
             ? 'Semua Kelompok'
             : selectedKelompoks
-                .map((id) => kelompokList.find((k) => k.id === id)?.value)
-                .filter(Boolean)
+                .flatMap((id) => {
+                  const value = kelompokList.find((k) => k.id === id)?.value
+                  return value ? [value] : []
+                })
                 .join(', ')
 
       const activeKategoriTitle =

@@ -36,19 +36,21 @@ export function PageHeader({
     >
       <div className='flex flex-col gap-1'>
         {kicker && (
-          <div className='text-muted-foreground text-[0.6875rem] font-medium tracking-[0.12em] uppercase'>
+          <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
             {kicker}
           </div>
         )}
-        <h1 className='text-foreground text-2xl font-semibold tracking-tight sm:text-[1.75rem]'>
+        <h1 className='text-2xl font-semibold tracking-tight text-foreground sm:text-[1.75rem]'>
           {title}
         </h1>
         {description && (
-          <p className='text-muted-foreground max-w-[65ch] text-sm'>
+          <p className='max-w-[65ch] text-sm text-muted-foreground'>
             {description}
           </p>
         )}
-        {meta && <div className='mt-1 flex flex-wrap items-center gap-2'>{meta}</div>}
+        {meta && (
+          <div className='mt-1 flex flex-wrap items-center gap-2'>{meta}</div>
+        )}
       </div>
       {actions && (
         <div className='flex flex-wrap items-center gap-2 sm:shrink-0'>

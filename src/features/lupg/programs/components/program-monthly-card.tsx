@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
+import { type Role } from '@/lib/rbac'
+import { cn } from '@/lib/utils'
 import {
   Card,
   CardContent,
@@ -15,8 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { type Role } from '@/lib/rbac'
-import { cn } from '@/lib/utils'
 import {
   type MonthlyReportRow,
   type ProgramDefinitionRow,
@@ -119,7 +119,7 @@ export function ProgramMonthlyBody({
             type='button'
             onClick={() => setShowFuture((v) => !v)}
             aria-expanded={showFuture}
-            className='text-muted-foreground hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center justify-center gap-2 rounded-md border border-dashed py-2 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none'
+            className='flex w-full items-center justify-center gap-2 rounded-md border border-dashed py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
           >
             <ChevronRight
               className={cn(
@@ -173,7 +173,9 @@ export function ProgramMonthlyBody({
           <TableBody>
             {pastAndCurrent.map((mk) => {
               const report = reportByMonthKey.get(mk)
-              const row = report ? programRowByReportId.get(report.id) : undefined
+              const row = report
+                ? programRowByReportId.get(report.id)
+                : undefined
               const editability = isMonthEditable(
                 mk,
                 currentMonthKey,
@@ -202,7 +204,7 @@ export function ProgramMonthlyBody({
                     onClick={() => setShowFuture((v) => !v)}
                     aria-expanded={showFuture}
                     aria-controls={`future-rows-${program.code}`}
-                    className='text-muted-foreground hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center justify-center gap-2 py-2 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none'
+                    className='flex w-full items-center justify-center gap-2 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
                   >
                     <ChevronRight
                       className={cn(
@@ -221,7 +223,9 @@ export function ProgramMonthlyBody({
             {showFuture &&
               future.map((mk) => {
                 const report = reportByMonthKey.get(mk)
-                const row = report ? programRowByReportId.get(report.id) : undefined
+                const row = report
+                  ? programRowByReportId.get(report.id)
+                  : undefined
                 const editability = isMonthEditable(
                   mk,
                   currentMonthKey,

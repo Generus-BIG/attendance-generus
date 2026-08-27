@@ -21,7 +21,7 @@ export function RateBarCell({ ratePct, month }: Props) {
   return (
     <div className='flex items-center justify-end gap-2'>
       <div
-        className='bg-muted/70 hidden h-1.5 w-24 overflow-hidden rounded-full sm:block'
+        className='hidden h-1.5 w-24 overflow-hidden rounded-full bg-muted/70 sm:block'
         role='presentation'
         aria-hidden='true'
       >
@@ -36,11 +36,9 @@ export function RateBarCell({ ratePct, month }: Props) {
       <span
         className={cn(
           'w-10 text-right text-sm tabular-nums',
-          isAtRisk ? 'text-destructive font-semibold' : 'text-foreground'
+          isAtRisk ? 'font-semibold text-destructive' : 'text-foreground'
         )}
-        aria-label={
-          isAtRisk ? `${clamped}% — perlu tindak lanjut` : undefined
-        }
+        aria-label={isAtRisk ? `${clamped}% — perlu tindak lanjut` : undefined}
       >
         {clamped}%
       </span>

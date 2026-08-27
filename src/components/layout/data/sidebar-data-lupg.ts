@@ -12,14 +12,72 @@ import {
   Bell,
   TrendingUp,
   Presentation,
+  ClipboardCheck,
+  HeartPulse,
+  Users,
 } from 'lucide-react'
 import { type Role } from '@/lib/rbac'
 import { type NavGroup, type NavItem } from '../types'
 
 export function getLupgNavGroups(role: Role): NavGroup[] {
   const isAdmin = role === 'super_admin' || role === 'admin'
+  const isMt = role === 'mt'
 
   const generalItems: NavItem[] = []
+
+  if (isAdmin || isMt) {
+    generalItems.push(
+      {
+        title: 'PHQ',
+        icon: ClipboardCheck,
+        items: [
+          { title: 'Summary', url: '/admin/lupg/phq/summary' },
+          { title: 'Peserta', url: '/admin/lupg/phq/participants' },
+          { title: 'Progress Hafalan', url: '/admin/lupg/phq/progress' },
+          { title: 'Absensi', url: '/admin/lupg/phq/attendance' },
+        ],
+      },
+      {
+        title: 'APR Intensif',
+        url: '/admin/lupg/apr-intensif',
+        icon: HeartPulse,
+      },
+      { title: 'AR Intensif', url: '/admin/lupg/ar-intensif', icon: Users }
+    )
+  }
+
+  if (isMt) {
+    return [
+      { title: 'LUPG', items: generalItems },
+      {
+        title: 'Other',
+        items: [
+          {
+            title: 'Settings',
+            icon: Settings,
+            items: [
+              { title: 'Profile', url: '/admin/settings', icon: UserCog },
+              {
+                title: 'Account',
+                url: '/admin/settings/account',
+                icon: Wrench,
+              },
+              {
+                title: 'Appearance',
+                url: '/admin/settings/appearance',
+                icon: Palette,
+              },
+              {
+                title: 'Notifications',
+                url: '/admin/settings/notifications',
+                icon: Bell,
+              },
+            ],
+          },
+        ],
+      },
+    ]
+  }
 
   if (isAdmin) {
     generalItems.push({
@@ -77,7 +135,7 @@ export function getLupgNavGroups(role: Role): NavGroup[] {
 
   if (isAdmin) {
     generalItems.push({
-      title: 'Konfigurasi',
+      title: 'Konfigurasi Metrik & LUPG',
       url: '/admin/lupg/config',
       icon: Settings2,
     })

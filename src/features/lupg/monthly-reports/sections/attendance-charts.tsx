@@ -11,15 +11,12 @@ import {
   type MultiBarRow,
   type SeriesDef,
 } from '@/components/charts/highlighted-multi-bar'
-import {
-  type MetricReportRow,
-  type MonthlyReportRow,
-} from '../../types'
+import { MonthSelectionChips } from '../../components/month-selection-chips'
 import {
   allMonthKeysForYear,
   monthNameFromKey,
 } from '../../programs/utils/editability'
-import { MonthSelectionChips } from '../../components/month-selection-chips'
+import { type MetricReportRow, type MonthlyReportRow } from '../../types'
 import {
   formatChartValue,
   makeAxisFormatter,
@@ -50,7 +47,11 @@ const CATEGORY_CHARTS: CategoryChart[] = [
     description: 'Kehadiran ACR vs Piket LUPG ACR per bulan.',
     series: [
       { key: 'ATT_PCT_ACR', label: 'ACR', colorToken: 'var(--chart-1)' },
-      { key: 'ATT_PCT_PIKET_ACR', label: 'Piket LUPG ACR', colorToken: 'var(--chart-2)' },
+      {
+        key: 'ATT_PCT_PIKET_ACR',
+        label: 'Piket LUPG ACR',
+        colorToken: 'var(--chart-2)',
+      },
     ],
   },
   {
@@ -59,7 +60,11 @@ const CATEGORY_CHARTS: CategoryChart[] = [
     description: 'Kehadiran APR vs Piket LUPG APR per bulan.',
     series: [
       { key: 'ATT_PCT_APR', label: 'APR', colorToken: 'var(--chart-3)' },
-      { key: 'ATT_PCT_PIKET_APR', label: 'Piket LUPG APR', colorToken: 'var(--chart-4)' },
+      {
+        key: 'ATT_PCT_PIKET_APR',
+        label: 'Piket LUPG APR',
+        colorToken: 'var(--chart-4)',
+      },
     ],
   },
   {
@@ -68,7 +73,11 @@ const CATEGORY_CHARTS: CategoryChart[] = [
     description: 'Kehadiran AR vs Piket LUPG AR per bulan.',
     series: [
       { key: 'ATT_PCT_AR', label: 'AR', colorToken: 'var(--chart-5)' },
-      { key: 'ATT_PCT_PIKET_AR', label: 'Piket LUPG AR', colorToken: 'var(--chart-1)' },
+      {
+        key: 'ATT_PCT_PIKET_AR',
+        label: 'Piket LUPG AR',
+        colorToken: 'var(--chart-1)',
+      },
     ],
   },
   {
@@ -93,7 +102,11 @@ const CATEGORY_CHARTS: CategoryChart[] = [
 ]
 
 /** Last N months up to maxKey, bounded to the provided month list. */
-function defaultSelectedMonths(months: string[], maxKey: string, n = 4): string[] {
+function defaultSelectedMonths(
+  months: string[],
+  maxKey: string,
+  n = 4
+): string[] {
   const available = months.filter((m) => m <= maxKey)
   if (available.length === 0) return months.slice(0, Math.min(n, months.length))
   return available.slice(-n)
@@ -130,7 +143,8 @@ export function AttendanceCharts({
 
   // Don't render chips for months the user cannot pick yet.
   const visibleMonths = allMonths.filter((mk) => mk <= currentMonthKey)
-  const effectiveSelected = selected.filter((m) => visibleMonths.includes(m))
+  const visibleMonthSet = new Set(visibleMonths)
+  const effectiveSelected = selected.filter((m) => visibleMonthSet.has(m))
   const monthsForChart =
     effectiveSelected.length > 0
       ? effectiveSelected
@@ -148,7 +162,7 @@ export function AttendanceCharts({
             </CardDescription>
           </div>
         </div>
-        <div className='-mx-2 mt-2 flex justify-center overflow-x-auto px-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]'>
+        <div className='-mx-2 mt-2 flex justify-center overflow-x-auto px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
           <MonthSelectionChips
             months={allMonths}
             selectedMonths={selected}
@@ -177,14 +191,17 @@ export function AttendanceCharts({
               return row
             })
             return (
-              <div key={chart.key} className='flex w-full min-w-0 flex-col gap-2'>
+              <div
+                key={chart.key}
+                className='flex w-full min-w-0 flex-col gap-2'
+              >
                 <div>
                   <div className='text-sm font-semibold'>{chart.title}</div>
-                  <div className='text-muted-foreground text-xs'>
+                  <div className='text-xs text-muted-foreground'>
                     {chart.description}
                   </div>
                 </div>
-                <div className='-mx-2 overflow-x-auto px-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]'>
+                <div className='-mx-2 overflow-x-auto px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
                   <div className='min-w-70'>
                     <HighlightedMultiBar
                       data={data}

@@ -26,41 +26,65 @@ export async function exportToExcel(
   // Add Title Block
   if (options.title) {
     worksheet.addRow([]) // Row 1 (Empty spacing)
-    
+
     const kickerRow = worksheet.addRow(['ABSENSI MUMIBIG']) // Row 2
-    kickerRow.getCell(1).font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: 'FF71717A' } }
-    
+    kickerRow.getCell(1).font = {
+      name: 'Segoe UI',
+      size: 9,
+      bold: true,
+      color: { argb: 'FF71717A' },
+    }
+
     const titleRow = worksheet.addRow([options.title]) // Row 3
-    titleRow.getCell(1).font = { name: 'Segoe UI', size: 16, bold: true, color: { argb: 'FF78350F' } } // Terracotta Brown/Amber
-    
+    titleRow.getCell(1).font = {
+      name: 'Segoe UI',
+      size: 16,
+      bold: true,
+      color: { argb: 'FF78350F' },
+    } // Terracotta Brown/Amber
+
     if (options.description) {
       const descRow = worksheet.addRow([options.description]) // Row 4
-      descRow.getCell(1).font = { name: 'Segoe UI', size: 10, italic: true, color: { argb: 'FF71717A' } }
+      descRow.getCell(1).font = {
+        name: 'Segoe UI',
+        size: 10,
+        italic: true,
+        color: { argb: 'FF71717A' },
+      }
     }
-    
+
     if (options.metadata) {
       Object.entries(options.metadata).forEach(([key, value]) => {
         if (value) {
           const metaRow = worksheet.addRow([`${key}: ${value}`])
-          metaRow.getCell(1).font = { name: 'Segoe UI', size: 9.5, color: { argb: 'FF3F3F46' } }
+          metaRow.getCell(1).font = {
+            name: 'Segoe UI',
+            size: 9.5,
+            color: { argb: 'FF3F3F46' },
+          }
         }
       })
     }
-    
+
     worksheet.addRow([]) // Spacer
     currentRowIdx = worksheet.rowCount + 1
   }
 
   if (data.length > 0) {
     const headers = Object.keys(data[0])
-    
+
     // Add table header row
     const headerRow = worksheet.addRow(headers)
     headerRow.height = 28
-    
+
     // Style headers
     headerRow.eachCell((cell) => {
-      cell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFFFF' } }
+      cell.font = {
+        name: 'Segoe UI',
+        size: 11,
+        bold: true,
+        color: { argb: 'FFFFFFFF' },
+      }
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
@@ -77,7 +101,7 @@ export async function exportToExcel(
 
     // Add data rows
     data.forEach((rowObj, idx) => {
-      const rowValues = headers.map(h => rowObj[h])
+      const rowValues = headers.map((h) => rowObj[h])
       const row = worksheet.addRow(rowValues)
       row.height = 21
 
@@ -108,7 +132,11 @@ export async function exportToExcel(
           headerName.includes('status')
         ) {
           cell.alignment = { horizontal: 'center', vertical: 'middle' }
-        } else if (headerName.includes('usia') || headerName.includes('jumlah') || headerName.includes('count')) {
+        } else if (
+          headerName.includes('usia') ||
+          headerName.includes('jumlah') ||
+          headerName.includes('count')
+        ) {
           cell.alignment = { horizontal: 'right', vertical: 'middle' }
         } else {
           cell.alignment = { horizontal: 'left', vertical: 'middle' }
@@ -138,7 +166,7 @@ export async function exportToExcel(
   })
   const safeName = sanitizeFileName(fileName)
   const url = URL.createObjectURL(blob)
-  
+
   try {
     const a = document.createElement('a')
     a.href = url

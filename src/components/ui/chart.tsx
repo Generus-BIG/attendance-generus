@@ -1,7 +1,17 @@
 import * as React from 'react'
-import * as RechartsPrimitive from 'recharts'
-import type { TooltipValueType } from 'recharts'
+import { Legend, ResponsiveContainer, Tooltip } from 'recharts'
 import { cn } from '@/lib/utils'
+
+type DefaultLegendContentProps = import('recharts').DefaultLegendContentProps
+type DefaultTooltipContentProps<
+  TValue extends TooltipValueType,
+  TName extends TooltipNameType,
+> = import('recharts').DefaultTooltipContentProps<TValue, TName>
+type TooltipProps<
+  TValue extends TooltipValueType,
+  TName extends TooltipNameType,
+> = import('recharts').TooltipProps<TValue, TName>
+type TooltipValueType = import('recharts').TooltipValueType
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: '', dark: '.dark' } as const
@@ -46,7 +56,7 @@ function ChartContainer({
 }: React.ComponentProps<'div'> & {
   config: ChartConfig
   children: React.ComponentProps<
-    typeof RechartsPrimitive.ResponsiveContainer
+    (typeof import('recharts'))['ResponsiveContainer']
   >['children']
   initialDimension?: {
     width: number
@@ -55,9 +65,10 @@ function ChartContainer({
 }) {
   const uniqueId = React.useId()
   const chartId = `chart-${id ?? uniqueId.replace(/:/g, '')}`
+  const contextValue = React.useMemo(() => ({ config }), [config])
 
   return (
-    <ChartContext.Provider value={{ config }}>
+    <ChartContext.Provider value={contextValue}>
       <div
         data-slot='chart'
         data-chart={chartId}
@@ -68,11 +79,9 @@ function ChartContainer({
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer
-          initialDimension={initialDimension}
-        >
+        <ResponsiveContainer initialDimension={initialDimension}>
           {children}
-        </RechartsPrimitive.ResponsiveContainer>
+        </ResponsiveContainer>
       </div>
     </ChartContext.Provider>
   )
@@ -111,10 +120,36 @@ ${colorConfig
   )
 }
 
-const ChartTooltip = RechartsPrimitive.Tooltip
+const ChartTooltip = Tooltip
 
-function ChartTooltipContent({
-  active,
+type ChartTooltipContentProps = TooltipProps<
+  TooltipValueType,
+  TooltipNameType
+> &
+  React.ComponentProps<'div'> & {
+    hideLabel?: boolean
+    hideIndicator?: boolean
+    indicator?: 'line' | 'dot' | 'dashed'
+    nameKey?: string
+    labelKey?: string
+  } & Omit<
+    DefaultTooltipContentProps<TooltipValueType, TooltipNameType>,
+    'accessibilityLayer'
+  >
+
+type ChartTooltipContentBodyProps = ChartTooltipContentProps & {
+  payload: NonNullable<ChartTooltipContentProps['payload']>
+}
+
+function ChartTooltipContent(props: ChartTooltipContentProps) {
+  if (!props.active || !props.payload?.length) {
+    return null
+  }
+
+  return <ChartTooltipContentBody {...props} payload={props.payload} />
+}
+
+function ChartTooltipContentBody({
   payload,
   className,
   indicator = 'dot',
@@ -127,20 +162,7 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-  React.ComponentProps<'div'> & {
-    hideLabel?: boolean
-    hideIndicator?: boolean
-    indicator?: 'line' | 'dot' | 'dashed'
-    nameKey?: string
-    labelKey?: string
-  } & Omit<
-    RechartsPrimitive.DefaultTooltipContentProps<
-      TooltipValueType,
-      TooltipNameType
-    >,
-    'accessibilityLayer'
-  >) {
+}: ChartTooltipContentBodyProps) {
   const { config } = useChart()
 
   const tooltipLabel = React.useMemo(() => {
@@ -178,10 +200,6 @@ function ChartTooltipContent({
     config,
     labelKey,
   ])
-
-  if (!active || !payload?.length) {
-    return null
-  }
 
   const nestLabel = payload.length === 1 && indicator !== 'dot'
 
@@ -268,7 +286,7 @@ function ChartTooltipContent({
   )
 }
 
-const ChartLegend = RechartsPrimitive.Legend
+const ChartLegend = Legend
 
 function ChartLegendContent({
   className,
@@ -279,7 +297,7 @@ function ChartLegendContent({
 }: React.ComponentProps<'div'> & {
   hideIcon?: boolean
   nameKey?: string
-} & RechartsPrimitive.DefaultLegendContentProps) {
+} & DefaultLegendContentProps) {
   const { config } = useChart()
 
   if (!payload?.length) {

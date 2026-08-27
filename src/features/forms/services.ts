@@ -249,9 +249,8 @@ export async function searchParticipants(
     p_query: query,
   })
 
-  if (error || !data) {
-    return []
-  }
+  if (error) throw error
+  if (!data) return []
 
   type ParticipantRow = {
     id: string

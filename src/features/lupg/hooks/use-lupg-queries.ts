@@ -1,3 +1,4 @@
+import { format, parse } from 'date-fns'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import * as matrixSvc from '../matrix/services'
@@ -6,10 +7,12 @@ import * as activityPhotosSvc from '../services/activity-photos.service'
 import * as characterSvc from '../services/character-monitoring.service'
 import * as characterTargetsSvc from '../services/character-targets.service'
 import * as defsSvc from '../services/definitions.service'
+import * as intensifSvc from '../services/intensif.service'
 import * as metricSvc from '../services/metric-report.service'
 import * as monthlyReportSvc from '../services/monthly-report.service'
 import * as mustinSvc from '../services/mustin-notes.service'
 import * as mustinTmplSvc from '../services/mustin-templates.service'
+import * as phqSvc from '../services/phq.service'
 import * as programSvc from '../services/program-report.service'
 import * as sarprasSvc from '../services/sarpras-report.service'
 import * as sensusSvc from '../services/sensus.service'
@@ -63,9 +66,465 @@ const KEYS = {
   activityPhotos: (mrId: string) => ['lupg', 'activity-photos', mrId] as const,
   activityPhotoUrls: (mrId: string) =>
     ['lupg', 'activity-photo-urls', mrId] as const,
+  phqParticipants: (kelompokId: string) =>
+    ['lupg', 'phq', 'participants', kelompokId] as const,
+  phqMeetings: (kelompokId: string, month: string) =>
+    ['lupg', 'phq', 'meetings', kelompokId, month] as const,
+  phqProgress: (kelompokId: string, month: string) =>
+    ['lupg', 'phq', 'progress', kelompokId, month] as const,
+  phqAttendance: (kelompokId: string, month: string) =>
+    ['lupg', 'phq', 'attendance', kelompokId, month] as const,
+  phqSummary: (kelompokId: string, month: string) =>
+    ['lupg', 'phq', 'summary', kelompokId, month] as const,
+  phqMonthlyNote: (kelompokId: string, month: string) =>
+    ['lupg', 'phq', 'monthly-note', kelompokId, month] as const,
+  intensifActivities: (program: string, kelompokId: string, month: string) =>
+    ['lupg', 'intensif', program, 'activities', kelompokId, month] as const,
+  intensifAttendance: (program: string, kelompokId: string, month: string) =>
+    ['lupg', 'intensif', program, 'attendance', kelompokId, month] as const,
+  intensifCandidates: (program: string, kelompokId: string) =>
+    ['lupg', 'intensif', program, 'candidates', kelompokId] as const,
+  intensifSummary: (program: string, kelompokId: string, month: string) =>
+    ['lupg', 'intensif', program, 'summary', kelompokId, month] as const,
 }
 
 export const LUPG_QUERY_KEYS = KEYS
+
+function invalidatePhqScope(
+  qc: ReturnType<typeof useQueryClient>,
+  kelompokId: string,
+  month: string
+) {
+  qc.invalidateQueries({ queryKey: KEYS.phqParticipants(kelompokId) })
+  qc.invalidateQueries({ queryKey: KEYS.phqMeetings(kelompokId, month) })
+  qc.invalidateQueries({ queryKey: KEYS.phqProgress(kelompokId, month) })
+  qc.invalidateQueries({ queryKey: KEYS.phqAttendance(kelompokId, month) })
+  qc.invalidateQueries({ queryKey: KEYS.phqSummary(kelompokId, month) })
+  qc.invalidateQueries({ queryKey: KEYS.phqMonthlyNote(kelompokId, month) })
+}
+
+function invalidateIntensifScope(
+  qc: ReturnType<typeof useQueryClient>,
+  program: string,
+  kelompokId: string,
+  month: string
+) {
+  qc.invalidateQueries({
+    queryKey: KEYS.intensifActivities(program, kelompokId, month),
+  })
+  qc.invalidateQueries({
+    queryKey: KEYS.intensifAttendance(program, kelompokId, month),
+  })
+  qc.invalidateQueries({
+    queryKey: KEYS.intensifCandidates(program, kelompokId),
+  })
+  qc.invalidateQueries({
+    queryKey: KEYS.intensifSummary(program, kelompokId, month),
+  })
+}
+
+const monthFromDateOnly = (date: string) =>
+  format(parse(date, 'yyyy-MM-dd', new Date()), 'yyyy-MM')
+
+// ============== PHQ ==============
+
+export function usePhqParticipants(kelompokId: string | undefined) {
+  return useQuery({
+    queryKey: KEYS.phqParticipants(kelompokId ?? 'none'),
+    queryFn: () => (kelompokId ? phqSvc.listPhqParticipants(kelompokId) : []),
+    enabled: !!kelompokId,
+  })
+}
+
+export function usePhqMeetings(
+  kelompokId: string | undefined,
+  month: string | undefined
+) {
+  return useQuery({
+    queryKey: KEYS.phqMeetings(kelompokId ?? 'none', month ?? 'none'),
+    queryFn: () =>
+      kelompokId && month ? phqSvc.listPhqMeetings(kelompokId, month) : [],
+    enabled: !!month,
+  })
+}
+
+export function usePhqProgress(
+  kelompokId: string | undefined,
+  month: string | undefined,
+  meetingIds: readonly string[]
+) {
+  return useQuery({
+    queryKey: [
+      ...KEYS.phqProgress(kelompokId ?? 'none', month ?? 'none'),
+      meetingIds,
+    ],
+    queryFn: () => phqSvc.listPhqProgress(meetingIds),
+    enabled: !!kelompokId && !!month && meetingIds.length > 0,
+  })
+}
+
+export function usePhqAttendance(
+  kelompokId: string | undefined,
+  month: string | undefined,
+  meetingIds: readonly string[]
+) {
+  return useQuery({
+    queryKey: [
+      ...KEYS.phqAttendance(kelompokId ?? 'none', month ?? 'none'),
+      meetingIds,
+    ],
+    queryFn: () => phqSvc.listPhqAttendance(meetingIds),
+    enabled: !!kelompokId && !!month && meetingIds.length > 0,
+  })
+}
+
+export function usePhqSummary(
+  kelompokId: string | undefined,
+  month: string | undefined
+) {
+  return useQuery({
+    queryKey: KEYS.phqSummary(kelompokId ?? 'none', month ?? 'none'),
+    queryFn: () =>
+      kelompokId && month ? phqSvc.getPhqSummary(kelompokId, month) : null,
+    enabled: !!kelompokId && !!month,
+  })
+}
+
+export function usePhqMonthlyNote(
+  kelompokId: string | undefined,
+  month: string | undefined
+) {
+  return useQuery({
+    queryKey: KEYS.phqMonthlyNote(kelompokId ?? 'none', month ?? 'none'),
+    queryFn: () =>
+      kelompokId && month ? phqSvc.getPhqMonthlyNote(kelompokId, month) : null,
+    enabled: !!kelompokId && !!month,
+  })
+}
+
+export function useCreatePhqParticipant() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (
+      vars: Parameters<typeof phqSvc.createPhqParticipant>[0] & {
+        month: string
+      }
+    ) => {
+      const { month: _month, ...input } = vars
+      return phqSvc.createPhqParticipant(input)
+    },
+    onSuccess: (row, vars) =>
+      invalidatePhqScope(qc, row.kelompok_id, vars.month),
+  })
+}
+
+export function useUpdatePhqParticipant() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      id: string
+      patch: Parameters<typeof phqSvc.updatePhqParticipant>[1]
+      kelompokId: string
+      month: string
+    }) => phqSvc.updatePhqParticipant(vars.id, vars.patch),
+    onSuccess: (_row, vars) =>
+      invalidatePhqScope(qc, vars.kelompokId, vars.month),
+  })
+}
+
+export function useDeletePhqParticipant() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { id: string; kelompokId: string; month: string }) =>
+      phqSvc.deletePhqParticipant(vars.id),
+    onSuccess: (_value, vars) =>
+      invalidatePhqScope(qc, vars.kelompokId, vars.month),
+  })
+}
+
+export function useCreatePhqMeeting() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (
+      vars: Parameters<typeof phqSvc.createPhqMeeting>[0] & { month: string }
+    ) => {
+      const { month: _month, ...input } = vars
+      return phqSvc.createPhqMeeting(input)
+    },
+    onSuccess: (row, vars) =>
+      invalidatePhqScope(qc, row.kelompok_id, vars.month),
+  })
+}
+
+export function useUpdatePhqMeeting() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      id: string
+      patch: Parameters<typeof phqSvc.updatePhqMeeting>[1]
+      kelompokId: string
+      month: string
+    }) => phqSvc.updatePhqMeeting(vars.id, vars.patch),
+    onSuccess: (row, vars) => {
+      invalidatePhqScope(qc, vars.kelompokId, vars.month)
+      invalidatePhqScope(
+        qc,
+        row.kelompok_id,
+        monthFromDateOnly(row.activity_date)
+      )
+    },
+  })
+}
+
+export function useDeletePhqMeeting() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { id: string; kelompokId: string; month: string }) =>
+      phqSvc.deletePhqMeeting(vars.id),
+    onSuccess: (_value, vars) =>
+      invalidatePhqScope(qc, vars.kelompokId, vars.month),
+  })
+}
+
+export function useUpsertPhqProgress() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (
+      vars: Parameters<typeof phqSvc.upsertPhqProgress>[0] & {
+        kelompokId: string
+        month: string
+      }
+    ) => {
+      const { kelompokId: _kelompokId, month: _month, ...input } = vars
+      return phqSvc.upsertPhqProgress(input)
+    },
+    onSuccess: (_row, vars) =>
+      invalidatePhqScope(qc, vars.kelompokId, vars.month),
+  })
+}
+
+export function useDeletePhqProgress() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { id: string; kelompokId: string; month: string }) =>
+      phqSvc.deletePhqProgress(vars.id),
+    onSuccess: (_value, vars) =>
+      invalidatePhqScope(qc, vars.kelompokId, vars.month),
+  })
+}
+
+export function useUpsertPhqAttendance() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (
+      vars: Parameters<typeof phqSvc.upsertPhqAttendance>[0] & {
+        kelompokId: string
+        month: string
+      }
+    ) => {
+      const { kelompokId: _kelompokId, month: _month, ...input } = vars
+      return phqSvc.upsertPhqAttendance(input)
+    },
+    onSuccess: (_row, vars) =>
+      invalidatePhqScope(qc, vars.kelompokId, vars.month),
+  })
+}
+
+export function useDeletePhqAttendance() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { id: string; kelompokId: string; month: string }) =>
+      phqSvc.deletePhqAttendance(vars.id),
+    onSuccess: (_value, vars) =>
+      invalidatePhqScope(qc, vars.kelompokId, vars.month),
+  })
+}
+
+export function useUpsertPhqMonthlyNote() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: phqSvc.upsertPhqMonthlyNote,
+    onSuccess: (row, vars) =>
+      invalidatePhqScope(qc, row.kelompok_id, vars.month),
+  })
+}
+
+// ============== Intensif ==============
+
+export function useIntensifActivities(
+  program: Parameters<typeof intensifSvc.listIntensifActivities>[0],
+  kelompokId: string | undefined,
+  month: string | undefined
+) {
+  return useQuery({
+    queryKey: KEYS.intensifActivities(
+      program,
+      kelompokId ?? 'none',
+      month ?? 'none'
+    ),
+    queryFn: () =>
+      month
+        ? intensifSvc.listIntensifActivities(program, kelompokId, month)
+        : [],
+    enabled: !!month,
+  })
+}
+
+export function useIntensifAttendance(
+  program: Parameters<typeof intensifSvc.listIntensifActivities>[0],
+  kelompokId: string | undefined,
+  month: string | undefined,
+  activityIds: readonly string[]
+) {
+  return useQuery({
+    queryKey: [
+      ...KEYS.intensifAttendance(
+        program,
+        kelompokId ?? 'none',
+        month ?? 'none'
+      ),
+      activityIds,
+    ],
+    queryFn: () => intensifSvc.listIntensifAttendance(activityIds),
+    enabled: !!month && activityIds.length > 0,
+  })
+}
+
+export function useIntensifCandidates(
+  program: Parameters<typeof intensifSvc.listIntensifActivities>[0],
+  kelompokId: string | undefined
+) {
+  return useQuery({
+    queryKey: KEYS.intensifCandidates(program, kelompokId ?? 'none'),
+    queryFn: () =>
+      kelompokId ? intensifSvc.listIntensifCandidates(program, kelompokId) : [],
+    enabled: !!kelompokId,
+  })
+}
+
+export function useUpdateIntensifParticipant() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: intensifSvc.updateIntensifParticipant,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['lupg', 'intensif'] })
+      qc.invalidateQueries({ queryKey: ['participants'] })
+    },
+  })
+}
+
+export function useIntensifSummary(
+  program: Parameters<typeof intensifSvc.listIntensifActivities>[0],
+  kelompokId: string | undefined,
+  month: string | undefined
+) {
+  return useQuery({
+    queryKey: KEYS.intensifSummary(
+      program,
+      kelompokId ?? 'none',
+      month ?? 'none'
+    ),
+    queryFn: () =>
+      kelompokId && month
+        ? intensifSvc.getIntensifSummary(program, kelompokId, month)
+        : null,
+    enabled: !!kelompokId && !!month,
+  })
+}
+
+export function useCreateIntensifActivity() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (
+      vars: Parameters<typeof intensifSvc.createIntensifActivity>[0] & {
+        month: string
+      }
+    ) => {
+      const { month: _month, ...input } = vars
+      return intensifSvc.createIntensifActivity(input)
+    },
+    onSuccess: (row, vars) =>
+      invalidateIntensifScope(
+        qc,
+        row.program_code,
+        row.kelompok_id,
+        vars.month
+      ),
+  })
+}
+
+export function useUpdateIntensifActivity() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      id: string
+      patch: Parameters<typeof intensifSvc.updateIntensifActivity>[1]
+      program: Parameters<typeof intensifSvc.listIntensifActivities>[0]
+      kelompokId: string
+      month: string
+    }) => intensifSvc.updateIntensifActivity(vars.id, vars.patch),
+    onSuccess: (row, vars) => {
+      invalidateIntensifScope(qc, vars.program, vars.kelompokId, vars.month)
+      invalidateIntensifScope(
+        qc,
+        row.program_code,
+        row.kelompok_id,
+        monthFromDateOnly(row.activity_date)
+      )
+    },
+  })
+}
+
+export function useDeleteIntensifActivity() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      id: string
+      program: Parameters<typeof intensifSvc.listIntensifActivities>[0]
+      kelompokId: string
+      month: string
+    }) => intensifSvc.deleteIntensifActivity(vars.id),
+    onSuccess: (_value, vars) =>
+      invalidateIntensifScope(qc, vars.program, vars.kelompokId, vars.month),
+  })
+}
+
+export function useUpsertIntensifAttendance() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (
+      vars: Parameters<typeof intensifSvc.upsertIntensifAttendance>[0] & {
+        program: Parameters<typeof intensifSvc.listIntensifActivities>[0]
+        kelompokId: string
+        month: string
+      }
+    ) => {
+      const {
+        program: _program,
+        kelompokId: _kelompokId,
+        month: _month,
+        ...input
+      } = vars
+      return intensifSvc.upsertIntensifAttendance(input)
+    },
+    onSuccess: (_row, vars) =>
+      invalidateIntensifScope(qc, vars.program, vars.kelompokId, vars.month),
+  })
+}
+
+export function useDeleteIntensifAttendance() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      id: string
+      program: Parameters<typeof intensifSvc.listIntensifActivities>[0]
+      kelompokId: string
+      month: string
+    }) => intensifSvc.deleteIntensifAttendance(vars.id),
+    onSuccess: (_value, vars) =>
+      invalidateIntensifScope(qc, vars.program, vars.kelompokId, vars.month),
+  })
+}
 
 // ============== Monthly Reports ==============
 

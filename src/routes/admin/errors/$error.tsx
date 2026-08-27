@@ -14,7 +14,6 @@ export const Route = createFileRoute('/admin/errors/$error')({
   component: RouteComponent,
 })
 
- 
 function RouteComponent() {
   const { error } = Route.useParams()
 

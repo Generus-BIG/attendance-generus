@@ -4,7 +4,6 @@ import { useQueries, useQuery } from '@tanstack/react-query'
 import { Link, useSearch, useNavigate } from '@tanstack/react-router'
 import { id as idLocale } from 'date-fns/locale'
 import { FileDown, Inbox, Loader2, Presentation } from 'lucide-react'
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -28,6 +27,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -1318,7 +1325,7 @@ function MetricsRecapCard({
                           </TableCell>
                           {values.map((val, index) => (
                             <TableCell
-                              key={kelompokList[index]?.id ?? index}
+                              key={kelompokList[index]?.id}
                               className={cn(
                                 'text-right tabular-nums',
                                 val == null && 'text-muted-foreground/60'
@@ -1611,8 +1618,8 @@ function MustinRecapCard({
                               </div>
                               {subs.length > 0 && (
                                 <ol className='mt-1.5 list-[lower-alpha] pl-5 text-xs leading-relaxed text-muted-foreground'>
-                                  {subs.map((s, i) => (
-                                    <li key={i}>{s}</li>
+                                  {subs.map((s) => (
+                                    <li key={s}>{s}</li>
                                   ))}
                                 </ol>
                               )}

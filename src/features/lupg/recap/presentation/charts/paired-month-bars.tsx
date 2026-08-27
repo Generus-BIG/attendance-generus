@@ -97,22 +97,14 @@ export function PairedMonthBars({
 }: PairedMonthBarsProps) {
   const palette = usePresPalette()
   const { durationScale } = usePresentationAnimation()
-  const colorKehadiran = palette.chart[0]
-  const colorPiket = palette.chart[1]
-
-  const eyebrowStyle = {
-    fontFamily: palette.fontMono,
-    fontSize: 'clamp(0.75rem, 1vw, 1rem)',
-    fontWeight: 500,
-    letterSpacing: '0.2em',
-    color: palette.muted,
-  } as const
+  const colorKehadiran = palette.attendanceGenerus
+  const colorPiket = palette.attendancePiket
   const titleStyle = {
     fontFamily: palette.fontSans,
-    fontSize: 'clamp(1.25rem, 1.6vw, 1.75rem)',
+    fontSize: 'clamp(1.3rem, 1.8cqw, 2rem)',
     fontWeight: 700,
     lineHeight: 1.1,
-    letterSpacing: '-0.01em',
+    letterSpacing: '-0.025em',
     color: palette.ink,
   } as const
 
@@ -129,13 +121,15 @@ export function PairedMonthBars({
   )
 
   return (
-    <div className='flex h-full flex-col gap-3'>
-      <div>
-        <div className='uppercase' style={eyebrowStyle}>
-          KATEGORI
-        </div>
-        <h3 style={titleStyle}>{title}</h3>
-      </div>
+    <section
+      className='flex h-full min-h-0 flex-col overflow-hidden rounded-[1.5rem] border p-6 shadow-[0_1px_2px_rgba(48,39,27,0.05),0_12px_28px_rgba(48,39,27,0.06)]'
+      style={{
+        background: `color-mix(in oklch, ${palette.bg} 88%, ${palette.accent})`,
+        borderColor: palette.rule,
+        boxShadow: `0 1px 2px color-mix(in oklch, ${palette.ink} 5%, transparent), 0 12px 28px color-mix(in oklch, ${palette.ink} 6%, transparent)`,
+      }}
+    >
+      <h3 style={titleStyle}>{title}</h3>
       <div className='min-h-0 flex-1'>
         {allEmpty ? (
           <div
@@ -152,7 +146,7 @@ export function PairedMonthBars({
           <ResponsiveContainer width='100%' height='100%'>
             <BarChart
               data={rows}
-              margin={{ top: 24, right: 12, bottom: 12, left: 8 }}
+              margin={{ top: 28, right: 8, bottom: 8, left: 2 }}
             >
               <CartesianGrid
                 strokeDasharray='3 3'
@@ -162,6 +156,7 @@ export function PairedMonthBars({
               <XAxis
                 dataKey='month'
                 interval={0}
+                tickMargin={14}
                 {...hairlineAxisProps(palette, 'x')}
               />
               <YAxis
@@ -184,6 +179,7 @@ export function PairedMonthBars({
                 dataKey='kehadiran'
                 name='Kehadiran'
                 fill={colorKehadiran}
+                radius={[7, 7, 0, 0]}
                 isAnimationActive={true}
                 animationDuration={Math.round(800 * durationScale)}
               >
@@ -204,6 +200,7 @@ export function PairedMonthBars({
                 dataKey='piket'
                 name='Piket LUPG'
                 fill={colorPiket}
+                radius={[7, 7, 0, 0]}
                 isAnimationActive={true}
                 animationDuration={Math.round(800 * durationScale)}
               >
@@ -231,6 +228,6 @@ export function PairedMonthBars({
           { name: 'Piket LUPG', color: colorPiket },
         ]}
       />
-    </div>
+    </section>
   )
 }

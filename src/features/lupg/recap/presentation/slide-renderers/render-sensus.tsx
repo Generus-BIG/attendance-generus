@@ -1,5 +1,5 @@
 // Sensus slide renderer — kelompok mode (pie + sub-tables) and desa mode (stacked bar + table).
-import { type SensusSnapshotRow } from '../../../types'
+import { type SensusCellRow } from '../../../types'
 import { SensusPie, type SensusPieDatum } from '../charts/sensus-pie'
 import {
   SensusStackedBar,
@@ -16,6 +16,7 @@ import {
   EditorialTableRow,
   TotalRow,
 } from '../components/editorial-table'
+import { ReportSplit } from '../components/report-split'
 import { SlideFrame } from '../components/slide-frame'
 import { type Slide } from '../slides'
 import { usePresPalette } from '../use-pres-palette'
@@ -71,7 +72,7 @@ function emptyPerKelompokSensus(): PerKelompokSensus {
 
 function buildPerKelompok(
   kelompokId: string,
-  byKey: Map<string, SensusSnapshotRow>
+  byKey: Map<string, SensusCellRow>
 ): PerKelompokSensus {
   const result = emptyPerKelompokSensus()
   for (const code of GENERUS_DISPLAY_ORDER) {
@@ -104,46 +105,16 @@ interface RatioPillProps {
 function RatioPill({ label, ratioRight }: RatioPillProps) {
   const p = usePresPalette()
   return (
-    <div
-      className='mt-4 rounded border flex items-center justify-between px-5 py-3'
+    <p
+      className='mt-5 whitespace-nowrap'
       style={{
-        borderColor: p.rule,
-        background: p.cream,
+        fontFamily: p.fontSans,
+        fontSize: 'clamp(0.75rem, 0.9cqw, 1rem)',
+        color: p.muted,
       }}
     >
-      <div
-        className='uppercase font-semibold'
-        style={{
-          fontFamily: p.fontMono,
-          fontSize: 'clamp(0.65rem, 0.8cqw, 0.85rem)',
-          color: p.muted,
-          letterSpacing: '0.15em',
-        }}
-      >
-        {label}
-      </div>
-      <div className='flex items-center gap-1.5'>
-        <span
-          className='font-semibold'
-          style={{
-            fontFamily: p.fontMono,
-            fontSize: 'clamp(0.9rem, 1.1cqw, 1.25rem)',
-            color: p.muted,
-          }}
-        >
-          1 :
-        </span>
-        <span
-          style={{
-            fontFamily: '"Archivo Black", Impact, sans-serif',
-            fontSize: 'clamp(1.5rem, 1.8cqw, 2.25rem)',
-            color: p.ink,
-          }}
-        >
-          {ratioRight}
-        </span>
-      </div>
-    </div>
+      {label} 1 : {ratioRight}
+    </p>
   )
 }
 
@@ -164,7 +135,8 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
 
   const pendidikL = perKelompok.pendidikMT.L + perKelompok.pendidikMS.L
   const pendidikP = perKelompok.pendidikMT.P + perKelompok.pendidikMS.P
-  const pendidikTotal = perKelompok.pendidikMT.total + perKelompok.pendidikMS.total
+  const pendidikTotal =
+    perKelompok.pendidikMT.total + perKelompok.pendidikMS.total
 
   const pieData: SensusPieDatum[] = GENERUS_DISPLAY_ORDER.map((code) => ({
     code,
@@ -175,16 +147,22 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
   }))
 
   return (
-    <div className='grid h-full grid-cols-[1.25fr_0.75fr] gap-8 overflow-hidden'>
+    <ReportSplit>
       <DataPane>
         <div className='flex flex-col gap-4'>
           <EditorialTable density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead>Kategori / Peran</EditorialTableHead>
-                <EditorialTableHead className='text-right'>L</EditorialTableHead>
-                <EditorialTableHead className='text-right'>P</EditorialTableHead>
-                <EditorialTableHead className='text-right'>Jumlah</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  L
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  P
+                </EditorialTableHead>
+                <EditorialTableHead className='text-right'>
+                  Jumlah
+                </EditorialTableHead>
               </EditorialTableRow>
             </EditorialTableHeader>
             <EditorialTableBody>
@@ -222,8 +200,10 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
               </TotalRow>
 
               {/* Spacer Row */}
-              <EditorialTableRow style={{ background: 'transparent', height: 12 }}>
-                <EditorialTableCell colSpan={4} className='p-0 border-none' />
+              <EditorialTableRow
+                style={{ background: 'transparent', height: 12 }}
+              >
+                <EditorialTableCell colSpan={4} className='border-none p-0' />
               </EditorialTableRow>
 
               {/* Pendidik Section */}
@@ -275,13 +255,13 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
       <ChartPane>
         <SensusPie data={pieData} />
       </ChartPane>
-    </div>
+    </ReportSplit>
   )
 }
 
 interface SensusDesaBodyProps {
   effectiveKelompokList: { id: string; value: string }[]
-  byKey: Map<string, SensusSnapshotRow>
+  byKey: Map<string, SensusCellRow>
 }
 
 function SensusDesaBody({ effectiveKelompokList, byKey }: SensusDesaBodyProps) {
@@ -315,10 +295,10 @@ function SensusDesaBody({ effectiveKelompokList, byKey }: SensusDesaBodyProps) {
   const totalPendidik = sorted.reduce((s, e) => s + e.summary.pendidikTotal, 0)
 
   return (
-    <div className='grid h-full grid-cols-[1.25fr_0.75fr] gap-10 overflow-hidden'>
-      <DataPane>
-        <div className='flex flex-col gap-4'>
-          <EditorialTable density='compact'>
+    <div className='grid h-full min-h-0 grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-10'>
+      <section className='flex min-h-0 flex-col'>
+        <div className='min-h-0'>
+          <EditorialTable density='compact' headerVariant='hairline'>
             <EditorialTableHeader>
               <EditorialTableRow>
                 <EditorialTableHead>Kelompok</EditorialTableHead>
@@ -361,14 +341,14 @@ function SensusDesaBody({ effectiveKelompokList, byKey }: SensusDesaBodyProps) {
           </EditorialTable>
 
           <RatioPill
-            label='PERBANDINGAN PENDIDIK : GENERUS DESA'
+            label='Perbandingan pendidik : Generus Desa'
             ratioRight={ratioLabel(grandTotal, totalPendidik)}
           />
         </div>
-      </DataPane>
-      <ChartPane>
+      </section>
+      <section className='min-h-0 overflow-hidden'>
         <SensusStackedBar data={stackedData} />
-      </ChartPane>
+      </section>
     </div>
   )
 }
@@ -379,7 +359,7 @@ export function renderSensusSlide(args: {
   scope: string
   isSingleKelompok: boolean
   effectiveKelompokList: { id: string; value: string }[]
-  sensusSnapshots: SensusSnapshotRow[]
+  sensusCells: SensusCellRow[]
   slideNumber: number
   totalSlides: number
 }): Slide {
@@ -388,7 +368,7 @@ export function renderSensusSlide(args: {
     scope,
     isSingleKelompok,
     effectiveKelompokList,
-    sensusSnapshots,
+    sensusCells,
     slideNumber,
     totalSlides,
   } = args
@@ -397,8 +377,8 @@ export function renderSensusSlide(args: {
     key: 'sensus',
     title: 'Sensus',
     render: () => {
-      const byKey = new Map<string, SensusSnapshotRow>()
-      for (const s of sensusSnapshots) {
+      const byKey = new Map<string, SensusCellRow>()
+      for (const s of sensusCells) {
         byKey.set(`${s.kelompok_id}_${s.category_code}_${s.gender}`, s)
       }
 

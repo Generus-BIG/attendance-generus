@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
-import useDialogState from '@/hooks/use-dialog-state'
+import React, { useMemo, useState } from 'react'
 import { type Attendance } from '@/lib/schema'
+import useDialogState from '@/hooks/use-dialog-state'
 
 type AttendanceDialogType = 'add' | 'edit' | 'edit-date' | 'delete' | 'export'
 
@@ -13,15 +13,34 @@ type AttendanceContextType = {
   setRefreshData: React.Dispatch<React.SetStateAction<() => void>>
 }
 
-const AttendanceContext = React.createContext<AttendanceContextType | null>(null)
+const AttendanceContext = React.createContext<AttendanceContextType | null>(
+  null
+)
 
-export function AttendanceProvider({ children }: { children: React.ReactNode }) {
+export function AttendanceProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const [open, setOpen] = useDialogState<AttendanceDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Attendance | null>(null)
   const [refreshData, setRefreshData] = useState<() => void>(() => () => {})
+  const contextValue = useMemo(
+    () => ({
+      open,
+      setOpen,
+      currentRow,
+      setCurrentRow,
+      refreshData,
+      setRefreshData,
+    }),
+    [open, setOpen, currentRow, refreshData]
+  )
 
   return (
-    <AttendanceContext value={{ open, setOpen, currentRow, setCurrentRow, refreshData, setRefreshData }}>
+    <AttendanceContext
+      value={contextValue}
+    >
       {children}
     </AttendanceContext>
   )

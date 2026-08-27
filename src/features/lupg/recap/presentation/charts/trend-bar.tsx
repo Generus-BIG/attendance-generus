@@ -12,8 +12,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import { usePresentationAnimation } from '../context/animation-context'
+import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import {
   EditorialTooltipShell,
   hairlineAxisProps,
@@ -35,6 +35,8 @@ export interface TrendBarProps {
   valueDomain?: [number, number]
   valueFormatter?: (n: number) => string
   labelFormatter?: (n: number) => string
+  valueLabel?: string
+  color?: string
 }
 
 interface TooltipPayloadEntry {
@@ -47,6 +49,7 @@ interface TipProps {
   payload?: TooltipPayloadEntry[]
   label?: string
   labelFormatter?: (n: number) => string
+  valueLabel: string
   palette: PresPalette
 }
 
@@ -55,6 +58,7 @@ function CustomTooltip({
   payload,
   label,
   labelFormatter,
+  valueLabel,
   palette,
 }: TipProps) {
   if (!active || !payload || payload.length === 0) return null
@@ -65,7 +69,9 @@ function CustomTooltip({
     : String(datum.value)
   return (
     <EditorialTooltipShell title={label ?? ''} palette={palette}>
-      <div>Jumlah: {formatted}</div>
+      <div>
+        {valueLabel}: {formatted}
+      </div>
     </EditorialTooltipShell>
   )
 }
@@ -77,6 +83,8 @@ export function TrendBar({
   valueDomain,
   valueFormatter,
   labelFormatter,
+  valueLabel = 'Jumlah',
+  color,
 }: TrendBarProps) {
   const palette = usePresPalette()
   const { durationScale } = usePresentationAnimation()
@@ -141,6 +149,7 @@ export function TrendBar({
                 'palette' | 'labelFormatter'
               >)}
               labelFormatter={labelFormatter}
+              valueLabel={valueLabel}
               palette={palette}
             />
           )}
@@ -151,13 +160,18 @@ export function TrendBar({
           animationDuration={Math.round(800 * durationScale)}
           maxBarSize={48}
         >
-          {data.map((d, idx) => {
+          {data.map((d) => {
             const fill = d.isHighlighted
-              ? palette.chart[1]
+              ? (color ?? palette.chart[1])
               : d.isPlaceholder
                 ? placeholderFill
-                : palette.chart[0]
-            return <Cell key={idx} fill={fill} />
+                : (color ?? palette.chart[0])
+            return (
+              <Cell
+                key={`${d.label}-${d.value}-${d.isHighlighted ?? false}-${d.isPlaceholder ?? false}`}
+                fill={fill}
+              />
+            )
           })}
           <LabelList
             dataKey='value'

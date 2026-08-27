@@ -25,8 +25,7 @@ export async function compressImage(
 }
 
 /** Accepted input MIME types for the file picker */
-export const ACCEPTED_IMAGE_TYPES =
-  'image/jpeg,image/png,image/webp,image/heic'
+export const ACCEPTED_IMAGE_TYPES = 'image/jpeg,image/png,image/webp,image/heic'
 
 /** Max photos per monthly report */
 export const MAX_PHOTOS_PER_REPORT = 6

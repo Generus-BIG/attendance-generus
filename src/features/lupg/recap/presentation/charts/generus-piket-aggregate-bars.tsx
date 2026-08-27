@@ -94,8 +94,8 @@ export function GenerusPiketAggregateBars({
 }: GenerusPiketAggregateBarsProps) {
   const palette = usePresPalette()
   const { durationScale } = usePresentationAnimation()
-  const colorGenerus = palette.chart[0]
-  const colorPiket = palette.chart[1]
+  const colorGenerus = palette.attendanceGenerus
+  const colorPiket = palette.attendancePiket
 
   const rows = monthLabels.map((m, i) => ({
     month: m,
@@ -106,7 +106,14 @@ export function GenerusPiketAggregateBars({
   const allEmpty = rows.every((r) => r.generus == null && r.piket == null)
 
   return (
-    <div className='flex h-full flex-col'>
+    <section
+      className='flex h-full min-h-0 flex-col overflow-hidden rounded-[1.5rem] border p-7 shadow-[0_1px_2px_rgba(48,39,27,0.05),0_12px_28px_rgba(48,39,27,0.06)]'
+      style={{
+        background: `color-mix(in oklch, ${palette.bg} 88%, ${palette.accent})`,
+        borderColor: palette.rule,
+        boxShadow: `0 1px 2px color-mix(in oklch, ${palette.ink} 5%, transparent), 0 12px 28px color-mix(in oklch, ${palette.ink} 6%, transparent)`,
+      }}
+    >
       <div className='min-h-0 flex-1'>
         {allEmpty ? (
           <div
@@ -123,7 +130,7 @@ export function GenerusPiketAggregateBars({
           <ResponsiveContainer width='100%' height='100%'>
             <BarChart
               data={rows}
-              margin={{ top: 28, right: 24, bottom: 24, left: 24 }}
+              margin={{ top: 32, right: 16, bottom: 10, left: 12 }}
             >
               <CartesianGrid
                 strokeDasharray='3 3'
@@ -133,6 +140,7 @@ export function GenerusPiketAggregateBars({
               <XAxis
                 dataKey='month'
                 interval={0}
+                tickMargin={14}
                 {...hairlineAxisProps(palette, 'x')}
               />
               <YAxis
@@ -155,6 +163,7 @@ export function GenerusPiketAggregateBars({
                 dataKey='generus'
                 name='Rata-rata Generus'
                 fill={colorGenerus}
+                radius={[7, 7, 0, 0]}
                 isAnimationActive={true}
                 animationDuration={Math.round(800 * durationScale)}
               >
@@ -175,6 +184,7 @@ export function GenerusPiketAggregateBars({
                 dataKey='piket'
                 name='Rata-rata Piket LUPG'
                 fill={colorPiket}
+                radius={[7, 7, 0, 0]}
                 isAnimationActive={true}
                 animationDuration={Math.round(800 * durationScale)}
               >
@@ -202,6 +212,6 @@ export function GenerusPiketAggregateBars({
           { name: 'Rata-rata Piket LUPG', color: colorPiket },
         ]}
       />
-    </div>
+    </section>
   )
 }

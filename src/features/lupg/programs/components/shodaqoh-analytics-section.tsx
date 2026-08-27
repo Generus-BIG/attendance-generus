@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import {
   Card,
   CardContent,
@@ -21,6 +20,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { useYearlyShodaqohData } from '../../hooks/use-lupg-queries'
 import { formatChartValue } from '../../utils/format-chart-value'
 import { allMonthKeysForYear, monthNameFromKey } from '../utils/editability'

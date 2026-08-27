@@ -1,16 +1,12 @@
-// Editorial-styled wrappers over shadcn Table primitives + cream TotalRow helper.
-// Palette resolves at runtime via usePresPalette.
-//
-// `headerVariant`:
-//   'navy'     — solid filled navy bar header (data-dense slides only)
-//   'hairline' — uppercase navy text on top hairline rule, no fill
+// Shared presentation table treatment. Palette resolves at runtime so every
+// report table inherits the active theme without per-renderer color overrides.
 import {
   createContext,
   useContext,
   type ComponentProps,
-  type CSSProperties,
   type ReactNode,
 } from 'react'
+import { type HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import {
   Table,
@@ -20,11 +16,12 @@ import {
   TableHeader,
 } from '@/components/ui/table'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { AnimateTableRow } from './animate-element'
 
 type HeaderVariant = 'navy' | 'hairline'
 type TableDensity = 'regular' | 'compact' | 'micro'
 
-const HeaderVariantCtx = createContext<HeaderVariant>('navy')
+const HeaderVariantCtx = createContext<HeaderVariant>('hairline')
 const TableDensityCtx = createContext<TableDensity>('regular')
 
 interface EditorialTableProps extends ComponentProps<'table'> {
@@ -34,7 +31,7 @@ interface EditorialTableProps extends ComponentProps<'table'> {
 
 export function EditorialTable({
   className,
-  headerVariant = 'navy',
+  headerVariant = 'hairline',
   density = 'regular',
   ...props
 }: EditorialTableProps) {
@@ -48,7 +45,10 @@ export function EditorialTable({
     <HeaderVariantCtx.Provider value={headerVariant}>
       <TableDensityCtx.Provider value={density}>
         <Table
-          className={cn('tabular-nums', className)}
+          className={cn(
+            'border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums',
+            className
+          )}
           style={{
             fontFamily: p.fontSans,
             fontSize: fontSizeByDensity[density],
@@ -64,33 +64,37 @@ export function EditorialTable({
 
 export function EditorialTableHeader({
   className,
+  style,
   ...props
 }: ComponentProps<'thead'>) {
   const p = usePresPalette()
-  const variant = useContext(HeaderVariantCtx)
-  const style: CSSProperties =
-    variant === 'navy'
-      ? { background: p.primary }
-      : { background: 'transparent', borderBottom: `2px solid ${p.ink}` }
-  return <TableHeader className={className} style={style} {...props} />
+  useContext(HeaderVariantCtx)
+  return (
+    <TableHeader
+      className={className}
+      style={{
+        background: p.tableHeader,
+        borderBottom: `1px solid ${p.rule}`,
+        ...style,
+      }}
+      {...props}
+    />
+  )
 }
 
 export function EditorialTableBody(props: ComponentProps<'tbody'>) {
   return <TableBody {...props} />
 }
 
-import { AnimateTableRow } from './animate-element'
-import { type HTMLMotionProps } from 'framer-motion'
-
 export function EditorialTableRow({
   className,
+  style,
   ...props
 }: HTMLMotionProps<'tr'>) {
-  const p = usePresPalette()
   return (
     <AnimateTableRow
       className={cn('hover:bg-transparent', className)}
-      style={{ borderColor: p.rule }}
+      style={style}
       {...props}
     />
   )
@@ -102,13 +106,11 @@ export function EditorialTableHead({
   ...props
 }: ComponentProps<'th'>) {
   const p = usePresPalette()
-  const variant = useContext(HeaderVariantCtx)
+  useContext(HeaderVariantCtx)
   const density = useContext(TableDensityCtx)
-  const variantStyle: CSSProperties =
-    variant === 'navy' ? { color: p.primaryFg } : { color: p.ink }
   const classByDensity: Record<TableDensity, string> = {
-    regular: 'h-9 px-3',
-    compact: 'h-7 px-2',
+    regular: 'h-10 px-3',
+    compact: 'h-8 px-2',
     micro: 'h-6 px-2',
   }
   const fontSizeByDensity: Record<TableDensity, string> = {
@@ -124,7 +126,8 @@ export function EditorialTableHead({
         fontSize: fontSizeByDensity[density],
         fontWeight: 700,
         letterSpacing: density === 'regular' ? '0.15em' : '0.12em',
-        ...variantStyle,
+        color: p.tableHeaderFg,
+        borderBottom: `1px solid ${p.rule}`,
         ...style,
       }}
       {...props}
@@ -134,13 +137,14 @@ export function EditorialTableHead({
 
 export function EditorialTableCell({
   className,
+  style,
   ...props
 }: ComponentProps<'td'>) {
   const p = usePresPalette()
   const density = useContext(TableDensityCtx)
   const classByDensity: Record<TableDensity, string> = {
-    regular: 'px-3 py-2',
-    compact: 'px-2 py-1.5',
+    regular: 'px-3 py-2.5',
+    compact: 'px-2 py-2',
     micro: 'px-2 py-1',
   }
   const fontSizeByDensity: Record<TableDensity, string> = {
@@ -154,6 +158,8 @@ export function EditorialTableCell({
       style={{
         color: p.ink,
         fontSize: fontSizeByDensity[density],
+        borderBottom: `1px solid ${p.rule}`,
+        ...style,
       }}
       {...props}
     />
@@ -169,7 +175,12 @@ export function TotalRow({ children }: TotalRowProps) {
   return (
     <AnimateTableRow
       className='font-semibold hover:bg-transparent'
-      style={{ background: p.cream, borderColor: p.rule }}
+      style={{
+        background: `color-mix(in oklch, ${p.primary} 10%, ${p.bg})`,
+        borderTop: `2px solid color-mix(in oklch, ${p.primary} 35%, ${p.rule})`,
+        borderBottom: `1px solid ${p.rule}`,
+        color: p.ink,
+      }}
     >
       {children}
     </AnimateTableRow>

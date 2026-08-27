@@ -1,5 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  AnimatePresence,
+  domAnimation,
+  LazyMotion,
+  m,
+  useReducedMotion,
+} from 'framer-motion'
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,6 +22,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { formatMonthLabel } from '../../utils/month-utils'
 import {
   AnimationProvider,
@@ -33,9 +40,11 @@ interface PresentationPlayerProps {
 
 export function PresentationPlayer(props: PresentationPlayerProps) {
   return (
-    <AnimationProvider>
-      <PresentationPlayerInner {...props} />
-    </AnimationProvider>
+    <LazyMotion features={domAnimation}>
+      <AnimationProvider>
+        <PresentationPlayerInner {...props} />
+      </AnimationProvider>
+    </LazyMotion>
   )
 }
 
@@ -166,7 +175,7 @@ function ControlChoices<T extends string>({
                 {choiceLabel}
               </span>
               {active && (
-                <motion.span
+                <m.span
                   layoutId={layoutId}
                   className='absolute right-0 bottom-1 left-0 h-0.5 rounded-full bg-primary'
                   transition={
@@ -194,6 +203,7 @@ function PresentationPlayerInner({
   const reduceMotion = useReducedMotion()
   const containerRef = useRef<HTMLDivElement>(null)
   const parentRef = useRef<HTMLDivElement>(null)
+  const thumbnailListRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
   const [slideIndex, setSlideIndex] = useState(0)
   const [direction, setDirection] = useState(1)
@@ -219,20 +229,25 @@ function PresentationPlayerInner({
   }, [])
 
   const handleNext = useCallback(() => {
-    setSlideIndex((current) => {
-      if (current >= slides.length - 1) return current
-      setDirection(1)
-      return current + 1
-    })
-  }, [slides.length])
+    if (slideIndex >= slides.length - 1) return
+    setDirection(1)
+    setSlideIndex(slideIndex + 1)
+  }, [slideIndex, slides.length])
 
   const handlePrev = useCallback(() => {
-    setSlideIndex((current) => {
-      if (current <= 0) return current
-      setDirection(-1)
-      return current - 1
-    })
-  }, [])
+    if (slideIndex <= 0) return
+    setDirection(-1)
+    setSlideIndex(slideIndex - 1)
+  }, [slideIndex])
+
+  const selectSlide = useCallback(
+    (index: number) => {
+      if (index === slideIndex) return
+      setDirection(index > slideIndex ? 1 : -1)
+      setSlideIndex(index)
+    },
+    [slideIndex]
+  )
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -277,6 +292,12 @@ function PresentationPlayerInner({
     }
   }
 
+  useEffect(() => {
+    thumbnailListRef.current
+      ?.querySelector<HTMLButtonElement>(`[data-slide-index="${clampedIndex}"]`)
+      ?.scrollIntoView({ inline: 'nearest', block: 'nearest' })
+  }, [clampedIndex])
+
   return (
     <div
       ref={containerRef}
@@ -314,7 +335,7 @@ function PresentationPlayerInner({
                 className='min-h-11 min-w-11 sm:min-w-0'
               >
                 <Maximize2 className='h-4 w-4 sm:mr-2' />
-                <span className='hidden sm:inline'>Layar penuh</span>
+                <span className='hidden sm:inline'>Fullscreen</span>
               </Button>
             )}
             {onExit && (
@@ -325,7 +346,7 @@ function PresentationPlayerInner({
                 className='min-h-11 min-w-11 sm:min-w-0'
               >
                 <X className='h-4 w-4 sm:mr-2' />
-                <span className='hidden sm:inline'>Keluar</span>
+                <span className='hidden sm:inline'>Exit</span>
               </Button>
             )}
           </div>
@@ -347,73 +368,72 @@ function PresentationPlayerInner({
           ref={parentRef}
           className='relative flex min-w-0 flex-1 items-center justify-center overflow-hidden'
         >
-          {isLoading || !currentSlide ? (
-            <div className='flex h-full items-center justify-center text-muted-foreground'>
-              <Loader2 className='mr-2 h-6 w-6 animate-spin' />
-              Memuat...
-            </div>
-          ) : (
-            <>
-              <div
-                style={{
-                  width: '1280px',
-                  height: '720px',
-                  transform: `scale(${scale})`,
-                  transformOrigin: 'center center',
-                  flexShrink: 0,
-                  containerType: 'size',
-                  background: p.bg,
-                }}
-                className='relative flex items-center justify-center overflow-hidden'
-              >
-                <AnimatePresence mode='wait' custom={direction}>
-                  <motion.div
-                    key={clampedIndex}
-                    custom={direction}
-                    variants={{
-                      enter: (slideDirection: number) => ({
-                        x: reduceMotion
-                          ? 0
-                          : slideDirection > 0
-                            ? '5vw'
-                            : '-5vw',
-                        opacity: 0,
-                      }),
-                      center: { x: 0, opacity: 1 },
-                      exit: (slideDirection: number) => ({
-                        x: reduceMotion
-                          ? 0
-                          : slideDirection > 0
-                            ? '-5vw'
-                            : '5vw',
-                        opacity: 0,
-                      }),
-                    }}
-                    initial='enter'
-                    animate='center'
-                    exit='exit'
-                    transition={
-                      reduceMotion
-                        ? { opacity: { duration: 0.12 } }
-                        : {
-                            x: {
-                              type: 'spring',
-                              stiffness: 300,
-                              damping: 30,
-                            },
-                            opacity: { duration: 0.15 },
-                          }
+          <div
+            style={{
+              width: '1280px',
+              height: '720px',
+              transform: `scale(${scale})`,
+              transformOrigin: 'center center',
+              flexShrink: 0,
+              containerType: 'size',
+              background: p.bg,
+            }}
+            className='relative flex items-center justify-center overflow-hidden'
+          >
+            <AnimatePresence mode='wait' custom={direction}>
+              {isLoading || !currentSlide ? (
+                <div className='flex h-full items-center justify-center text-muted-foreground'>
+                  <Loader2 className='mr-2 h-6 w-6 animate-spin' />
+                  Memuat...
+                </div>
+              ) : (
+                <m.div
+                  key={clampedIndex}
+                  custom={direction}
+                  variants={{
+                    enter: (slideDirection: number) => ({
+                      x: reduceMotion ? 0 : slideDirection > 0 ? '5vw' : '-5vw',
+                      opacity: 0,
+                    }),
+                    center: { x: 0, opacity: 1 },
+                    exit: (slideDirection: number) => ({
+                      x: reduceMotion ? 0 : slideDirection > 0 ? '-5vw' : '5vw',
+                      opacity: 0,
+                    }),
+                  }}
+                  initial='enter'
+                  animate='center'
+                  exit='exit'
+                  transition={
+                    reduceMotion
+                      ? { opacity: { duration: 0.12 } }
+                      : {
+                          x: {
+                            type: 'spring',
+                            stiffness: 300,
+                            damping: 30,
+                          },
+                          opacity: { duration: 0.15 },
+                        }
+                  }
+                  className='h-full w-full overflow-hidden'
+                >
+                  <Suspense
+                    fallback={
+                      <div className='flex h-full w-full items-center justify-center text-muted-foreground'>
+                        <Loader2 className='mr-2 h-6 w-6 animate-spin' />
+                        Memuat...
+                      </div>
                     }
-                    className='h-full w-full overflow-hidden'
                   >
                     <div className='h-full w-full select-none'>
                       {currentSlide.render()}
                     </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </>
-          )}
+                  </Suspense>
+                </m.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
         <Button
           variant='ghost'
@@ -426,6 +446,62 @@ function PresentationPlayerInner({
           <ChevronRight className='h-6 w-6' />
         </Button>
       </div>
+
+      {!isFullscreen && slides.length > 0 && (
+        <div className='border-t bg-background px-3 pt-3 sm:px-6'>
+          <ScrollArea orientation='horizontal' className='w-full'>
+            <div ref={thumbnailListRef} className='flex w-max gap-2 pb-3'>
+              {slides.map((slide, index) => {
+                const active = index === clampedIndex
+                return (
+                  <button
+                    key={slide.key}
+                    data-slide-index={index}
+                    type='button'
+                    onClick={() => selectSlide(index)}
+                    aria-label={`Go to slide ${index + 1}: ${slide.title}`}
+                    aria-current={active ? 'true' : undefined}
+                    className={cn(
+                      'w-36 shrink-0 overflow-hidden rounded-md border-2 bg-muted text-left transition-[border-color,box-shadow] duration-150 outline-none',
+                      'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                      active
+                        ? 'border-primary shadow-[0_0_0_2px_color-mix(in_oklab,var(--primary)_20%,transparent)]'
+                        : 'border-transparent hover:border-border'
+                    )}
+                  >
+                    <div className='relative aspect-video overflow-hidden bg-background'>
+                      <div
+                        className='pointer-events-none absolute top-0 left-0 h-180 w-320 origin-top-left scale-[0.1125]'
+                        aria-hidden='true'
+                      >
+                        <Suspense fallback={null}>{slide.render()}</Suspense>
+                      </div>
+                    </div>
+                    <span
+                      className={cn(
+                        'flex items-center gap-1.5 truncate px-2 py-1.5 text-[11px] font-medium',
+                        active ? 'text-foreground' : 'text-muted-foreground'
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'grid size-5 shrink-0 place-items-center rounded-sm text-[10px] tabular-nums',
+                          active
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted-foreground/10 text-muted-foreground'
+                        )}
+                      >
+                        {index + 1}
+                      </span>
+                      <span className='truncate'>{slide.title}</span>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
 
       <div className='border-t'>
         <div
@@ -447,7 +523,7 @@ function PresentationPlayerInner({
             Slide {clampedIndex + 1} / {slides.length}
             <span className='hidden sm:inline'>
               {' '}
-              · Gunakan ←/→ atau Space untuk navigasi
+              · Use ←/→ or Space to navigate
               {onExit ? ' · Esc untuk keluar' : ''}
             </span>
           </p>

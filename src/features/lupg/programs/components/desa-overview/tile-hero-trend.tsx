@@ -1,8 +1,5 @@
 import { formatMonthLabel } from '../../../utils/month-utils'
-import {
-  polylinePoints,
-  sparklineDomain,
-} from '../../../utils/sparkline'
+import { polylinePoints, sparklineDomain } from '../../../utils/sparkline'
 import { areaPath } from '../../../utils/svg-charts'
 import {
   type DesaSummary,
@@ -29,7 +26,12 @@ export function TileHeroTrend({
   const values = trend.map((p) => p.value)
   const { yMin, yMax } = sparklineDomain(values)
   const area = areaPath(values, { width: SVG_W, height: SVG_H, yMin, yMax })
-  const line = polylinePoints(values, { width: SVG_W, height: SVG_H, yMin, yMax })
+  const line = polylinePoints(values, {
+    width: SVG_W,
+    height: SVG_H,
+    yMin,
+    yMax,
+  })
   const padding = 2
   const innerH = Math.max(1, SVG_H - padding * 2)
   const targetY =
@@ -42,7 +44,7 @@ export function TileHeroTrend({
   return (
     <div className='flex h-full flex-col justify-between p-4 @3xl/desa:p-6'>
       <div>
-        <div className='text-muted-foreground text-sm font-medium'>
+        <div className='text-sm font-medium text-muted-foreground'>
           Rata² Desa — {currentLabel}
         </div>
         <div className='mt-1 flex items-baseline gap-3'>
@@ -53,13 +55,17 @@ export function TileHeroTrend({
             <span
               className={
                 summary.deltaDesaAvg > 0
-                  ? 'text-success text-sm'
+                  ? 'text-sm text-success'
                   : summary.deltaDesaAvg < 0
-                    ? 'text-destructive text-sm'
-                    : 'text-muted-foreground text-sm'
+                    ? 'text-sm text-destructive'
+                    : 'text-sm text-muted-foreground'
               }
             >
-              {summary.deltaDesaAvg > 0 ? '+' : summary.deltaDesaAvg < 0 ? '−' : ''}
+              {summary.deltaDesaAvg > 0
+                ? '+'
+                : summary.deltaDesaAvg < 0
+                  ? '−'
+                  : ''}
               {Math.abs(summary.deltaDesaAvg)}% vs bulan lalu
             </span>
           )}
@@ -73,9 +79,7 @@ export function TileHeroTrend({
         className='mt-2 text-chart-1'
         aria-hidden='true'
       >
-        {area && (
-          <path d={area} fill='currentColor' fillOpacity={0.15} />
-        )}
+        {area && <path d={area} fill='currentColor' fillOpacity={0.15} />}
         {line && (
           <polyline
             points={line}

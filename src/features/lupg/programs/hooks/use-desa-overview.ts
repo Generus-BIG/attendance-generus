@@ -224,6 +224,9 @@ async function fetchDesaOverview(
   for (const r of monthlyReports) {
     reportByKelompokMonth.set(`${r.kelompok_id}__${r.month.slice(0, 7)}`, r)
   }
+  const reportById = new Map(
+    monthlyReports.map((report) => [report.id, report])
+  )
 
   // ---- Per-month program aggregates (for trend + ranked + matrix + weighted desa avg) ----
   const monthKeysYear: string[] = []
@@ -240,7 +243,7 @@ async function fetchDesaOverview(
     progMonthTotals.set(p.code, new Map())
   }
   for (const pr of programReports) {
-    const parent = monthlyReports.find((m) => m.id === pr.monthly_report_id)
+    const parent = reportById.get(pr.monthly_report_id)
     if (!parent) continue
     const mk = parent.month.slice(0, 7)
     const bucket = progMonthTotals.get(pr.program_code)
@@ -315,9 +318,7 @@ async function fetchDesaOverview(
           : undefined
         byKelompok[k.id] =
           pr && pr.denominator && pr.denominator > 0
-            ? Math.round(
-                ((pr.count_this_month ?? 0) / pr.denominator) * 100
-              )
+            ? Math.round(((pr.count_this_month ?? 0) / pr.denominator) * 100)
             : null
       }
       return { code: p.code, name: p.name, byKelompok }
@@ -351,9 +352,7 @@ async function fetchDesaOverview(
     const prevMonthValues: number[] = []
     for (const k of kelompoks) {
       const curReport = reportByKelompokMonth.get(`${k.id}__${monthKey}`)
-      const prevReport = reportByKelompokMonth.get(
-        `${k.id}__${prevMonthKey}`
-      )
+      const prevReport = reportByKelompokMonth.get(`${k.id}__${prevMonthKey}`)
       const curRow = curReport
         ? metricReports.find(
             (r) =>
@@ -380,8 +379,7 @@ async function fetchDesaOverview(
     const prevAvg =
       prevMonthValues.length > 0
         ? Math.round(
-            prevMonthValues.reduce((a, b) => a + b, 0) /
-              prevMonthValues.length
+            prevMonthValues.reduce((a, b) => a + b, 0) / prevMonthValues.length
           )
         : null
     let trend: 'up' | 'down' | 'flat' | 'none' = 'none'
@@ -500,8 +498,7 @@ async function fetchDesaOverview(
         const rep = reportByKelompokMonth.get(`${k.id}__${prevMonthKey}`)
         const row = rep
           ? metricReports.find(
-              (r) =>
-                r.monthly_report_id === rep.id && r.metric_code === m.code
+              (r) => r.monthly_report_id === rep.id && r.metric_code === m.code
             )
           : undefined
         if (row?.current_value != null) vs.push(Number(row.current_value))

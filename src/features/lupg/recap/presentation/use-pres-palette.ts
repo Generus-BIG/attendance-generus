@@ -12,6 +12,15 @@ export interface PresPalette {
   cream: string
   success: string
   warning: string
+  popover: string
+  popoverFg: string
+  attendanceGenerus: string
+  attendancePiket: string
+  coverAccent: string
+  sarprasPrimary: string
+  shodaqohPrimary: string
+  tableHeader: string
+  tableHeaderFg: string
   chart: readonly [string, string, string, string, string]
   fontSans: string
   fontMono: string
@@ -29,6 +38,15 @@ type TokenKey =
   | '--border'
   | '--success'
   | '--warning'
+  | '--popover'
+  | '--popover-foreground'
+  | '--attendance-generus'
+  | '--attendance-piket'
+  | '--cover-accent'
+  | '--sarpras-primary'
+  | '--shodaqoh-primary'
+  | '--table-header'
+  | '--table-header-foreground'
   | '--chart-1'
   | '--chart-2'
   | '--chart-3'
@@ -51,6 +69,15 @@ function fallback(): PresPalette {
     cream: 'oklch(0.95 0.007 247.896)',
     success: 'oklch(0.55 0.14 150)',
     warning: 'oklch(0.67 0.15 75)',
+    popover: 'oklch(1 0 0)',
+    popoverFg: 'oklch(0.145 0 0)',
+    attendanceGenerus: 'oklch(0.74 0.09 245)',
+    attendancePiket: 'oklch(0.48 0.14 245)',
+    coverAccent: 'oklch(0.48 0.14 245)',
+    sarprasPrimary: 'oklch(0.62 0.14 245)',
+    shodaqohPrimary: 'oklch(0.48 0.14 245)',
+    tableHeader: '#4e6daf',
+    tableHeaderFg: 'oklch(0.985 0 0)',
     chart: ['#315a7d', '#3b8c78', '#c2643d', '#79589f', '#b84d4d'],
     fontSans,
     fontMono,
@@ -79,6 +106,16 @@ function readTokens(): PresPalette {
     cream: `color-mix(in oklch, ${accent} 14%, ${bg})`,
     success: get('--success') || defaults.success,
     warning: get('--warning') || defaults.warning,
+    popover: get('--popover') || defaults.popover,
+    popoverFg: get('--popover-foreground') || defaults.popoverFg,
+    attendanceGenerus:
+      get('--attendance-generus') || defaults.attendanceGenerus,
+    attendancePiket: get('--attendance-piket') || defaults.attendancePiket,
+    coverAccent: get('--cover-accent') || defaults.coverAccent,
+    sarprasPrimary: get('--sarpras-primary') || defaults.sarprasPrimary,
+    shodaqohPrimary: get('--shodaqoh-primary') || defaults.shodaqohPrimary,
+    tableHeader: get('--table-header') || defaults.tableHeader,
+    tableHeaderFg: get('--table-header-foreground') || defaults.tableHeaderFg,
     chart: [
       get('--chart-1') || defaults.chart[0],
       get('--chart-2') || defaults.chart[1],

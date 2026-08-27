@@ -1,8 +1,10 @@
 import React from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { ArrowRight, ChevronRight, Laptop, Moon, Sun } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 import { useSearch } from '@/context/search-provider'
 import { useTheme } from '@/context/theme-provider'
+import { useActiveWorkspace } from '@/hooks/use-active-workspace'
 import {
   CommandDialog,
   CommandEmpty,
@@ -13,8 +15,6 @@ import {
   CommandSeparator,
 } from '@/components/ui/command'
 import { getSidebarData } from './layout/data/sidebar-data'
-import { useAuthStore } from '@/stores/auth-store'
-import { useActiveWorkspace } from '@/hooks/use-active-workspace'
 import { ScrollArea } from './ui/scroll-area'
 
 export function CommandMenu() {
@@ -28,8 +28,7 @@ export function CommandMenu() {
     role,
     kelompok,
     {
-      name:
-        (user?.user_metadata?.full_name as string) || user?.email || 'User',
+      name: (user?.user_metadata?.full_name as string) || user?.email || 'User',
       email: user?.email || '',
       avatar: '/avatars/shadcn.jpg',
       role,
@@ -53,11 +52,11 @@ export function CommandMenu() {
           <CommandEmpty>No results found.</CommandEmpty>
           {sidebarData.navGroups.map((group) => (
             <CommandGroup key={group.title} heading={group.title}>
-              {group.items.map((navItem, i) => {
+              {group.items.map((navItem) => {
                 if (navItem.url)
                   return (
                     <CommandItem
-                      key={`${navItem.url}-${i}`}
+                      key={navItem.url}
                       value={navItem.title}
                       onSelect={() => {
                         runCommand(() => navigate({ to: navItem.url }))
@@ -70,9 +69,9 @@ export function CommandMenu() {
                     </CommandItem>
                   )
 
-                return navItem.items?.map((subItem, i) => (
+                return navItem.items?.map((subItem) => (
                   <CommandItem
-                    key={`${navItem.title}-${subItem.url}-${i}`}
+                    key={subItem.url}
                     value={`${navItem.title}-${subItem.url}`}
                     onSelect={() => {
                       runCommand(() => navigate({ to: subItem.url }))

@@ -1,5 +1,5 @@
-import { PROGRAM_STATUS_BANDS } from '../../constants'
 import { statusBg } from '../../../utils/heatmap-buckets'
+import { PROGRAM_STATUS_BANDS } from '../../constants'
 
 export function StatusLegend() {
   return (
@@ -18,7 +18,7 @@ export function StatusLegend() {
       ))}
       <span className='inline-flex items-center gap-1.5 text-muted-foreground'>
         <span
-          className='bg-muted/60 inline-block h-2 w-2 rounded-sm'
+          className='inline-block h-2 w-2 rounded-sm bg-muted/60'
           aria-hidden='true'
         />
         tidak ada data

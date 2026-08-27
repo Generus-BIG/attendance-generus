@@ -1,23 +1,23 @@
 import { useMemo } from 'react'
-import { Loader2 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
+import { Route } from '@/routes/admin/lupg/dashboard'
+import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
+import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { ConfigDrawer } from '@/components/config-drawer'
-import { supabase } from '@/lib/supabase'
-import { Route } from '@/routes/admin/lupg/dashboard'
+import { MonthPickerSelect } from '../components/month-picker-select'
+import { ReportCard } from '../components/report-card'
+import { SummaryStrip } from '../components/summary-strip'
 import {
   useEnsureMonthlyReport,
   useMonthlyReports,
 } from '../hooks/use-lupg-queries'
-import { MonthPickerSelect } from '../components/month-picker-select'
-import { ReportCard } from '../components/report-card'
-import { SummaryStrip } from '../components/summary-strip'
 import {
   currentMonthKey,
   firstDayOfMonth,
@@ -114,7 +114,7 @@ export function LupgDashboard() {
       <Main className='flex flex-1 flex-col gap-6'>
         <div className='flex flex-col gap-1'>
           <h2 className='text-2xl font-bold tracking-tight'>Dashboard LUPG</h2>
-          <p className='text-muted-foreground text-sm'>
+          <p className='text-sm text-muted-foreground'>
             Status laporan per kelompok untuk {formatMonthLabel(activeMonth)}.
           </p>
         </div>
@@ -137,7 +137,7 @@ export function LupgDashboard() {
 
         {isLoading ? (
           <div
-            className='text-muted-foreground flex items-center justify-center py-16'
+            className='flex items-center justify-center py-16 text-muted-foreground'
             role='status'
             aria-live='polite'
           >

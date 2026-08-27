@@ -12,16 +12,15 @@ import {
   BarChart,
   CartesianGrid,
   LabelList,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
-import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
+import { usePresentationAnimation } from '../context/animation-context'
 import { SENSUS_STACK_ORDER, getSensusColor } from '../theme'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
-import { usePresentationAnimation } from '../context/animation-context'
+import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
 
 type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR'
 
@@ -101,8 +100,10 @@ interface InsideLabelProps {
 }
 
 function InsideSegmentLabel(props: InsideLabelProps) {
-  const heightNum = typeof props.height === 'number' ? props.height : Number(props.height)
-  const widthNum = typeof props.width === 'number' ? props.width : Number(props.width)
+  const heightNum =
+    typeof props.height === 'number' ? props.height : Number(props.height)
+  const widthNum =
+    typeof props.width === 'number' ? props.width : Number(props.width)
   const xNum = typeof props.x === 'number' ? props.x : Number(props.x)
   const yNum = typeof props.y === 'number' ? props.y : Number(props.y)
   const valueNum =
@@ -139,10 +140,15 @@ interface TopTotalLabelProps {
 function TopTotalLabel(props: TopTotalLabelProps) {
   const xNum = typeof props.x === 'number' ? props.x : Number(props.x)
   const yNum = typeof props.y === 'number' ? props.y : Number(props.y)
-  const widthNum = typeof props.width === 'number' ? props.width : Number(props.width)
+  const widthNum =
+    typeof props.width === 'number' ? props.width : Number(props.width)
   const idx = typeof props.index === 'number' ? props.index : -1
   if (idx < 0 || idx >= props.data.length) return null
-  if (!Number.isFinite(xNum) || !Number.isFinite(yNum) || !Number.isFinite(widthNum)) {
+  if (
+    !Number.isFinite(xNum) ||
+    !Number.isFinite(yNum) ||
+    !Number.isFinite(widthNum)
+  ) {
     return null
   }
   const total = props.data[idx].total
@@ -150,7 +156,7 @@ function TopTotalLabel(props: TopTotalLabelProps) {
   return (
     <text
       x={xNum + widthNum / 2}
-      y={yNum - 6}
+      y={yNum - 12}
       textAnchor='middle'
       style={{
         fontFamily: props.palette.fontMono,
@@ -161,48 +167,6 @@ function TopTotalLabel(props: TopTotalLabelProps) {
     >
       {total}
     </text>
-  )
-}
-
-interface LegendPayloadEntry {
-  value?: string
-  color?: string
-}
-
-interface CustomLegendProps {
-  payload?: LegendPayloadEntry[]
-  palette: PresPalette
-}
-
-function CustomLegend({ payload, palette }: CustomLegendProps) {
-  if (!payload) return null
-  return (
-    <div className='flex flex-wrap items-center justify-center gap-4 pt-2'>
-      {payload.map((entry) => (
-        <div key={entry.value} className='flex items-center gap-2'>
-          <span
-            aria-hidden
-            style={{
-              width: 14,
-              height: 14,
-              borderRadius: 3,
-              background: entry.color,
-              display: 'inline-block',
-            }}
-          />
-          <span
-            style={{
-              fontFamily: palette.fontSans,
-              fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
-              fontWeight: 600,
-              color: palette.ink,
-            }}
-          >
-            {entry.value}
-          </span>
-        </div>
-      ))}
-    </div>
   )
 }
 
@@ -227,74 +191,112 @@ export function SensusStackedBar({ data }: SensusStackedBarProps) {
   const maxTotal = data.reduce((a, b) => Math.max(a, b.total), 0)
   const ticks = buildTicks(maxTotal, 10)
   const yMax = ticks[ticks.length - 1]
+  const paletteName =
+    document.documentElement.getAttribute('data-palette') === 'anthropic-claude'
+      ? 'anthropic-claude'
+      : document.documentElement.getAttribute('data-palette') === 'sage-green'
+        ? 'sage-green'
+        : 'modern-natural'
   return (
-    <ResponsiveContainer width='100%' height='100%'>
-      <BarChart
-        data={data}
-        margin={{ top: 28, right: 24, bottom: 36, left: 36 }}
-      >
-        <CartesianGrid
-          strokeDasharray='3 3'
-          vertical={false}
-          stroke={palette.rule}
-        />
-        <XAxis dataKey='kelompok' interval={0} {...hairlineAxisProps(palette, 'x')} />
-        <YAxis ticks={ticks} domain={[0, yMax]} {...hairlineAxisProps(palette, 'y')} />
-        <Tooltip
-          cursor={{ fill: palette.muted, fillOpacity: 0.08 }}
-          content={(p) => (
-            <CustomTooltip
-              {...(p as unknown as Omit<TipProps, 'palette'>)}
-              palette={palette}
+    <div className='flex h-full min-h-0 w-full flex-col'>
+      <div className='min-h-0 flex-1'>
+        <ResponsiveContainer width='100%' height='100%'>
+          <BarChart
+            data={data}
+            margin={{ top: 36, right: 24, bottom: 12, left: 36 }}
+          >
+            <CartesianGrid
+              strokeDasharray='3 3'
+              vertical={false}
+              stroke={palette.rule}
             />
-          )}
-        />
-        <Legend
-          content={(p) => (
-            <CustomLegend
-              {...(p as unknown as Omit<CustomLegendProps, 'palette'>)}
-              palette={palette}
+            <XAxis
+              dataKey='kelompok'
+              interval={0}
+              tickMargin={16}
+              {...hairlineAxisProps(palette, 'x')}
             />
-          )}
-          verticalAlign='bottom'
-        />
-        {SENSUS_STACK_ORDER.map((code, idx) => {
-          const isTop = idx === SENSUS_STACK_ORDER.length - 1
-          const isModern = typeof window !== 'undefined' && document.documentElement.getAttribute('data-palette') === 'modern-natural'
-          return (
-            <Bar
-              key={code}
-              stackId='g'
-              dataKey={code}
-              name={CATEGORY_LABELS[code]}
-              fill={getSensusColor(code, isModern)}
-              isAnimationActive={true}
-              animationDuration={Math.round(800 * durationScale)}
-            >
-              <LabelList
-                dataKey={code}
-                content={(p) => (
-                  <InsideSegmentLabel
-                    {...(p as unknown as Omit<InsideLabelProps, 'palette'>)}
-                    palette={palette}
-                  />
-                )}
-              />
-              {isTop ? (
-                <LabelList
-                  content={(p) => (
-                    <TopTotalLabel
-                      {...(p as unknown as Omit<TopTotalLabelProps, 'data' | 'palette'>)}
-                      data={data}
-                      palette={palette}
-                    />
-                  )}
+            <YAxis
+              ticks={ticks}
+              domain={[0, yMax]}
+              {...hairlineAxisProps(palette, 'y')}
+            />
+            <Tooltip
+              cursor={{ fill: palette.muted, fillOpacity: 0.08 }}
+              content={(p) => (
+                <CustomTooltip
+                  {...(p as unknown as Omit<TipProps, 'palette'>)}
+                  palette={palette}
                 />
-              ) : null}
-            </Bar>
-          )
-        })}
-      </BarChart>
-    </ResponsiveContainer>
+              )}
+            />
+            {SENSUS_STACK_ORDER.map((code, idx) => {
+              const isTop = idx === SENSUS_STACK_ORDER.length - 1
+              return (
+                <Bar
+                  key={code}
+                  stackId='g'
+                  dataKey={code}
+                  name={CATEGORY_LABELS[code]}
+                  fill={getSensusColor(code, paletteName)}
+                  isAnimationActive={true}
+                  animationDuration={Math.round(800 * durationScale)}
+                >
+                  <LabelList
+                    dataKey={code}
+                    content={(p) => (
+                      <InsideSegmentLabel
+                        {...(p as unknown as Omit<InsideLabelProps, 'palette'>)}
+                        palette={palette}
+                      />
+                    )}
+                  />
+                  {isTop ? (
+                    <LabelList
+                      content={(p) => (
+                        <TopTotalLabel
+                          {...(p as unknown as Omit<
+                            TopTotalLabelProps,
+                            'data' | 'palette'
+                          >)}
+                          data={data}
+                          palette={palette}
+                        />
+                      )}
+                    />
+                  ) : null}
+                </Bar>
+              )
+            })}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <div className='flex shrink-0 items-center justify-center gap-6 pt-5 pb-2 whitespace-nowrap'>
+        {SENSUS_STACK_ORDER.map((code) => (
+          <div key={code} className='flex items-center gap-2'>
+            <span
+              aria-hidden
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: 3,
+                background: getSensusColor(code, paletteName),
+                display: 'inline-block',
+              }}
+            />
+            <span
+              style={{
+                fontFamily: palette.fontSans,
+                fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
+                fontWeight: 600,
+                color: palette.ink,
+              }}
+            >
+              {CATEGORY_LABELS[code]}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

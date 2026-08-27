@@ -1,5 +1,6 @@
-import { useLayout } from '@/context/layout-provider'
 import { useAuthStore } from '@/stores/auth-store'
+import { useLayout } from '@/context/layout-provider'
+import { useActiveWorkspace } from '@/hooks/use-active-workspace'
 import {
   Sidebar,
   SidebarContent,
@@ -7,7 +8,6 @@ import {
   SidebarHeader,
   SidebarRail,
 } from '@/components/ui/sidebar'
-import { useActiveWorkspace } from '@/hooks/use-active-workspace'
 import { getSidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
@@ -22,8 +22,7 @@ export function AppSidebar() {
     role,
     kelompok,
     {
-      name:
-        (user?.user_metadata?.full_name as string) || user?.email || 'User',
+      name: (user?.user_metadata?.full_name as string) || user?.email || 'User',
       email: user?.email || '',
       avatar: '/avatars/shadcn.jpg',
       role,

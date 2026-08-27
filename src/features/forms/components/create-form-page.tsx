@@ -1,13 +1,28 @@
 import { useState, useEffect } from 'react'
+import { z } from 'zod'
+import { format } from 'date-fns'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { Calendar as CalendarIcon, Loader2, Eye } from 'lucide-react'
+import { toast } from 'sonner'
+import { type FormTypeEnum } from '@/lib/schema'
+import { supabase } from '@/lib/supabase'
 import { cn, slugify } from '@/lib/utils'
+import { usePermissions } from '@/hooks/use-permissions'
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -18,23 +33,15 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
-import { toast } from 'sonner'
+import { Textarea } from '@/components/ui/textarea'
 import { PublicAttendanceForm } from '@/features/forms/components/PublicAttendanceForm'
-import { supabase } from '@/lib/supabase'
-import { type FormTypeEnum } from '@/lib/schema'
 import { FormTypeSelector } from './form-type-selector'
-import { usePermissions } from '@/hooks/use-permissions'
-import { useQuery } from '@tanstack/react-query'
 
 // Schema matches the one in form-dialogs.tsx but we might want to ensure types align
 const formSchema = z.object({
@@ -80,7 +87,12 @@ export function CreateFormPage() {
 
   // Auto-set kelompokId for team_manager when type is 'kelompok'
   useEffect(() => {
-    if (isTeamManager && formType === 'kelompok' && userKelompok && kelompokOptions.length > 0) {
+    if (
+      isTeamManager &&
+      formType === 'kelompok' &&
+      userKelompok &&
+      kelompokOptions.length > 0
+    ) {
       const match = kelompokOptions.find((k) => k.value === userKelompok)
       if (match) {
         setKelompokId(match.id)
@@ -157,30 +169,29 @@ export function CreateFormPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 max-w-7xl pb-24">
-      <div className="mb-6 space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Create New Form</h1>
-        <p className="text-muted-foreground">
+    <div className='container mx-auto max-w-7xl p-4 pb-24 sm:p-6'>
+      <div className='mb-6 space-y-2'>
+        <h1 className='text-3xl font-bold tracking-tight'>Create New Form</h1>
+        <p className='text-muted-foreground'>
           Create a new attendance form and preview how it looks.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
         {/* Left Column: Form Configuration */}
-        <div className="space-y-6">
+        <div className='space-y-6'>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="h-full">
-              <Card className="h-full border-0 sm:border shadow-none sm:shadow-sm">
+            <form onSubmit={form.handleSubmit(onSubmit)} className='h-full'>
+              <Card className='h-full border-0 shadow-none sm:border sm:shadow-sm'>
                 <CardHeader>
                   <CardTitle>Form Details</CardTitle>
                   <CardDescription>
                     Configure the details of your attendance form.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-
+                <CardContent className='space-y-4'>
                   {/* Form Type Selector */}
-                  <div className="space-y-2">
+                  <div className='space-y-2'>
                     <Label>Form Type</Label>
                     <FormTypeSelector
                       value={formType}
@@ -194,20 +205,23 @@ export function CreateFormPage() {
 
                   {/* Kelompok picker — only shown when type is 'kelompok' */}
                   {formType === 'kelompok' && (
-                    <div className="space-y-2">
+                    <div className='space-y-2'>
                       <Label>Kelompok</Label>
-                      <div className={cn(
-                        'rounded-lg border border-blue-200 bg-blue-50/50 p-3',
-                        'dark:border-blue-900 dark:bg-blue-950/20'
-                      )}>
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      <div
+                        className={cn(
+                          'rounded-lg border border-blue-200 bg-blue-50/50 p-3',
+                          'dark:border-blue-900 dark:bg-blue-950/20'
+                        )}
+                      >
+                        <div className='grid grid-cols-2 gap-2 sm:grid-cols-3'>
                           {kelompokOptions.map((k) => {
                             const isSelected = kelompokId === k.id
-                            const isDisabled = isTeamManager && k.value !== userKelompok
+                            const isDisabled =
+                              isTeamManager && k.value !== userKelompok
                             return (
                               <button
                                 key={k.id}
-                                type="button"
+                                type='button'
                                 disabled={isDisabled}
                                 onClick={() => setKelompokId(k.id)}
                                 className={cn(
@@ -229,12 +243,12 @@ export function CreateFormPage() {
 
                   <FormField
                     control={form.control}
-                    name="title"
+                    name='title'
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Title</FormLabel>
                         <FormControl>
-                          <Input placeholder="Weekly Meeting..." {...field} />
+                          <Input placeholder='Weekly Meeting...' {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -243,14 +257,14 @@ export function CreateFormPage() {
 
                   <FormField
                     control={form.control}
-                    name="description"
+                    name='description'
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Brief description of the event..."
-                            className="resize-none"
+                            placeholder='Brief description of the event...'
+                            className='resize-none'
                             {...field}
                           />
                         </FormControl>
@@ -259,39 +273,42 @@ export function CreateFormPage() {
                     )}
                   />
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className='grid grid-cols-2 gap-4'>
                     <FormField
                       control={form.control}
-                      name="date"
+                      name='date'
                       render={({ field }) => (
-                        <FormItem className="flex flex-col">
+                        <FormItem className='flex flex-col'>
                           <FormLabel>Date</FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
                                 <Button
-                                  variant={"outline"}
+                                  variant={'outline'}
                                   className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
+                                    'w-full pl-3 text-left font-normal',
+                                    !field.value && 'text-muted-foreground'
                                   )}
                                 >
                                   {field.value ? (
-                                    format(field.value, "PPP", { locale: id })
+                                    format(field.value, 'PPP', { locale: id })
                                   ) : (
                                     <span>Pick a date</span>
                                   )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
                                 </Button>
                               </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
+                            <PopoverContent
+                              className='w-auto p-0'
+                              align='start'
+                            >
                               <Calendar
-                                mode="single"
+                                mode='single'
                                 selected={field.value}
                                 onSelect={field.onChange}
                                 disabled={(date) =>
-                                  date < new Date("1900-01-01")
+                                  date < new Date('1900-01-01')
                                 }
                                 initialFocus
                               />
@@ -304,12 +321,12 @@ export function CreateFormPage() {
 
                     <FormField
                       control={form.control}
-                      name="time"
+                      name='time'
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Time</FormLabel>
                           <FormControl>
-                            <Input type="time" {...field} />
+                            <Input type='time' {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -319,12 +336,12 @@ export function CreateFormPage() {
 
                   <FormField
                     control={form.control}
-                    name="slug"
+                    name='slug'
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Slug (URL Identifier)</FormLabel>
                         <FormControl>
-                          <Input placeholder="weekly-meeting-1" {...field} />
+                          <Input placeholder='weekly-meeting-1' {...field} />
                         </FormControl>
                         <FormDescription>
                           Unique identifier for the form URL.
@@ -336,49 +353,55 @@ export function CreateFormPage() {
 
                   <FormField
                     control={form.control}
-                    name="allowedCategories"
+                    name='allowedCategories'
                     render={() => (
                       <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base">Allowed Participants</FormLabel>
+                        <div className='mb-4'>
+                          <FormLabel className='text-base'>
+                            Allowed Participants
+                          </FormLabel>
                           <FormDescription>
-                            Select which participant categories can submit this form.
+                            Select which participant categories can submit this
+                            form.
                           </FormDescription>
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
-                            {CATEGORIES.map((item) => (
-                              <FormField
-                                key={item.id}
-                                control={form.control}
-                                name="allowedCategories"
-                                render={({ field }) => {
-                                  return (
-                                    <FormItem
-                                      key={item.id}
-                                      className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value?.includes(item.id)}
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...field.value, item.id])
-                                              : field.onChange(
-                                                  field.value?.filter(
-                                                    (value) => value !== item.id
-                                                  )
+                        <div className='grid grid-cols-3 gap-2'>
+                          {CATEGORIES.map((item) => (
+                            <FormField
+                              key={item.id}
+                              control={form.control}
+                              name='allowedCategories'
+                              render={({ field }) => {
+                                return (
+                                  <FormItem
+                                    key={item.id}
+                                    className='flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4 shadow-sm'
+                                  >
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(item.id)}
+                                        onCheckedChange={(checked) => {
+                                          return checked
+                                            ? field.onChange([
+                                                ...field.value,
+                                                item.id,
+                                              ])
+                                            : field.onChange(
+                                                field.value?.filter(
+                                                  (value) => value !== item.id
                                                 )
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal cursor-pointer text-sm">
-                                        {item.label}
-                                      </FormLabel>
-                                    </FormItem>
-                                  )
-                                }}
-                              />
-                            ))}
+                                              )
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className='cursor-pointer text-sm font-normal'>
+                                      {item.label}
+                                    </FormLabel>
+                                  </FormItem>
+                                )
+                              }}
+                            />
+                          ))}
                         </div>
                         <FormMessage />
                       </FormItem>
@@ -387,41 +410,45 @@ export function CreateFormPage() {
 
                   <FormField
                     control={form.control}
-                    name="isActive"
+                    name='isActive'
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                      <FormItem className='flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4'>
                         <FormControl>
                           <Checkbox
                             checked={field.value}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Active Status
-                          </FormLabel>
+                        <div className='space-y-1 leading-none'>
+                          <FormLabel>Active Status</FormLabel>
                           <FormDescription>
-                            If inactive, the form will not accept new submissions.
+                            If inactive, the form will not accept new
+                            submissions.
                           </FormDescription>
                         </div>
                       </FormItem>
                     )}
                   />
-
                 </CardContent>
-                <CardFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 border-t bg-muted/20 px-6 py-4 mt-auto">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        className="w-full sm:w-auto"
-                        onClick={() => navigate({ to: '/admin/forms' })}
-                    >
-                        Cancel
-                    </Button>
-                    <Button type="submit" className="w-full sm:w-auto min-w-30" disabled={isSubmitting}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Create Form
-                    </Button>
+                <CardFooter className='mt-auto flex flex-col-reverse gap-3 border-t bg-muted/20 px-6 py-4 sm:flex-row sm:justify-end'>
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    className='w-full sm:w-auto'
+                    onClick={() => navigate({ to: '/admin/forms' })}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type='submit'
+                    className='w-full min-w-30 sm:w-auto'
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting && (
+                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                    )}
+                    Create Form
+                  </Button>
                 </CardFooter>
               </Card>
             </form>
@@ -429,39 +456,39 @@ export function CreateFormPage() {
         </div>
 
         {/* Right Column: Live Preview */}
-        <div className="space-y-6">
-           <div className="sticky top-6">
-                <div className="flex items-center justify-between mb-2 px-1">
-                    <h3 className="text-lg font-medium flex items-center gap-2">
-                        <Eye className="h-4 w-4" /> Live Preview
-                    </h3>
-                    <span className="text-xs text-muted-foreground">
-                        This is how the form will appear to users
-                    </span>
-                </div>
+        <div className='space-y-6'>
+          <div className='sticky top-6'>
+            <div className='mb-2 flex items-center justify-between px-1'>
+              <h3 className='flex items-center gap-2 text-lg font-medium'>
+                <Eye className='h-4 w-4' /> Live Preview
+              </h3>
+              <span className='text-xs text-muted-foreground'>
+                This is how the form will appear to users
+              </span>
+            </div>
 
-                {/* The Preview Card Wrapper */}
-                <div className="border rounded-lg bg-background/50 p-4 md:p-8 relative overflow-hidden backdrop-blur-sm">
-                    {/* Mock Browser Bar or simple wrapper */}
-                     <div className="pointer-events-none select-none opacity-80 scale-95 origin-top transform-gpu transition-all">
-                        {/* We use the PublicAttendanceForm component here but pass mock config */}
-                        <PublicAttendanceForm
-                            formConfig={{
-                                id: 'preview-id',
-                                title: watchedValues.title || 'Untitled Form',
-                                slug: 'preview-slug',
-                                description: watchedValues.description,
-                                allowedCategories: watchedValues.allowedCategories
-                            }}
-                        />
-                     </div>
+            {/* The Preview Card Wrapper */}
+            <div className='relative overflow-hidden rounded-lg border bg-background/50 p-4 backdrop-blur-sm md:p-8'>
+              {/* Mock Browser Bar or simple wrapper */}
+              <div className='pointer-events-none origin-top scale-95 transform-gpu opacity-80 transition-[opacity,transform] select-none'>
+                {/* We use the PublicAttendanceForm component here but pass mock config */}
+                <PublicAttendanceForm
+                  formConfig={{
+                    id: 'preview-id',
+                    title: watchedValues.title || 'Untitled Form',
+                    slug: 'preview-slug',
+                    description: watchedValues.description,
+                    allowedCategories: watchedValues.allowedCategories,
+                  }}
+                />
+              </div>
 
-                     {/* Overlay to prevent interaction with preview if desired, or let it be interactive */}
-                     {/* We make it non-interactive to avoid confusion, or interactive to test validation?
+              {/* Overlay to prevent interaction with preview if desired, or let it be interactive */}
+              {/* We make it non-interactive to avoid confusion, or interactive to test validation?
                          Let's keep it 'pointer-events-none' for now so they don't try to submit.
                       */}
-                </div>
-           </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

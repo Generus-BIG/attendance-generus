@@ -53,9 +53,15 @@ import { Route as AdminLupgProgramsIndexRouteImport } from './routes/admin/lupg/
 import { Route as AdminLupgPresentationIndexRouteImport } from './routes/admin/lupg/presentation/index'
 import { Route as AdminLupgMustinIndexRouteImport } from './routes/admin/lupg/mustin/index'
 import { Route as AdminLupgConfigIndexRouteImport } from './routes/admin/lupg/config/index'
+import { Route as AdminLupgArIntensifIndexRouteImport } from './routes/admin/lupg/ar-intensif/index'
+import { Route as AdminLupgAprIntensifIndexRouteImport } from './routes/admin/lupg/apr-intensif/index'
 import { Route as ShareLupgPresentationTokenRouteImport } from './routes/share/lupg/presentation/$token'
 import { Route as AdminLupgReportsMonthlyReportIdRouteImport } from './routes/admin/lupg/reports/$monthlyReportId'
 import { Route as AdminLupgRecapPresentRouteImport } from './routes/admin/lupg/recap/present'
+import { Route as AdminLupgPhqSummaryRouteImport } from './routes/admin/lupg/phq/summary'
+import { Route as AdminLupgPhqProgressRouteImport } from './routes/admin/lupg/phq/progress'
+import { Route as AdminLupgPhqParticipantsRouteImport } from './routes/admin/lupg/phq/participants'
+import { Route as AdminLupgPhqAttendanceRouteImport } from './routes/admin/lupg/phq/attendance'
 
 const AdminRouteRoute = AdminRouteRouteImport.update({
   id: '/admin',
@@ -280,6 +286,18 @@ const AdminLupgConfigIndexRoute = AdminLupgConfigIndexRouteImport.update({
   path: '/config/',
   getParentRoute: () => AdminLupgRouteRoute,
 } as any)
+const AdminLupgArIntensifIndexRoute =
+  AdminLupgArIntensifIndexRouteImport.update({
+    id: '/ar-intensif/',
+    path: '/ar-intensif/',
+    getParentRoute: () => AdminLupgRouteRoute,
+  } as any)
+const AdminLupgAprIntensifIndexRoute =
+  AdminLupgAprIntensifIndexRouteImport.update({
+    id: '/apr-intensif/',
+    path: '/apr-intensif/',
+    getParentRoute: () => AdminLupgRouteRoute,
+  } as any)
 const ShareLupgPresentationTokenRoute =
   ShareLupgPresentationTokenRouteImport.update({
     id: '/share/lupg/presentation/$token',
@@ -295,6 +313,27 @@ const AdminLupgReportsMonthlyReportIdRoute =
 const AdminLupgRecapPresentRoute = AdminLupgRecapPresentRouteImport.update({
   id: '/recap/present',
   path: '/recap/present',
+  getParentRoute: () => AdminLupgRouteRoute,
+} as any)
+const AdminLupgPhqSummaryRoute = AdminLupgPhqSummaryRouteImport.update({
+  id: '/phq/summary',
+  path: '/phq/summary',
+  getParentRoute: () => AdminLupgRouteRoute,
+} as any)
+const AdminLupgPhqProgressRoute = AdminLupgPhqProgressRouteImport.update({
+  id: '/phq/progress',
+  path: '/phq/progress',
+  getParentRoute: () => AdminLupgRouteRoute,
+} as any)
+const AdminLupgPhqParticipantsRoute =
+  AdminLupgPhqParticipantsRouteImport.update({
+    id: '/phq/participants',
+    path: '/phq/participants',
+    getParentRoute: () => AdminLupgRouteRoute,
+  } as any)
+const AdminLupgPhqAttendanceRoute = AdminLupgPhqAttendanceRouteImport.update({
+  id: '/phq/attendance',
+  path: '/phq/attendance',
   getParentRoute: () => AdminLupgRouteRoute,
 } as any)
 
@@ -336,9 +375,15 @@ export interface FileRoutesByFullPath {
   '/admin/participants': typeof AdminParticipantsIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tasks': typeof AdminTasksIndexRoute
+  '/admin/lupg/phq/attendance': typeof AdminLupgPhqAttendanceRoute
+  '/admin/lupg/phq/participants': typeof AdminLupgPhqParticipantsRoute
+  '/admin/lupg/phq/progress': typeof AdminLupgPhqProgressRoute
+  '/admin/lupg/phq/summary': typeof AdminLupgPhqSummaryRoute
   '/admin/lupg/recap/present': typeof AdminLupgRecapPresentRoute
   '/admin/lupg/reports/$monthlyReportId': typeof AdminLupgReportsMonthlyReportIdRoute
   '/share/lupg/presentation/$token': typeof ShareLupgPresentationTokenRoute
+  '/admin/lupg/apr-intensif': typeof AdminLupgAprIntensifIndexRoute
+  '/admin/lupg/ar-intensif': typeof AdminLupgArIntensifIndexRoute
   '/admin/lupg/config': typeof AdminLupgConfigIndexRoute
   '/admin/lupg/mustin': typeof AdminLupgMustinIndexRoute
   '/admin/lupg/presentation': typeof AdminLupgPresentationIndexRoute
@@ -384,9 +429,15 @@ export interface FileRoutesByTo {
   '/admin/participants': typeof AdminParticipantsIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/tasks': typeof AdminTasksIndexRoute
+  '/admin/lupg/phq/attendance': typeof AdminLupgPhqAttendanceRoute
+  '/admin/lupg/phq/participants': typeof AdminLupgPhqParticipantsRoute
+  '/admin/lupg/phq/progress': typeof AdminLupgPhqProgressRoute
+  '/admin/lupg/phq/summary': typeof AdminLupgPhqSummaryRoute
   '/admin/lupg/recap/present': typeof AdminLupgRecapPresentRoute
   '/admin/lupg/reports/$monthlyReportId': typeof AdminLupgReportsMonthlyReportIdRoute
   '/share/lupg/presentation/$token': typeof ShareLupgPresentationTokenRoute
+  '/admin/lupg/apr-intensif': typeof AdminLupgAprIntensifIndexRoute
+  '/admin/lupg/ar-intensif': typeof AdminLupgArIntensifIndexRoute
   '/admin/lupg/config': typeof AdminLupgConfigIndexRoute
   '/admin/lupg/mustin': typeof AdminLupgMustinIndexRoute
   '/admin/lupg/presentation': typeof AdminLupgPresentationIndexRoute
@@ -434,9 +485,15 @@ export interface FileRoutesById {
   '/admin/participants/': typeof AdminParticipantsIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tasks/': typeof AdminTasksIndexRoute
+  '/admin/lupg/phq/attendance': typeof AdminLupgPhqAttendanceRoute
+  '/admin/lupg/phq/participants': typeof AdminLupgPhqParticipantsRoute
+  '/admin/lupg/phq/progress': typeof AdminLupgPhqProgressRoute
+  '/admin/lupg/phq/summary': typeof AdminLupgPhqSummaryRoute
   '/admin/lupg/recap/present': typeof AdminLupgRecapPresentRoute
   '/admin/lupg/reports/$monthlyReportId': typeof AdminLupgReportsMonthlyReportIdRoute
   '/share/lupg/presentation/$token': typeof ShareLupgPresentationTokenRoute
+  '/admin/lupg/apr-intensif/': typeof AdminLupgAprIntensifIndexRoute
+  '/admin/lupg/ar-intensif/': typeof AdminLupgArIntensifIndexRoute
   '/admin/lupg/config/': typeof AdminLupgConfigIndexRoute
   '/admin/lupg/mustin/': typeof AdminLupgMustinIndexRoute
   '/admin/lupg/presentation/': typeof AdminLupgPresentationIndexRoute
@@ -485,9 +542,15 @@ export interface FileRouteTypes {
     | '/admin/participants'
     | '/admin/settings/'
     | '/admin/tasks'
+    | '/admin/lupg/phq/attendance'
+    | '/admin/lupg/phq/participants'
+    | '/admin/lupg/phq/progress'
+    | '/admin/lupg/phq/summary'
     | '/admin/lupg/recap/present'
     | '/admin/lupg/reports/$monthlyReportId'
     | '/share/lupg/presentation/$token'
+    | '/admin/lupg/apr-intensif'
+    | '/admin/lupg/ar-intensif'
     | '/admin/lupg/config'
     | '/admin/lupg/mustin'
     | '/admin/lupg/presentation'
@@ -533,9 +596,15 @@ export interface FileRouteTypes {
     | '/admin/participants'
     | '/admin/settings'
     | '/admin/tasks'
+    | '/admin/lupg/phq/attendance'
+    | '/admin/lupg/phq/participants'
+    | '/admin/lupg/phq/progress'
+    | '/admin/lupg/phq/summary'
     | '/admin/lupg/recap/present'
     | '/admin/lupg/reports/$monthlyReportId'
     | '/share/lupg/presentation/$token'
+    | '/admin/lupg/apr-intensif'
+    | '/admin/lupg/ar-intensif'
     | '/admin/lupg/config'
     | '/admin/lupg/mustin'
     | '/admin/lupg/presentation'
@@ -582,9 +651,15 @@ export interface FileRouteTypes {
     | '/admin/participants/'
     | '/admin/settings/'
     | '/admin/tasks/'
+    | '/admin/lupg/phq/attendance'
+    | '/admin/lupg/phq/participants'
+    | '/admin/lupg/phq/progress'
+    | '/admin/lupg/phq/summary'
     | '/admin/lupg/recap/present'
     | '/admin/lupg/reports/$monthlyReportId'
     | '/share/lupg/presentation/$token'
+    | '/admin/lupg/apr-intensif/'
+    | '/admin/lupg/ar-intensif/'
     | '/admin/lupg/config/'
     | '/admin/lupg/mustin/'
     | '/admin/lupg/presentation/'
@@ -924,6 +999,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLupgConfigIndexRouteImport
       parentRoute: typeof AdminLupgRouteRoute
     }
+    '/admin/lupg/ar-intensif/': {
+      id: '/admin/lupg/ar-intensif/'
+      path: '/ar-intensif'
+      fullPath: '/admin/lupg/ar-intensif'
+      preLoaderRoute: typeof AdminLupgArIntensifIndexRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
+    '/admin/lupg/apr-intensif/': {
+      id: '/admin/lupg/apr-intensif/'
+      path: '/apr-intensif'
+      fullPath: '/admin/lupg/apr-intensif'
+      preLoaderRoute: typeof AdminLupgAprIntensifIndexRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
     '/share/lupg/presentation/$token': {
       id: '/share/lupg/presentation/$token'
       path: '/share/lupg/presentation/$token'
@@ -945,13 +1034,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLupgRecapPresentRouteImport
       parentRoute: typeof AdminLupgRouteRoute
     }
+    '/admin/lupg/phq/summary': {
+      id: '/admin/lupg/phq/summary'
+      path: '/phq/summary'
+      fullPath: '/admin/lupg/phq/summary'
+      preLoaderRoute: typeof AdminLupgPhqSummaryRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
+    '/admin/lupg/phq/progress': {
+      id: '/admin/lupg/phq/progress'
+      path: '/phq/progress'
+      fullPath: '/admin/lupg/phq/progress'
+      preLoaderRoute: typeof AdminLupgPhqProgressRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
+    '/admin/lupg/phq/participants': {
+      id: '/admin/lupg/phq/participants'
+      path: '/phq/participants'
+      fullPath: '/admin/lupg/phq/participants'
+      preLoaderRoute: typeof AdminLupgPhqParticipantsRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
+    '/admin/lupg/phq/attendance': {
+      id: '/admin/lupg/phq/attendance'
+      path: '/phq/attendance'
+      fullPath: '/admin/lupg/phq/attendance'
+      preLoaderRoute: typeof AdminLupgPhqAttendanceRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
   }
 }
 
 interface AdminLupgRouteRouteChildren {
   AdminLupgDashboardRoute: typeof AdminLupgDashboardRoute
+  AdminLupgPhqAttendanceRoute: typeof AdminLupgPhqAttendanceRoute
+  AdminLupgPhqParticipantsRoute: typeof AdminLupgPhqParticipantsRoute
+  AdminLupgPhqProgressRoute: typeof AdminLupgPhqProgressRoute
+  AdminLupgPhqSummaryRoute: typeof AdminLupgPhqSummaryRoute
   AdminLupgRecapPresentRoute: typeof AdminLupgRecapPresentRoute
   AdminLupgReportsMonthlyReportIdRoute: typeof AdminLupgReportsMonthlyReportIdRoute
+  AdminLupgAprIntensifIndexRoute: typeof AdminLupgAprIntensifIndexRoute
+  AdminLupgArIntensifIndexRoute: typeof AdminLupgArIntensifIndexRoute
   AdminLupgConfigIndexRoute: typeof AdminLupgConfigIndexRoute
   AdminLupgMustinIndexRoute: typeof AdminLupgMustinIndexRoute
   AdminLupgPresentationIndexRoute: typeof AdminLupgPresentationIndexRoute
@@ -963,8 +1086,14 @@ interface AdminLupgRouteRouteChildren {
 
 const AdminLupgRouteRouteChildren: AdminLupgRouteRouteChildren = {
   AdminLupgDashboardRoute: AdminLupgDashboardRoute,
+  AdminLupgPhqAttendanceRoute: AdminLupgPhqAttendanceRoute,
+  AdminLupgPhqParticipantsRoute: AdminLupgPhqParticipantsRoute,
+  AdminLupgPhqProgressRoute: AdminLupgPhqProgressRoute,
+  AdminLupgPhqSummaryRoute: AdminLupgPhqSummaryRoute,
   AdminLupgRecapPresentRoute: AdminLupgRecapPresentRoute,
   AdminLupgReportsMonthlyReportIdRoute: AdminLupgReportsMonthlyReportIdRoute,
+  AdminLupgAprIntensifIndexRoute: AdminLupgAprIntensifIndexRoute,
+  AdminLupgArIntensifIndexRoute: AdminLupgArIntensifIndexRoute,
   AdminLupgConfigIndexRoute: AdminLupgConfigIndexRoute,
   AdminLupgMustinIndexRoute: AdminLupgMustinIndexRoute,
   AdminLupgPresentationIndexRoute: AdminLupgPresentationIndexRoute,

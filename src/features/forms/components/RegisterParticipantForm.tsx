@@ -177,7 +177,7 @@ export function RegisterParticipantForm({
         <CardHeader className='space-y-6 px-6 pt-10 text-center sm:px-8'>
           <div className='flex justify-center'>
             <div className='rounded-full bg-green-50 p-4 ring-8 ring-green-50/50 dark:bg-green-500/10 dark:ring-green-500/5'>
-              <CheckCircle2 className='ease-out-back h-12 w-12 animate-in text-green-600 duration-300 zoom-in dark:text-green-500' />
+              <CheckCircle2 className='ease-out-back h-12 w-12 animate-in text-green-600 transition-[transform] duration-300 zoom-in dark:text-green-500' />
             </div>
           </div>
           <CardTitle className='text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100'>
@@ -481,7 +481,7 @@ export function RegisterParticipantForm({
             />
 
             {attendanceStatus === 'izin' && (
-              <div className='ease-out-quart animate-in space-y-6 pt-2 duration-500 fade-in slide-in-from-top-4'>
+              <div className='ease-out-quart animate-in space-y-6 pt-2 transition-[opacity,transform] duration-500 fade-in slide-in-from-top-4'>
                 <FormField
                   control={form.control}
                   name='permissionReason'
@@ -545,7 +545,7 @@ export function RegisterParticipantForm({
             <div className='flex justify-end pt-4 sm:pt-6'>
               <Button
                 type='submit'
-                className='h-13 w-40 rounded-xl bg-zinc-950 text-[15px] font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-50 sm:rounded-[0.85rem] sm:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.3)] dark:bg-white dark:text-zinc-950 dark:shadow-none dark:hover:bg-zinc-200'
+                className='h-13 w-40 rounded-xl bg-zinc-950 text-[15px] font-semibold text-white shadow-md transition-[background-color,opacity,transform] hover:-translate-y-0.5 hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-50 sm:rounded-[0.85rem] sm:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.3)] dark:bg-white dark:text-zinc-950 dark:shadow-none dark:hover:bg-zinc-200'
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
