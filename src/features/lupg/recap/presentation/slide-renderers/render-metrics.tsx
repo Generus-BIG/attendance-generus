@@ -197,6 +197,57 @@ interface DesaMetricTableRow {
   startsGroup?: boolean
 }
 
+function useMetricsTableStyle() {
+  const palette =
+    typeof window === 'undefined'
+      ? 'modern-natural'
+      : document.documentElement.getAttribute('data-palette')
+
+  if (palette === 'anthropic-claude') {
+    return {
+      headerBg: '#3d3428',
+      headerFg: '#fffaf0',
+      categoryBg: '#fffdf8',
+      piketBg: '#f4e8dc',
+      summaryBg: '#ead7c5',
+      summaryLabelBg: '#e2c5ad',
+      avgBg: '#9c4e2d',
+      divider: '#c69a7d',
+      categoryText: '#3d3428',
+      piketText: '#9c4e2d',
+      summaryText: '#6f3722',
+    }
+  }
+  if (palette === 'sage-green') {
+    return {
+      headerBg: '#314a38',
+      headerFg: '#f7fbf5',
+      categoryBg: '#fbfdf9',
+      piketBg: '#e8f0e3',
+      summaryBg: '#d9e6d2',
+      summaryLabelBg: '#cadbc1',
+      avgBg: '#496b50',
+      divider: '#91aa93',
+      categoryText: '#25352a',
+      piketText: '#496b50',
+      summaryText: '#314a38',
+    }
+  }
+  return {
+    headerBg: '#243f73',
+    headerFg: '#f8fbff',
+    categoryBg: '#fbfcff',
+    piketBg: '#e7effb',
+    summaryBg: '#d7e4f6',
+    summaryLabelBg: '#c7d9f1',
+    avgBg: '#315b9a',
+    divider: '#8ca7d0',
+    categoryText: '#172338',
+    piketText: '#315b9a',
+    summaryText: '#243f73',
+  }
+}
+
 function MetricsDesaTable({
   kelompokList,
   reports,
@@ -207,34 +258,8 @@ function MetricsDesaTable({
   metricReports: MetricReportRow[]
 }) {
   const p = usePresPalette()
+  const tableStyle = useMetricsTableStyle()
   const maps = buildCurrentMetricMaps(reports, metricReports)
-
-  const isModern =
-    typeof window !== 'undefined' &&
-    document.documentElement.getAttribute('data-palette') === 'modern-natural'
-
-  const colorCatBg = isModern
-    ? '#ffffff'
-    : `color-mix(in oklch, ${p.primary} 3%, ${p.bg})`
-  const colorPiketBg = isModern
-    ? '#ececf4'
-    : `color-mix(in oklch, ${p.primary} 9%, ${p.bg})`
-  const colorSummaryBg = isModern
-    ? '#dae6f2'
-    : `color-mix(in oklch, ${p.primary} 15%, ${p.bg})`
-  const colorLabelSummaryBg = isModern
-    ? '#d3cdca'
-    : `color-mix(in oklch, ${p.primary} 20%, ${p.bg})`
-  const colorDivider = isModern
-    ? '#869fc3'
-    : `color-mix(in oklch, ${p.primary} 35%, ${p.bg})`
-
-  const colorTextCat = isModern ? '#0f172a' : p.ink
-  const colorTextPiket = isModern
-    ? '#2a2b77'
-    : `color-mix(in oklch, ${p.primary} 85%, ${p.ink})`
-  const colorTextSummary = isModern ? '#2a2b77' : p.brandAccent
-  const colorFinalAvgBg = isModern ? '#2772b2' : p.primary
 
   const groups: Array<{
     key: KategoriCode
@@ -322,13 +347,13 @@ function MetricsDesaTable({
   })
 
   const headerStyle = {
-    background: p.tableHeader,
-    color: p.tableHeaderFg,
+    background: tableStyle.headerBg,
+    color: tableStyle.headerFg,
     fontFamily: p.fontMono,
-    fontSize: 'clamp(0.65rem, 0.8cqw, 0.85rem)',
-    fontWeight: 700,
-    letterSpacing: '0.05em',
-    lineHeight: 1.2,
+    fontSize: 'clamp(0.75rem, 0.96cqw, 1.04rem)',
+    fontWeight: 800,
+    letterSpacing: '0.07em',
+    lineHeight: 1.15,
     textTransform: 'uppercase' as const,
   }
 
@@ -378,10 +403,10 @@ function MetricsDesaTable({
           {rows.map((row) => {
             const rowBg =
               row.tone === 'summary'
-                ? colorSummaryBg
+                ? tableStyle.summaryBg
                 : row.tone === 'piket'
-                  ? colorPiketBg
-                  : colorCatBg
+                  ? tableStyle.piketBg
+                  : tableStyle.categoryBg
             return (
               <tr
                 key={row.key}
@@ -389,16 +414,16 @@ function MetricsDesaTable({
                   background: rowBg,
                   borderTop:
                     row.startsGroup && row.key !== 'ACR-attendance'
-                      ? `2px solid ${colorDivider}`
+                      ? `2px solid ${tableStyle.divider}`
                       : undefined,
                   color:
                     row.tone === 'category'
-                      ? colorTextCat
+                      ? tableStyle.categoryText
                       : row.tone === 'summary'
-                        ? colorTextSummary
-                        : colorTextPiket,
+                        ? tableStyle.summaryText
+                        : tableStyle.piketText,
                   fontSize: 'clamp(0.62rem, 0.82vw, 0.96rem)',
-                  fontWeight: row.tone === 'summary' ? 800 : 600,
+                  fontWeight: 400,
                   lineHeight: 1.18,
                 }}
               >
@@ -406,9 +431,10 @@ function MetricsDesaTable({
                   className='border-b px-2 py-2'
                   style={{
                     background:
-                      row.tone === 'summary' ? colorLabelSummaryBg : undefined,
+                      row.tone === 'summary'
+                        ? tableStyle.summaryLabelBg
+                        : undefined,
                     borderColor: p.rule,
-                    fontWeight: 700,
                   }}
                 >
                   {row.label}
@@ -427,14 +453,12 @@ function MetricsDesaTable({
                   style={
                     row.tone === 'summary'
                       ? {
-                          background: colorFinalAvgBg,
+                          background: tableStyle.avgBg,
                           borderColor: p.rule,
-                          color: p.primaryFg,
-                          fontWeight: 800,
+                          color: tableStyle.headerFg,
                         }
                       : {
                           borderColor: p.rule,
-                          fontWeight: 700,
                         }
                   }
                 >
@@ -484,33 +508,7 @@ function MetricsKelompokTable({
   summaryPiketAvg: number | null
 }) {
   const p = usePresPalette()
-
-  const isModern =
-    typeof window !== 'undefined' &&
-    document.documentElement.getAttribute('data-palette') === 'modern-natural'
-
-  const colorCatBg = isModern
-    ? '#ffffff'
-    : `color-mix(in oklch, ${p.primary} 3%, ${p.bg})`
-  const colorPiketBg = isModern
-    ? '#ececf4'
-    : `color-mix(in oklch, ${p.primary} 9%, ${p.bg})`
-  const colorSummaryBg = isModern
-    ? '#dae6f2'
-    : `color-mix(in oklch, ${p.primary} 15%, ${p.bg})`
-  const colorLabelSummaryBg = isModern
-    ? '#d3cdca'
-    : `color-mix(in oklch, ${p.primary} 20%, ${p.bg})`
-  const colorDivider = isModern
-    ? '#869fc3'
-    : `color-mix(in oklch, ${p.primary} 35%, ${p.bg})`
-
-  const colorTextCat = isModern ? '#0f172a' : p.ink
-  const colorTextPiket = isModern
-    ? '#2a2b77'
-    : `color-mix(in oklch, ${p.primary} 85%, ${p.ink})`
-  const colorTextSummary = isModern ? '#2a2b77' : p.brandAccent
-  const colorFinalAvgBg = isModern ? '#2772b2' : p.primary
+  const tableStyle = useMetricsTableStyle()
 
   const rows: KelompokMetricTableRow[] = []
   rowsByKategori.forEach((g, gi) => {
@@ -555,13 +553,13 @@ function MetricsKelompokTable({
   })
 
   const headerStyle = {
-    background: p.tableHeader,
-    color: p.tableHeaderFg,
+    background: tableStyle.headerBg,
+    color: tableStyle.headerFg,
     fontFamily: p.fontMono,
-    fontSize: 'clamp(0.65rem, 0.8cqw, 0.85rem)',
-    fontWeight: 700,
-    letterSpacing: '0.05em',
-    lineHeight: 1.2,
+    fontSize: 'clamp(0.75rem, 0.96cqw, 1.04rem)',
+    fontWeight: 800,
+    letterSpacing: '0.07em',
+    lineHeight: 1.15,
     textTransform: 'uppercase' as const,
   }
 
@@ -590,10 +588,10 @@ function MetricsKelompokTable({
           {rows.map((row) => {
             const rowBg =
               row.tone === 'summary'
-                ? colorSummaryBg
+                ? tableStyle.summaryBg
                 : row.tone === 'piket'
-                  ? colorPiketBg
-                  : colorCatBg
+                  ? tableStyle.piketBg
+                  : tableStyle.categoryBg
             return (
               <tr
                 key={row.key}
@@ -601,18 +599,18 @@ function MetricsKelompokTable({
                   background: rowBg,
                   borderTop:
                     row.startsGroup && row.key !== 'summary-generus'
-                      ? `2px solid ${colorDivider}`
+                      ? `2px solid ${tableStyle.divider}`
                       : row.key === 'summary-generus'
-                        ? `2px solid ${colorDivider}`
+                        ? `2px solid ${tableStyle.divider}`
                         : undefined,
                   color:
                     row.tone === 'category'
-                      ? colorTextCat
+                      ? tableStyle.categoryText
                       : row.tone === 'summary'
-                        ? colorTextSummary
-                        : colorTextPiket,
+                        ? tableStyle.summaryText
+                        : tableStyle.piketText,
                   fontSize: 'clamp(0.62rem, 0.82vw, 0.96rem)',
-                  fontWeight: row.tone === 'summary' ? 800 : 600,
+                  fontWeight: 400,
                   lineHeight: 1.18,
                 }}
               >
@@ -620,9 +618,10 @@ function MetricsKelompokTable({
                   className='border-b px-2 py-2'
                   style={{
                     background:
-                      row.tone === 'summary' ? colorLabelSummaryBg : undefined,
+                      row.tone === 'summary'
+                        ? tableStyle.summaryLabelBg
+                        : undefined,
                     borderColor: p.rule,
-                    fontWeight: 700,
                   }}
                 >
                   {row.label}
@@ -641,14 +640,12 @@ function MetricsKelompokTable({
                   style={
                     row.tone === 'summary'
                       ? {
-                          background: colorFinalAvgBg,
+                          background: tableStyle.avgBg,
                           borderColor: p.rule,
-                          color: p.primaryFg,
-                          fontWeight: 800,
+                          color: tableStyle.headerFg,
                         }
                       : {
                           borderColor: p.rule,
-                          fontWeight: 700,
                         }
                   }
                 >
