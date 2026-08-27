@@ -71,6 +71,7 @@ export default defineConfig(
       'src/routes/**/*.{ts,tsx}',
       'src/**/context/*.{ts,tsx}',
       'src/features/lupg/recap/presentation/slides.tsx',
+      'src/features/lupg/recap/presentation/slide-renderers/**/*.{ts,tsx}',
     ],
     rules: {
       'react-refresh/only-export-components': 'off',
