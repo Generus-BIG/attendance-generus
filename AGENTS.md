@@ -224,7 +224,8 @@ LUPG presentation decks can be shared per `month × scope` through
   `rotate_lupg_presentation_share` immediately invalidates the previous URL.
 - **Public payload** comes from
   `get_public_lupg_presentation_payload(token)`; it exposes only presentation
-  fields scoped to the link, never submitter/audit identities, and is executable
+  fields scoped to the link, including the current live sensus master/derived
+  cells (not month snapshots), never submitter/audit identities, and is executable
   only by the anonymous role used by the Edge Function.
 - **Private photos** remain in `lupg-activity-photos`.
   `supabase/functions/lupg-public-presentation/index.ts` is deployed with
