@@ -46,6 +46,7 @@
   --chart-5: oklch(0.42 0.18 266);
   --attendance-generus: oklch(0.74 0.09 245);
   --attendance-piket: oklch(0.48 0.14 245);
+  --cover-accent: oklch(0.48 0.14 245);
   --sarpras-primary: oklch(0.62 0.14 245);
   --shodaqoh-primary: oklch(0.48 0.14 245);
   --table-header: #4e6daf;
@@ -108,6 +109,7 @@
   --chart-5: oklch(0.42 0.18 266);
   --attendance-generus: oklch(0.78 0.08 245);
   --attendance-piket: oklch(0.62 0.13 245);
+  --cover-accent: oklch(0.62 0.13 245);
   --sarpras-primary: oklch(0.74 0.1 245);
   --shodaqoh-primary: oklch(0.62 0.13 245);
   --table-header: oklch(0.64 0.11 245);
@@ -163,6 +165,7 @@
   --chart-5: oklch(0.5608 0.1348 42.0584);
   --attendance-generus: #b65a30;
   --attendance-piket: #dfdac6;
+  --cover-accent: #d97757;
   --sarpras-primary: #c86b42;
   --shodaqoh-primary: #b65a30;
   --table-header: #ede7d7;
@@ -220,6 +223,7 @@
   --chart-5: oklch(0.5608 0.1348 42.0584);
   --attendance-generus: oklch(0.78 0.08 43);
   --attendance-piket: oklch(0.64 0.13 43);
+  --cover-accent: oklch(0.64 0.13 43);
   --sarpras-primary: oklch(0.72 0.1 43);
   --shodaqoh-primary: oklch(0.64 0.13 43);
   --table-header: oklch(0.66 0.1 43);
@@ -280,6 +284,7 @@
   --chart-5: oklch(0.559 0 0);
   --attendance-generus: #a8b69f;
   --attendance-piket: #5e7658;
+  --cover-accent: #5e7658;
   --sarpras-primary: #91a889;
   --shodaqoh-primary: #5e7658;
   --table-header: #a3b59d;
@@ -350,6 +355,7 @@
   --chart-5: oklch(0.783 0.0384 132.737);
   --attendance-generus: #b9c7b1;
   --attendance-piket: #7f9777;
+  --cover-accent: #7f9777;
   --sarpras-primary: #a8bda0;
   --shodaqoh-primary: #7f9777;
   --table-header: #9aad93;
