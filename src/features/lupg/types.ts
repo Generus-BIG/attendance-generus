@@ -8,6 +8,10 @@ export type MonthlyReportUpdate = Tables['lupg_monthly_reports']['Update']
 
 export type SensusRow = Tables['lupg_sensus']['Row']
 export type SensusSnapshotRow = Tables['lupg_sensus_snapshots']['Row']
+export type SensusCellRow = Pick<
+  SensusRow,
+  'kelompok_id' | 'category_code' | 'gender' | 'count'
+>
 
 export type ProgramDefinitionRow = Tables['lupg_program_definitions']['Row']
 export type ProgramReportRow = Tables['lupg_program_reports']['Row']
