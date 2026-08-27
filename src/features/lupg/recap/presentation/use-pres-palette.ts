@@ -16,6 +16,7 @@ export interface PresPalette {
   popoverFg: string
   attendanceGenerus: string
   attendancePiket: string
+  coverAccent: string
   sarprasPrimary: string
   shodaqohPrimary: string
   tableHeader: string
@@ -41,6 +42,7 @@ type TokenKey =
   | '--popover-foreground'
   | '--attendance-generus'
   | '--attendance-piket'
+  | '--cover-accent'
   | '--sarpras-primary'
   | '--shodaqoh-primary'
   | '--table-header'
@@ -71,6 +73,7 @@ function fallback(): PresPalette {
     popoverFg: 'oklch(0.145 0 0)',
     attendanceGenerus: 'oklch(0.74 0.09 245)',
     attendancePiket: 'oklch(0.48 0.14 245)',
+    coverAccent: 'oklch(0.48 0.14 245)',
     sarprasPrimary: 'oklch(0.62 0.14 245)',
     shodaqohPrimary: 'oklch(0.48 0.14 245)',
     tableHeader: '#4e6daf',
@@ -108,6 +111,7 @@ function readTokens(): PresPalette {
     attendanceGenerus:
       get('--attendance-generus') || defaults.attendanceGenerus,
     attendancePiket: get('--attendance-piket') || defaults.attendancePiket,
+    coverAccent: get('--cover-accent') || defaults.coverAccent,
     sarprasPrimary: get('--sarpras-primary') || defaults.sarprasPrimary,
     shodaqohPrimary: get('--shodaqoh-primary') || defaults.shodaqohPrimary,
     tableHeader: get('--table-header') || defaults.tableHeader,
