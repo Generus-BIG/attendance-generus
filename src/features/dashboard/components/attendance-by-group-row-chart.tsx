@@ -1,11 +1,3 @@
-import {
-  Bar,
-  BarChart,
-  Cell,
-  LabelList,
-  XAxis,
-  YAxis,
-} from 'recharts'
 import { useIsMobile } from '@/hooks/use-mobile'
 import {
   Card,
@@ -20,6 +12,14 @@ import {
   ChartTooltip,
 } from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Bar,
+  BarChart,
+  Cell,
+  LabelList,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import type { GroupGenderBreakdownRow, MonthlyFormRecap } from '../types'
 import { ChartSegmentTooltip } from './chart-segment-tooltip'
 
