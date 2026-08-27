@@ -197,7 +197,7 @@ interface DesaMetricTableRow {
   startsGroup?: boolean
 }
 
-function useMetricsTableStyle() {
+function getMetricsTableStyle() {
   const palette =
     typeof window === 'undefined'
       ? 'modern-natural'
@@ -258,7 +258,7 @@ function MetricsDesaTable({
   metricReports: MetricReportRow[]
 }) {
   const p = usePresPalette()
-  const tableStyle = useMetricsTableStyle()
+  const tableStyle = getMetricsTableStyle()
   const maps = buildCurrentMetricMaps(reports, metricReports)
 
   const groups: Array<{
@@ -367,21 +367,21 @@ function MetricsDesaTable({
           <tr>
             <th
               rowSpan={2}
-              className='w-[18%] px-2 py-2 text-left'
+              className='w-[18%] px-2 py-3 text-left'
               style={headerStyle}
             >
               KATEGORI
             </th>
             <th
               colSpan={kelompokList.length}
-              className='px-2 py-1.5 text-center'
+              className='px-2 py-2.5 text-center'
               style={headerStyle}
             >
               RATA-RATA KEHADIRAN SEBULAN %
             </th>
             <th
               rowSpan={2}
-              className='w-[12%] px-2 py-2 text-center'
+              className='w-[12%] px-2 py-3 text-center'
               style={headerStyle}
             >
               RATA² SE-DESA %
@@ -391,7 +391,7 @@ function MetricsDesaTable({
             {kelompokList.map((k) => (
               <th
                 key={k.id}
-                className='px-2 py-1.5 text-center'
+                className='px-2 py-2.5 text-center'
                 style={headerStyle}
               >
                 {k.value.replace(/^kel\.?\s*/i, '').toUpperCase()}
@@ -508,7 +508,7 @@ function MetricsKelompokTable({
   summaryPiketAvg: number | null
 }) {
   const p = usePresPalette()
-  const tableStyle = useMetricsTableStyle()
+  const tableStyle = getMetricsTableStyle()
 
   const rows: KelompokMetricTableRow[] = []
   rowsByKategori.forEach((g, gi) => {
@@ -571,15 +571,15 @@ function MetricsKelompokTable({
       >
         <thead>
           <tr>
-            <th className='w-[18%] px-2 py-2 text-left' style={headerStyle}>
+            <th className='w-[18%] px-2 py-3 text-left' style={headerStyle}>
               KATEGORI
             </th>
             {SHORT_MONTH_LABELS.map((m) => (
-              <th key={m} className='px-1 py-2 text-center' style={headerStyle}>
+              <th key={m} className='px-1 py-3 text-center' style={headerStyle}>
                 {m}
               </th>
             ))}
-            <th className='w-[10%] px-2 py-2 text-center' style={headerStyle}>
+            <th className='w-[10%] px-2 py-3 text-center' style={headerStyle}>
               RATA²
             </th>
           </tr>
