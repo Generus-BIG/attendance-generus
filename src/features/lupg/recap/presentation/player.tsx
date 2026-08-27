@@ -318,7 +318,7 @@ function PresentationPlayerInner({
                 className='min-h-11 min-w-11 sm:min-w-0'
               >
                 <Maximize2 className='h-4 w-4 sm:mr-2' />
-                <span className='hidden sm:inline'>Layar penuh</span>
+                <span className='hidden sm:inline'>Fullscreen</span>
               </Button>
             )}
             {onExit && (
@@ -329,7 +329,7 @@ function PresentationPlayerInner({
                 className='min-h-11 min-w-11 sm:min-w-0'
               >
                 <X className='h-4 w-4 sm:mr-2' />
-                <span className='hidden sm:inline'>Keluar</span>
+                <span className='hidden sm:inline'>Exit</span>
               </Button>
             )}
           </div>
