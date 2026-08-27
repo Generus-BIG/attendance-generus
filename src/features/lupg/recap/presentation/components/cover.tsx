@@ -4,7 +4,7 @@ import { AnimateContainer, AnimateItem } from './animate-element'
 interface CoverProps {
   modeLabel: string
   titleLines: string[]
-  monthLabel: string
+  scopePeriodLabel: string
   tagline: string
   metaLines: string[]
 }
@@ -12,7 +12,7 @@ interface CoverProps {
 export function Cover({
   modeLabel,
   titleLines,
-  monthLabel,
+  scopePeriodLabel,
   tagline,
   metaLines,
 }: CoverProps) {
@@ -51,8 +51,15 @@ export function Cover({
               {line}
             </AnimateItem>
           ))}
-          <AnimateItem style={{ color: p.brandAccent }}>
-            {monthLabel}
+          <AnimateItem
+            className='mt-3'
+            style={{
+              color: p.coverAccent,
+              fontSize: 'clamp(2rem, 4.5cqw, 3.75rem)',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {scopePeriodLabel}
           </AnimateItem>
           <AnimateItem className='mt-8 flex flex-col gap-4'>
             <span
@@ -62,7 +69,7 @@ export function Cover({
                 fontWeight: 400,
                 letterSpacing: 0,
                 lineHeight: 1.3,
-                color: p.primary,
+                color: p.ink,
               }}
             >
               {tagline}
@@ -75,7 +82,7 @@ export function Cover({
           style={{
             fontFamily: p.fontMono,
             fontSize: 'clamp(0.875rem, 1.1cqw, 1.125rem)',
-            fontWeight: 600,
+            fontWeight: 500,
             letterSpacing: '0.2em',
             color: p.muted,
           }}
