@@ -1,5 +1,11 @@
 import React from 'react'
 import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart'
+import {
   Bar,
   BarChart,
   Cell,
@@ -8,12 +14,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart'
 
 export interface BarDatum {
   label: string

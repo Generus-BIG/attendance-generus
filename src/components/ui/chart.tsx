@@ -1,17 +1,17 @@
 import * as React from 'react'
-import type * as RechartsPrimitive from 'recharts'
-import type {
-  DefaultLegendContentProps,
-  DefaultTooltipContentProps,
-  TooltipProps,
-  TooltipValueType,
-} from 'recharts'
-import {
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts'
+import { Legend, ResponsiveContainer, Tooltip } from 'recharts'
 import { cn } from '@/lib/utils'
+
+type DefaultLegendContentProps = import('recharts').DefaultLegendContentProps
+type DefaultTooltipContentProps<
+  TValue extends TooltipValueType,
+  TName extends TooltipNameType,
+> = import('recharts').DefaultTooltipContentProps<TValue, TName>
+type TooltipProps<
+  TValue extends TooltipValueType,
+  TName extends TooltipNameType,
+> = import('recharts').TooltipProps<TValue, TName>
+type TooltipValueType = import('recharts').TooltipValueType
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: '', dark: '.dark' } as const
@@ -56,7 +56,7 @@ function ChartContainer({
 }: React.ComponentProps<'div'> & {
   config: ChartConfig
   children: React.ComponentProps<
-    typeof RechartsPrimitive.ResponsiveContainer
+    (typeof import('recharts'))['ResponsiveContainer']
   >['children']
   initialDimension?: {
     width: number
@@ -79,11 +79,9 @@ function ChartContainer({
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <React.Suspense fallback={<div style={initialDimension} />}>
-          <ResponsiveContainer initialDimension={initialDimension}>
-            {children}
-          </ResponsiveContainer>
-        </React.Suspense>
+        <ResponsiveContainer initialDimension={initialDimension}>
+          {children}
+        </ResponsiveContainer>
       </div>
     </ChartContext.Provider>
   )
@@ -134,8 +132,7 @@ type ChartTooltipContentProps = TooltipProps<
     indicator?: 'line' | 'dot' | 'dashed'
     nameKey?: string
     labelKey?: string
-  } &
-  Omit<
+  } & Omit<
     DefaultTooltipContentProps<TooltipValueType, TooltipNameType>,
     'accessibilityLayer'
   >

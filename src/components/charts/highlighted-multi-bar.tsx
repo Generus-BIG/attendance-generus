@@ -1,5 +1,13 @@
 import React from 'react'
 import {
+  type ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart'
+import {
   Bar,
   BarChart,
   Cell,
@@ -8,14 +16,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart'
 
 export interface MultiBarRow {
   label: string
