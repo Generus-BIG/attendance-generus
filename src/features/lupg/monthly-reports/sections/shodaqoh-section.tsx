@@ -1,12 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { Lock } from 'lucide-react'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { useShodaqoh, useUpsertShodaqoh } from '../../hooks/use-lupg-queries'
-import { getPrevMonthShodaqoh } from '../../services/shodaqoh-report.service'
-import { type MonthlyReportRow } from '../../types'
-import { monthKeyFromDate } from '../../utils/month-utils'
+import {
+  useUpsertShodaqohMonth,
+  useYearlyShodaqohData,
+} from '../../hooks/use-lupg-queries'
+import { type MonthlyReportRow, type ShodaqohRow } from '../../types'
+import { currentMonthKey, monthKeyFromDate } from '../../utils/month-utils'
+import { allMonthKeysForYear, monthNameFromKey } from '../../programs/utils/editability'
 import { SectionHeading } from '../components/section-heading'
 
 interface Props {
@@ -14,84 +25,159 @@ interface Props {
   readOnly: boolean
 }
 
-export function ShodaqohSection({ report, readOnly }: Props) {
-  const { data: existing } = useShodaqoh(report.id)
-  const upsert = useUpsertShodaqoh()
+interface ShodaqohMonthRowProps {
+  monthKey: string
+  kelompokId: string
+  existing: ShodaqohRow | undefined
+  readOnly: boolean
+  layout?: 'row' | 'card'
+}
 
-  const [nominal, setNominal] = useState<string>('')
-  const [jumlahKK, setJumlahKK] = useState<string>('')
-  const [notes, setNotes] = useState<string>('')
+function formatNominal(raw: string): string {
+  const digits = raw.replace(/\D/g, '')
+  return digits ? parseInt(digits, 10).toLocaleString('id-ID') : ''
+}
 
-  // Formats raw digits as "1.000.000" (id-ID thousand separators).
-  // Non-digit input is stripped; empty string stays empty (no "0" placeholder).
-  const formatNominalInput = (raw: string): string => {
-    const digits = raw.replace(/\D/g, '')
-    if (!digits) return ''
-    return parseInt(digits, 10).toLocaleString('id-ID')
-  }
+function ShodaqohMonthRow({
+  monthKey,
+  kelompokId,
+  existing,
+  readOnly,
+  layout = 'row',
+}: ShodaqohMonthRowProps) {
+  const upsert = useUpsertShodaqohMonth()
+  const [nominal, setNominal] = useState(() => existing?.nominal?.toString() ?? '')
+  const [jumlahKk, setJumlahKk] = useState(() => existing?.jumlah_kk?.toString() ?? '')
+  const [notes, setNotes] = useState(() => existing?.notes ?? '')
 
-  useEffect(() => {
-    if (!existing) {
-      // Try prefill from prev month
-      if (readOnly) return
-      let cancelled = false
-      ;(async () => {
-        try {
-          const prev = await getPrevMonthShodaqoh(
-            report.kelompok_id,
-            monthKeyFromDate(report.month)
-          )
-          if (cancelled || !prev) return
-          setJumlahKK(prev.jumlah_kk.toString())
-          // nominal NOT prefilled — new month, new contribution
-        } catch {
-          // best effort
-        }
-      })()
-      return () => {
-        cancelled = true
-      }
-    }
-    // Sync local form state to server row when the row identity or revision
-    // changes. Intentional "form mirrors server data" pattern. We deliberately
-    // do NOT depend on `existing` (the whole object) since its individual
-    // fields would clobber in-flight edits before save completes.
-
-    setNominal(existing.nominal?.toString() ?? '')
-    setJumlahKK(existing.jumlah_kk?.toString() ?? '')
-    setNotes(existing.notes ?? '')
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    existing?.id,
-    existing?.updated_at,
-    report.kelompok_id,
-    report.month,
-    readOnly,
-  ])
+  const nominalValue = parseInt(nominal.replace(/\D/g, ''), 10) || 0
+  const jumlahKkValue = parseInt(jumlahKk, 10) || 0
+  const average = jumlahKkValue > 0 ? Math.round(nominalValue / jumlahKkValue) : 0
 
   const save = () => {
-    // `nominal` stores raw digits only (see onChange handler); formatting is display-only.
-    const nomVal = parseInt(nominal.replace(/\D/g, ''), 10) || 0
-    const kkVal = parseInt(jumlahKK, 10) || 0
+    if (readOnly) return
     upsert.mutate(
       {
-        monthly_report_id: report.id,
-        nominal: nomVal,
-        jumlah_kk: kkVal,
+        kelompok_id: kelompokId,
+        month: monthKey,
+        nominal: nominalValue,
+        jumlah_kk: jumlahKkValue,
         notes: notes || null,
       },
       {
-        onError: (e: unknown) => {
-          toast.error(e instanceof Error ? e.message : 'Gagal menyimpan')
+        onError: (error: unknown) => {
+          toast.error(error instanceof Error ? error.message : 'Gagal menyimpan')
         },
       }
     )
   }
 
-  const nomNum = parseInt(nominal.replace(/\D/g, ''), 10) || 0
-  const kkNum = parseInt(jumlahKK, 10) || 0
-  const rataPerKk = kkNum > 0 ? Math.round(nomNum / kkNum) : 0
+  const nominalInput = (
+    <Input
+      type='text'
+      value={formatNominal(nominal)}
+      onChange={(event) => setNominal(event.target.value.replace(/\D/g, ''))}
+      onBlur={save}
+      disabled={readOnly}
+      inputMode='numeric'
+      placeholder='0'
+    />
+  )
+  const jumlahKkInput = (
+    <Input
+      type='number'
+      min={0}
+      value={jumlahKk}
+      onChange={(event) => setJumlahKk(event.target.value)}
+      onBlur={save}
+      disabled={readOnly}
+      inputMode='numeric'
+      placeholder='0'
+    />
+  )
+  const notesInput = (
+    <Textarea
+      value={notes}
+      onChange={(event) => setNotes(event.target.value)}
+      onBlur={save}
+      disabled={readOnly}
+      placeholder='Catatan (opsional)'
+      rows={2}
+    />
+  )
+  const averageDisplay = `Rp ${average.toLocaleString('id-ID')}`
+
+  if (layout === 'card') {
+    return (
+      <div className='flex flex-col gap-3 rounded-md border border-border/70 bg-background p-3'>
+        <div className='flex items-center justify-between text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
+          <span>{monthNameFromKey(monthKey)}</span>
+          {readOnly && <Lock className='h-3 w-3' aria-label='Laporan terkunci' />}
+        </div>
+        <label className='flex flex-col gap-1 text-sm'>
+          <span className='text-xs text-muted-foreground'>Nominal (Rp)</span>
+          {nominalInput}
+        </label>
+        <label className='flex flex-col gap-1 text-sm'>
+          <span className='text-xs text-muted-foreground'>Jumlah KK</span>
+          {jumlahKkInput}
+        </label>
+        <div className='flex flex-col gap-1 text-sm'>
+          <span className='text-xs text-muted-foreground'>Rata-rata / KK</span>
+          <div className='rounded-md border bg-muted px-3 py-2 tabular-nums'>
+            {averageDisplay}
+          </div>
+        </div>
+        <label className='flex flex-col gap-1 text-sm'>
+          <span className='text-xs text-muted-foreground'>Catatan</span>
+          {notesInput}
+        </label>
+      </div>
+    )
+  }
+
+  return (
+    <TableRow>
+      <TableCell className='font-medium'>{monthNameFromKey(monthKey)}</TableCell>
+      <TableCell>{nominalInput}</TableCell>
+      <TableCell>{jumlahKkInput}</TableCell>
+      <TableCell className='text-right tabular-nums'>{averageDisplay}</TableCell>
+      <TableCell>{notesInput}</TableCell>
+    </TableRow>
+  )
+}
+
+export function ShodaqohSection({ report, readOnly }: Props) {
+  const year = parseInt(report.month.slice(0, 4), 10)
+  const { data } = useYearlyShodaqohData(report.kelompok_id, year)
+  const maxMonthKey =
+    year < parseInt(currentMonthKey().slice(0, 4), 10)
+      ? `${year}-12`
+      : currentMonthKey()
+  const monthKeys = useMemo(
+    () => allMonthKeysForYear(year).filter((monthKey) => monthKey <= maxMonthKey),
+    [maxMonthKey, year]
+  )
+  const rowsByMonth = useMemo(() => {
+    const reportsByMonth = new Map(
+      (data?.monthlyReports ?? []).map((monthlyReport) => [
+        monthKeyFromDate(monthlyReport.month),
+        monthlyReport.id,
+      ])
+    )
+    const shodaqohByReport = new Map(
+      (data?.shodaqohRows ?? []).map((shodaqoh) => [
+        shodaqoh.monthly_report_id,
+        shodaqoh,
+      ])
+    )
+    return new Map(
+      monthKeys.map((monthKey) => [
+        monthKey,
+        shodaqohByReport.get(reportsByMonth.get(monthKey) ?? ''),
+      ])
+    )
+  }, [data?.monthlyReports, data?.shodaqohRows, monthKeys])
 
   return (
     <section
@@ -100,54 +186,43 @@ export function ShodaqohSection({ report, readOnly }: Props) {
     >
       <SectionHeading
         kicker='Shodaqoh PPG'
-        description='Total nominal shodaqoh bulan ini dan jumlah KK penyumbang.'
+        description='Rincian nominal dan KK penyumbang dari Januari hingga bulan berjalan.'
       />
-      <div className='grid gap-4 sm:grid-cols-3'>
-        <div className='flex flex-col gap-2'>
-          <Label htmlFor='shodaqoh-nominal'>Nominal (Rp)</Label>
-          <Input
-            id='shodaqoh-nominal'
-            type='text'
-            value={formatNominalInput(nominal)}
-            onChange={(e) => setNominal(e.target.value.replace(/\D/g, ''))}
-            onBlur={save}
-            disabled={readOnly}
-            inputMode='numeric'
-            placeholder='0'
+      <div className='flex flex-col gap-2 md:hidden'>
+        {monthKeys.map((monthKey) => (
+          <ShodaqohMonthRow
+            key={`card-${monthKey}-${rowsByMonth.get(monthKey)?.updated_at ?? 'new'}`}
+            monthKey={monthKey}
+            kelompokId={report.kelompok_id}
+            existing={rowsByMonth.get(monthKey)}
+            readOnly={readOnly}
+            layout='card'
           />
-        </div>
-        <div className='flex flex-col gap-2'>
-          <Label htmlFor='shodaqoh-kk'>Jumlah KK</Label>
-          <Input
-            id='shodaqoh-kk'
-            type='number'
-            min={0}
-            value={jumlahKK}
-            onChange={(e) => setJumlahKK(e.target.value)}
-            onBlur={save}
-            disabled={readOnly}
-            inputMode='numeric'
-          />
-        </div>
-        <div className='flex flex-col gap-2'>
-          <Label>Rata-rata per KK</Label>
-          <div className='rounded-md border bg-muted px-3 py-2 text-sm tabular-nums'>
-            Rp {rataPerKk.toLocaleString('id-ID')}
-          </div>
-        </div>
-        <div className='sm:col-span-3'>
-          <Label htmlFor='shodaqoh-notes'>Catatan</Label>
-          <Textarea
-            id='shodaqoh-notes'
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            onBlur={save}
-            disabled={readOnly}
-            placeholder='Catatan (opsional)'
-            className='mt-1'
-            rows={2}
-          />
-        </div>
+        ))}
+      </div>
+      <div className='hidden overflow-x-auto md:block'>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Bulan</TableHead>
+              <TableHead>Nominal (Rp)</TableHead>
+              <TableHead>Jumlah KK</TableHead>
+              <TableHead className='text-right'>Rata-rata / KK</TableHead>
+              <TableHead>Catatan</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {monthKeys.map((monthKey) => (
+              <ShodaqohMonthRow
+                key={`${monthKey}-${rowsByMonth.get(monthKey)?.updated_at ?? 'new'}`}
+                monthKey={monthKey}
+                kelompokId={report.kelompok_id}
+                existing={rowsByMonth.get(monthKey)}
+                readOnly={readOnly}
+              />
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </section>
   )

@@ -36,6 +36,7 @@ export interface SensusStackedBarDatum {
 
 export interface SensusStackedBarProps {
   data: SensusStackedBarDatum[]
+  animationDuration?: number
 }
 
 const CATEGORY_LABELS: Record<GenerusCode, string> = {
@@ -170,7 +171,10 @@ function TopTotalLabel(props: TopTotalLabelProps) {
   )
 }
 
-export function SensusStackedBar({ data }: SensusStackedBarProps) {
+export function SensusStackedBar({
+  data,
+  animationDuration = 800,
+}: SensusStackedBarProps) {
   const palette = usePresPalette()
   const { durationScale } = usePresentationAnimation()
   const grandTotal = data.reduce((a, b) => a + b.total, 0)
@@ -240,7 +244,7 @@ export function SensusStackedBar({ data }: SensusStackedBarProps) {
                   name={CATEGORY_LABELS[code]}
                   fill={getSensusColor(code, paletteName)}
                   isAnimationActive={true}
-                  animationDuration={Math.round(800 * durationScale)}
+                  animationDuration={Math.round(animationDuration * durationScale)}
                 >
                   <LabelList
                     dataKey={code}

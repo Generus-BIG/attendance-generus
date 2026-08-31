@@ -43,6 +43,8 @@ const KEYS = {
   metricReports: (mrId: string) => ['lupg', 'metric-reports', mrId] as const,
   sarprasReports: (mrId: string) => ['lupg', 'sarpras-reports', mrId] as const,
   shodaqoh: (mrId: string) => ['lupg', 'shodaqoh', mrId] as const,
+  shodaqohYearly: (kelompokId: string, year: number) =>
+    ['lupg', 'shodaqoh-yearly', kelompokId, year] as const,
   mustin: (mrId: string) => ['lupg', 'mustin', mrId] as const,
   characterActivities: ['lupg', 'character-monitoring-activities'] as const,
   characterActivitiesAll: [
@@ -800,7 +802,7 @@ export function useYearlyShodaqohData(
   year: number
 ) {
   return useQuery({
-    queryKey: ['lupg', 'shodaqoh-yearly', kelompokId ?? 'none', year] as const,
+    queryKey: KEYS.shodaqohYearly(kelompokId ?? 'none', year),
     queryFn: () =>
       kelompokId
         ? shodaqohSvc.listYearlyShodaqohData(kelompokId, year)
@@ -815,6 +817,23 @@ export function useUpsertShodaqoh() {
     mutationFn: shodaqohSvc.upsertShodaqoh,
     onSuccess: (row) => {
       qc.invalidateQueries({ queryKey: KEYS.shodaqoh(row.monthly_report_id) })
+    },
+  })
+}
+
+export function useUpsertShodaqohMonth() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: shodaqohSvc.upsertShodaqohMonth,
+    onSuccess: (row, input) => {
+      qc.invalidateQueries({ queryKey: KEYS.shodaqoh(row.monthly_report_id) })
+      qc.invalidateQueries({
+        queryKey: KEYS.shodaqohYearly(
+          input.kelompok_id,
+          parseInt(input.month.slice(0, 4), 10)
+        ),
+      })
+      qc.invalidateQueries({ queryKey: ['lupg', 'monthly-reports'] })
     },
   })
 }
