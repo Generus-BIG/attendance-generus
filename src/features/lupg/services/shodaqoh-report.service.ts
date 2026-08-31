@@ -1,6 +1,9 @@
 import { supabase } from '@/lib/supabase'
 import { type ShodaqohRow } from '../types'
-import { getMonthlyReport } from './monthly-report.service'
+import {
+  ensureMonthlyReport,
+  getMonthlyReport,
+} from './monthly-report.service'
 
 export async function getShodaqoh(
   monthlyReportId: string
@@ -35,6 +38,22 @@ export async function upsertShodaqoh(input: {
     .single()
   if (error) throw error
   return data as ShodaqohRow
+}
+
+export async function upsertShodaqohMonth(input: {
+  kelompok_id: string
+  month: string
+  nominal: number
+  jumlah_kk: number
+  notes?: string | null
+}): Promise<ShodaqohRow> {
+  const report = await ensureMonthlyReport(input.kelompok_id, input.month)
+  return upsertShodaqoh({
+    monthly_report_id: report.id,
+    nominal: input.nominal,
+    jumlah_kk: input.jumlah_kk,
+    notes: input.notes,
+  })
 }
 
 export interface YearlyShodaqohData {

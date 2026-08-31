@@ -42,7 +42,6 @@ interface DesaRow {
   kelompokName: string
   denom: number
   now: number
-  prev: number | null
   pct: number | null
 }
 
@@ -130,9 +129,8 @@ function buildDesaRows(
     const row = report ? byReport.get(report.id) : undefined
     const denom = row?.denominator ?? 0
     const now = row?.count_this_month ?? 0
-    const prev = row?.count_prev_month ?? null
     const pct = denom > 0 ? Math.round((now / denom) * 100) : null
-    return { kelompokId: k.id, kelompokName: k.value, denom, now, prev, pct }
+    return { kelompokId: k.id, kelompokName: k.value, denom, now, pct }
   })
   const totalDenom = rows.reduce((a, b) => a + b.denom, 0)
   const totalNow = rows.reduce((a, b) => a + b.now, 0)
@@ -303,10 +301,7 @@ function ProgramDesaBody(props: SlideArgs) {
                   Sensus
                 </EditorialTableHead>
                 <EditorialTableHead className='text-right'>
-                  Lalu
-                </EditorialTableHead>
-                <EditorialTableHead className='text-right'>
-                  Ini
+                  Jumlah
                 </EditorialTableHead>
                 <EditorialTableHead className='text-right'>
                   %
@@ -319,9 +314,6 @@ function ProgramDesaBody(props: SlideArgs) {
                   <EditorialTableCell>{r.kelompokName}</EditorialTableCell>
                   <EditorialTableCell className='text-right'>
                     {r.denom}
-                  </EditorialTableCell>
-                  <EditorialTableCell className='text-right'>
-                    {r.prev ?? '—'}
                   </EditorialTableCell>
                   <EditorialTableCell className='text-right'>
                     {r.now}
@@ -337,9 +329,6 @@ function ProgramDesaBody(props: SlideArgs) {
                   {totals.denom}
                 </EditorialTableCell>
                 <EditorialTableCell className='text-right'>
-                  —
-                </EditorialTableCell>
-                <EditorialTableCell className='text-right'>
                   {totals.now}
                 </EditorialTableCell>
                 <EditorialTableCell className='text-right'>
@@ -353,7 +342,7 @@ function ProgramDesaBody(props: SlideArgs) {
           <TrendBar
             data={chartData}
             yAxisTitle='%'
-            valueLabel='Capaian'
+            valueLabel='Capaian vs Sensus'
             valueDomain={[0, 100]}
             valueFormatter={(n) => `${n}%`}
             labelFormatter={(n) => `${n}%`}
@@ -455,18 +444,13 @@ function buildQuarterlyDesaRows(
   programCode: string,
   programReports: ProgramReportRow[],
   yearlyMonthlyReports: MonthlyReportRow[],
-  currentQuarterEndMonthKey: string,
-  prevQuarterEndMonthKey: string | null
+  currentQuarterEndMonthKey: string
 ): { rows: DesaRow[]; totals: DesaTotalsRow } {
   const reportByKelompokCurrent = new Map<string, MonthlyReportRow>()
-  const reportByKelompokPrev = new Map<string, MonthlyReportRow>()
 
   for (const r of yearlyMonthlyReports) {
-    const mk = r.month.slice(0, 7)
-    if (mk === currentQuarterEndMonthKey) {
+    if (r.month.slice(0, 7) === currentQuarterEndMonthKey) {
       reportByKelompokCurrent.set(r.kelompok_id, r)
-    } else if (prevQuarterEndMonthKey && mk === prevQuarterEndMonthKey) {
-      reportByKelompokPrev.set(r.kelompok_id, r)
     }
   }
 
@@ -477,19 +461,15 @@ function buildQuarterlyDesaRows(
 
   const rows: DesaRow[] = effectiveKelompokList.map((k) => {
     const reportCurrent = reportByKelompokCurrent.get(k.id)
-    const reportPrev = reportByKelompokPrev.get(k.id)
-
     const rowCurrent = reportCurrent
       ? byReport.get(reportCurrent.id)
       : undefined
-    const rowPrev = reportPrev ? byReport.get(reportPrev.id) : undefined
 
     const denom = rowCurrent?.denominator ?? 0
     const now = rowCurrent?.count_this_month ?? 0
-    const prev = rowPrev?.count_this_month ?? null
     const pct = denom > 0 ? Math.round((now / denom) * 100) : null
 
-    return { kelompokId: k.id, kelompokName: k.value, denom, now, prev, pct }
+    return { kelompokId: k.id, kelompokName: k.value, denom, now, pct }
   })
 
   const totalDenom = rows.reduce((a, b) => a + b.denom, 0)
@@ -633,16 +613,13 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
   const q = Math.ceil(currentMonthIndex / 3)
 
   const currentQuarterEndMonthKey = getQuarterEndMonthKey(q as Quarter, year)
-  const prevQuarterEndMonthKey =
-    q > 1 ? getQuarterEndMonthKey((q - 1) as Quarter, year) : null
 
   const { rows, totals } = buildQuarterlyDesaRows(
     effectiveKelompokList,
     program.code,
     programReports,
     yearlyMonthlyReports,
-    currentQuarterEndMonthKey,
-    prevQuarterEndMonthKey
+    currentQuarterEndMonthKey
   )
 
   const chartData: TrendBarDatum[] = rows.map((r) => ({
@@ -669,10 +646,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                   Sensus
                 </EditorialTableHead>
                 <EditorialTableHead className='text-right'>
-                  Lalu
-                </EditorialTableHead>
-                <EditorialTableHead className='text-right'>
-                  Ini
+                  {program.code === 'GMKM' ? 'Jumlah Kehadiran' : 'Jumlah'}
                 </EditorialTableHead>
                 <EditorialTableHead className='text-right'>
                   %
@@ -685,9 +659,6 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                   <EditorialTableCell>{r.kelompokName}</EditorialTableCell>
                   <EditorialTableCell className='text-right'>
                     {r.denom}
-                  </EditorialTableCell>
-                  <EditorialTableCell className='text-right'>
-                    {r.prev ?? '—'}
                   </EditorialTableCell>
                   <EditorialTableCell className='text-right'>
                     {r.now}
@@ -703,9 +674,6 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                   {totals.denom}
                 </EditorialTableCell>
                 <EditorialTableCell className='text-right'>
-                  —
-                </EditorialTableCell>
-                <EditorialTableCell className='text-right'>
                   {totals.now}
                 </EditorialTableCell>
                 <EditorialTableCell className='text-right'>
@@ -719,7 +687,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
           <TrendBar
             data={chartData}
             yAxisTitle='%'
-            valueLabel='Capaian'
+            valueLabel='Capaian vs Sensus'
             valueDomain={[0, 100]}
             valueFormatter={(n) => `${n}%`}
             labelFormatter={(n) => `${n}%`}

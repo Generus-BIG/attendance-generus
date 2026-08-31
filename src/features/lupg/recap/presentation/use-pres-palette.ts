@@ -76,7 +76,7 @@ function fallback(): PresPalette {
     coverAccent: 'oklch(0.48 0.14 245)',
     sarprasPrimary: 'oklch(0.62 0.14 245)',
     shodaqohPrimary: 'oklch(0.48 0.14 245)',
-    tableHeader: '#4e6daf',
+    tableHeader: '#24456F',
     tableHeaderFg: 'oklch(0.985 0 0)',
     chart: ['#315a7d', '#3b8c78', '#c2643d', '#79589f', '#b84d4d'],
     fontSans,
