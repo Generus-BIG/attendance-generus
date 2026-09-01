@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Lock } from 'lucide-react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
@@ -15,6 +16,8 @@ interface Props {
   programCode: string
   existing: ProgramReportRow | undefined
   editability: EditabilityResult
+  /** Presentational only; marks the selected period in desktop tables. */
+  active?: boolean
   layout?: 'row' | 'card'
 }
 
@@ -25,6 +28,7 @@ export function ProgramEditableRow({
   programCode,
   existing,
   editability,
+  active = false,
   layout = 'row',
 }: Props) {
   const upsert = useUpsertProgramMonth()
@@ -173,8 +177,8 @@ export function ProgramEditableRow({
   }
 
   return (
-    <TableRow>
-      <TableCell className='font-medium'>
+    <TableRow className={cn(active && 'bg-accent/45 hover:bg-accent/45')}>
+      <TableCell className='border-b font-medium'>
         <div className='flex items-center gap-2'>
           {rowLabel}
           {disabled && (
@@ -190,12 +194,12 @@ export function ProgramEditableRow({
           </div>
         )}
       </TableCell>
-      <TableCell>{sensusInput}</TableCell>
-      <TableCell>{countInput}</TableCell>
-      <TableCell className='text-right text-muted-foreground tabular-nums'>
+      <TableCell className='border-b text-right'>{sensusInput}</TableCell>
+      <TableCell className='border-b text-right'>{countInput}</TableCell>
+      <TableCell className='border-b text-right text-muted-foreground tabular-nums'>
         {pctDisplay}
       </TableCell>
-      <TableCell>{notesInput}</TableCell>
+      <TableCell className='border-b'>{notesInput}</TableCell>
     </TableRow>
   )
 }

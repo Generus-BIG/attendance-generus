@@ -1,6 +1,7 @@
 import { useReducer } from 'react'
 import { Lock, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
@@ -16,6 +17,8 @@ interface Props {
   programCode: string
   existing: ProgramReportRow | undefined
   editability: EditabilityResult
+  /** Presentational only; marks the selected period in desktop tables. */
+  active?: boolean
   layout?: 'row' | 'card'
 }
 
@@ -36,6 +39,7 @@ function ProgramClusterEditableRowDraft({
   programCode,
   existing,
   editability,
+  active = false,
   layout = 'row',
 }: Props) {
   const upsert = useUpsertProgramMonth()
@@ -194,8 +198,8 @@ function ProgramClusterEditableRowDraft({
 
   return (
     <>
-      <TableRow>
-        <TableCell className='font-medium'>
+      <TableRow className={cn(active && 'bg-accent/45 hover:bg-accent/45')}>
+        <TableCell className='border-b font-medium'>
           <div className='flex items-center gap-2'>
             {rowLabel}
             {disabled && (
@@ -211,7 +215,7 @@ function ProgramClusterEditableRowDraft({
             </div>
           )}
         </TableCell>
-        <TableCell>
+        <TableCell className='border-b text-right'>
           <Input
             type='number'
             min={0}
@@ -219,11 +223,11 @@ function ProgramClusterEditableRowDraft({
             onChange={(e) => setValues({ denominator: e.target.value })}
             onBlur={() => save(false)}
             disabled={disabled}
-            className='w-20'
+            className='w-20 text-right tabular-nums'
             inputMode='numeric'
           />
         </TableCell>
-        <TableCell>
+        <TableCell className='border-b text-right'>
           <Input
             type='number'
             min={0}
@@ -231,14 +235,14 @@ function ProgramClusterEditableRowDraft({
             onChange={(e) => setValues({ notReady: e.target.value })}
             onBlur={() => save(false)}
             disabled={disabled}
-            className='w-20'
+            className='w-20 text-right tabular-nums'
             inputMode='numeric'
           />
         </TableCell>
-        <TableCell className='text-right text-muted-foreground tabular-nums'>
+        <TableCell className='border-b text-right text-muted-foreground tabular-nums'>
           {pctOf(notReadyNum) != null ? `${pctOf(notReadyNum)}%` : '-'}
         </TableCell>
-        <TableCell>
+        <TableCell className='border-b text-right'>
           <Input
             type='number'
             min={0}
@@ -246,14 +250,14 @@ function ProgramClusterEditableRowDraft({
             onChange={(e) => setValues({ ready: e.target.value })}
             onBlur={() => save(false)}
             disabled={disabled}
-            className='w-20'
+            className='w-20 text-right tabular-nums'
             inputMode='numeric'
           />
         </TableCell>
-        <TableCell className='text-right text-muted-foreground tabular-nums'>
+        <TableCell className='border-b text-right text-muted-foreground tabular-nums'>
           {pctOf(readyNum) != null ? `${pctOf(readyNum)}%` : '-'}
         </TableCell>
-        <TableCell>
+        <TableCell className='border-b text-right'>
           <Input
             type='number'
             min={0}
@@ -261,14 +265,14 @@ function ProgramClusterEditableRowDraft({
             onChange={(e) => setValues({ married: e.target.value })}
             onBlur={() => save(false)}
             disabled={disabled}
-            className='w-20'
+            className='w-20 text-right tabular-nums'
             inputMode='numeric'
           />
         </TableCell>
-        <TableCell className='text-right text-muted-foreground tabular-nums'>
+        <TableCell className='border-b text-right text-muted-foreground tabular-nums'>
           {pctOf(marriedNum) != null ? `${pctOf(marriedNum)}%` : '-'}
         </TableCell>
-        <TableCell>
+        <TableCell className='border-b'>
           <Textarea
             value={notes ?? ''}
             onChange={(e) => setValues({ notes: e.target.value })}
@@ -284,7 +288,7 @@ function ProgramClusterEditableRowDraft({
         <TableRow>
           <TableCell
             colSpan={9}
-            className='py-1 text-xs text-amber-600 dark:text-amber-400'
+            className='border-b py-1 text-xs text-amber-600 dark:text-amber-400'
           >
             <span className='inline-flex items-center gap-1'>
               <TriangleAlert className='h-3 w-3' />

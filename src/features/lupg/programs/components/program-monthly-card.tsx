@@ -34,6 +34,10 @@ function notesHeaderLabel(programCode: string): string {
   return 'Hasil Temuan'
 }
 
+/** Shared navy header-cell grammar for the program tracker tables. */
+const HEAD =
+  'bg-table-header text-table-header-foreground text-[0.6875rem] tracking-[0.12em] uppercase border-b'
+
 interface Props {
   program: ProgramDefinitionRow
   kelompokId: string
@@ -160,17 +164,21 @@ export function ProgramMonthlyBody({
 
       {/* Desktop: full table */}
       <div className='hidden overflow-x-auto md:block'>
-        <Table>
+        <Table className='border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums'>
           <TableHeader>
             <TableRow>
-              <TableHead>Bulan</TableHead>
-              <TableHead>Sensus</TableHead>
-              <TableHead>Jumlah</TableHead>
-              <TableHead className='text-right'>%</TableHead>
-              <TableHead>{notesHeaderLabel(program.code)}</TableHead>
+              <TableHead className={HEAD}>Periode</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Sensus</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>
+                Realisasi
+              </TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Capaian</TableHead>
+              <TableHead className={HEAD}>
+                {notesHeaderLabel(program.code)}
+              </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className='[&_tr:last-child_td]:border-b-0'>
             {pastAndCurrent.map((mk) => {
               const report = reportByMonthKey.get(mk)
               const row = report
@@ -192,13 +200,14 @@ export function ProgramMonthlyBody({
                   programCode={program.code}
                   existing={row}
                   editability={editability}
+                  active={mk === currentMonthKey}
                 />
               )
             })}
 
             {future.length > 0 && (
               <TableRow className='hover:bg-transparent'>
-                <TableCell colSpan={5} className='p-0'>
+                <TableCell colSpan={5} className='border-b p-0'>
                   <button
                     type='button'
                     onClick={() => setShowFuture((v) => !v)}
@@ -242,6 +251,7 @@ export function ProgramMonthlyBody({
                     programCode={program.code}
                     existing={row}
                     editability={editability}
+                    active={mk === currentMonthKey}
                   />
                 )
               })}

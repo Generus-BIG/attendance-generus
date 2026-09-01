@@ -29,6 +29,10 @@ import {
 } from '../utils/editability'
 import { ProgramClusterEditableRow } from './program-cluster-editable-row'
 
+/** Shared navy header-cell grammar for the program tracker tables. */
+const HEAD =
+  'bg-table-header text-table-header-foreground text-[0.6875rem] tracking-[0.12em] uppercase border-b'
+
 interface Props {
   program: ProgramDefinitionRow
   kelompokId: string
@@ -104,6 +108,7 @@ export function ProgramClusterBody({
         existing={row}
         editability={editability}
         layout={layout}
+        active={mk === currentMonthKey}
       />
     )
   }
@@ -131,43 +136,54 @@ export function ProgramClusterBody({
               : `Tampilkan ${future.length} bulan mendatang`}
           </button>
         )}
-        {showFuture &&
-          future.map((monthKey) => renderRow(monthKey, 'card'))}
+        {showFuture && future.map((monthKey) => renderRow(monthKey, 'card'))}
       </div>
 
       {/* Desktop: full table */}
       <div className='hidden overflow-x-auto md:block'>
-        <Table>
+        <Table className='border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums'>
           <TableHeader>
             <TableRow>
-              <TableHead rowSpan={2}>Bulan</TableHead>
-              <TableHead rowSpan={2}>Sensus</TableHead>
-              <TableHead colSpan={2} className='text-center'>
+              <TableHead rowSpan={2} className={HEAD}>
+                Periode
+              </TableHead>
+              <TableHead rowSpan={2} className={cn(HEAD, 'text-right')}>
+                Sensus
+              </TableHead>
+              <TableHead colSpan={2} className={cn(HEAD, 'text-center')}>
                 Belum Siap Menikah
               </TableHead>
-              <TableHead colSpan={2} className='text-center'>
+              <TableHead colSpan={2} className={cn(HEAD, 'text-center')}>
                 Siap Menikah
               </TableHead>
-              <TableHead colSpan={2} className='text-center'>
+              <TableHead colSpan={2} className={cn(HEAD, 'text-center')}>
                 Menikah
               </TableHead>
-              <TableHead rowSpan={2}>Hasil Temuan</TableHead>
+              <TableHead rowSpan={2} className={HEAD}>
+                Hasil Temuan
+              </TableHead>
             </TableRow>
             <TableRow>
-              <TableHead>Jumlah</TableHead>
-              <TableHead className='text-right'>%</TableHead>
-              <TableHead>Jumlah</TableHead>
-              <TableHead className='text-right'>%</TableHead>
-              <TableHead>Jumlah</TableHead>
-              <TableHead className='text-right'>%</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>
+                Realisasi
+              </TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Capaian</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>
+                Realisasi
+              </TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Capaian</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>
+                Realisasi
+              </TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Capaian</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className='[&_tr:last-child_td]:border-b-0'>
             {pastAndCurrent.map((monthKey) => renderRow(monthKey))}
 
             {future.length > 0 && (
               <TableRow className='hover:bg-transparent'>
-                <TableCell colSpan={9} className='p-0'>
+                <TableCell colSpan={9} className='border-b p-0'>
                   <button
                     type='button'
                     onClick={() => setShowFuture((v) => !v)}
