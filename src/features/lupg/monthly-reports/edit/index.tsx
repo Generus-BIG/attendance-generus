@@ -12,7 +12,11 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { ReportStatusBadge } from '../../components/report-status-badge'
 import { useMonthlyReport } from '../../hooks/use-lupg-queries'
-import { formatMonthLabel, monthKeyFromDate } from '../../utils/month-utils'
+import {
+  formatMonthLabel,
+  isReportMonthAvailable,
+  monthKeyFromDate,
+} from '../../utils/month-utils'
 import { RevealOnScroll } from '../components/reveal-on-scroll'
 import { SectionNav, type SectionItem } from '../components/section-nav'
 import { SubmitCard } from '../components/submit-card'
@@ -128,7 +132,7 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
 
   // Locked is now only true for legacy rows that were auto-locked before the
   // 'Tandai Selesai' flow was introduced; new reports stay editable after Done.
-  const readOnly = report.locked
+  const readOnly = report.locked || !isReportMonthAvailable(monthKeyFromDate(report.month))
 
   return (
     <>

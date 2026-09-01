@@ -4,7 +4,7 @@ This file provides guidance to AI agents (Claude Code, OpenCode, etc.) when work
 
 ## Important Rules
 
-- **DO NOT commit any changes to git.** No `git add`, `git commit`, or `git push`. The user will handle all git operations manually.
+- **DO NOT commit any changes to git.** No `git add`, `git commit`, or `git push`. The user will handle all git operations manually, except user ask and was allowed to do that.
 - **Keep AGENTS.md in sync.** Update this file whenever there's a major change: refactoring, new features that change architecture, new DB triggers/RPCs, or changes to conventions/workflow instructions. Minor bug fixes or typo corrections do NOT require an update.
 - RBAC is live — roles are `super_admin`, `admin`, `team_manager`, `mt`, `member` (see [src/lib/rbac.ts](src/lib/rbac.ts)). Route access is declared in `ROUTE_ACCESS`, enforced by longest `String.startsWith` prefix in [src/routes/admin/route.tsx](src/routes/admin/route.tsx). MT is default-denied unless that matching entry explicitly includes it (except `/admin`, `/admin/`, and `/admin/403`); other roles preserve legacy allow-by-default behavior. Claims come from `auth.jwt() -> 'app_metadata'`. Keep explicit PHQ child rules and sidebar visibility gating in sync — hiding a nav item alone is not protection.
 - **DATE columns in Supabase**: serialize with `format(d, 'yyyy-MM-dd')` from `date-fns`, deserialize with `parse(s, 'yyyy-MM-dd', new Date())`. Never use `new Date(s)` or `.toISOString().slice(0,10)` — both shift the day for non-UTC users. See `toDateOnly` / `fromDateOnly` in [participants-context.tsx](src/features/participants/context/participants-context.tsx).
@@ -127,7 +127,7 @@ Categories `GPN_A`, `GPN_B`, `AR`, `APR` are **auto-derived** from the `particip
 - **Sync function** `lupg_sync_derived_sensus(p_kelompok_id)`: zero-out then upsert derived counts into `lupg_sensus`. Handles count→0 when participants leave.
 - **Trigger** `tg_participants_sync_sensus` (AFTER INSERT/UPDATE OF status_active, category_id, group_id, gender OR DELETE): auto-calls sync for affected kelompok(s), including old kelompok on group transfer.
 
-Categories `ACR`, `PENDIDIK_MT`, `PENDIDIK_MS` remain **manual entry** (no corresponding participant records). The frontend uses `DERIVED_SENSUS_CATEGORIES` set in [constants.ts](src/features/lupg/constants.ts) to render derived categories as read-only.
+Categories `PAUD`, `ACR`, `PENDIDIK_MT`, `PENDIDIK_MS` remain **manual entry** (no corresponding participant records). PAUD is included in Generus sensus totals and presentation decks only; never add it to attendance, participant-derived sensus, PHQ, or program categories. The frontend uses `DERIVED_SENSUS_CATEGORIES` set in [constants.ts](src/features/lupg/constants.ts) to render derived categories as read-only.
 
 **RLS helpers (already in DB)**:
 - `user_role()`, `user_kelompok()`, `user_kelompok_id()` — read from `auth.jwt() -> 'app_metadata'`

@@ -1,12 +1,10 @@
 import { supabase } from '@/lib/supabase'
 import { type MonthlyReportRow, type MonthlyReportInsert } from '../types'
-
-function firstDayOfMonth(month: string | Date): string {
-  const d = typeof month === 'string' ? new Date(`${month}-01`) : month
-  const y = d.getFullYear()
-  const m = (d.getMonth() + 1).toString().padStart(2, '0')
-  return `${y}-${m}-01`
-}
+import {
+  firstDayOfMonth,
+  isCalendarMonthKey,
+  isReportMonthAvailable,
+} from '../utils/month-utils'
 
 export async function listMonthlyReports(params: {
   kelompokId?: string
@@ -56,11 +54,16 @@ export async function getMonthlyReportById(
 export async function createMonthlyReport(
   input: Pick<MonthlyReportInsert, 'kelompok_id' | 'month'>
 ): Promise<MonthlyReportRow> {
+  const month = input.month as string
+  if (!isCalendarMonthKey(month) || !isReportMonthAvailable(month)) {
+    throw new Error('Laporan bulan ini tersedia mulai tanggal 8')
+  }
+
   const { data, error } = await supabase
     .from('lupg_monthly_reports')
     .insert({
       kelompok_id: input.kelompok_id,
-      month: firstDayOfMonth(input.month as string),
+      month: firstDayOfMonth(month),
       status: 'draft',
     })
     .select()
@@ -73,6 +76,13 @@ export async function ensureMonthlyReport(
   kelompokId: string,
   month: string
 ): Promise<MonthlyReportRow> {
+  if (!isCalendarMonthKey(month)) {
+    throw new Error('Bulan laporan tidak valid')
+  }
+  if (!isReportMonthAvailable(month)) {
+    throw new Error('Laporan bulan ini tersedia mulai tanggal 8')
+  }
+
   const existing = await getMonthlyReport(kelompokId, month)
   if (existing) return existing
   return createMonthlyReport({ kelompok_id: kelompokId, month })

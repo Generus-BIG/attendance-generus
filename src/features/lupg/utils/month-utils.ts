@@ -6,6 +6,17 @@ export function currentMonthKey(date: Date = new Date()): string {
   return format(date, 'yyyy-MM')
 }
 
+export function reportMonthKey(date: Date = new Date()): string {
+  return shiftMonth(currentMonthKey(date), date.getDate() < 8 ? -1 : 0)
+}
+
+export function isReportMonthAvailable(
+  monthKey: string,
+  date: Date = new Date()
+): boolean {
+  return isCalendarMonthKey(monthKey) && monthKey <= reportMonthKey(date)
+}
+
 export function isCalendarMonthKey(monthKey: string): boolean {
   return /^\d{4}-(0[1-9]|1[0-2])$/.test(monthKey)
 }

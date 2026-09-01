@@ -22,6 +22,7 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { KelompokSelector } from '../components/kelompok-selector'
 import { MonthPicker } from '../components/month-picker'
+import { isReportMonthAvailable, reportMonthKey } from '../utils/month-utils'
 import { PresentationShareCard } from './presentation-share-card'
 
 const DESA_SELECTION = 'desa'
@@ -41,7 +42,9 @@ export function PresentationPicker({
   const typedRole = role as Role
   const isTeamManager = typedRole === 'team_manager'
 
-  const [monthKey, setMonthKey] = useState(initialMonthKey)
+  const [monthKey, setMonthKey] = useState(() =>
+    isReportMonthAvailable(initialMonthKey) ? initialMonthKey : reportMonthKey()
+  )
   const [adminKelompokId, setAdminKelompokId] = useState(initialKelompokId)
 
   const {
@@ -131,7 +134,11 @@ export function PresentationPicker({
             <CardContent className='flex flex-col gap-5'>
               <div className='flex flex-col gap-1.5'>
                 <Label>Bulan</Label>
-                <MonthPicker monthKey={monthKey} onChange={setMonthKey} />
+                <MonthPicker
+                  monthKey={monthKey}
+                  onChange={setMonthKey}
+                  maxMonthKey={reportMonthKey()}
+                />
               </div>
               {!isTeamManager && (
                 <div className='flex flex-col gap-1.5'>

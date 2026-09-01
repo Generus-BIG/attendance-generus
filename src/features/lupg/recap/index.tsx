@@ -4,6 +4,7 @@ import { useQueries, useQuery } from '@tanstack/react-query'
 import { Link, useSearch, useNavigate } from '@tanstack/react-router'
 import { id as idLocale } from 'date-fns/locale'
 import { FileDown, Inbox, Loader2, Presentation } from 'lucide-react'
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -27,14 +28,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  LabelList,
-  XAxis,
-  YAxis,
-} from 'recharts'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -76,9 +69,10 @@ import {
   type ShodaqohRow,
 } from '../types'
 import {
-  currentMonthKey,
   firstDayOfMonth,
   formatMonthLabel,
+  isReportMonthAvailable,
+  reportMonthKey,
   shiftMonth,
 } from '../utils/month-utils'
 import { CharacterMonitoringRecap } from './components/character-monitoring-recap'
@@ -195,7 +189,10 @@ type KelompokLite = { id: string; value: string }
 export function RekapDesa() {
   const search = useSearch({ strict: false }) as RecapSearch
   const navigate = useNavigate()
-  const monthKey = search.month ?? currentMonthKey()
+  const monthKey =
+    search.month && isReportMonthAvailable(search.month)
+      ? search.month
+      : reportMonthKey()
 
   const setMonth = (m: string) => {
     navigate({
@@ -538,7 +535,11 @@ export function RekapDesa() {
             </p>
           </div>
           <div className='flex flex-wrap items-center gap-2 print:hidden'>
-            <MonthPicker monthKey={monthKey} onChange={setMonth} />
+            <MonthPicker
+              monthKey={monthKey}
+              onChange={setMonth}
+              maxMonthKey={reportMonthKey()}
+            />
             <span
               aria-hidden='true'
               className='hidden h-6 w-px bg-border sm:inline-block'

@@ -1,17 +1,11 @@
-// Sensus pie chart (kelompok mode) — solid pie of the 5 generus categories with external labels.
-import {
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts'
+// Sensus pie chart (kelompok mode) — solid pie of the 6 generus categories with external labels.
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { usePresentationAnimation } from '../context/animation-context'
 import { getSensusColor } from '../theme'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import { EditorialTooltipShell } from './chart-primitives'
 
-type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR'
+type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR' | 'PAUD'
 
 export interface SensusPieDatum {
   code: GenerusCode

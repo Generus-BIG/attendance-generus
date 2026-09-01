@@ -21,16 +21,17 @@ import {
   useMonthlyReportsWithSubmitter,
 } from '../hooks/use-lupg-queries'
 import {
-  currentMonthKey,
   firstDayOfMonth,
   formatMonthLabel,
+  isReportMonthAvailable,
   monthKeyFromDate,
+  reportMonthKey,
 } from '../utils/month-utils'
 
 export function MonthlyReportsList() {
   const navigate = useNavigate({ from: Route.fullPath })
   const { month: searchMonth } = Route.useSearch()
-  const activeMonth = searchMonth ?? currentMonthKey()
+  const activeMonth = searchMonth ?? reportMonthKey()
 
   const { role, kelompok } = useAuthStore((s) => s.auth)
   const isTeamManager = role === 'team_manager'
@@ -74,7 +75,7 @@ export function MonthlyReportsList() {
 
   const handleMonthChange = (monthKey: string) => {
     navigate({
-      search: monthKey === currentMonthKey() ? {} : { month: monthKey },
+      search: monthKey === reportMonthKey() ? {} : { month: monthKey },
     })
   }
 
@@ -141,7 +142,11 @@ export function MonthlyReportsList() {
           <Button
             className='min-h-11 w-full sm:min-h-9 sm:w-auto'
             onClick={handleOpenMonth}
-            disabled={!resolvedKelompokId || ensure.isPending}
+            disabled={
+              !resolvedKelompokId ||
+              ensure.isPending ||
+              !isReportMonthAvailable(activeMonth)
+            }
             aria-describedby={
               openDisabledReason ? 'open-month-hint' : undefined
             }
@@ -225,7 +230,9 @@ export function MonthlyReportsList() {
             <Button
               className='min-h-11 w-full sm:w-auto'
               onClick={handleOpenMonth}
-              disabled={ensure.isPending}
+              disabled={
+                ensure.isPending || !isReportMonthAvailable(activeMonth)
+              }
             >
               {ensure.isPending ? (
                 <Loader2

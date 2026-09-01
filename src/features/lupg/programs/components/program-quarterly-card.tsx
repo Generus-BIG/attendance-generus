@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { type Role } from '@/lib/rbac'
+import { cn } from '@/lib/utils'
 import {
   Card,
   CardContent,
@@ -46,6 +47,10 @@ function notesHeaderLabel(programCode: string): string {
   return 'Hasil Temuan'
 }
 
+/** Shared navy header-cell grammar for the program tracker tables. */
+const HEAD =
+  'bg-table-header text-table-header-foreground text-[0.6875rem] tracking-[0.12em] uppercase border-b'
+
 export function ProgramQuarterlyBody({
   program,
   kelompokId,
@@ -73,6 +78,10 @@ export function ProgramQuarterlyBody({
     }
     return m
   }, [programReports, program.code])
+
+  const currentQuarter = Math.ceil(
+    parseInt(currentMonthKey.slice(5, 7), 10) / 3
+  ) as Quarter
 
   return (
     <div className='flex flex-col gap-3'>
@@ -107,19 +116,21 @@ export function ProgramQuarterlyBody({
 
       {/* Desktop: full table */}
       <div className='hidden overflow-x-auto md:block'>
-        <Table>
+        <Table className='border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums'>
           <TableHeader>
             <TableRow>
-              <TableHead>Quarter</TableHead>
-              <TableHead>Sensus</TableHead>
-              <TableHead>
-                {program.code === 'GMKM' ? 'Jumlah Kehadiran' : 'Jumlah'}
+              <TableHead className={HEAD}>Periode</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Sensus</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>
+                Realisasi
               </TableHead>
-              <TableHead className='text-right'>%</TableHead>
-              <TableHead>{notesHeaderLabel(program.code)}</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Capaian</TableHead>
+              <TableHead className={HEAD}>
+                {notesHeaderLabel(program.code)}
+              </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className='[&_tr:last-child_td]:border-b-0'>
             {QUARTERS.map((q) => {
               const endKey = getQuarterEndMonthKey(q, year)
               const report = reportByMonthKey.get(endKey)
@@ -143,6 +154,7 @@ export function ProgramQuarterlyBody({
                   programCode={program.code}
                   existing={row}
                   editability={editability}
+                  active={q === currentQuarter}
                 />
               )
             })}
