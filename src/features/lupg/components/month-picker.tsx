@@ -5,9 +5,10 @@ import { formatMonthLabel, shiftMonth } from '../utils/month-utils'
 interface Props {
   monthKey: string
   onChange: (monthKey: string) => void
+  maxMonthKey?: string
 }
 
-export function MonthPicker({ monthKey, onChange }: Props) {
+export function MonthPicker({ monthKey, onChange, maxMonthKey }: Props) {
   return (
     <div className='flex items-center gap-1'>
       <Button
@@ -31,6 +32,7 @@ export function MonthPicker({ monthKey, onChange }: Props) {
         size='icon'
         className='size-11'
         onClick={() => onChange(shiftMonth(monthKey, 1))}
+        disabled={maxMonthKey !== undefined && monthKey >= maxMonthKey}
         aria-label='Bulan berikutnya'
       >
         <ChevronRight className='h-4 w-4' />
