@@ -1,9 +1,9 @@
-// Sensus stacked bar chart (desa mode) — one stacked bar per kelompok, 5
+// Sensus stacked bar chart (desa mode) — one stacked bar per kelompok, 6
 // generus categories.
 //
 // CANONICAL PALETTE EXCEPTION: This chart and `sensus-pie.tsx` use a fixed
-// 5-color ramp (yellow → light-green → green → dark-green → darkest-green for
-// ACR → GPN_B) imported from `../theme`. The colors encode content meaning
+// 6-color ramp (youngest → oldest, PAUD → GPN_B) imported from `../theme`.
+// The colors encode content meaning
 // (kategori) consistent across slides. They intentionally do NOT swap with
 // the active palette ramp. See spec section 2.4 / Design Principle 2 in
 // .impeccable.md.
@@ -22,10 +22,11 @@ import { SENSUS_STACK_ORDER, getSensusColor } from '../theme'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
 
-type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR'
+type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR' | 'PAUD'
 
 export interface SensusStackedBarDatum {
   kelompok: string
+  PAUD: number
   GPN_A: number
   GPN_B: number
   AR: number
@@ -40,6 +41,7 @@ export interface SensusStackedBarProps {
 }
 
 const CATEGORY_LABELS: Record<GenerusCode, string> = {
+  PAUD: 'PAUD',
   GPN_A: 'GPN A',
   GPN_B: 'GPN B',
   AR: 'AR',
@@ -244,7 +246,9 @@ export function SensusStackedBar({
                   name={CATEGORY_LABELS[code]}
                   fill={getSensusColor(code, paletteName)}
                   isAnimationActive={true}
-                  animationDuration={Math.round(animationDuration * durationScale)}
+                  animationDuration={Math.round(
+                    animationDuration * durationScale
+                  )}
                 >
                   <LabelList
                     dataKey={code}
