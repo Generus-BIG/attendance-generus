@@ -49,7 +49,7 @@
   --cover-accent: oklch(0.48 0.14 245);
   --sarpras-primary: oklch(0.62 0.14 245);
   --shodaqoh-primary: oklch(0.48 0.14 245);
-  --table-header: #24456F;
+  --table-header: #24456f;
   --table-header-foreground: oklch(0.985 0 0);
 
   --sidebar: oklch(0.985 0 0);
@@ -475,6 +475,8 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-table-header: var(--table-header);
+  --color-table-header-foreground: var(--table-header-foreground);
   --color-heatmap-0: var(--heatmap-0);
   --color-heatmap-1: var(--heatmap-1);
   --color-heatmap-2: var(--heatmap-2);
