@@ -21,7 +21,7 @@ import {
   type ProgramReportRow,
 } from '../../types'
 import {
-  getQuarterEndMonthKey,
+  getQuarterStartMonthKey,
   isQuarterEditable,
   QUARTER_LABEL,
   type Quarter,
@@ -47,9 +47,8 @@ function notesHeaderLabel(programCode: string): string {
   return 'Hasil Temuan'
 }
 
-/** Shared navy header-cell grammar for the program tracker tables. */
 const HEAD =
-  'bg-table-header text-table-header-foreground text-[0.6875rem] tracking-[0.12em] uppercase border-b'
+  'bg-background text-foreground text-[0.6875rem] font-semibold tracking-[0.12em] uppercase border-b'
 
 export function ProgramQuarterlyBody({
   program,
@@ -79,17 +78,13 @@ export function ProgramQuarterlyBody({
     return m
   }, [programReports, program.code])
 
-  const currentQuarter = Math.ceil(
-    parseInt(currentMonthKey.slice(5, 7), 10) / 3
-  ) as Quarter
-
   return (
     <div className='flex flex-col gap-3'>
       {/* Mobile: stacked cards */}
       <div className='flex flex-col gap-2 md:hidden'>
         {QUARTERS.map((q) => {
-          const endKey = getQuarterEndMonthKey(q, year)
-          const report = reportByMonthKey.get(endKey)
+          const quarterKey = getQuarterStartMonthKey(q, year)
+          const report = reportByMonthKey.get(quarterKey)
           const row = report ? programRowByReportId.get(report.id) : undefined
           const editability = isQuarterEditable(
             q,
@@ -104,7 +99,7 @@ export function ProgramQuarterlyBody({
               key={`card-${q}`}
               rowLabel={QUARTER_LABEL[q]}
               kelompokId={kelompokId}
-              monthKey={endKey}
+              monthKey={quarterKey}
               programCode={program.code}
               existing={row}
               editability={editability}
@@ -116,24 +111,26 @@ export function ProgramQuarterlyBody({
 
       {/* Desktop: full table */}
       <div className='hidden overflow-x-auto md:block'>
-        <Table className='border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums'>
+        <Table className='min-w-[52rem] border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums [&_td:not(:last-child)]:border-r [&_th:not(:last-child)]:border-r'>
           <TableHeader>
             <TableRow>
-              <TableHead className={HEAD}>Periode</TableHead>
-              <TableHead className={cn(HEAD, 'text-right')}>Sensus</TableHead>
-              <TableHead className={cn(HEAD, 'text-right')}>
+              <TableHead className={cn(HEAD, 'w-36')}>Periode</TableHead>
+              <TableHead className={cn(HEAD, 'w-32 text-right')}>Sensus</TableHead>
+              <TableHead className={cn(HEAD, 'w-32 text-right')}>
                 Realisasi
               </TableHead>
-              <TableHead className={cn(HEAD, 'text-right')}>Capaian</TableHead>
-              <TableHead className={HEAD}>
+              <TableHead className={cn(HEAD, 'w-28 text-right')}>
+                Capaian
+              </TableHead>
+              <TableHead className={cn(HEAD, 'min-w-72')}>
                 {notesHeaderLabel(program.code)}
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className='[&_tr:last-child_td]:border-b-0'>
             {QUARTERS.map((q) => {
-              const endKey = getQuarterEndMonthKey(q, year)
-              const report = reportByMonthKey.get(endKey)
+              const quarterKey = getQuarterStartMonthKey(q, year)
+              const report = reportByMonthKey.get(quarterKey)
               const row = report
                 ? programRowByReportId.get(report.id)
                 : undefined
@@ -150,11 +147,10 @@ export function ProgramQuarterlyBody({
                   key={q}
                   rowLabel={QUARTER_LABEL[q]}
                   kelompokId={kelompokId}
-                  monthKey={endKey}
+                  monthKey={quarterKey}
                   programCode={program.code}
                   existing={row}
                   editability={editability}
-                  active={q === currentQuarter}
                 />
               )
             })}

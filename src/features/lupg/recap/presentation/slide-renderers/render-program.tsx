@@ -7,7 +7,7 @@ import {
   monthNameFromKey,
   type Quarter,
   QUARTER_LABEL,
-  getQuarterEndMonthKey,
+  getQuarterStartMonthKey,
 } from '../../../programs/utils/editability'
 import {
   type MonthlyReportRow,
@@ -386,8 +386,8 @@ function buildSingleKelompokQuarterlyRows(
 
   let latestSensus = 0
   for (const q of quarters) {
-    const endKey = getQuarterEndMonthKey(q, year)
-    const report = reportByMonth.get(endKey)
+    const quarterKey = getQuarterStartMonthKey(q, year)
+    const report = reportByMonth.get(quarterKey)
     const row = report ? progByReport.get(report.id) : undefined
     if (row?.denominator && row.denominator > 0) {
       latestSensus = row.denominator
@@ -395,8 +395,8 @@ function buildSingleKelompokQuarterlyRows(
   }
 
   return quarters.map((q) => {
-    const endKey = getQuarterEndMonthKey(q, year)
-    const report = reportByMonth.get(endKey)
+    const quarterKey = getQuarterStartMonthKey(q, year)
+    const report = reportByMonth.get(quarterKey)
     const row = report ? progByReport.get(report.id) : undefined
     const isPastOrCurrent = q <= currentQuarter
 
@@ -475,8 +475,8 @@ function buildQuarterlyDesaMatrix(
     let rowNotes = ''
 
     for (const q of quarters) {
-      const endKey = getQuarterEndMonthKey(q, year)
-      const report = reportByKelompokMonth.get(`${k.id}__${endKey}`)
+      const quarterKey = getQuarterStartMonthKey(q, year)
+      const report = reportByKelompokMonth.get(`${k.id}__${quarterKey}`)
       const row = report
         ? progByReportAndCode.get(`${report.id}__${programCode}`)
         : undefined
@@ -493,8 +493,8 @@ function buildQuarterlyDesaMatrix(
     const pctsForAvg: number[] = []
 
     for (const q of quarters) {
-      const endKey = getQuarterEndMonthKey(q, year)
-      const report = reportByKelompokMonth.get(`${k.id}__${endKey}`)
+      const quarterKey = getQuarterStartMonthKey(q, year)
+      const report = reportByKelompokMonth.get(`${k.id}__${quarterKey}`)
       const row = report
         ? progByReportAndCode.get(`${report.id}__${programCode}`)
         : undefined

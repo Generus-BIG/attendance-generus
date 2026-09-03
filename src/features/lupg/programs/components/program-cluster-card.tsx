@@ -29,9 +29,8 @@ import {
 } from '../utils/editability'
 import { ProgramClusterEditableRow } from './program-cluster-editable-row'
 
-/** Shared navy header-cell grammar for the program tracker tables. */
 const HEAD =
-  'bg-table-header text-table-header-foreground text-[0.6875rem] tracking-[0.12em] uppercase border-b'
+  'bg-background text-foreground text-[0.6875rem] font-semibold tracking-[0.12em] uppercase border-b'
 
 interface Props {
   program: ProgramDefinitionRow
@@ -108,8 +107,7 @@ export function ProgramClusterBody({
         existing={row}
         editability={editability}
         layout={layout}
-        active={mk === currentMonthKey}
-      />
+        />
     )
   }
 
@@ -141,25 +139,34 @@ export function ProgramClusterBody({
 
       {/* Desktop: full table */}
       <div className='hidden overflow-x-auto md:block'>
-        <Table className='border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums'>
+        <Table className='min-w-[74rem] border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums [&_td:not(:last-child)]:border-r [&_th:not(:last-child)]:border-r'>
           <TableHeader>
             <TableRow>
-              <TableHead rowSpan={2} className={HEAD}>
-                Periode
+              <TableHead rowSpan={2} className={cn(HEAD, 'w-32')}>
+                Bulan
               </TableHead>
-              <TableHead rowSpan={2} className={cn(HEAD, 'text-right')}>
+              <TableHead rowSpan={2} className={cn(HEAD, 'w-28 text-right')}>
                 Sensus
               </TableHead>
-              <TableHead colSpan={2} className={cn(HEAD, 'text-center')}>
+              <TableHead
+                colSpan={2}
+                className={cn(HEAD, 'bg-muted/50 text-center')}
+              >
                 Belum Siap Menikah
               </TableHead>
-              <TableHead colSpan={2} className={cn(HEAD, 'text-center')}>
+              <TableHead
+                colSpan={2}
+                className={cn(HEAD, 'bg-muted/50 text-center')}
+              >
                 Siap Menikah
               </TableHead>
-              <TableHead colSpan={2} className={cn(HEAD, 'text-center')}>
+              <TableHead
+                colSpan={2}
+                className={cn(HEAD, 'bg-muted/50 text-center')}
+              >
                 Menikah
               </TableHead>
-              <TableHead rowSpan={2} className={HEAD}>
+              <TableHead rowSpan={2} className={cn(HEAD, 'min-w-72')}>
                 Hasil Temuan
               </TableHead>
             </TableRow>
