@@ -39,6 +39,7 @@ interface ManageUserRequest {
   user_id?: string
   new_password?: string
   update_fields?: {
+    email?: string
     role?: AssignableRole
     kelompok?: string | null
     full_name?: string
@@ -125,16 +126,28 @@ edgeRuntime.serve(async (req: Request) => {
             400
           )
         }
+        if (body.user_id === callerId) {
+          return jsonResponse({ error: 'Cannot update your own account' }, 400)
+        }
+        const { data: targetUser, error: targetUserError } =
+          await supabaseAdmin.auth.admin.getUserById(body.user_id)
+        if (targetUserError || !targetUser.user) throw targetUserError
+        if (targetUser.user.app_metadata.role === 'super_admin') {
+          return jsonResponse({ error: 'Cannot update a super admin account' }, 400)
+        }
+        const email = body.update_fields.email?.trim()
+        if (email !== undefined && !/^\S+@\S+\.\S+$/.test(email)) {
+          return jsonResponse({ error: 'Invalid email' }, 400)
+        }
         const updatePayload: Record<string, unknown> = {}
+        if (email !== undefined) {
+          updatePayload.email = email
+        }
         const appMetadata: Record<string, unknown> = {}
         if (
           body.update_fields.role !== undefined ||
           body.update_fields.kelompok !== undefined
         ) {
-          const { data: targetUser, error: targetUserError } =
-            await supabaseAdmin.auth.admin.getUserById(body.user_id)
-          if (targetUserError || !targetUser.user) throw targetUserError
-
           const role = body.update_fields.role ?? targetUser.user.app_metadata.role
           if (!isAssignableRole(role)) {
             return jsonResponse({ error: 'Invalid role' }, 400)
@@ -175,6 +188,12 @@ edgeRuntime.serve(async (req: Request) => {
         if (body.user_id === callerId) {
           return jsonResponse({ error: 'Cannot delete your own account' }, 400)
         }
+        const { data: targetUser, error: targetUserError } =
+          await supabaseAdmin.auth.admin.getUserById(body.user_id)
+        if (targetUserError || !targetUser.user) throw targetUserError
+        if (targetUser.user.app_metadata.role === 'super_admin') {
+          return jsonResponse({ error: 'Cannot delete a super admin account' }, 400)
+        }
         const { error } = await supabaseAdmin.auth.admin.deleteUser(body.user_id)
         if (error) throw error
         return jsonResponse({ success: true })
@@ -185,6 +204,15 @@ edgeRuntime.serve(async (req: Request) => {
             { error: 'user_id and new_password are required' },
             400
           )
+        }
+        if (body.user_id === callerId) {
+          return jsonResponse({ error: 'Cannot update your own account' }, 400)
+        }
+        const { data: targetUser, error: targetUserError } =
+          await supabaseAdmin.auth.admin.getUserById(body.user_id)
+        if (targetUserError || !targetUser.user) throw targetUserError
+        if (targetUser.user.app_metadata.role === 'super_admin') {
+          return jsonResponse({ error: 'Cannot update a super admin account' }, 400)
         }
         if (body.new_password.length < 7) {
           return jsonResponse({ error: 'Password minimal 7 karakter' }, 400)

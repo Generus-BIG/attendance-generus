@@ -28,10 +28,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
   const isSelf = currentUser?.id === row.original.id
 
-  if (isSelf) {
+  if (isSelf || row.original.role === 'super_admin') {
     return (
       <span className='text-sm text-muted-foreground italic'>
-        (diri sendiri)
+        (tidak dapat diubah)
       </span>
     )
   }

@@ -24,6 +24,7 @@ interface ManageRoleCRUDContextType {
   updateUser: (
     userId: string,
     fields: {
+      email?: string
       full_name?: string
       role?: Role
       kelompok?: string | null

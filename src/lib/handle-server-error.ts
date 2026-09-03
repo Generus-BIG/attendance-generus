@@ -4,7 +4,14 @@ export function handleServerError(error: unknown) {
   // eslint-disable-next-line no-console
   console.log(error)
 
-  let errMsg = 'Something went wrong!'
+  const message =
+    error &&
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof error.message === 'string'
+      ? error.message
+      : null
+  let errMsg = message || 'Something went wrong!'
 
   if (
     error &&
