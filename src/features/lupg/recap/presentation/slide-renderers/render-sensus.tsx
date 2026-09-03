@@ -26,10 +26,11 @@ import { usePresentationAnimation } from '../context/animation-context'
 import { type Slide } from '../slides'
 import { usePresPalette } from '../use-pres-palette'
 
-type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR'
+type GenerusCode = 'GPN_A' | 'GPN_B' | 'AR' | 'APR' | 'ACR' | 'PAUD'
 
-// Display order top-to-bottom: youngest → oldest (ACR → GPN B).
+// Display order top-to-bottom: youngest → oldest (PAUD → GPN B).
 const GENERUS_DISPLAY_ORDER: GenerusCode[] = [
+  'PAUD',
   'ACR',
   'APR',
   'AR',
@@ -37,6 +38,7 @@ const GENERUS_DISPLAY_ORDER: GenerusCode[] = [
   'GPN_B',
 ]
 const GENERUS_LABELS: Record<GenerusCode, string> = {
+  PAUD: 'PAUD',
   GPN_A: 'GPN A',
   GPN_B: 'GPN B',
   AR: 'AR',
@@ -286,6 +288,7 @@ function SensusDesaBody({
 
   const stackedData: SensusStackedBarDatum[] = sorted.map((entry) => ({
     kelompok: entry.kelompok,
+    PAUD: entry.summary.generus.PAUD.total,
     GPN_A: entry.summary.generus.GPN_A.total,
     GPN_B: entry.summary.generus.GPN_B.total,
     AR: entry.summary.generus.AR.total,
@@ -326,7 +329,7 @@ function SensusDesaBody({
   const fullTable = (
     <div className='flex h-full min-h-0 flex-col justify-between'>
       <div
-        className='w-full flex-1 min-h-0 overflow-hidden rounded-xl'
+        className='min-h-0 w-full flex-1 overflow-hidden rounded-xl'
         style={{
           border: `1px solid ${p.rule}`,
         }}
@@ -341,9 +344,9 @@ function SensusDesaBody({
           <colgroup>
             {/* Kelompok */}
             <col style={{ width: '9.2%' }} />
-            {/* Generus (15 cols: 5 categories * 3) */}
-            {Array.from({ length: 15 }).map((_, i) => (
-              <col key={`gen-col-${i}`} style={{ width: '3.92%' }} />
+            {/* Generus (18 cols: 6 categories * 3) */}
+            {Array.from({ length: 18 }).map((_, i) => (
+              <col key={`gen-col-${i}`} style={{ width: '3.43%' }} />
             ))}
             {/* Total Sensus Generus - noticeably narrower */}
             <col style={{ width: '5.6%' }} />
@@ -356,7 +359,7 @@ function SensusDesaBody({
             <tr style={{ height: '44px' }}>
               <th
                 rowSpan={3}
-                className='px-3 text-left font-bold tracking-wider uppercase align-middle'
+                className='px-3 text-left align-middle font-bold tracking-wider uppercase'
                 style={{
                   fontSize: 'clamp(0.82rem, 1.02cqw, 1.08rem)',
                   color: headerFg,
@@ -368,8 +371,8 @@ function SensusDesaBody({
                 KELOMPOK
               </th>
               <th
-                colSpan={15}
-                className='px-2 py-1 text-center font-bold tracking-wider uppercase align-middle'
+                colSpan={18}
+                className='px-2 py-1 text-center align-middle font-bold tracking-wider uppercase'
                 style={{
                   fontSize: 'clamp(0.82rem, 1.02cqw, 1.08rem)',
                   color: headerFg,
@@ -382,7 +385,7 @@ function SensusDesaBody({
               </th>
               <th
                 rowSpan={3}
-                className='px-1 py-1 text-center font-bold uppercase align-middle'
+                className='px-1 py-1 text-center align-middle font-bold uppercase'
                 style={{
                   fontSize: 'clamp(0.7rem, 0.86cqw, 0.92rem)',
                   color: headerFg,
@@ -399,7 +402,7 @@ function SensusDesaBody({
               </th>
               <th
                 colSpan={6}
-                className='px-2 py-1 text-center font-bold tracking-wider uppercase align-middle'
+                className='px-2 py-1 text-center align-middle font-bold tracking-wider uppercase'
                 style={{
                   fontSize: 'clamp(0.82rem, 1.02cqw, 1.08rem)',
                   color: headerFg,
@@ -415,7 +418,7 @@ function SensusDesaBody({
                 <th
                   key={code}
                   colSpan={3}
-                  className='px-1 py-0.5 text-center font-bold tracking-wide uppercase align-middle'
+                  className='px-1 py-0.5 text-center align-middle font-bold tracking-wide uppercase'
                   style={{
                     fontSize: 'clamp(0.78rem, 0.96cqw, 1.02rem)',
                     color: headerFg,
@@ -429,7 +432,7 @@ function SensusDesaBody({
               ))}
               <th
                 colSpan={3}
-                className='px-1 py-0.5 text-center font-bold tracking-wide uppercase align-middle'
+                className='px-1 py-0.5 text-center align-middle font-bold tracking-wide uppercase'
                 style={{
                   fontSize: 'clamp(0.78rem, 0.96cqw, 1.02rem)',
                   color: headerFg,
@@ -442,7 +445,7 @@ function SensusDesaBody({
               </th>
               <th
                 colSpan={3}
-                className='px-1 py-0.5 text-center font-bold tracking-wide uppercase align-middle'
+                className='px-1 py-0.5 text-center align-middle font-bold tracking-wide uppercase'
                 style={{
                   fontSize: 'clamp(0.78rem, 0.96cqw, 1.02rem)',
                   color: headerFg,
@@ -458,7 +461,7 @@ function SensusDesaBody({
                 ['L', 'P', 'JML'].map((label) => (
                   <th
                     key={`${code}-${label}`}
-                    className='px-1 py-0.5 text-center font-bold uppercase align-middle'
+                    className='px-1 py-0.5 text-center align-middle font-bold uppercase'
                     style={{
                       fontSize: 'clamp(0.72rem, 0.86cqw, 0.92rem)',
                       color: headerFg,
@@ -477,7 +480,7 @@ function SensusDesaBody({
                   return (
                     <th
                       key={`${role}-${label}`}
-                      className='px-1 py-0.5 text-center font-bold uppercase align-middle'
+                      className='px-1 py-0.5 text-center align-middle font-bold uppercase'
                       style={{
                         fontSize: 'clamp(0.72rem, 0.86cqw, 0.92rem)',
                         color: headerFg,
@@ -500,7 +503,7 @@ function SensusDesaBody({
                 className='transition-colors hover:bg-muted/10'
               >
                 <td
-                  className='px-3.5 font-medium align-middle'
+                  className='px-3.5 align-middle font-medium'
                   style={{
                     fontSize: 'clamp(0.88rem, 1.08cqw, 1.08rem)',
                     color: p.ink,
@@ -516,7 +519,7 @@ function SensusDesaBody({
                     (count, index) => (
                       <td
                         key={`${code}-${index}`}
-                        className='px-1 text-center tabular-nums align-middle'
+                        className='px-1 text-center align-middle tabular-nums'
                         style={{
                           fontSize: 'clamp(0.88rem, 1.08cqw, 1.08rem)',
                           color: p.ink,
@@ -530,7 +533,7 @@ function SensusDesaBody({
                   )
                 })}
                 <td
-                  className='px-1 text-center tabular-nums font-normal align-middle'
+                  className='px-1 text-center align-middle font-normal tabular-nums'
                   style={{
                     fontSize: 'clamp(0.88rem, 1.08cqw, 1.08rem)',
                     color: p.ink,
@@ -542,25 +545,27 @@ function SensusDesaBody({
                 </td>
                 {[entry.summary.pendidikMT, entry.summary.pendidikMS].flatMap(
                   (summary, roleIndex) =>
-                    [summary.L, summary.P, summary.total].map((count, index) => {
-                      const isLast = roleIndex === 1 && index === 2
-                      return (
-                        <td
-                          key={`${roleIndex}-${index}`}
-                          className='px-1 text-center tabular-nums align-middle'
-                          style={{
-                            fontSize: 'clamp(0.88rem, 1.08cqw, 1.08rem)',
-                            color: p.ink,
-                            borderRight: isLast
-                              ? undefined
-                              : `1px solid ${p.rule}`,
-                            borderBottom: `1px solid ${p.rule}`,
-                          }}
-                        >
-                          {count}
-                        </td>
-                      )
-                    })
+                    [summary.L, summary.P, summary.total].map(
+                      (count, index) => {
+                        const isLast = roleIndex === 1 && index === 2
+                        return (
+                          <td
+                            key={`${roleIndex}-${index}`}
+                            className='px-1 text-center align-middle tabular-nums'
+                            style={{
+                              fontSize: 'clamp(0.88rem, 1.08cqw, 1.08rem)',
+                              color: p.ink,
+                              borderRight: isLast
+                                ? undefined
+                                : `1px solid ${p.rule}`,
+                              borderBottom: `1px solid ${p.rule}`,
+                            }}
+                          >
+                            {count}
+                          </td>
+                        )
+                      }
+                    )
                 )}
               </tr>
             ))}
@@ -571,7 +576,7 @@ function SensusDesaBody({
               }}
             >
               <td
-                className='px-3.5 font-bold align-middle'
+                className='px-3.5 align-middle font-bold'
                 style={{
                   fontSize: 'clamp(0.92rem, 1.15cqw, 1.15rem)',
                   color: p.ink,
@@ -587,7 +592,7 @@ function SensusDesaBody({
                   (count, index) => (
                     <td
                       key={`${code}-${index}`}
-                      className='px-1 text-center font-bold tabular-nums align-middle'
+                      className='px-1 text-center align-middle font-bold tabular-nums'
                       style={{
                         fontSize: 'clamp(0.92rem, 1.15cqw, 1.15rem)',
                         color: p.ink,
@@ -601,7 +606,7 @@ function SensusDesaBody({
                 )
               })}
               <td
-                className='px-1 text-center font-bold tabular-nums align-middle'
+                className='px-1 text-center align-middle font-bold tabular-nums'
                 style={{
                   fontSize: 'clamp(0.92rem, 1.15cqw, 1.15rem)',
                   color: p.ink,
@@ -618,7 +623,7 @@ function SensusDesaBody({
                     return (
                       <td
                         key={`${roleIndex}-${index}`}
-                        className='px-1 text-center font-bold tabular-nums align-middle'
+                        className='px-1 text-center align-middle font-bold tabular-nums'
                         style={{
                           fontSize: 'clamp(0.92rem, 1.15cqw, 1.15rem)',
                           color: p.ink,
@@ -638,7 +643,7 @@ function SensusDesaBody({
         </table>
       </div>
       <p
-        className='mt-2.5 whitespace-nowrap text-left'
+        className='mt-2.5 text-left whitespace-nowrap'
         style={{
           fontFamily: p.fontSans,
           fontSize: 'clamp(0.78rem, 0.92cqw, 0.98rem)',
@@ -663,7 +668,10 @@ function SensusDesaBody({
           <EditorialTableHead style={{ color: headerFg }}>
             Kelompok
           </EditorialTableHead>
-          <EditorialTableHead className='text-right' style={{ color: headerFg }}>
+          <EditorialTableHead
+            className='text-right'
+            style={{ color: headerFg }}
+          >
             Total
           </EditorialTableHead>
         </EditorialTableRow>
@@ -684,7 +692,9 @@ function SensusDesaBody({
           }}
         >
           <EditorialTableCell>Total Desa</EditorialTableCell>
-          <EditorialTableCell className='text-right'>{grandTotal}</EditorialTableCell>
+          <EditorialTableCell className='text-right'>
+            {grandTotal}
+          </EditorialTableCell>
         </TableRow>
       </EditorialTableBody>
     </EditorialTable>

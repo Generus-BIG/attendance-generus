@@ -34,6 +34,9 @@ function notesHeaderLabel(programCode: string): string {
   return 'Hasil Temuan'
 }
 
+const HEAD =
+  'bg-background text-foreground text-[0.6875rem] font-semibold tracking-[0.12em] uppercase border-b'
+
 interface Props {
   program: ProgramDefinitionRow
   kelompokId: string
@@ -160,17 +163,23 @@ export function ProgramMonthlyBody({
 
       {/* Desktop: full table */}
       <div className='hidden overflow-x-auto md:block'>
-        <Table>
+        <Table className='min-w-[52rem] border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums [&_td:not(:last-child)]:border-r [&_th:not(:last-child)]:border-r'>
           <TableHeader>
             <TableRow>
-              <TableHead>Bulan</TableHead>
-              <TableHead>Sensus</TableHead>
-              <TableHead>Jumlah</TableHead>
-              <TableHead className='text-right'>%</TableHead>
-              <TableHead>{notesHeaderLabel(program.code)}</TableHead>
+              <TableHead className={cn(HEAD, 'w-36')}>Bulan</TableHead>
+              <TableHead className={cn(HEAD, 'w-32 text-right')}>Sensus</TableHead>
+              <TableHead className={cn(HEAD, 'w-32 text-right')}>
+                Realisasi
+              </TableHead>
+              <TableHead className={cn(HEAD, 'w-28 text-right')}>
+                Capaian
+              </TableHead>
+              <TableHead className={cn(HEAD, 'min-w-72')}>
+                {notesHeaderLabel(program.code)}
+              </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className='[&_tr:last-child_td]:border-b-0'>
             {pastAndCurrent.map((mk) => {
               const report = reportByMonthKey.get(mk)
               const row = report
@@ -198,7 +207,7 @@ export function ProgramMonthlyBody({
 
             {future.length > 0 && (
               <TableRow className='hover:bg-transparent'>
-                <TableCell colSpan={5} className='p-0'>
+                <TableCell colSpan={5} className='border-b p-0'>
                   <button
                     type='button'
                     onClick={() => setShowFuture((v) => !v)}
@@ -242,7 +251,7 @@ export function ProgramMonthlyBody({
                     programCode={program.code}
                     existing={row}
                     editability={editability}
-                  />
+                    />
                 )
               })}
           </TableBody>

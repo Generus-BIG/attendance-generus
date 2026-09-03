@@ -19,15 +19,16 @@ import {
   useMonthlyReports,
 } from '../hooks/use-lupg-queries'
 import {
-  currentMonthKey,
   firstDayOfMonth,
   formatMonthLabel,
+  isReportMonthAvailable,
+  reportMonthKey,
 } from '../utils/month-utils'
 
 export function LupgDashboard() {
   const navigate = useNavigate({ from: Route.fullPath })
   const { month: searchMonth } = Route.useSearch()
-  const activeMonth = searchMonth ?? currentMonthKey()
+  const activeMonth = searchMonth ?? reportMonthKey()
 
   const { data: kelompokOptions = [] } = useQuery({
     queryKey: ['lookup_values', 'GROUP'],
@@ -97,7 +98,7 @@ export function LupgDashboard() {
 
   const handleMonthChange = (monthKey: string) => {
     navigate({
-      search: monthKey === currentMonthKey() ? {} : { month: monthKey },
+      search: monthKey === reportMonthKey() ? {} : { month: monthKey },
     })
   }
 
@@ -169,7 +170,9 @@ export function LupgDashboard() {
                       : undefined
                   }
                   onOpenNotStarted={() => handleOpenNotStarted(k.id)}
-                  disabled={ensure.isPending}
+                  disabled={
+                    ensure.isPending || !isReportMonthAvailable(activeMonth)
+                  }
                 />
               )
             })}

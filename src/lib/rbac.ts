@@ -139,7 +139,7 @@ export const ROUTE_ACCESS: Record<string, Role[]> = {
   '/admin/lupg/recap/present': ['super_admin', 'admin', 'team_manager'],
   '/admin/lupg/recap': ['super_admin', 'admin'],
   '/admin/lupg/presentation': ['super_admin', 'admin', 'team_manager'],
-  '/admin/lupg/mustin': ['super_admin', 'admin'],
+  '/admin/lupg/mustin': ['super_admin', 'admin', 'team_manager'],
   '/admin/lupg/config': ['super_admin', 'admin'],
 }
 

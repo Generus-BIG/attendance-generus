@@ -1,4 +1,5 @@
 export const CATEGORY_CODES = [
+  'PAUD',
   'ACR',
   'APR',
   'AR',
@@ -11,6 +12,7 @@ export const CATEGORY_CODES = [
 export type CategoryCode = (typeof CATEGORY_CODES)[number]
 
 export const CATEGORY_LABELS: Record<CategoryCode, string> = {
+  PAUD: 'PAUD',
   ACR: 'ACR',
   APR: 'APR',
   AR: 'AR',

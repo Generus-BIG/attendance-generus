@@ -124,12 +124,12 @@ export function SectionNav({ sections }: Props) {
 
   return (
     <>
-      {/* Desktop: sticky left rail */}
+      {/* Desktop: left rail (sticky handled by the parent aside) */}
       <nav
         aria-label='Navigasi seksi laporan'
-        className='top-20 hidden self-start lg:sticky lg:block'
+        className='hidden lg:block'
       >
-        <ul className='flex flex-col gap-1'>
+        <ul className='flex flex-col gap-1 lg:gap-2'>
           {sections.map((s) => {
             const isActive = activeId === s.id
             return (

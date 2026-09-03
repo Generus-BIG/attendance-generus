@@ -19,7 +19,6 @@ import {
 import { formatChartValue } from '../../utils/format-chart-value'
 import {
   allMonthKeysForYear,
-  getQuarterEndMonthKey,
   getQuarterStartMonthKey,
   monthNameFromKey,
   type Quarter,
@@ -69,11 +68,10 @@ export function ProgramAnalyticsCard({
   const chartData: BarDatum[] = useMemo(() => {
     if (isQuarterly) {
       return QUARTERS.map((q) => {
-        const endKey = getQuarterEndMonthKey(q, year)
-        const report = reportByMonthKey.get(endKey)
+        const quarterKey = getQuarterStartMonthKey(q, year)
+        const report = reportByMonthKey.get(quarterKey)
         const row = report ? programRowByReportId.get(report.id) : undefined
-        const startKey = getQuarterStartMonthKey(q, year)
-        const notStarted = currentMonthKey < startKey
+        const notStarted = currentMonthKey < quarterKey
         return {
           label: `Q${q}`,
           value: row?.count_this_month ?? 0,

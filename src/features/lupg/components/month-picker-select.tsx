@@ -7,8 +7,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  currentMonthKey,
   formatMonthLabel,
+  reportMonthKey,
   shiftMonth,
 } from '../utils/month-utils'
 
@@ -25,7 +25,7 @@ export function MonthPickerSelect({
   monthsBack = 12,
   className,
 }: Props) {
-  const now = currentMonthKey()
+  const now = reportMonthKey()
   const options = useMemo(() => {
     const list: { key: string; label: string }[] = []
     for (let i = 0; i < monthsBack; i++) {

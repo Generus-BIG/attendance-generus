@@ -33,6 +33,7 @@ const KEYS = {
   monthlyReportByKelompokMonth: (kelompokId: string, month: string) =>
     ['lupg', 'monthly-report', 'by', kelompokId, month] as const,
   sensus: (kelompokId: string) => ['lupg', 'sensus', kelompokId] as const,
+  desaSensusTotals: ['lupg', 'sensus', 'desa-totals'] as const,
   sensusSnapshots: (mrId: string) =>
     ['lupg', 'sensus-snapshots', mrId] as const,
   programs: ['lupg', 'program-defs'] as const,
@@ -655,6 +656,13 @@ export function useSensus(kelompokId: string | undefined) {
   })
 }
 
+export function useDesaSensusTotals() {
+  return useQuery({
+    queryKey: KEYS.desaSensusTotals,
+    queryFn: sensusSvc.listDesaSensusTotals,
+  })
+}
+
 export function useSensusForKelompoks(kelompokIds: string[]) {
   return useQuery({
     queryKey: ['lupg', 'sensus', 'desa', kelompokIds] as const,
@@ -694,6 +702,7 @@ export function useUpsertSensusCell() {
         }
       )
       qc.invalidateQueries({ queryKey: KEYS.sensus(row.kelompok_id) })
+      qc.invalidateQueries({ queryKey: KEYS.desaSensusTotals })
     },
   })
 }

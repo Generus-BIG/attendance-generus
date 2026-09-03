@@ -1,7 +1,10 @@
 import { z } from 'zod'
 import { createFileRoute } from '@tanstack/react-router'
 import { Presentation } from '@/features/lupg/recap/presentation'
-import { currentMonthKey } from '@/features/lupg/utils/month-utils'
+import {
+  isReportMonthAvailable,
+  reportMonthKey,
+} from '@/features/lupg/utils/month-utils'
 
 const presentSearchSchema = z.object({
   month: z
@@ -20,7 +23,11 @@ function PresentRoute() {
   const search = Route.useSearch()
   return (
     <Presentation
-      monthKey={search.month ?? currentMonthKey()}
+      monthKey={
+        search.month && isReportMonthAvailable(search.month)
+          ? search.month
+          : reportMonthKey()
+      }
       kelompokFilter={search.kelompok}
     />
   )

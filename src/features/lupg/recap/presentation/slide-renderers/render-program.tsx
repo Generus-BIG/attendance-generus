@@ -1,11 +1,13 @@
-// Per-program slide renderer — kelompok mode (12-month trend) and desa mode (5-kelompok % comparison).
+import { useState, type KeyboardEvent } from 'react'
+import { BarChart2, Table as TableIcon } from 'lucide-react'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { parseNikahClusterExtras } from '../../../programs/types'
 import {
   allMonthKeysForYear,
   monthNameFromKey,
   type Quarter,
   QUARTER_LABEL,
-  getQuarterEndMonthKey,
+  getQuarterStartMonthKey,
 } from '../../../programs/utils/editability'
 import {
   type MonthlyReportRow,
@@ -371,7 +373,7 @@ function buildSingleKelompokQuarterlyRows(
   programCode: string,
   yearlyMonthlyReports: MonthlyReportRow[],
   yearlyProgramReports: ProgramReportRow[],
-  currentMonthKey: string
+  currentQuarter: number
 ): SingleQuarterlyRow[] {
   const reportByMonth = new Map<string, MonthlyReportRow>()
   for (const r of yearlyMonthlyReports) {
@@ -382,108 +384,193 @@ function buildSingleKelompokQuarterlyRows(
     if (r.program_code === programCode) progByReport.set(r.monthly_report_id, r)
   }
 
-  const currentMonthIndex = parseInt(currentMonthKey.slice(5, 7), 10)
-  const currentQuarter = Math.ceil(currentMonthIndex / 3)
-
-  return quarters.reduce<SingleQuarterlyRow[]>((rows, q) => {
-    if (q > currentQuarter) return rows
-    const endKey = getQuarterEndMonthKey(q, year)
-    const report = reportByMonth.get(endKey)
+  let latestSensus = 0
+  for (const q of quarters) {
+    const quarterKey = getQuarterStartMonthKey(q, year)
+    const report = reportByMonth.get(quarterKey)
     const row = report ? progByReport.get(report.id) : undefined
-    const denom = row?.denominator ?? 0
+    if (row?.denominator && row.denominator > 0) {
+      latestSensus = row.denominator
+    }
+  }
+
+  return quarters.map((q) => {
+    const quarterKey = getQuarterStartMonthKey(q, year)
+    const report = reportByMonth.get(quarterKey)
+    const row = report ? progByReport.get(report.id) : undefined
+    const isPastOrCurrent = q <= currentQuarter
+
+    const denom =
+      row?.denominator && row.denominator > 0
+        ? row.denominator
+        : isPastOrCurrent
+          ? latestSensus
+          : 0
     const now = row?.count_this_month ?? 0
-    const pct = denom > 0 ? Math.round((now / denom) * 100) : null
-    rows.push({
+
+    let pct: number | null = null
+    if (isPastOrCurrent) {
+      pct = denom > 0 ? Math.round((now / denom) * 100) : 0
+    } else if (row && denom > 0) {
+      pct = Math.round((now / denom) * 100)
+    }
+
+    return {
       quarter: q,
       quarterLabel: QUARTER_LABEL[q],
       denom,
       now,
       pct,
       notes: row?.notes ?? '',
-    })
-    return rows
-  }, [])
-}
-
-function buildSingleKelompokQuarterlyChart(
-  quarters: Quarter[],
-  year: number,
-  kelompokId: string,
-  programCode: string,
-  yearlyMonthlyReports: MonthlyReportRow[],
-  yearlyProgramReports: ProgramReportRow[],
-  currentMonthKey: string
-): TrendBarDatum[] {
-  const reportByMonth = new Map<string, MonthlyReportRow>()
-  for (const r of yearlyMonthlyReports) {
-    if (r.kelompok_id === kelompokId) reportByMonth.set(r.month.slice(0, 7), r)
-  }
-  const progByReport = new Map<string, ProgramReportRow>()
-  for (const r of yearlyProgramReports) {
-    if (r.program_code === programCode) progByReport.set(r.monthly_report_id, r)
-  }
-
-  const currentMonthIndex = parseInt(currentMonthKey.slice(5, 7), 10)
-  const currentQuarter = Math.ceil(currentMonthIndex / 3)
-
-  return quarters.map((q) => {
-    const endKey = getQuarterEndMonthKey(q, year)
-    const report = reportByMonth.get(endKey)
-    const row = report ? progByReport.get(report.id) : undefined
-    return {
-      label: `Q${q}`,
-      value: row?.count_this_month ?? 0,
-      isHighlighted: q === currentQuarter,
-      isPlaceholder: q > currentQuarter,
     }
   })
 }
 
-function buildQuarterlyDesaRows(
+interface QuarterlyDesaCell {
+  denom: number
+  now: number
+  pct: number | null
+}
+
+interface QuarterlyDesaRow {
+  kelompokId: string
+  kelompokName: string
+  sensus: number
+  quarters: Record<Quarter, QuarterlyDesaCell>
+  notes: string
+  avgPct: number | null
+}
+
+interface QuarterlyDesaTotals {
+  kelompokName: string
+  sensus: number
+  quarters: Record<Quarter, QuarterlyDesaCell>
+  avgPct: number | null
+}
+
+function buildQuarterlyDesaMatrix(
   effectiveKelompokList: { id: string; value: string }[],
   programCode: string,
-  programReports: ProgramReportRow[],
+  yearlyProgramReports: ProgramReportRow[],
   yearlyMonthlyReports: MonthlyReportRow[],
-  currentQuarterEndMonthKey: string
-): { rows: DesaRow[]; totals: DesaTotalsRow } {
-  const reportByKelompokCurrent = new Map<string, MonthlyReportRow>()
+  year: number,
+  currentQuarter: number
+): { rows: QuarterlyDesaRow[]; totals: QuarterlyDesaTotals } {
+  const quarters: Quarter[] = [1, 2, 3, 4]
 
+  const reportByKelompokMonth = new Map<string, MonthlyReportRow>()
   for (const r of yearlyMonthlyReports) {
-    if (r.month.slice(0, 7) === currentQuarterEndMonthKey) {
-      reportByKelompokCurrent.set(r.kelompok_id, r)
+    reportByKelompokMonth.set(`${r.kelompok_id}__${r.month.slice(0, 7)}`, r)
+  }
+
+  const progByReportAndCode = new Map<string, ProgramReportRow>()
+  for (const r of yearlyProgramReports) {
+    if (r.program_code === programCode) {
+      progByReportAndCode.set(`${r.monthly_report_id}__${r.program_code}`, r)
     }
   }
 
-  const byReport = new Map<string, ProgramReportRow>()
-  for (const r of programReports) {
-    if (r.program_code === programCode) byReport.set(r.monthly_report_id, r)
-  }
+  const rows: QuarterlyDesaRow[] = effectiveKelompokList.map((k) => {
+    let latestSensus = 0
+    let rowNotes = ''
 
-  const rows: DesaRow[] = effectiveKelompokList.map((k) => {
-    const reportCurrent = reportByKelompokCurrent.get(k.id)
-    const rowCurrent = reportCurrent
-      ? byReport.get(reportCurrent.id)
-      : undefined
+    for (const q of quarters) {
+      const quarterKey = getQuarterStartMonthKey(q, year)
+      const report = reportByKelompokMonth.get(`${k.id}__${quarterKey}`)
+      const row = report
+        ? progByReportAndCode.get(`${report.id}__${programCode}`)
+        : undefined
 
-    const denom = rowCurrent?.denominator ?? 0
-    const now = rowCurrent?.count_this_month ?? 0
-    const pct = denom > 0 ? Math.round((now / denom) * 100) : null
+      if (row?.denominator && row.denominator > 0) {
+        latestSensus = row.denominator
+      }
+      if (row?.notes) {
+        rowNotes = row.notes
+      }
+    }
 
-    return { kelompokId: k.id, kelompokName: k.value, denom, now, pct }
+    const qMap = {} as Record<Quarter, QuarterlyDesaCell>
+    const pctsForAvg: number[] = []
+
+    for (const q of quarters) {
+      const quarterKey = getQuarterStartMonthKey(q, year)
+      const report = reportByKelompokMonth.get(`${k.id}__${quarterKey}`)
+      const row = report
+        ? progByReportAndCode.get(`${report.id}__${programCode}`)
+        : undefined
+
+      const isPastOrCurrent = q <= currentQuarter
+      const denom =
+        row?.denominator && row.denominator > 0
+          ? row.denominator
+          : isPastOrCurrent
+            ? latestSensus
+            : 0
+      const now = row?.count_this_month ?? 0
+
+      let pct: number | null = null
+      if (isPastOrCurrent) {
+        pct = denom > 0 ? Math.round((now / denom) * 100) : 0
+        pctsForAvg.push(pct)
+      } else if (row && denom > 0) {
+        pct = Math.round((now / denom) * 100)
+      }
+
+      qMap[q] = { denom, now, pct }
+    }
+
+    const avgPct =
+      pctsForAvg.length > 0
+        ? Math.round(pctsForAvg.reduce((a, b) => a + b, 0) / pctsForAvg.length)
+        : null
+
+    return {
+      kelompokId: k.id,
+      kelompokName: k.value,
+      sensus: latestSensus,
+      quarters: qMap,
+      notes: rowNotes,
+      avgPct,
+    }
   })
 
-  const totalDenom = rows.reduce((a, b) => a + b.denom, 0)
-  const totalNow = rows.reduce((a, b) => a + b.now, 0)
-  const avgPct =
-    totalDenom > 0 ? Math.round((totalNow / totalDenom) * 100) : null
+  const totalsQMap = {} as Record<Quarter, QuarterlyDesaCell>
+  const totalDesaPcts: number[] = []
+
+  for (const q of quarters) {
+    const isPastOrCurrent = q <= currentQuarter
+    const totalDenom = rows.reduce((acc, r) => acc + r.quarters[q].denom, 0)
+    const totalNow = rows.reduce((acc, r) => acc + r.quarters[q].now, 0)
+
+    let pct: number | null = null
+    if (isPastOrCurrent) {
+      pct = totalDenom > 0 ? Math.round((totalNow / totalDenom) * 100) : 0
+      totalDesaPcts.push(pct)
+    } else {
+      const hasAnyReport = rows.some((r) => r.quarters[q].pct != null)
+      if (hasAnyReport && totalDenom > 0) {
+        pct = Math.round((totalNow / totalDenom) * 100)
+      }
+    }
+
+    totalsQMap[q] = { denom: totalDenom, now: totalNow, pct }
+  }
+
+  const totalSensus = rows.reduce((acc, r) => acc + r.sensus, 0)
+  const overallAvgPct =
+    totalDesaPcts.length > 0
+      ? Math.round(
+          totalDesaPcts.reduce((a, b) => a + b, 0) / totalDesaPcts.length
+        )
+      : null
 
   return {
     rows,
     totals: {
-      kelompokName: 'Total / Rata',
-      denom: totalDenom,
-      now: totalNow,
-      pct: avgPct,
+      kelompokName: 'total/rata2',
+      sensus: totalSensus,
+      quarters: totalsQMap,
+      avgPct: overallAvgPct,
     },
   }
 }
@@ -505,6 +592,9 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
   const quarters: Quarter[] = [1, 2, 3, 4]
   const kelompokId = kelompokFilter ?? ''
 
+  const currentMonthIndex = parseInt(monthKey.slice(5, 7), 10)
+  const currentQuarter = Math.ceil(currentMonthIndex / 3)
+
   const tableRows = buildSingleKelompokQuarterlyRows(
     quarters,
     year,
@@ -512,97 +602,205 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
     program.code,
     yearlyMonthlyReports,
     yearlyProgramReports,
-    monthKey
-  )
-  const chartData = buildSingleKelompokQuarterlyChart(
-    quarters,
-    year,
-    kelompokId,
-    program.code,
-    yearlyMonthlyReports,
-    yearlyProgramReports,
-    monthKey
+    currentQuarter
   )
 
-  const currentMonthIndex = parseInt(monthKey.slice(5, 7), 10)
-  const currentQuarter = Math.ceil(currentMonthIndex / 3)
+  const isGmkm = program.code === 'GMKM'
+  const headerBg = p.tableHeader
+  const headerFg = p.tableHeaderFg
 
   return (
     <SlideFrame
       eyebrow='PROGRAM PEMBINAAN'
-      title={program.name}
+      title={isGmkm ? 'Laporan GMKM' : program.name}
       meta={monthLabel}
       scope={scope}
       slideNumber={slideNumber}
       totalSlides={totalSlides}
     >
-      <ReportSplit>
-        <DataPane>
-          <EditorialTable headerVariant='hairline'>
-            <EditorialTableHeader>
-              <EditorialTableRow>
-                <EditorialTableHead>Quarter</EditorialTableHead>
-                <EditorialTableHead className='text-right'>
-                  Sensus
-                </EditorialTableHead>
-                <EditorialTableHead className='text-right'>
-                  {program.code === 'GMKM' ? 'Jumlah Kehadiran' : 'Jumlah'}
-                </EditorialTableHead>
-                <EditorialTableHead className='text-right'>
+      <div className='flex h-full min-h-0 flex-col justify-between'>
+        <div
+          className='w-full flex-1 min-h-0 overflow-hidden rounded-xl'
+          style={{
+            border: `1px solid ${p.rule}`,
+          }}
+        >
+          <table
+            className='h-full w-full table-fixed border-collapse tabular-nums'
+            style={{
+              fontFamily: p.fontSans,
+              borderColor: p.rule,
+            }}
+          >
+            <colgroup>
+              <col style={{ width: '22%' }} />
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '32%' }} />
+            </colgroup>
+            <thead>
+              <tr style={{ height: '44px' }}>
+                <th
+                  className='px-4 text-left font-bold tracking-wider uppercase align-middle'
+                  style={{
+                    fontSize: 'clamp(0.82rem, 1cqw, 1.05rem)',
+                    color: headerFg,
+                    borderRight: `1px solid ${p.rule}`,
+                    borderBottom: `1px solid ${p.rule}`,
+                    background: headerBg,
+                  }}
+                >
+                  Quarter
+                </th>
+                <th
+                  className='px-3 text-center font-bold tracking-wider uppercase align-middle'
+                  style={{
+                    fontSize: 'clamp(0.8rem, 0.95cqw, 1rem)',
+                    color: headerFg,
+                    borderRight: `1px solid ${p.rule}`,
+                    borderBottom: `1px solid ${p.rule}`,
+                    background: headerBg,
+                  }}
+                >
+                  {isGmkm ? 'Sensus Keputrian' : 'Sensus'}
+                </th>
+                <th
+                  className='px-3 text-center font-bold tracking-wider uppercase align-middle'
+                  style={{
+                    fontSize: 'clamp(0.8rem, 0.95cqw, 1rem)',
+                    color: headerFg,
+                    borderRight: `1px solid ${p.rule}`,
+                    borderBottom: `1px solid ${p.rule}`,
+                    background: headerBg,
+                  }}
+                >
+                  {isGmkm ? 'Hadir' : 'Jumlah'}
+                </th>
+                <th
+                  className='px-3 text-center font-bold tracking-wider uppercase align-middle'
+                  style={{
+                    fontSize: 'clamp(0.8rem, 0.95cqw, 1rem)',
+                    color: headerFg,
+                    borderRight: `1px solid ${p.rule}`,
+                    borderBottom: `1px solid ${p.rule}`,
+                    background: headerBg,
+                  }}
+                >
                   %
-                </EditorialTableHead>
-                <EditorialTableHead className='max-w-[20ch] min-w-24 wrap-break-word whitespace-normal'>
-                  {program.code === 'GMKM' ? 'Keterangan' : 'Hasil Temuan'}
-                </EditorialTableHead>
-              </EditorialTableRow>
-            </EditorialTableHeader>
-            <EditorialTableBody>
-              {tableRows.map((r) => {
-                const isCurrent = r.quarter === currentQuarter
+                </th>
+                <th
+                  className='px-4 text-left font-bold tracking-wider uppercase align-middle'
+                  style={{
+                    fontSize: 'clamp(0.82rem, 1cqw, 1.05rem)',
+                    color: headerFg,
+                    borderBottom: `1px solid ${p.rule}`,
+                    background: headerBg,
+                  }}
+                >
+                  {isGmkm ? 'Keterangan' : 'Hasil Temuan'}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {tableRows.map((r, idx) => {
+                const isFuture = r.quarter > currentQuarter
+                const rowTitle = QUARTER_LABEL[r.quarter]
+                const isLast = idx === tableRows.length - 1
                 return (
-                  <EditorialTableRow
+                  <tr
                     key={r.quarter}
-                    style={isCurrent ? { background: p.cream } : undefined}
+                    className='transition-colors hover:bg-muted/10'
                   >
-                    <EditorialTableCell>{r.quarterLabel}</EditorialTableCell>
-                    <EditorialTableCell className='text-right'>
-                      {r.denom}
-                    </EditorialTableCell>
-                    <EditorialTableCell className='text-right'>
-                      {r.now}
-                    </EditorialTableCell>
-                    <EditorialTableCell className='text-right font-semibold'>
-                      {r.pct != null ? `${r.pct}%` : '—'}
-                    </EditorialTableCell>
-                    <EditorialTableCell className='max-w-[20ch] text-sm wrap-break-word whitespace-normal text-muted-foreground'>
+                    <td
+                      className='px-4 font-semibold align-middle'
+                      style={{
+                        fontSize: 'clamp(0.9rem, 1.1cqw, 1.18rem)',
+                        color: p.ink,
+                        borderRight: `1px solid ${p.rule}`,
+                        borderBottom: isLast ? undefined : `1px solid ${p.rule}`,
+                      }}
+                    >
+                      {rowTitle}
+                    </td>
+                    <td
+                      className='px-3 text-center tabular-nums font-medium align-middle'
+                      style={{
+                        fontSize: 'clamp(0.9rem, 1.1cqw, 1.18rem)',
+                        color: p.ink,
+                        borderRight: `1px solid ${p.rule}`,
+                        borderBottom: isLast ? undefined : `1px solid ${p.rule}`,
+                      }}
+                    >
+                      {isFuture && r.denom === 0 ? (
+                        <span className='text-muted-foreground'>—</span>
+                      ) : (
+                        r.denom
+                      )}
+                    </td>
+                    <td
+                      className='px-3 text-center tabular-nums font-medium align-middle'
+                      style={{
+                        fontSize: 'clamp(0.9rem, 1.1cqw, 1.18rem)',
+                        color: p.ink,
+                        borderRight: `1px solid ${p.rule}`,
+                        borderBottom: isLast ? undefined : `1px solid ${p.rule}`,
+                      }}
+                    >
+                      {isFuture && r.now === 0 ? (
+                        <span className='text-muted-foreground'>—</span>
+                      ) : (
+                        r.now
+                      )}
+                    </td>
+                    <td
+                      className='px-3 text-center tabular-nums font-bold align-middle'
+                      style={{
+                        fontSize: 'clamp(0.95rem, 1.15cqw, 1.22rem)',
+                        color: p.ink,
+                        borderRight: `1px solid ${p.rule}`,
+                        borderBottom: isLast ? undefined : `1px solid ${p.rule}`,
+                      }}
+                    >
+                      {r.pct != null ? (
+                        `${r.pct}%`
+                      ) : (
+                        <span className='font-normal text-muted-foreground'>
+                          —
+                        </span>
+                      )}
+                    </td>
+                    <td
+                      className='text-pretty px-4 py-2 align-middle text-muted-foreground'
+                      style={{
+                        fontSize: 'clamp(0.8rem, 0.95cqw, 1.02rem)',
+                        lineHeight: 1.4,
+                        borderBottom: isLast ? undefined : `1px solid ${p.rule}`,
+                      }}
+                    >
                       {r.notes || '—'}
-                    </EditorialTableCell>
-                  </EditorialTableRow>
+                    </td>
+                  </tr>
                 )
               })}
-            </EditorialTableBody>
-          </EditorialTable>
-        </DataPane>
-        <ChartPane>
-          <TrendBar
-            data={chartData}
-            yAxisTitle={program.code === 'GMKM' ? 'KEHADIRAN' : 'JUMLAH'}
-            valueLabel={program.code === 'GMKM' ? 'Kehadiran' : 'Jumlah'}
-          />
-        </ChartPane>
-      </ReportSplit>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </SlideFrame>
   )
 }
 
 function ProgramQuarterlyDesaBody(props: SlideArgs) {
+  const [view, setView] = useState<'data' | 'analysis'>('data')
+  const p = usePresPalette()
   const {
     program,
     monthKey,
     monthLabel,
     scope,
     effectiveKelompokList,
-    programReports,
+    yearlyProgramReports,
     yearlyMonthlyReports,
     slideNumber,
     totalSlides,
@@ -610,90 +808,605 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
 
   const year = parseInt(monthKey.slice(0, 4), 10)
   const currentMonthIndex = parseInt(monthKey.slice(5, 7), 10)
-  const q = Math.ceil(currentMonthIndex / 3)
+  const currentQuarter = Math.ceil(currentMonthIndex / 3)
+  const quarters: Quarter[] = [1, 2, 3, 4]
+  const isGmkm = program.code === 'GMKM'
 
-  const currentQuarterEndMonthKey = getQuarterEndMonthKey(q as Quarter, year)
-
-  const { rows, totals } = buildQuarterlyDesaRows(
+  const { rows, totals } = buildQuarterlyDesaMatrix(
     effectiveKelompokList,
     program.code,
-    programReports,
+    yearlyProgramReports,
     yearlyMonthlyReports,
-    currentQuarterEndMonthKey
+    year,
+    currentQuarter
   )
 
-  const chartData: TrendBarDatum[] = rows.map((r) => ({
-    label: r.kelompokName,
-    value: r.pct ?? 0,
-  }))
+  const chartData: TrendBarDatum[] = quarters.map((q) => {
+    const qPct = totals.quarters[q]?.pct ?? 0
+    return {
+      label: `Q${q}`,
+      value: qPct,
+      isHighlighted: q === currentQuarter,
+      isPlaceholder: q > currentQuarter && totals.quarters[q]?.pct == null,
+    }
+  })
+
+  const stopDeckKeys = (event: KeyboardEvent<HTMLDivElement>) =>
+    event.stopPropagation()
+
+  const metaNode = (
+    <div className='flex items-center gap-3.5'>
+      <span>{monthLabel}</span>
+      <div onKeyDown={stopDeckKeys} className='flex items-center'>
+        <ToggleGroup
+          type='single'
+          value={view}
+          onValueChange={(val) => {
+            if (val) setView(val as 'data' | 'analysis')
+          }}
+          variant='outline'
+          size='sm'
+          className='h-7 gap-0 rounded-lg border p-0.5'
+          style={{
+            borderColor: p.rule,
+            background: 'transparent',
+          }}
+          aria-label='Tampilan laporan'
+        >
+          <ToggleGroupItem
+            value='data'
+            className='h-6 w-6 rounded-md p-0 data-[state=on]:bg-muted'
+            style={{
+              color: view === 'data' ? p.ink : p.muted,
+            }}
+            aria-label='Tampilkan tabel laporan'
+          >
+            <TableIcon className='h-3.5 w-3.5' />
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value='analysis'
+            className='h-6 w-6 rounded-md p-0 data-[state=on]:bg-muted'
+            style={{
+              color: view === 'analysis' ? p.ink : p.muted,
+            }}
+            aria-label='Tampilkan grafik laporan'
+          >
+            <BarChart2 className='h-3.5 w-3.5' />
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+    </div>
+  )
+
+  const headerBg = p.tableHeader
+  const headerFg = p.tableHeaderFg
+  const totalRowBg = `color-mix(in oklch, ${p.tableHeader} 14%, transparent)`
 
   return (
     <SlideFrame
       eyebrow='PROGRAM PEMBINAAN'
-      title={program.name}
-      meta={monthLabel}
+      title={isGmkm ? 'Laporan GMKM' : program.name}
+      meta={metaNode}
       scope={scope}
       slideNumber={slideNumber}
       totalSlides={totalSlides}
     >
-      <ReportSplit>
-        <DataPane>
-          <EditorialTable headerVariant='hairline'>
-            <EditorialTableHeader>
-              <EditorialTableRow>
-                <EditorialTableHead>Kelompok</EditorialTableHead>
-                <EditorialTableHead className='text-right'>
-                  Sensus
-                </EditorialTableHead>
-                <EditorialTableHead className='text-right'>
-                  {program.code === 'GMKM' ? 'Jumlah Kehadiran' : 'Jumlah'}
-                </EditorialTableHead>
-                <EditorialTableHead className='text-right'>
-                  %
-                </EditorialTableHead>
-              </EditorialTableRow>
-            </EditorialTableHeader>
-            <EditorialTableBody>
-              {rows.map((r) => (
-                <EditorialTableRow key={r.kelompokId}>
-                  <EditorialTableCell>{r.kelompokName}</EditorialTableCell>
-                  <EditorialTableCell className='text-right'>
-                    {r.denom}
-                  </EditorialTableCell>
-                  <EditorialTableCell className='text-right'>
-                    {r.now}
-                  </EditorialTableCell>
-                  <EditorialTableCell className='text-right font-semibold'>
-                    {r.pct != null ? `${r.pct}%` : '—'}
-                  </EditorialTableCell>
-                </EditorialTableRow>
-              ))}
-              <TotalRow>
-                <EditorialTableCell>{totals.kelompokName}</EditorialTableCell>
-                <EditorialTableCell className='text-right'>
-                  {totals.denom}
-                </EditorialTableCell>
-                <EditorialTableCell className='text-right'>
-                  {totals.now}
-                </EditorialTableCell>
-                <EditorialTableCell className='text-right'>
-                  {totals.pct != null ? `${totals.pct}%` : '—'}
-                </EditorialTableCell>
-              </TotalRow>
-            </EditorialTableBody>
-          </EditorialTable>
-        </DataPane>
-        <ChartPane>
-          <TrendBar
-            data={chartData}
-            yAxisTitle='%'
-            valueLabel='Capaian vs Sensus'
-            valueDomain={[0, 100]}
-            valueFormatter={(n) => `${n}%`}
-            labelFormatter={(n) => `${n}%`}
-          />
-        </ChartPane>
-      </ReportSplit>
+      {view === 'data' ? (
+        <div className='flex h-full min-h-0 flex-col justify-between'>
+          <div
+            className='w-full flex-1 min-h-0 overflow-hidden rounded-xl'
+            style={{
+              border: `1px solid ${p.rule}`,
+            }}
+          >
+            <table
+              className='h-full w-full table-fixed border-collapse tabular-nums'
+              style={{
+                fontFamily: p.fontSans,
+                borderColor: p.rule,
+              }}
+            >
+              <colgroup>
+                {/* Kelompok */}
+                <col style={{ width: '13%' }} />
+                {/* Sensus Keputrian */}
+                <col style={{ width: '12%' }} />
+                {/* Q1 Hadir & % */}
+                <col style={{ width: '6.5%' }} />
+                <col style={{ width: '6.5%' }} />
+                {/* Q2 Hadir & % */}
+                <col style={{ width: '6.5%' }} />
+                <col style={{ width: '6.5%' }} />
+                {/* Q3 Hadir & % */}
+                <col style={{ width: '6.5%' }} />
+                <col style={{ width: '6.5%' }} />
+                {/* Q4 Hadir & % */}
+                <col style={{ width: '6.5%' }} />
+                <col style={{ width: '6.5%' }} />
+                {/* Keterangan */}
+                <col style={{ width: '22%' }} />
+              </colgroup>
+              <thead>
+                <tr style={{ height: '36px' }}>
+                  <th
+                    rowSpan={3}
+                    className='px-3 text-left font-bold tracking-wider uppercase align-middle'
+                    style={{
+                      fontSize: 'clamp(0.82rem, 0.98cqw, 1.05rem)',
+                      color: headerFg,
+                      borderRight: `1px solid ${p.rule}`,
+                      borderBottom: `1px solid ${p.rule}`,
+                      background: headerBg,
+                    }}
+                  >
+                    Kelompok
+                  </th>
+                  <th
+                    rowSpan={3}
+                    className='px-2 py-1 text-center font-bold tracking-wider uppercase align-middle leading-tight'
+                    style={{
+                      fontSize: 'clamp(0.76rem, 0.92cqw, 0.98rem)',
+                      color: headerFg,
+                      borderRight: `1px solid ${p.rule}`,
+                      borderBottom: `1px solid ${p.rule}`,
+                      background: headerBg,
+                    }}
+                  >
+                    {isGmkm ? (
+                      <div>
+                        <div>SENSUS KEPUTRIAN</div>
+                        <div
+                          className='text-[10px] font-normal tracking-normal'
+                          style={{
+                            color:
+                              'color-mix(in oklch, currentColor 75%, transparent)',
+                          }}
+                        >
+                          (APR, AR, GPN)
+                        </div>
+                      </div>
+                    ) : (
+                      'SENSUS'
+                    )}
+                  </th>
+                  <th
+                    colSpan={8}
+                    className='px-2 py-1 text-center font-bold tracking-wider uppercase align-middle'
+                    style={{
+                      fontSize: 'clamp(0.82rem, 0.98cqw, 1.05rem)',
+                      color: headerFg,
+                      borderRight: `1px solid ${p.rule}`,
+                      borderBottom: `1px solid ${p.rule}`,
+                      background: headerBg,
+                    }}
+                  >
+                    {isGmkm
+                      ? 'LAPORAN GMKM'
+                      : `LAPORAN ${program.name.toUpperCase()}`}
+                  </th>
+                  <th
+                    rowSpan={3}
+                    className='px-3 py-1 text-left font-bold tracking-wider uppercase align-middle'
+                    style={{
+                      fontSize: 'clamp(0.82rem, 0.98cqw, 1.05rem)',
+                      color: headerFg,
+                      borderBottom: `1px solid ${p.rule}`,
+                      background: headerBg,
+                    }}
+                  >
+                    Keterangan
+                  </th>
+                </tr>
+                <tr style={{ height: '30px' }}>
+                  {quarters.map((q) => (
+                    <th
+                      key={q}
+                      colSpan={2}
+                      className='px-1 py-0.5 text-center font-bold uppercase align-middle'
+                      style={{
+                        fontSize: 'clamp(0.78rem, 0.92cqw, 0.98rem)',
+                        color: headerFg,
+                        borderRight: `1px solid ${p.rule}`,
+                        borderBottom: `1px solid ${p.rule}`,
+                        background: headerBg,
+                      }}
+                    >
+                      {`Q${q}`}
+                    </th>
+                  ))}
+                </tr>
+                <tr style={{ height: '26px' }}>
+                  {quarters.flatMap((q) => [
+                    <th
+                      key={`h-hadir-${q}`}
+                      className='px-1 py-0.5 text-center font-bold uppercase align-middle'
+                      style={{
+                        fontSize: 'clamp(0.68rem, 0.8cqw, 0.86rem)',
+                        color: headerFg,
+                        borderRight: `1px solid ${p.rule}`,
+                        borderBottom: `1px solid ${p.rule}`,
+                        background: headerBg,
+                      }}
+                    >
+                      Hadir
+                    </th>,
+                    <th
+                      key={`h-pct-${q}`}
+                      className='px-1 py-0.5 text-center font-bold uppercase align-middle'
+                      style={{
+                        fontSize: 'clamp(0.68rem, 0.8cqw, 0.86rem)',
+                        color: headerFg,
+                        borderRight: `1px solid ${p.rule}`,
+                        borderBottom: `1px solid ${p.rule}`,
+                        background: headerBg,
+                      }}
+                    >
+                      %
+                    </th>,
+                  ])}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr
+                    key={r.kelompokId}
+                    className='transition-colors hover:bg-muted/10'
+                  >
+                    <td
+                      className='px-3 font-semibold align-middle'
+                      style={{
+                        fontSize: 'clamp(0.88rem, 1.05cqw, 1.12rem)',
+                        color: p.ink,
+                        borderRight: `1px solid ${p.rule}`,
+                        borderBottom: `1px solid ${p.rule}`,
+                      }}
+                    >
+                      {r.kelompokName}
+                    </td>
+                    <td
+                      className='px-2 text-center tabular-nums font-medium align-middle'
+                      style={{
+                        fontSize: 'clamp(0.85rem, 1.02cqw, 1.08rem)',
+                        color: p.ink,
+                        borderRight: `1px solid ${p.rule}`,
+                        borderBottom: `1px solid ${p.rule}`,
+                      }}
+                    >
+                      {r.sensus > 0 ? (
+                        r.sensus
+                      ) : (
+                        <span className='text-muted-foreground'>—</span>
+                      )}
+                    </td>
+                    {quarters.flatMap((q) => {
+                      const isFutureQ = q > currentQuarter
+                      const qData = r.quarters[q]
+                      return [
+                        <td
+                          key={`hadir-${q}`}
+                          className='px-1 text-center tabular-nums align-middle'
+                          style={{
+                            fontSize: 'clamp(0.85rem, 1.02cqw, 1.08rem)',
+                            color: p.ink,
+                            borderRight: `1px solid ${p.rule}`,
+                            borderBottom: `1px solid ${p.rule}`,
+                          }}
+                        >
+                          {isFutureQ && qData.pct == null ? (
+                            <span className='text-muted-foreground'>—</span>
+                          ) : (
+                            qData.now
+                          )}
+                        </td>,
+                        <td
+                          key={`pct-${q}`}
+                          className='px-1 text-center tabular-nums font-bold align-middle'
+                          style={{
+                            fontSize: 'clamp(0.88rem, 1.08cqw, 1.15rem)',
+                            color: p.ink,
+                            borderRight: `1px solid ${p.rule}`,
+                            borderBottom: `1px solid ${p.rule}`,
+                          }}
+                        >
+                          {isFutureQ && qData.pct == null ? (
+                            <span className='font-normal text-muted-foreground'>
+                              —
+                            </span>
+                          ) : (
+                            `${qData.pct ?? 0}%`
+                          )}
+                        </td>,
+                      ]
+                    })}
+                    <td
+                      className='text-pretty px-3 py-1.5 align-middle text-muted-foreground'
+                      style={{
+                        fontSize: 'clamp(0.75rem, 0.9cqw, 0.95rem)',
+                        lineHeight: 1.35,
+                        borderBottom: `1px solid ${p.rule}`,
+                      }}
+                    >
+                      {r.notes || '—'}
+                    </td>
+                  </tr>
+                ))}
+                <tr
+                  className='font-bold'
+                  style={{
+                    background: totalRowBg,
+                    borderTop: `2px solid ${p.rule}`,
+                  }}
+                >
+                  <td
+                    className='px-3 font-bold uppercase tracking-wide align-middle'
+                    style={{
+                      fontSize: 'clamp(0.88rem, 1.05cqw, 1.12rem)',
+                      color: p.ink,
+                      borderRight: `1px solid ${p.rule}`,
+                    }}
+                  >
+                    {totals.kelompokName}
+                  </td>
+                  <td
+                    className='px-2 text-center tabular-nums font-bold align-middle'
+                    style={{
+                      fontSize: 'clamp(0.88rem, 1.05cqw, 1.12rem)',
+                      color: p.ink,
+                      borderRight: `1px solid ${p.rule}`,
+                    }}
+                  >
+                    {totals.sensus > 0 ? totals.sensus : '—'}
+                  </td>
+                  {quarters.flatMap((q) => {
+                    const isFutureQ = q > currentQuarter
+                    const qData = totals.quarters[q]
+                    return [
+                      <td
+                        key={`total-hadir-${q}`}
+                        className='px-1 text-center tabular-nums font-bold align-middle'
+                        style={{
+                          fontSize: 'clamp(0.88rem, 1.05cqw, 1.12rem)',
+                          color: p.ink,
+                          borderRight: `1px solid ${p.rule}`,
+                        }}
+                      >
+                        {isFutureQ && qData.pct == null ? (
+                          <span className='font-normal text-muted-foreground'>
+                            —
+                          </span>
+                        ) : (
+                          qData.now
+                        )}
+                      </td>,
+                      <td
+                        key={`total-pct-${q}`}
+                        className='px-1 text-center tabular-nums font-bold align-middle'
+                        style={{
+                          fontSize: 'clamp(0.92rem, 1.12cqw, 1.18rem)',
+                          color: p.ink,
+                          borderRight: `1px solid ${p.rule}`,
+                        }}
+                      >
+                        {isFutureQ && qData.pct == null ? (
+                          <span className='font-normal text-muted-foreground'>
+                            —
+                          </span>
+                        ) : (
+                          `${qData.pct ?? 0}%`
+                        )}
+                      </td>,
+                    ]
+                  })}
+                  <td
+                    className='px-3 text-center align-middle text-muted-foreground'
+                    style={{ fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)' }}
+                  >
+                    —
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <ReportSplit>
+          <div className='flex h-full min-h-0 flex-col justify-between'>
+            <div
+              className='w-full flex-1 min-h-0 overflow-hidden rounded-xl'
+              style={{
+                border: `1px solid ${p.rule}`,
+              }}
+            >
+              <table
+                className='h-full w-full table-fixed border-collapse tabular-nums'
+                style={{
+                  fontFamily: p.fontSans,
+                  borderColor: p.rule,
+                }}
+              >
+                <colgroup>
+                  <col style={{ width: '30%' }} />
+                  <col style={{ width: '22%' }} />
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '12%' }} />
+                </colgroup>
+                <thead>
+                  <tr style={{ height: '38px' }}>
+                    <th
+                      className='px-3 text-left font-bold tracking-wider uppercase align-middle'
+                      style={{
+                        fontSize: 'clamp(0.8rem, 0.95cqw, 1rem)',
+                        color: headerFg,
+                        borderRight: `1px solid ${p.rule}`,
+                        borderBottom: `1px solid ${p.rule}`,
+                        background: headerBg,
+                      }}
+                    >
+                      Kelompok
+                    </th>
+                    <th
+                      className='px-2 text-center font-bold tracking-wider uppercase align-middle'
+                      style={{
+                        fontSize: 'clamp(0.78rem, 0.92cqw, 0.98rem)',
+                        color: headerFg,
+                        borderRight: `1px solid ${p.rule}`,
+                        borderBottom: `1px solid ${p.rule}`,
+                        background: headerBg,
+                      }}
+                    >
+                      Sensus
+                    </th>
+                    {quarters.map((q, idx) => (
+                      <th
+                        key={q}
+                        className='px-1 text-center font-bold uppercase align-middle'
+                        style={{
+                          fontSize: 'clamp(0.78rem, 0.92cqw, 0.98rem)',
+                          color: headerFg,
+                          borderRight:
+                            idx === quarters.length - 1
+                              ? undefined
+                              : `1px solid ${p.rule}`,
+                          borderBottom: `1px solid ${p.rule}`,
+                          background: headerBg,
+                        }}
+                      >
+                        {`Q${q}`}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr
+                      key={r.kelompokId}
+                      className='transition-colors hover:bg-muted/10'
+                    >
+                      <td
+                        className='px-3 font-semibold align-middle'
+                        style={{
+                          fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)',
+                          color: p.ink,
+                          borderRight: `1px solid ${p.rule}`,
+                          borderBottom: `1px solid ${p.rule}`,
+                        }}
+                      >
+                        {r.kelompokName}
+                      </td>
+                      <td
+                        className='px-2 text-center tabular-nums font-medium align-middle'
+                        style={{
+                          fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)',
+                          color: p.ink,
+                          borderRight: `1px solid ${p.rule}`,
+                          borderBottom: `1px solid ${p.rule}`,
+                        }}
+                      >
+                        {r.sensus > 0 ? (
+                          r.sensus
+                        ) : (
+                          <span className='text-muted-foreground'>—</span>
+                        )}
+                      </td>
+                      {quarters.map((q, idx) => {
+                        const isFutureQ = q > currentQuarter
+                        const qData = r.quarters[q]
+                        return (
+                          <td
+                            key={q}
+                            className='px-1 text-center font-medium tabular-nums align-middle'
+                            style={{
+                              fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)',
+                              color: p.ink,
+                              borderRight:
+                                idx === quarters.length - 1
+                                  ? undefined
+                                  : `1px solid ${p.rule}`,
+                              borderBottom: `1px solid ${p.rule}`,
+                            }}
+                          >
+                            {isFutureQ && qData.pct == null ? (
+                              <span className='text-muted-foreground'>—</span>
+                            ) : (
+                              qData.now
+                            )}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                  <tr
+                    className='font-bold'
+                    style={{
+                      background: totalRowBg,
+                      borderTop: `2px solid ${p.rule}`,
+                    }}
+                  >
+                    <td
+                      className='px-3 font-bold uppercase tracking-wide align-middle'
+                      style={{
+                        fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)',
+                        color: p.ink,
+                        borderRight: `1px solid ${p.rule}`,
+                      }}
+                    >
+                      {totals.kelompokName}
+                    </td>
+                    <td
+                      className='px-2 text-center tabular-nums font-bold align-middle'
+                      style={{
+                        fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)',
+                        color: p.ink,
+                        borderRight: `1px solid ${p.rule}`,
+                      }}
+                    >
+                      {totals.sensus > 0 ? totals.sensus : '—'}
+                    </td>
+                    {quarters.map((q, idx) => {
+                      const isFutureQ = q > currentQuarter
+                      const qData = totals.quarters[q]
+                      return (
+                        <td
+                          key={q}
+                          className='px-1 text-center tabular-nums font-bold align-middle'
+                          style={{
+                            fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)',
+                            color: p.ink,
+                            borderRight:
+                              idx === quarters.length - 1
+                                ? undefined
+                                : `1px solid ${p.rule}`,
+                          }}
+                        >
+                          {isFutureQ && qData.pct == null ? (
+                            <span className='font-normal text-muted-foreground'>
+                              —
+                            </span>
+                          ) : (
+                            qData.now
+                          )}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <ChartPane>
+            <TrendBar
+              data={chartData}
+              yAxisTitle='%'
+              valueLabel='Rata-rata Capaian'
+              valueDomain={[0, 100]}
+              valueFormatter={(n) => `${n}%`}
+              labelFormatter={(n) => `${n}%`}
+            />
+          </ChartPane>
+        </ReportSplit>
+      )}
     </SlideFrame>
   )
 }

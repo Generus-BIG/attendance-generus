@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import {
-  currentMonthKey,
   formatMonthLabel,
   monthKeyFromDate,
+  reportMonthKey,
 } from '../utils/month-utils'
 
 interface Props {
@@ -19,7 +19,7 @@ export function ReportMonthTabs({
   onChange,
   className,
 }: Props) {
-  const now = currentMonthKey()
+  const now = reportMonthKey()
   const listRef = useRef<HTMLDivElement>(null)
 
   const monthKeys = useMemo(() => {

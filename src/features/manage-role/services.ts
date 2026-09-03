@@ -34,6 +34,7 @@ export async function createUser(params: {
 export async function updateUser(
   userId: string,
   fields: {
+    email?: string
     full_name?: string
     role?: Role
     kelompok?: string | null

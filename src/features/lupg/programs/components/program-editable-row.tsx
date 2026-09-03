@@ -95,7 +95,9 @@ export function ProgramEditableRow({
 
   const disabled = !editability.editable
   const notesLabel =
-    programCode === 'SHOLAT_ACR' ? 'Keterangan' : 'Hasil Temuan'
+    programCode === 'SHOLAT_ACR' || programCode === 'GMKM'
+      ? 'Keterangan'
+      : 'Hasil Temuan'
 
   const sensusInput = (
     <Input
@@ -174,7 +176,7 @@ export function ProgramEditableRow({
 
   return (
     <TableRow>
-      <TableCell className='font-medium'>
+      <TableCell className='border-b'>
         <div className='flex items-center gap-2'>
           {rowLabel}
           {disabled && (
@@ -190,12 +192,12 @@ export function ProgramEditableRow({
           </div>
         )}
       </TableCell>
-      <TableCell>{sensusInput}</TableCell>
-      <TableCell>{countInput}</TableCell>
-      <TableCell className='text-right text-muted-foreground tabular-nums'>
+      <TableCell className='border-b text-right'>{sensusInput}</TableCell>
+      <TableCell className='border-b text-right'>{countInput}</TableCell>
+      <TableCell className='border-b text-right text-muted-foreground tabular-nums'>
         {pctDisplay}
       </TableCell>
-      <TableCell>{notesInput}</TableCell>
+      <TableCell className='border-b'>{notesInput}</TableCell>
     </TableRow>
   )
 }

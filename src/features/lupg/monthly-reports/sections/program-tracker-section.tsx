@@ -13,7 +13,10 @@ import { ProgramClusterBody } from '../../programs/components/program-cluster-ca
 import { ProgramMonthlyBody } from '../../programs/components/program-monthly-card'
 import { ProgramQuarterlyBody } from '../../programs/components/program-quarterly-card'
 import { type MonthlyReportRow, type ProgramDefinitionRow } from '../../types'
-import { currentMonthKey } from '../../utils/month-utils'
+import {
+  getQuarterStartMonthKey,
+  type Quarter,
+} from '../../programs/utils/editability'
 import { ProgramSectionCard } from '../components/program-section-card'
 import { SectionHeading } from '../components/section-heading'
 
@@ -29,7 +32,6 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
   const isTeamManager = typedRole === 'team_manager'
 
   const year = parseInt(report.month.slice(0, 4), 10)
-  const current = currentMonthKey()
 
   const { data, isLoading } = useYearlyProgramData(report.kelompok_id, year)
   const { data: programs = [] } = useActivePrograms()
@@ -98,7 +100,7 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
               program: p,
               kelompokId: report.kelompok_id,
               year,
-              currentMonthKey: current,
+              currentMonthKey: reportMonthKey,
               monthlyReports: data?.monthlyReports ?? [],
               programReports: data?.programReports ?? [],
               userRole: typedRole,
@@ -116,7 +118,14 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
               <ProgramSectionCard
                 key={p.code}
                 program={p}
-                currentMonthKey={reportMonthKey}
+                currentMonthKey={
+                  p.reporting_style === 'quarterly'
+                    ? getQuarterStartMonthKey(
+                        Math.ceil(parseInt(reportMonthKey.slice(5), 10) / 3) as Quarter,
+                        year
+                      )
+                    : reportMonthKey
+                }
                 monthlyReports={data?.monthlyReports ?? []}
                 programReports={data?.programReports ?? []}
               >

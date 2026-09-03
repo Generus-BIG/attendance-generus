@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { type Role } from '@/lib/rbac'
+import { cn } from '@/lib/utils'
 import {
   Card,
   CardContent,
@@ -20,7 +21,7 @@ import {
   type ProgramReportRow,
 } from '../../types'
 import {
-  getQuarterEndMonthKey,
+  getQuarterStartMonthKey,
   isQuarterEditable,
   QUARTER_LABEL,
   type Quarter,
@@ -45,6 +46,9 @@ function notesHeaderLabel(programCode: string): string {
     return 'Keterangan'
   return 'Hasil Temuan'
 }
+
+const HEAD =
+  'bg-background text-foreground text-[0.6875rem] font-semibold tracking-[0.12em] uppercase border-b'
 
 export function ProgramQuarterlyBody({
   program,
@@ -79,8 +83,8 @@ export function ProgramQuarterlyBody({
       {/* Mobile: stacked cards */}
       <div className='flex flex-col gap-2 md:hidden'>
         {QUARTERS.map((q) => {
-          const endKey = getQuarterEndMonthKey(q, year)
-          const report = reportByMonthKey.get(endKey)
+          const quarterKey = getQuarterStartMonthKey(q, year)
+          const report = reportByMonthKey.get(quarterKey)
           const row = report ? programRowByReportId.get(report.id) : undefined
           const editability = isQuarterEditable(
             q,
@@ -95,7 +99,7 @@ export function ProgramQuarterlyBody({
               key={`card-${q}`}
               rowLabel={QUARTER_LABEL[q]}
               kelompokId={kelompokId}
-              monthKey={endKey}
+              monthKey={quarterKey}
               programCode={program.code}
               existing={row}
               editability={editability}
@@ -107,22 +111,26 @@ export function ProgramQuarterlyBody({
 
       {/* Desktop: full table */}
       <div className='hidden overflow-x-auto md:block'>
-        <Table>
+        <Table className='min-w-[52rem] border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums [&_td:not(:last-child)]:border-r [&_th:not(:last-child)]:border-r'>
           <TableHeader>
             <TableRow>
-              <TableHead>Quarter</TableHead>
-              <TableHead>Sensus</TableHead>
-              <TableHead>
-                {program.code === 'GMKM' ? 'Jumlah Kehadiran' : 'Jumlah'}
+              <TableHead className={cn(HEAD, 'w-36')}>Periode</TableHead>
+              <TableHead className={cn(HEAD, 'w-32 text-right')}>Sensus</TableHead>
+              <TableHead className={cn(HEAD, 'w-32 text-right')}>
+                Realisasi
               </TableHead>
-              <TableHead className='text-right'>%</TableHead>
-              <TableHead>{notesHeaderLabel(program.code)}</TableHead>
+              <TableHead className={cn(HEAD, 'w-28 text-right')}>
+                Capaian
+              </TableHead>
+              <TableHead className={cn(HEAD, 'min-w-72')}>
+                {notesHeaderLabel(program.code)}
+              </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className='[&_tr:last-child_td]:border-b-0'>
             {QUARTERS.map((q) => {
-              const endKey = getQuarterEndMonthKey(q, year)
-              const report = reportByMonthKey.get(endKey)
+              const quarterKey = getQuarterStartMonthKey(q, year)
+              const report = reportByMonthKey.get(quarterKey)
               const row = report
                 ? programRowByReportId.get(report.id)
                 : undefined
@@ -139,7 +147,7 @@ export function ProgramQuarterlyBody({
                   key={q}
                   rowLabel={QUARTER_LABEL[q]}
                   kelompokId={kelompokId}
-                  monthKey={endKey}
+                  monthKey={quarterKey}
                   programCode={program.code}
                   existing={row}
                   editability={editability}

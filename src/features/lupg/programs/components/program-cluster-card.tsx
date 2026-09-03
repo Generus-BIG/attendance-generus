@@ -29,6 +29,9 @@ import {
 } from '../utils/editability'
 import { ProgramClusterEditableRow } from './program-cluster-editable-row'
 
+const HEAD =
+  'bg-background text-foreground text-[0.6875rem] font-semibold tracking-[0.12em] uppercase border-b'
+
 interface Props {
   program: ProgramDefinitionRow
   kelompokId: string
@@ -52,27 +55,19 @@ export function ProgramClusterBody({
 }: Props) {
   const monthKeys = useMemo(() => allMonthKeysForYear(year), [year])
 
-  const { past, current, future } = useMemo(() => {
-    const p: string[] = []
-    const f: string[] = []
-    let c: string | null = null
+  const { pastAndCurrent, future } = useMemo(() => {
+    const past: string[] = []
+    const fut: string[] = []
     for (const mk of monthKeys) {
-      if (mk < currentMonthKey) p.push(mk)
-      else if (mk === currentMonthKey) c = mk
-      else f.push(mk)
+      if (mk <= currentMonthKey) past.push(mk)
+      else fut.push(mk)
     }
-    // If current year is future-only or current month isn't in this year
-    // (e.g. viewing previous year), treat latest available as "current".
-    if (!c && p.length === 0 && f.length > 0) {
-      c = f.shift() ?? null
-    } else if (!c && p.length > 0) {
-      c = p.pop() ?? null
-    }
-    return { past: p, current: c, future: f }
+    return { pastAndCurrent: past, future: fut }
   }, [monthKeys, currentMonthKey])
 
-  const [showPast, setShowPast] = useState(false)
-  const [showFuture, setShowFuture] = useState(false)
+  const [showFuture, setShowFuture] = useState(
+    () => !monthKeys.some((mk) => mk <= currentMonthKey)
+  )
 
   const reportByMonthKey = useMemo(() => {
     const m = new Map<string, MonthlyReportRow>()
@@ -112,34 +107,16 @@ export function ProgramClusterBody({
         existing={row}
         editability={editability}
         layout={layout}
-      />
+        />
     )
   }
 
   return (
     <div className='flex flex-col gap-3'>
+      {/* Mobile: stacked cards */}
       <div className='flex flex-col gap-2 md:hidden'>
-        {past.length > 0 ? (
-          <button
-            type='button'
-            onClick={() => setShowPast((value) => !value)}
-            aria-expanded={showPast}
-            className='flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-dashed text-xs text-muted-foreground transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
-          >
-            <ChevronRight
-              className={cn(
-                'size-3 transition-transform motion-reduce:transition-none',
-                showPast && 'rotate-90'
-              )}
-            />
-            {showPast
-              ? 'Sembunyikan bulan lalu'
-              : `Tampilkan ${past.length} bulan lalu`}
-          </button>
-        ) : null}
-        {showPast ? past.map((monthKey) => renderRow(monthKey, 'card')) : null}
-        {current ? renderRow(current, 'card') : null}
-        {future.length > 0 ? (
+        {pastAndCurrent.map((monthKey) => renderRow(monthKey, 'card'))}
+        {future.length > 0 && (
           <button
             type='button'
             onClick={() => setShowFuture((value) => !value)}
@@ -153,72 +130,67 @@ export function ProgramClusterBody({
               )}
             />
             {showFuture
-              ? 'Sembunyikan bulan mendatang'
+              ? `Sembunyikan ${future.length} bulan mendatang`
               : `Tampilkan ${future.length} bulan mendatang`}
           </button>
-        ) : null}
-        {showFuture
-          ? future.map((monthKey) => renderRow(monthKey, 'card'))
-          : null}
+        )}
+        {showFuture && future.map((monthKey) => renderRow(monthKey, 'card'))}
       </div>
 
+      {/* Desktop: full table */}
       <div className='hidden overflow-x-auto md:block'>
-        <Table>
+        <Table className='min-w-[74rem] border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums [&_td:not(:last-child)]:border-r [&_th:not(:last-child)]:border-r'>
           <TableHeader>
             <TableRow>
-              <TableHead rowSpan={2}>Bulan</TableHead>
-              <TableHead rowSpan={2}>Sensus</TableHead>
-              <TableHead colSpan={2} className='text-center'>
+              <TableHead rowSpan={2} className={cn(HEAD, 'w-32')}>
+                Bulan
+              </TableHead>
+              <TableHead rowSpan={2} className={cn(HEAD, 'w-28 text-right')}>
+                Sensus
+              </TableHead>
+              <TableHead
+                colSpan={2}
+                className={cn(HEAD, 'bg-muted/50 text-center')}
+              >
                 Belum Siap Menikah
               </TableHead>
-              <TableHead colSpan={2} className='text-center'>
+              <TableHead
+                colSpan={2}
+                className={cn(HEAD, 'bg-muted/50 text-center')}
+              >
                 Siap Menikah
               </TableHead>
-              <TableHead colSpan={2} className='text-center'>
+              <TableHead
+                colSpan={2}
+                className={cn(HEAD, 'bg-muted/50 text-center')}
+              >
                 Menikah
               </TableHead>
-              <TableHead rowSpan={2}>Hasil Temuan</TableHead>
+              <TableHead rowSpan={2} className={cn(HEAD, 'min-w-72')}>
+                Hasil Temuan
+              </TableHead>
             </TableRow>
             <TableRow>
-              <TableHead>Jumlah</TableHead>
-              <TableHead className='text-right'>%</TableHead>
-              <TableHead>Jumlah</TableHead>
-              <TableHead className='text-right'>%</TableHead>
-              <TableHead>Jumlah</TableHead>
-              <TableHead className='text-right'>%</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>
+                Realisasi
+              </TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Capaian</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>
+                Realisasi
+              </TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Capaian</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>
+                Realisasi
+              </TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Capaian</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {past.length > 0 && (
-              <TableRow className='hover:bg-transparent'>
-                <TableCell colSpan={9} className='p-0'>
-                  <button
-                    type='button'
-                    onClick={() => setShowPast((v) => !v)}
-                    aria-expanded={showPast}
-                    className='flex w-full items-center justify-center gap-2 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
-                  >
-                    <ChevronRight
-                      className={cn(
-                        'h-3 w-3 transition-transform motion-reduce:transition-none',
-                        showPast && 'rotate-90'
-                      )}
-                    />
-                    {showPast
-                      ? `Sembunyikan ${past.length} bulan lalu`
-                      : `Tampilkan ${past.length} bulan lalu`}
-                  </button>
-                </TableCell>
-              </TableRow>
-            )}
-
-            {showPast && past.map((monthKey) => renderRow(monthKey))}
-
-            {current && renderRow(current)}
+          <TableBody className='[&_tr:last-child_td]:border-b-0'>
+            {pastAndCurrent.map((monthKey) => renderRow(monthKey))}
 
             {future.length > 0 && (
               <TableRow className='hover:bg-transparent'>
-                <TableCell colSpan={9} className='p-0'>
+                <TableCell colSpan={9} className='border-b p-0'>
                   <button
                     type='button'
                     onClick={() => setShowFuture((v) => !v)}

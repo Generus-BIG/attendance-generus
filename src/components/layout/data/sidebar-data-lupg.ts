@@ -24,31 +24,28 @@ export function getLupgNavGroups(role: Role): NavGroup[] {
   const isMt = role === 'mt'
 
   const generalItems: NavItem[] = []
-
-  if (isAdmin || isMt) {
-    generalItems.push(
-      {
-        title: 'PHQ',
-        icon: ClipboardCheck,
-        items: [
-          { title: 'Summary', url: '/admin/lupg/phq/summary' },
-          { title: 'Peserta', url: '/admin/lupg/phq/participants' },
-          { title: 'Progress Hafalan', url: '/admin/lupg/phq/progress' },
-          { title: 'Absensi', url: '/admin/lupg/phq/attendance' },
-        ],
-      },
-      {
-        title: 'APR Intensif',
-        url: '/admin/lupg/apr-intensif',
-        icon: HeartPulse,
-      },
-      { title: 'AR Intensif', url: '/admin/lupg/ar-intensif', icon: Users }
-    )
-  }
+  const intensifItems: NavItem[] = [
+    {
+      title: 'PHQ',
+      icon: ClipboardCheck,
+      items: [
+        { title: 'Summary', url: '/admin/lupg/phq/summary' },
+        { title: 'Peserta', url: '/admin/lupg/phq/participants' },
+        { title: 'Progress Hafalan', url: '/admin/lupg/phq/progress' },
+        { title: 'Absensi', url: '/admin/lupg/phq/attendance' },
+      ],
+    },
+    {
+      title: 'APR Intensif',
+      url: '/admin/lupg/apr-intensif',
+      icon: HeartPulse,
+    },
+    { title: 'AR Intensif', url: '/admin/lupg/ar-intensif', icon: Users },
+  ]
 
   if (isMt) {
     return [
-      { title: 'LUPG', items: generalItems },
+      { title: 'LUPG', items: intensifItems },
       {
         title: 'Other',
         items: [
@@ -105,20 +102,6 @@ export function getLupgNavGroups(role: Role): NavGroup[] {
     })
   }
 
-  if (isAdmin) {
-    generalItems.push({
-      title: 'Resume Mustin',
-      url: '/admin/lupg/mustin',
-      icon: ListTodo,
-    })
-  }
-
-  generalItems.push({
-    title: 'Program Analytics',
-    url: '/admin/lupg/programs',
-    icon: TrendingUp,
-  })
-
   if (role !== 'member') {
     generalItems.push({
       title: 'Presentasi',
@@ -132,6 +115,22 @@ export function getLupgNavGroups(role: Role): NavGroup[] {
     url: '/admin/lupg/sensus',
     icon: UsersRound,
   })
+
+  generalItems.push({
+    title: 'Program Analytics',
+    url: '/admin/lupg/programs',
+    icon: TrendingUp,
+  })
+
+  if (isAdmin || role === 'team_manager') {
+    generalItems.push({
+      title: 'Resume Mustin',
+      url: '/admin/lupg/mustin',
+      icon: ListTodo,
+    })
+  }
+
+  if (isAdmin) generalItems.push(...intensifItems)
 
   if (isAdmin) {
     generalItems.push({

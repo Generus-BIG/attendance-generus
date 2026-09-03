@@ -86,9 +86,7 @@ function buildSchema(isEdit: boolean) {
   return z
     .object({
       full_name: z.string().min(1, 'Nama wajib diisi.'),
-      email: isEdit
-        ? z.string().optional()
-        : z.string().email('Email tidak valid.'),
+      email: z.string().trim().email('Email tidak valid.'),
       password: isEdit
         ? z.string().optional()
         : z.string().min(7, 'Password minimal 7 karakter.'),
@@ -144,19 +142,16 @@ export function ManageRoleActionDialog({
   const isEdit = !!currentRow
   const { createUser, updateUser } = useManageRoleCRUD()
 
-  // Map super_admin to admin for the form (super_admin can't be assigned via this form)
-  const defaultRole =
-    currentRow?.role === 'super_admin'
-      ? ('admin' as const)
-      : (currentRow?.role ?? ('member' as const))
-
   const form = useForm<ManageRoleForm>({
     resolver: zodResolver(buildSchema(isEdit)),
     defaultValues: {
       full_name: currentRow?.full_name ?? '',
       email: currentRow?.email ?? '',
       password: '',
-      role: defaultRole,
+      role:
+        currentRow?.role === 'super_admin'
+          ? 'admin'
+          : (currentRow?.role ?? 'member'),
       kelompok: currentRow?.kelompok ?? null,
     },
   })
@@ -179,6 +174,7 @@ export function ManageRoleActionDialog({
       if (isEdit) {
         await updateUser(currentRow.id, {
           full_name: values.full_name,
+          email: values.email,
           role: values.role,
           kelompok:
             values.role === 'team_manager' || values.role === 'mt'
@@ -257,25 +253,23 @@ export function ManageRoleActionDialog({
                     </StackedField>
                   )}
                 />
-                {!isEdit && (
-                  <FormField
-                    control={form.control}
-                    name='email'
-                    render={({ field }) => (
-                      <StackedField>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            type='email'
-                            placeholder='email@example.com'
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </StackedField>
-                    )}
-                  />
-                )}
+                <FormField
+                  control={form.control}
+                  name='email'
+                  render={({ field }) => (
+                    <StackedField>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='email'
+                          placeholder='email@example.com'
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </StackedField>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name='password'
