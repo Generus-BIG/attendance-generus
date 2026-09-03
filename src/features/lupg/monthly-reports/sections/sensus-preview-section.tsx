@@ -1,6 +1,9 @@
+import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { AlertTriangle, ExternalLink } from 'lucide-react'
+import { AlertTriangle, Users } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -9,9 +12,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { CATEGORY_CODES, CATEGORY_LABELS } from '../../constants'
-import { useSensus, useSensusSnapshots } from '../../hooks/use-lupg-queries'
-import { type MonthlyReportRow, type SensusRow } from '../../types'
+import {
+  CATEGORY_CODES,
+  CATEGORY_LABELS,
+  DERIVED_SENSUS_CATEGORIES,
+  type CategoryCode,
+} from '../../constants'
+import {
+  useDerivedGpnSensus,
+  useSensus,
+  useSensusSnapshots,
+  useUpsertSensusCell,
+} from '../../hooks/use-lupg-queries'
+import { type MonthlyReportRow, type SensusGender } from '../../types'
 import { SectionHeading } from '../components/section-heading'
 
 interface Props {
@@ -20,31 +33,50 @@ interface Props {
 
 export function SensusPreviewSection({ report }: Props) {
   const isSubmitted = report.status === 'submitted'
-
-  // For submitted reports, show snapshot. For drafts, show current master.
   const { data: masterRows = [] } = useSensus(
+    isSubmitted ? undefined : report.kelompok_id
+  )
+  const { data: derivedRows = [] } = useDerivedGpnSensus(
     isSubmitted ? undefined : report.kelompok_id
   )
   const { data: snapshotRows = [] } = useSensusSnapshots(
     isSubmitted ? report.id : undefined
   )
-
   const rows = isSubmitted ? snapshotRows : masterRows
+  const byCell = useMemo(
+    () =>
+      Object.fromEntries(
+        rows.map((row) => [`${row.category_code}_${row.gender}`, row.count])
+      ),
+    [rows]
+  )
+  const derivedByCell = useMemo(
+    () =>
+      Object.fromEntries(
+        derivedRows.map((row) => [
+          `${row.category_code}_${row.gender}`,
+          row.count,
+        ])
+      ),
+    [derivedRows]
+  )
 
-  // Pivot to (category × gender) matrix
-  const byCell: Record<string, number> = {}
-  for (const r of rows) {
-    byCell[`${r.category_code}_${r.gender}`] = r.count
-  }
-
-  const totalCount = rows.reduce((sum, r) => sum + (r as SensusRow).count, 0)
-  const totalL = rows
-    .filter((r) => r.gender === 'L')
-    .reduce((sum, r) => sum + r.count, 0)
-  const totalP = rows
-    .filter((r) => r.gender === 'P')
-    .reduce((sum, r) => sum + r.count, 0)
-  const hasData = totalCount > 0
+  const cells = CATEGORY_CODES.flatMap((code) =>
+    (['L', 'P'] as const).map((gender) => ({
+      code,
+      gender,
+      count:
+        !isSubmitted && DERIVED_SENSUS_CATEGORIES.has(code)
+          ? (derivedByCell[`${code}_${gender}`] ?? 0)
+          : (byCell[`${code}_${gender}`] ?? 0),
+    }))
+  )
+  const totalL = cells
+    .filter((cell) => cell.gender === 'L')
+    .reduce((sum, cell) => sum + cell.count, 0)
+  const totalP = cells
+    .filter((cell) => cell.gender === 'P')
+    .reduce((sum, cell) => sum + cell.count, 0)
 
   return (
     <section
@@ -56,125 +88,166 @@ export function SensusPreviewSection({ report }: Props) {
         description={
           isSubmitted
             ? 'Snapshot sensus saat laporan disubmit.'
-            : 'Data master sensus kelompok saat ini (akan di-snapshot saat submit).'
+            : 'Isi kategori manual di sini; perubahan langsung tersinkron ke Sensus Generus.'
         }
         action={
-          !isSubmitted ? (
-            <Link to='/admin/lupg/sensus'>
-              <Button
-                variant='outline'
-                size='sm'
-                className='min-h-11 w-full sm:min-h-8 sm:w-auto'
-              >
-                <ExternalLink className='mr-2 h-3 w-3' />
-                Update Sensus
-              </Button>
-            </Link>
-          ) : undefined
+          <Link to='/admin/participants'>
+            <Button variant='outline' size='sm' className='w-full'>
+              <Users className='size-4' aria-hidden='true' />
+              Manage Sensus
+            </Button>
+          </Link>
         }
       />
-      <div>
-        {!hasData ? (
-          <div className='flex items-start gap-2 rounded-md border border-dashed p-4 text-sm text-muted-foreground'>
-            <AlertTriangle className='mt-0.5 size-4 shrink-0 text-yellow-500' />
-            {isSubmitted
-              ? 'Tidak ada data sensus yang ter-snapshot.'
-              : 'Sensus belum pernah diupdate. Klik "Update Sensus" untuk mulai.'}
-          </div>
-        ) : (
-          <>
-            <div className='sm:hidden'>
-              <div className='grid grid-cols-[minmax(0,1fr)_2.75rem_2.75rem_3.25rem] gap-1 border-b px-1 pb-2 text-xs font-medium text-muted-foreground'>
-                <span>Kategori</span>
-                <span className='text-right'>L</span>
-                <span className='text-right'>P</span>
-                <span className='text-right'>Jumlah</span>
-              </div>
-              <div>
-                {CATEGORY_CODES.map((code) => {
-                  const l = byCell[`${code}_L`] ?? 0
-                  const p = byCell[`${code}_P`] ?? 0
-                  const total = l + p
-                  if (total === 0) return null
-                  return (
-                    <div
-                      key={code}
-                      className='grid min-h-11 grid-cols-[minmax(0,1fr)_2.75rem_2.75rem_3.25rem] items-center gap-1 border-b px-1 py-2 text-sm'
-                    >
-                      <span className='min-w-0 leading-snug font-medium wrap-break-word'>
-                        {CATEGORY_LABELS[code]}
-                      </span>
-                      <span className='text-right tabular-nums'>
-                        {l || '-'}
-                      </span>
-                      <span className='text-right tabular-nums'>
-                        {p || '-'}
-                      </span>
-                      <span className='text-right font-medium tabular-nums'>
-                        {total}
-                      </span>
+      <div className='overflow-x-auto'>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Kategori</TableHead>
+              <TableHead className='text-right'>L</TableHead>
+              <TableHead className='text-right'>P</TableHead>
+              <TableHead className='text-right'>Jumlah</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {CATEGORY_CODES.map((code) => {
+              const l =
+                cells.find((cell) => cell.code === code && cell.gender === 'L')
+                  ?.count ?? 0
+              const p =
+                cells.find((cell) => cell.code === code && cell.gender === 'P')
+                  ?.count ?? 0
+              const isDerived = DERIVED_SENSUS_CATEGORIES.has(code)
+              return (
+                <TableRow key={code}>
+                  <TableCell className='font-medium'>
+                    <div className='flex items-baseline gap-2'>
+                      <span>{CATEGORY_LABELS[code]}</span>
+                      {isDerived && (
+                        <span className='text-xs font-normal text-muted-foreground'>
+                          Auto Sync
+                        </span>
+                      )}
                     </div>
-                  )
-                })}
-              </div>
-              <div className='grid min-h-11 grid-cols-[minmax(0,1fr)_2.75rem_2.75rem_3.25rem] items-center gap-1 border-t px-1 pt-2 text-sm font-semibold'>
-                <span>Total</span>
-                <span className='text-right tabular-nums'>{totalL}</span>
-                <span className='text-right tabular-nums'>{totalP}</span>
-                <span className='text-right tabular-nums'>{totalCount}</span>
-              </div>
-            </div>
-            <div className='hidden overflow-x-auto sm:block'>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Kategori</TableHead>
-                    <TableHead className='text-right'>L</TableHead>
-                    <TableHead className='text-right'>P</TableHead>
-                    <TableHead className='text-right'>Jumlah</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {CATEGORY_CODES.map((code) => {
-                    const l = byCell[`${code}_L`] ?? 0
-                    const p = byCell[`${code}_P`] ?? 0
-                    const total = l + p
-                    if (total === 0) return null
-                    return (
-                      <TableRow key={code}>
-                        <TableCell className='font-medium'>
-                          {CATEGORY_LABELS[code]}
-                        </TableCell>
-                        <TableCell className='text-right tabular-nums'>
-                          {l || '-'}
-                        </TableCell>
-                        <TableCell className='text-right tabular-nums'>
-                          {p || '-'}
-                        </TableCell>
-                        <TableCell className='text-right font-medium tabular-nums'>
-                          {total}
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                  <TableRow className='border-t-2 font-semibold'>
-                    <TableCell>Total</TableCell>
-                    <TableCell className='text-right tabular-nums'>
-                      {totalL}
-                    </TableCell>
-                    <TableCell className='text-right tabular-nums'>
-                      {totalP}
-                    </TableCell>
-                    <TableCell className='text-right tabular-nums'>
-                      {totalCount}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-          </>
-        )}
+                  </TableCell>
+                  <TableCell className='text-right'>
+                    {isSubmitted || isDerived ? (
+                      <span
+                        className={
+                          isDerived ? 'tabular-nums text-muted-foreground' : 'tabular-nums'
+                        }
+                      >
+                        {l}
+                      </span>
+                    ) : (
+                      <SensusInput
+                        key={l}
+                        kelompokId={report.kelompok_id}
+                        code={code}
+                        gender='L'
+                        initial={l}
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell className='text-right'>
+                    {isSubmitted || isDerived ? (
+                      <span
+                        className={
+                          isDerived ? 'tabular-nums text-muted-foreground' : 'tabular-nums'
+                        }
+                      >
+                        {p}
+                      </span>
+                    ) : (
+                      <SensusInput
+                        key={p}
+                        kelompokId={report.kelompok_id}
+                        code={code}
+                        gender='P'
+                        initial={p}
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell
+                    className={
+                      isDerived
+                        ? 'text-right font-medium tabular-nums text-muted-foreground'
+                        : 'text-right font-medium tabular-nums'
+                    }
+                  >
+                    {l + p}
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+            <TableRow className='border-t-2 font-semibold'>
+              <TableCell>Total</TableCell>
+              <TableCell className='text-right tabular-nums'>
+                {totalL}
+              </TableCell>
+              <TableCell className='text-right tabular-nums'>
+                {totalP}
+              </TableCell>
+              <TableCell className='text-right tabular-nums'>
+                {totalL + totalP}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
+      {!isSubmitted && cells.every((cell) => cell.count === 0) && (
+        <div className='flex items-start gap-2 rounded-md border border-dashed p-4 text-sm text-muted-foreground'>
+          <AlertTriangle className='mt-0.5 size-4 shrink-0 text-yellow-500' />
+          Isi angka sensus manual untuk mulai.
+        </div>
+      )}
     </section>
+  )
+}
+
+function SensusInput({
+  kelompokId,
+  code,
+  gender,
+  initial,
+}: {
+  kelompokId: string
+  code: CategoryCode
+  gender: SensusGender
+  initial: number
+}) {
+  const [value, setValue] = useState(initial.toString())
+  const upsert = useUpsertSensusCell()
+
+  const save = () => {
+    const count = Number(value)
+    if (!Number.isInteger(count) || count < 0) {
+      setValue(initial.toString())
+      return
+    }
+    if (count === initial) return
+    upsert.mutate(
+      { kelompok_id: kelompokId, category_code: code, gender, count },
+      {
+        onError: (error: unknown) => {
+          toast.error(
+            error instanceof Error ? error.message : 'Gagal menyimpan'
+          )
+          setValue(initial.toString())
+        },
+      }
+    )
+  }
+
+  return (
+    <Input
+      className='ml-auto w-20 text-right tabular-nums'
+      inputMode='numeric'
+      min={0}
+      onBlur={save}
+      onChange={(event) => setValue(event.target.value)}
+      type='number'
+      value={value}
+    />
   )
 }

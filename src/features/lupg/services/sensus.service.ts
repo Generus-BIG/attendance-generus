@@ -17,6 +17,12 @@ export async function listSensus(kelompokId: string): Promise<SensusRow[]> {
   return (data ?? []) as SensusRow[]
 }
 
+export async function listDesaSensusTotals(): Promise<SensusRow[]> {
+  const { data, error } = await supabase.rpc('list_lupg_desa_sensus_totals')
+  if (error) throw error
+  return (data ?? []) as SensusRow[]
+}
+
 export async function upsertSensusCell(input: {
   kelompok_id: string
   category_code: CategoryCode

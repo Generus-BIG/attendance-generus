@@ -34,9 +34,8 @@ function notesHeaderLabel(programCode: string): string {
   return 'Hasil Temuan'
 }
 
-/** Shared navy header-cell grammar for the program tracker tables. */
 const HEAD =
-  'bg-table-header text-table-header-foreground text-[0.6875rem] tracking-[0.12em] uppercase border-b'
+  'bg-background text-foreground text-[0.6875rem] font-semibold tracking-[0.12em] uppercase border-b'
 
 interface Props {
   program: ProgramDefinitionRow
@@ -164,16 +163,18 @@ export function ProgramMonthlyBody({
 
       {/* Desktop: full table */}
       <div className='hidden overflow-x-auto md:block'>
-        <Table className='border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums'>
+        <Table className='min-w-[52rem] border-separate border-spacing-0 overflow-hidden rounded-lg border tabular-nums [&_td:not(:last-child)]:border-r [&_th:not(:last-child)]:border-r'>
           <TableHeader>
             <TableRow>
-              <TableHead className={HEAD}>Periode</TableHead>
-              <TableHead className={cn(HEAD, 'text-right')}>Sensus</TableHead>
-              <TableHead className={cn(HEAD, 'text-right')}>
+              <TableHead className={cn(HEAD, 'w-36')}>Bulan</TableHead>
+              <TableHead className={cn(HEAD, 'w-32 text-right')}>Sensus</TableHead>
+              <TableHead className={cn(HEAD, 'w-32 text-right')}>
                 Realisasi
               </TableHead>
-              <TableHead className={cn(HEAD, 'text-right')}>Capaian</TableHead>
-              <TableHead className={HEAD}>
+              <TableHead className={cn(HEAD, 'w-28 text-right')}>
+                Capaian
+              </TableHead>
+              <TableHead className={cn(HEAD, 'min-w-72')}>
                 {notesHeaderLabel(program.code)}
               </TableHead>
             </TableRow>
@@ -200,7 +201,6 @@ export function ProgramMonthlyBody({
                   programCode={program.code}
                   existing={row}
                   editability={editability}
-                  active={mk === currentMonthKey}
                 />
               )
             })}
@@ -251,8 +251,7 @@ export function ProgramMonthlyBody({
                     programCode={program.code}
                     existing={row}
                     editability={editability}
-                    active={mk === currentMonthKey}
-                  />
+                    />
                 )
               })}
           </TableBody>

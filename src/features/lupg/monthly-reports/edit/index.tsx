@@ -78,7 +78,7 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
           </div>
         </Header>
         <Main className='flex flex-1 flex-col gap-6'>
-          <div className='flex items-start gap-2'>
+          <div className='flex items-start gap-2 lg:hidden'>
             <Skeleton className='h-11 w-11 rounded-md' />
             <div className='flex flex-col gap-2'>
               <Skeleton className='h-3 w-24' />
@@ -87,7 +87,11 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
             </div>
           </div>
           <div className='grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]'>
-            <div className='hidden flex-col gap-2 lg:flex'>
+            <div className='hidden flex-col gap-2 lg:sticky lg:top-20 lg:flex lg:self-start'>
+              <Skeleton className='h-3 w-24' />
+              <Skeleton className='h-7 w-full' />
+              <Skeleton className='h-4 w-full' />
+              <Skeleton className='mb-4 h-4 w-3/4' />
               {Array.from({ length: 6 }).map((_, i) => (
                 <Skeleton key={i} className='h-9 w-full' />
               ))}
@@ -145,45 +149,41 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
         </div>
       </Header>
       <Main className='flex min-w-0 flex-1 flex-col gap-4 overflow-x-clip sm:gap-6'>
-        <div className='flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between'>
-          <div className='flex min-w-0 items-start gap-2'>
-            <Link
-              to='/admin/lupg/reports'
-              aria-label='Kembali ke daftar laporan'
-            >
-              <Button variant='ghost' size='icon' className='h-11 w-11'>
-                <ArrowLeft className='h-4 w-4' />
-              </Button>
-            </Link>
-            <div className='flex min-w-0 flex-col gap-1 pt-1'>
-              <span className='text-[0.6875rem] font-medium tracking-[0.14em] text-muted-foreground uppercase'>
-                Laporan Bulanan
-              </span>
-              <h2 className='text-2xl font-semibold tracking-tight wrap-break-word whitespace-normal text-foreground sm:text-[2rem]'>
-                {kelompokName} ·{' '}
-                {formatMonthLabel(monthKeyFromDate(report.month))}
-              </h2>
-              <p className='max-w-[65ch] text-sm text-muted-foreground'>
-                Isi setiap bagian. Tandai selesai di bawah saat sudah lengkap.
-              </p>
-              <div className='pt-1 sm:hidden'>
-                <ReportStatusBadge
-                  status={report.status as 'draft' | 'submitted'}
-                  locked={report.locked}
-                />
-              </div>
-            </div>
-          </div>
-          <div className='hidden sm:block'>
-            <ReportStatusBadge
-              status={report.status as 'draft' | 'submitted'}
-              locked={report.locked}
-            />
-          </div>
-        </div>
-
         <div className='grid min-w-0 gap-6 lg:grid-cols-[220px_minmax(0,1fr)]'>
-          <SectionNav sections={SECTIONS} />
+          <aside className='min-w-0 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:self-start lg:overflow-y-auto'>
+            <div className='flex flex-col gap-4 lg:gap-8'>
+              <div className='flex min-w-0 items-start gap-2 lg:flex-col lg:gap-3'>
+                <Link
+                  to='/admin/lupg/reports'
+                  aria-label='Kembali ke daftar laporan'
+                >
+                  <Button variant='ghost' size='icon' className='h-11 w-11'>
+                    <ArrowLeft className='h-4 w-4' />
+                  </Button>
+                </Link>
+                <div className='flex min-w-0 flex-col gap-1 pt-1 lg:pt-0'>
+                  <span className='text-[0.6875rem] font-medium tracking-[0.14em] text-muted-foreground uppercase'>
+                    Laporan Bulanan
+                  </span>
+                  <h2 className='text-2xl font-semibold tracking-tight wrap-break-word whitespace-normal text-foreground sm:text-[2rem] lg:text-2xl'>
+                    {kelompokName} ·{' '}
+                    {formatMonthLabel(monthKeyFromDate(report.month))}
+                  </h2>
+                  <p className='max-w-[65ch] text-sm text-muted-foreground lg:max-w-none lg:text-base'>
+                    Lengkapi data pada setiap bagian laporan sebelum menandainya
+                    selesai.
+                  </p>
+                  <div className='pt-1'>
+                    <ReportStatusBadge
+                      status={report.status as 'draft' | 'submitted'}
+                      locked={report.locked}
+                    />
+                  </div>
+                </div>
+              </div>
+              <SectionNav sections={SECTIONS} />
+            </div>
+          </aside>
 
           <div className='flex min-w-0 flex-col gap-6 sm:gap-8 lg:gap-12'>
             <RevealOnScroll>

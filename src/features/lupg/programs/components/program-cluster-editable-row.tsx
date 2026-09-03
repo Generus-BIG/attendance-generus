@@ -1,7 +1,6 @@
 import { useReducer } from 'react'
 import { Lock, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,8 +16,6 @@ interface Props {
   programCode: string
   existing: ProgramReportRow | undefined
   editability: EditabilityResult
-  /** Presentational only; marks the selected period in desktop tables. */
-  active?: boolean
   layout?: 'row' | 'card'
 }
 
@@ -39,7 +36,6 @@ function ProgramClusterEditableRowDraft({
   programCode,
   existing,
   editability,
-  active = false,
   layout = 'row',
 }: Props) {
   const upsert = useUpsertProgramMonth()
@@ -198,8 +194,8 @@ function ProgramClusterEditableRowDraft({
 
   return (
     <>
-      <TableRow className={cn(active && 'bg-accent/45 hover:bg-accent/45')}>
-        <TableCell className='border-b font-medium'>
+      <TableRow>
+        <TableCell className='border-b'>
           <div className='flex items-center gap-2'>
             {rowLabel}
             {disabled && (

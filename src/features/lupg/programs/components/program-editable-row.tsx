@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Lock } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
@@ -16,8 +15,6 @@ interface Props {
   programCode: string
   existing: ProgramReportRow | undefined
   editability: EditabilityResult
-  /** Presentational only; marks the selected period in desktop tables. */
-  active?: boolean
   layout?: 'row' | 'card'
 }
 
@@ -28,7 +25,6 @@ export function ProgramEditableRow({
   programCode,
   existing,
   editability,
-  active = false,
   layout = 'row',
 }: Props) {
   const upsert = useUpsertProgramMonth()
@@ -99,7 +95,9 @@ export function ProgramEditableRow({
 
   const disabled = !editability.editable
   const notesLabel =
-    programCode === 'SHOLAT_ACR' ? 'Keterangan' : 'Hasil Temuan'
+    programCode === 'SHOLAT_ACR' || programCode === 'GMKM'
+      ? 'Keterangan'
+      : 'Hasil Temuan'
 
   const sensusInput = (
     <Input
@@ -177,8 +175,8 @@ export function ProgramEditableRow({
   }
 
   return (
-    <TableRow className={cn(active && 'bg-accent/45 hover:bg-accent/45')}>
-      <TableCell className='border-b font-medium'>
+    <TableRow>
+      <TableCell className='border-b'>
         <div className='flex items-center gap-2'>
           {rowLabel}
           {disabled && (
