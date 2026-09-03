@@ -1,20 +1,26 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
 import { id as idLocale } from 'date-fns/locale'
-import { Loader2, UsersRound } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import {
   ChartContainer,
   ChartTooltip,
   type ChartConfig,
 } from '@/components/ui/chart'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -23,14 +29,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  LabelList,
-  XAxis,
-  YAxis,
-} from 'recharts'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -48,6 +46,7 @@ import {
 import {
   useDerivedGpnSensus,
   useDerivedGpnSensusForKelompoks,
+  useDesaSensusTotals,
   useSensus,
   useSensusForKelompoks,
   useUpsertSensusCell,
@@ -75,28 +74,51 @@ export function SensusMaster() {
   })
 
   const [adminKelompokId, setAdminKelompokId] = useState<string>(DESA_SELECTION)
-  const isDesaMode = !isTeamManager && adminKelompokId === DESA_SELECTION
+  const teamManagerKelompok = kelompokOptions.find(
+    (option) => option.value === kelompok
+  )
+  const [teamManagerView, setTeamManagerView] = useState<string | undefined>()
+  const selectedTeamManagerView = teamManagerView ?? teamManagerKelompok?.id
+  const isDesaMode = isTeamManager
+    ? selectedTeamManagerView === DESA_SELECTION
+    : adminKelompokId === DESA_SELECTION
   const kelompokIds = useMemo(
     () => kelompokOptions.map((option) => option.id),
     [kelompokOptions]
   )
   const resolvedKelompokId: string | undefined = isTeamManager
-    ? kelompokOptions.find((o) => o.value === kelompok)?.id
+    ? isDesaMode
+      ? undefined
+      : teamManagerKelompok?.id
     : isDesaMode
       ? undefined
       : adminKelompokId
 
   const { data: rows = [], isLoading } = useSensus(resolvedKelompokId)
+  const { data: desaTotals = [], isLoading: isDesaTotalsLoading } =
+    useDesaSensusTotals()
   const { data: derivedRaw = [] } = useDerivedGpnSensus(resolvedKelompokId)
   const { data: desaRows = [], isLoading: isDesaRowsLoading } =
-    useSensusForKelompoks(isDesaMode ? kelompokIds : [])
+    useSensusForKelompoks(isDesaMode && !isTeamManager ? kelompokIds : [])
   const { data: desaDerivedRaw = [], isLoading: isDesaDerivedLoading } =
-    useDerivedGpnSensusForKelompoks(isDesaMode ? kelompokIds : [])
+    useDerivedGpnSensusForKelompoks(
+      isDesaMode && !isTeamManager ? kelompokIds : []
+    )
 
-  const effectiveRows = isDesaMode ? desaRows : rows
-  const effectiveDerivedRaw = isDesaMode ? desaDerivedRaw : derivedRaw
+  const effectiveRows = isDesaMode
+    ? isTeamManager
+      ? desaTotals
+      : desaRows
+    : rows
+  const effectiveDerivedRaw = isDesaMode
+    ? isTeamManager
+      ? desaTotals
+      : desaDerivedRaw
+    : derivedRaw
   const effectiveIsLoading = isDesaMode
-    ? isDesaRowsLoading || isDesaDerivedLoading
+    ? isTeamManager
+      ? isDesaTotalsLoading
+      : isDesaRowsLoading || isDesaDerivedLoading
     : isLoading
 
   const latestUpdatedAt = useMemo(() => {
@@ -144,12 +166,22 @@ export function SensusMaster() {
           description='Data master peserta per kategori × gender. Update saat ada perubahan.'
           actions={
             isTeamManager ? (
-              <Button asChild variant='outline'>
-                <Link to='/admin/participants'>
-                  <UsersRound data-icon='inline-start' />
-                  Kelola Peserta
-                </Link>
-              </Button>
+              <Select
+                value={selectedTeamManagerView}
+                onValueChange={setTeamManagerView}
+              >
+                <SelectTrigger className='w-[180px]'>
+                  <SelectValue placeholder='Pilih tampilan' />
+                </SelectTrigger>
+                <SelectContent>
+                  {teamManagerKelompok && (
+                    <SelectItem value={teamManagerKelompok.id}>
+                      {teamManagerKelompok.value}
+                    </SelectItem>
+                  )}
+                  <SelectItem value={DESA_SELECTION}>Rekap Desa</SelectItem>
+                </SelectContent>
+              </Select>
             ) : (
               <KelompokSelector
                 value={adminKelompokId}
@@ -205,7 +237,7 @@ export function SensusMaster() {
               <SensusDesaChart
                 byCell={byCell}
                 derivedByKey={derivedByKey}
-                kelompokCount={kelompokIds.length}
+                kelompokCount={isTeamManager ? undefined : kelompokIds.length}
               />
             )}
             <div className='hidden md:block'>
@@ -323,7 +355,7 @@ function SensusDesaChart({
 }: {
   byCell: Record<string, number>
   derivedByKey: Map<string, number>
-  kelompokCount: number
+  kelompokCount?: number
 }) {
   const chartRows = useMemo(() => {
     const rawRows = CATEGORY_CODES.map((code) => {
@@ -405,11 +437,13 @@ function SensusDesaChart({
         <SummaryTile label='Pendidik' value={pendidikTotal} />
         <SummaryTile label='Laki-laki' value={lakiTotal} />
         <SummaryTile label='Perempuan' value={perempuanTotal} />
-        <SummaryTile
-          label='Kelompok'
-          value={kelompokCount}
-          className='col-span-2 sm:col-span-1'
-        />
+        {kelompokCount && (
+          <SummaryTile
+            label='Kelompok'
+            value={kelompokCount}
+            className='col-span-2 sm:col-span-1'
+          />
+        )}
       </div>
 
       {/* Chart Card */}
@@ -420,8 +454,8 @@ function SensusDesaChart({
               Komposisi Sensus Desa
             </h2>
             <p className='text-sm text-muted-foreground'>
-              Gabungan {kelompokCount} kelompok, dipisah laki-laki dan
-              perempuan.
+              Gabungan{kelompokCount ? ` ${kelompokCount} kelompok,` : ''}{' '}
+              dipisah laki-laki dan perempuan.
             </p>
           </div>
           <div className='text-right'>

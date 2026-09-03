@@ -1579,6 +1579,14 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: string
       }
+      list_lupg_desa_sensus_totals: {
+        Args: never
+        Returns: {
+          category_code: string
+          count: number
+          gender: string
+        }[]
+      }
       list_lupg_intensif_candidates: {
         Args: { p_kelompok_id: string; p_program_code: string }
         Returns: {
