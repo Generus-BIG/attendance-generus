@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '14.1'
+    PostgrestVersion: '14.5'
   }
   public: {
     Tables: {
@@ -670,6 +670,8 @@ export type Database = {
           created_at: string
           id: string
           kelompok_id: string
+          last_edited_at: string | null
+          last_edited_by: string | null
           locked: boolean
           month: string
           status: string
@@ -681,6 +683,8 @@ export type Database = {
           created_at?: string
           id?: string
           kelompok_id: string
+          last_edited_at?: string | null
+          last_edited_by?: string | null
           locked?: boolean
           month: string
           status?: string
@@ -692,6 +696,8 @@ export type Database = {
           created_at?: string
           id?: string
           kelompok_id?: string
+          last_edited_at?: string | null
+          last_edited_by?: string | null
           locked?: boolean
           month?: string
           status?: string
@@ -1571,13 +1577,9 @@ export type Database = {
         Args: { p_token: string }
         Returns: Json
       }
-      lupg_activity_photo_path_matches_report: {
-        Args: { p_path: string; p_report_id: string }
-        Returns: boolean
-      }
-      lupg_get_submitter_display: {
-        Args: { p_user_id: string }
-        Returns: string
+      get_public_lupg_presentation_payload_base: {
+        Args: { p_token: string }
+        Returns: Json
       }
       list_lupg_desa_sensus_totals: {
         Args: never
@@ -1590,8 +1592,8 @@ export type Database = {
       list_lupg_intensif_candidates: {
         Args: { p_kelompok_id: string; p_program_code: string }
         Returns: {
-          birth_date: string | null
-          birth_place: string | null
+          birth_date: string
+          birth_place: string
           category_code: string
           gender: string
           id: string
@@ -1599,6 +1601,18 @@ export type Database = {
           name: string
           status_active: boolean
         }[]
+      }
+      lupg_activity_photo_path_matches_report: {
+        Args: { p_path: string; p_report_id: string }
+        Returns: boolean
+      }
+      lupg_get_last_editor_display: {
+        Args: { p_report_id: string }
+        Returns: string
+      }
+      lupg_get_submitter_display: {
+        Args: { p_user_id: string }
+        Returns: string
       }
       lupg_mr_readable: { Args: { p_mr_id: string }; Returns: boolean }
       lupg_mr_writable: { Args: { p_mr_id: string }; Returns: boolean }
@@ -1606,26 +1620,33 @@ export type Database = {
         Args: { p_kelompok_id: string }
         Returns: undefined
       }
-      update_lupg_intensif_participant: {
+      lupg_touch_monthly_report: {
+        Args: { p_report_id: string }
+        Returns: undefined
+      }
+      lupg_upsert_sensus_for_report: {
         Args: {
-          p_birth_date: string | null
-          p_birth_place: string
           p_category_code: string
+          p_count: number
           p_gender: string
-          p_name: string
-          p_participant_id: string
-          p_status_active: boolean
+          p_report_id: string
         }
         Returns: {
-          birth_date: string | null
-          birth_place: string | null
           category_code: string
+          count: number
+          created_at: string
           gender: string
           id: string
           kelompok_id: string
-          name: string
-          status_active: boolean
-        }[]
+          last_updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: '*'
+          to: 'lupg_sensus'
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       normalize_participant_name: { Args: { input: string }; Returns: string }
       promote_eligible_gpn: { Args: never; Returns: undefined }
@@ -1687,6 +1708,27 @@ export type Database = {
           attendance_id: string
           outcome: string
           pending_participant_id: string
+        }[]
+      }
+      update_lupg_intensif_participant: {
+        Args: {
+          p_birth_date: string
+          p_birth_place: string
+          p_category_code: string
+          p_gender: string
+          p_name: string
+          p_participant_id: string
+          p_status_active: boolean
+        }
+        Returns: {
+          birth_date: string
+          birth_place: string
+          category_code: string
+          gender: string
+          id: string
+          kelompok_id: string
+          name: string
+          status_active: boolean
         }[]
       }
       user_kelompok: { Args: never; Returns: string }
