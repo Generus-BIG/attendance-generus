@@ -170,6 +170,10 @@ export interface MonthlyReportWithSubmitterRow extends MonthlyReportRow {
   submitter_display_name: string | null
 }
 
+export interface MonthlyReportWithEditorRow extends MonthlyReportRow {
+  last_editor_display_name: string | null
+}
+
 export interface YearlyMatrixData {
   monthlyReports: MonthlyReportRow[]
   metricReports: MetricReportRow[]

@@ -1,5 +1,9 @@
 import { supabase } from '@/lib/supabase'
-import { type MonthlyReportRow, type MonthlyReportInsert } from '../types'
+import {
+  type MonthlyReportInsert,
+  type MonthlyReportRow,
+  type MonthlyReportWithEditorRow,
+} from '../types'
 import {
   firstDayOfMonth,
   isCalendarMonthKey,
@@ -41,14 +45,25 @@ export async function getMonthlyReport(
 
 export async function getMonthlyReportById(
   id: string
-): Promise<MonthlyReportRow | null> {
-  const { data, error } = await supabase
+): Promise<MonthlyReportWithEditorRow | null> {
+  const { data: report, error } = await supabase
     .from('lupg_monthly_reports')
     .select('*')
     .eq('id', id)
     .maybeSingle()
   if (error) throw error
-  return (data as MonthlyReportRow | null) ?? null
+  if (!report) return null
+
+  const { data: editorName, error: editorError } = await supabase.rpc(
+    'lupg_get_last_editor_display',
+    { p_report_id: id }
+  )
+  if (editorError) throw editorError
+
+  return {
+    ...(report as MonthlyReportRow),
+    last_editor_display_name: (editorName as string | null) ?? null,
+  }
 }
 
 export async function createMonthlyReport(

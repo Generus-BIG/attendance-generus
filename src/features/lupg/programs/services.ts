@@ -69,6 +69,9 @@ export interface UpsertProgramMonthInput {
 export async function upsertProgramMonth(
   input: UpsertProgramMonthInput
 ): Promise<ProgramReportRow> {
+  if (input.count_this_month > input.denominator) {
+    throw new Error('Jumlah capaian tidak boleh melebihi jumlah sensus')
+  }
   const report = await ensureMonthlyReport(input.kelompok_id, input.month)
 
   // Only include notes / extras in the payload when the caller provided them,

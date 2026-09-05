@@ -20,7 +20,6 @@ import {
 } from '../charts/chart-primitives'
 import { TrendBar, type TrendBarDatum } from '../charts/trend-bar'
 import { ChartPane } from '../components/chart-pane'
-import { DataPane } from '../components/data-pane'
 import {
   EditorialTable,
   EditorialTableBody,
@@ -137,9 +136,8 @@ function TrendLabel({
 
 function ShodaqohTrend({ data }: ShodaqohTrendProps) {
   const p = usePresPalette()
-  const maxValue = Math.max(...data.map((item) => item.value), 1)
-  const yMax = Math.ceil(maxValue / 100_000) * 100_000
-  const ticks = [0, yMax / 4, yMax / 2, (yMax * 3) / 4, yMax]
+  const yMax = 1_000_000
+  const ticks = [0, 200_000, 400_000, 600_000, 800_000, yMax]
 
   return (
     <ResponsiveContainer width='100%' height='100%'>
@@ -341,39 +339,18 @@ function ShodaqohKelompokBody(props: SlideArgs) {
       totalSlides={totalSlides}
     >
       <div className='grid h-full min-h-0 grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] gap-6'>
-        <DataPane>
+        <div className='flex h-full min-h-0 items-start pt-12'>
           <EditorialTable headerVariant='hairline' density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
-                <EditorialTableHead
-                  style={{
-                    background: `color-mix(in oklch, ${p.shodaqohPrimary} 16%, ${p.bg})`,
-                  }}
-                >
-                  Bulan
-                </EditorialTableHead>
-                <EditorialTableHead
-                  className='text-right'
-                  style={{
-                    background: `color-mix(in oklch, ${p.shodaqohPrimary} 16%, ${p.bg})`,
-                  }}
-                >
+                <EditorialTableHead>Bulan</EditorialTableHead>
+                <EditorialTableHead className='text-right'>
                   Nominal (Rp)
                 </EditorialTableHead>
-                <EditorialTableHead
-                  className='text-right'
-                  style={{
-                    background: `color-mix(in oklch, ${p.shodaqohPrimary} 16%, ${p.bg})`,
-                  }}
-                >
+                <EditorialTableHead className='text-right'>
                   KK
                 </EditorialTableHead>
-                <EditorialTableHead
-                  className='text-right'
-                  style={{
-                    background: `color-mix(in oklch, ${p.shodaqohPrimary} 16%, ${p.bg})`,
-                  }}
-                >
+                <EditorialTableHead className='text-right'>
                   Rata per KK
                 </EditorialTableHead>
               </EditorialTableRow>
@@ -406,7 +383,7 @@ function ShodaqohKelompokBody(props: SlideArgs) {
               })}
             </EditorialTableBody>
           </EditorialTable>
-        </DataPane>
+        </div>
         <ChartPane>
           <ShodaqohTrend data={chartData} />
         </ChartPane>
@@ -449,7 +426,7 @@ function ShodaqohDesaBody(props: SlideArgs) {
       totalSlides={totalSlides}
     >
       <ReportSplit>
-        <DataPane>
+        <div className='flex h-full min-h-0 items-start pt-12'>
           <EditorialTable headerVariant='hairline' density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
@@ -494,7 +471,7 @@ function ShodaqohDesaBody(props: SlideArgs) {
               </TotalRow>
             </EditorialTableBody>
           </EditorialTable>
-        </DataPane>
+        </div>
         <ChartPane>
           <TrendBar
             data={chartData}

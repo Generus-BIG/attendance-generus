@@ -1,13 +1,9 @@
-// Sarpras stacked bar (desa mode) — fulfilled vs not-fulfilled per kelompok
-// with % label on top. Sudah uses palette.success (load-bearing semantic
-// green per Design Principle 2 BI exception); Belum uses palette.muted at
-// 35% opacity.
+// Sarpras bar (desa mode) — fulfilled count per kelompok with % label on top.
 import {
   Bar,
   BarChart,
   CartesianGrid,
   LabelList,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -110,48 +106,6 @@ function TopPctLabel({
   )
 }
 
-interface LegendPayloadEntry {
-  value?: string
-  color?: string
-}
-
-interface CustomLegendProps {
-  payload?: LegendPayloadEntry[]
-  palette: PresPalette
-}
-
-function CustomLegend({ payload, palette }: CustomLegendProps) {
-  if (!payload) return null
-  return (
-    <div className='flex flex-wrap items-center justify-center gap-4 pt-2'>
-      {payload.map((entry) => (
-        <div key={entry.value} className='flex items-center gap-2'>
-          <span
-            aria-hidden
-            style={{
-              width: 14,
-              height: 14,
-              borderRadius: 3,
-              background: entry.color,
-              display: 'inline-block',
-            }}
-          />
-          <span
-            style={{
-              fontFamily: palette.fontSans,
-              fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
-              fontWeight: 600,
-              color: palette.ink,
-            }}
-          >
-            {entry.value}
-          </span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 export function SarprasStackedBar({
   data,
   totalItems,
@@ -159,7 +113,6 @@ export function SarprasStackedBar({
   const palette = usePresPalette()
   const { durationScale } = usePresentationAnimation()
   const colorSudah = palette.sarprasPrimary
-  const colorBelum = `color-mix(in oklch, ${palette.muted} 35%, ${palette.bg})`
   if (totalItems <= 0 || data.length === 0) {
     return (
       <div
@@ -205,28 +158,10 @@ export function SarprasStackedBar({
             />
           )}
         />
-        <Legend
-          content={(p) => (
-            <CustomLegend
-              {...(p as unknown as Omit<CustomLegendProps, 'palette'>)}
-              palette={palette}
-            />
-          )}
-          verticalAlign='bottom'
-        />
         <Bar
           dataKey='sudah'
-          stackId='s'
           fill={colorSudah}
-          name='Sudah'
-          isAnimationActive={true}
-          animationDuration={Math.round(800 * durationScale)}
-        />
-        <Bar
-          dataKey='belum'
-          stackId='s'
-          fill={colorBelum}
-          name='Belum'
+          radius={[7, 7, 0, 0]}
           isAnimationActive={true}
           animationDuration={Math.round(800 * durationScale)}
         >

@@ -114,6 +114,7 @@ All LUPG tables prefixed `lupg_`. Container pattern: one `lupg_monthly_reports` 
 - `lupg_metric_definitions` / `lupg_metric_reports` (configurable; seed = 5 attendance % metrics)
 - `lupg_sarpras_items` / `lupg_sarpras_reports` (14 seeded items, global checklist)
 - `lupg_shodaqoh` (1:1 with monthly report)
+- `lupg_monthly_reports.last_edited_at` / `last_edited_by` track the latest content edit across all report sections. Child-table triggers update them; Sensus uses `lupg_upsert_sensus_for_report()` because its rows are scoped by kelompok rather than report.
 - `lupg_mustin_notes` + `lupg_mustin_templates` (templates seed the per-report notes; see `mustin-section.tsx`)
 - PHQ uses `lupg_phq_participants`, `lupg_phq_meetings`, `lupg_phq_progress`, `lupg_phq_attendance`, and `lupg_phq_monthly_notes`; APR/AR Intensif use `lupg_intensif_activities` and `lupg_intensif_attendance`. Admins have all-kelompok access; MT is restricted to `user_kelompok_id()` by RLS, including child rows through their meeting/activity parent.
 - `list_lupg_intensif_candidates(p_program_code, p_kelompok_id)` is a `SECURITY DEFINER` RPC with execute granted only to `authenticated`. It accepts only `APR_INTENSIF`/`AR_INTENSIF`; for MT it ignores the supplied `p_kelompok_id` and uses `user_kelompok_id()` server-side. Do not rely on the browser-provided kelompok for MT candidate scope.
@@ -274,6 +275,7 @@ Schema changes are tracked in `supabase/migrations/` as timestamped `.sql` files
 - `20260722000000_harden_browser_authority_surfaces.sql` — removes broad anonymous attendance/participant access, adds form-scoped public RPCs, hardens Absensi/LUPG team boundaries, report audit fields, derived sensus, photo storage paths, and privileged function grants
 - `20260813000000_lupg_presentation_sharing.sql` — per-month/scope presentation shares, role-scoped RLS, token rotation RPC, and public presentation payload RPC
 - `20260820000000_mt_phq_intensif.sql` through `20260820230000_add_intensif_candidate_rpc.sql` — MT role, PHQ and Intensif tables/RLS, scope and attendance triggers, immutable PHQ parent kelompok controller rule, progress mastery percent, and scoped Intensif candidate RPC
+- `20260905000000_track_lupg_monthly_report_last_editor.sql` — report-level last-editor audit fields, child-content touch triggers, scoped editor-name lookup, and atomic Sensus save + report touch RPC
 
 ## Known Debt / Future Improvements
 

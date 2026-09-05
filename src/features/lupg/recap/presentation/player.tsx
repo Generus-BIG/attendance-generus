@@ -23,6 +23,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { PresentationLoadingState } from '../../presentation/presentation-loading-state'
 import { formatMonthLabel } from '../../utils/month-utils'
 import {
   AnimationProvider,
@@ -38,12 +39,63 @@ interface PresentationPlayerProps {
   onExit?: () => void
 }
 
+const PRESENTATION_INTRO_SEEN_KEY = 'lupg:presentation-intro-seen'
+
 export function PresentationPlayer(props: PresentationPlayerProps) {
+  const [isPrepared, setIsPrepared] = useState(() => {
+    if (typeof window === 'undefined') return false
+    try {
+      return sessionStorage.getItem(PRESENTATION_INTRO_SEEN_KEY) === 'true'
+    } catch {
+      return false
+    }
+  })
+  const reduceMotion = useReducedMotion()
+  const completeLoading = useCallback(() => setIsPrepared(true), [])
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(PRESENTATION_INTRO_SEEN_KEY, 'true')
+    } catch {
+      // Storage can be unavailable in privacy-restricted browsers.
+    }
+  }, [])
+
   return (
     <LazyMotion features={domAnimation}>
-      <AnimationProvider>
-        <PresentationPlayerInner {...props} />
-      </AnimationProvider>
+      <div className='fixed inset-0 isolate z-50 bg-background'>
+        <AnimatePresence initial={false}>
+          {!isPrepared ? (
+            <m.div
+              key='loading'
+              className='absolute inset-0 overflow-y-auto'
+              exit={{ opacity: 0, y: reduceMotion ? 0 : -4 }}
+              transition={{ duration: reduceMotion ? 0 : 0.18, ease: 'easeIn' }}
+            >
+              <PresentationLoadingState
+                isLoading={props.isLoading}
+                onComplete={completeLoading}
+              />
+            </m.div>
+          ) : props.isLoading ? null : (
+            <m.div
+              key='presentation'
+              data-presentation-ready='true'
+              className='absolute inset-0'
+              initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: reduceMotion ? 0 : 0.3,
+                ease: [0.2, 0, 0, 1],
+              }}
+            >
+              <AnimationProvider>
+                <PresentationPlayerInner {...props} />
+              </AnimationProvider>
+            </m.div>
+          )}
+        </AnimatePresence>
+      </div>
     </LazyMotion>
   )
 }
@@ -196,7 +248,6 @@ function ControlChoices<T extends string>({
 function PresentationPlayerInner({
   monthKey,
   slides,
-  isLoading,
   onExit,
 }: PresentationPlayerProps) {
   const p = usePresPalette()
@@ -208,6 +259,12 @@ function PresentationPlayerInner({
   const [slideIndex, setSlideIndex] = useState(0)
   const [direction, setDirection] = useState(1)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [showThumbnails, setShowThumbnails] = useState(false)
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setShowThumbnails(true), 700)
+    return () => window.clearTimeout(timeout)
+  }, [])
 
   useEffect(() => {
     const parent = parentRef.current
@@ -249,9 +306,18 @@ function PresentationPlayerInner({
     [slideIndex]
   )
 
+  const isMustinSlide = slides[slideIndex]?.key.startsWith('mustin-') ?? false
+
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      if (
+      if (event.key === ' ' && isMustinSlide) {
+        event.preventDefault()
+        window.dispatchEvent(
+          new CustomEvent('lupg:mustin-toggle-autoscroll', {
+            detail: slides[slideIndex]?.key,
+          })
+        )
+      } else if (
         event.key === 'ArrowRight' ||
         event.key === ' ' ||
         event.key === 'PageDown'
@@ -276,7 +342,15 @@ function PresentationPlayerInner({
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [handleNext, handlePrev, isFullscreen, onExit, slides.length])
+  }, [
+    handleNext,
+    handlePrev,
+    isFullscreen,
+    isMustinSlide,
+    onExit,
+    slideIndex,
+    slides,
+  ])
 
   const clampedIndex = Math.min(slideIndex, Math.max(slides.length - 1, 0))
   const currentSlide = slides[clampedIndex]
@@ -381,10 +455,10 @@ function PresentationPlayerInner({
             className='relative flex items-center justify-center overflow-hidden'
           >
             <AnimatePresence mode='wait' custom={direction}>
-              {isLoading || !currentSlide ? (
+              {!currentSlide ? (
                 <div className='flex h-full items-center justify-center text-muted-foreground'>
                   <Loader2 className='mr-2 h-6 w-6 animate-spin' />
-                  Memuat...
+                  Loading...
                 </div>
               ) : (
                 <m.div
@@ -422,7 +496,7 @@ function PresentationPlayerInner({
                     fallback={
                       <div className='flex h-full w-full items-center justify-center text-muted-foreground'>
                         <Loader2 className='mr-2 h-6 w-6 animate-spin' />
-                        Memuat...
+                        Loading...
                       </div>
                     }
                   >
@@ -474,7 +548,9 @@ function PresentationPlayerInner({
                         className='pointer-events-none absolute top-0 left-0 h-180 w-320 origin-top-left scale-[0.1125]'
                         aria-hidden='true'
                       >
-                        <Suspense fallback={null}>{slide.render()}</Suspense>
+                        {showThumbnails && (
+                          <Suspense fallback={null}>{slide.render()}</Suspense>
+                        )}
                       </div>
                     </div>
                     <span
