@@ -22,7 +22,7 @@ import {
   useDerivedGpnSensus,
   useSensus,
   useSensusSnapshots,
-  useUpsertSensusCell,
+  useUpsertSensusCellForReport,
 } from '../../hooks/use-lupg-queries'
 import { type MonthlyReportRow, type SensusGender } from '../../types'
 import { SectionHeading } from '../components/section-heading'
@@ -134,7 +134,9 @@ export function SensusPreviewSection({ report }: Props) {
                     {isSubmitted || isDerived ? (
                       <span
                         className={
-                          isDerived ? 'tabular-nums text-muted-foreground' : 'tabular-nums'
+                          isDerived
+                            ? 'text-muted-foreground tabular-nums'
+                            : 'tabular-nums'
                         }
                       >
                         {l}
@@ -142,7 +144,7 @@ export function SensusPreviewSection({ report }: Props) {
                     ) : (
                       <SensusInput
                         key={l}
-                        kelompokId={report.kelompok_id}
+                        monthlyReportId={report.id}
                         code={code}
                         gender='L'
                         initial={l}
@@ -153,7 +155,9 @@ export function SensusPreviewSection({ report }: Props) {
                     {isSubmitted || isDerived ? (
                       <span
                         className={
-                          isDerived ? 'tabular-nums text-muted-foreground' : 'tabular-nums'
+                          isDerived
+                            ? 'text-muted-foreground tabular-nums'
+                            : 'tabular-nums'
                         }
                       >
                         {p}
@@ -161,7 +165,7 @@ export function SensusPreviewSection({ report }: Props) {
                     ) : (
                       <SensusInput
                         key={p}
-                        kelompokId={report.kelompok_id}
+                        monthlyReportId={report.id}
                         code={code}
                         gender='P'
                         initial={p}
@@ -171,7 +175,7 @@ export function SensusPreviewSection({ report }: Props) {
                   <TableCell
                     className={
                       isDerived
-                        ? 'text-right font-medium tabular-nums text-muted-foreground'
+                        ? 'text-right font-medium text-muted-foreground tabular-nums'
                         : 'text-right font-medium tabular-nums'
                     }
                   >
@@ -206,18 +210,18 @@ export function SensusPreviewSection({ report }: Props) {
 }
 
 function SensusInput({
-  kelompokId,
+  monthlyReportId,
   code,
   gender,
   initial,
 }: {
-  kelompokId: string
+  monthlyReportId: string
   code: CategoryCode
   gender: SensusGender
   initial: number
 }) {
   const [value, setValue] = useState(initial.toString())
-  const upsert = useUpsertSensusCell()
+  const upsert = useUpsertSensusCellForReport()
 
   const save = () => {
     const count = Number(value)
@@ -227,7 +231,7 @@ function SensusInput({
     }
     if (count === initial) return
     upsert.mutate(
-      { kelompok_id: kelompokId, category_code: code, gender, count },
+      { monthlyReportId, category_code: code, gender, count },
       {
         onError: (error: unknown) => {
           toast.error(
