@@ -788,6 +788,8 @@ function SensusDesaSlide({
 
   return (
     <SlideFrame
+      slideKey='sensus'
+      decorationKind={view === 'data' ? 'table' : 'split'}
       eyebrow='SENSUS'
       title='Sensus Generus per Kelompok'
       meta={metaNode}
@@ -839,6 +841,8 @@ export function renderSensusSlide(args: {
       if (isKelompokMode) {
         return (
           <SlideFrame
+            slideKey='sensus'
+            decorationKind='table'
             eyebrow='SENSUS'
             title='Sensus Generus & Pendidik'
             meta={monthLabel}

@@ -1,8 +1,12 @@
 import { type ReactNode } from 'react'
+import { type DecorationKind } from '../decoration-system'
 import { usePresPalette } from '../use-pres-palette'
 import { AnimateContainer, AnimateItem } from './animate-element'
+import { SlideSurface } from './slide-surface'
 
 export interface SlideFrameProps {
+  slideKey: string
+  decorationKind: DecorationKind
   eyebrow?: string
   title: string
   meta?: ReactNode
@@ -13,6 +17,8 @@ export interface SlideFrameProps {
 }
 
 export function SlideFrame({
+  slideKey,
+  decorationKind,
   title,
   meta,
   scope,
@@ -54,13 +60,10 @@ export function SlideFrame({
   } as const
 
   return (
-    <div
-      className='flex h-full flex-col'
-      style={{
-        background: p.bg,
-        color: p.ink,
-        fontFamily: p.fontSans,
-      }}
+    <SlideSurface
+      slideKey={slideKey}
+      slideNumber={slideNumber}
+      decorationKind={decorationKind}
     >
       <AnimateContainer className='flex h-full flex-col'>
         <header
@@ -107,6 +110,6 @@ export function SlideFrame({
           </AnimateItem>
         </footer>
       </AnimateContainer>
-    </div>
+    </SlideSurface>
   )
 }
