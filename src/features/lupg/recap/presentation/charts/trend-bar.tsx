@@ -156,6 +156,7 @@ export function TrendBar({
         />
         <Bar
           dataKey='value'
+          radius={[7, 7, 0, 0]}
           isAnimationActive={true}
           animationDuration={Math.round(800 * durationScale)}
           maxBarSize={48}

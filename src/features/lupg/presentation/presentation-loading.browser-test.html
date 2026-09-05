@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Presentation loading regression check</title>
+  </head>
+  <body>
+    <pre
+      id="result"
+      style="position: fixed; z-index: 100; background: white; color: black"
+    >
+Running…</pre
+    >
+    <div id="root"></div>
+    <script type="module">
+      // Open this file's URL through the Vite dev server. No test framework needed.
+      import React from 'react'
+      import { createRoot } from 'react-dom/client'
+      import { PresentationPlayer } from '../recap/presentation/player.tsx'
+      import '/src/styles/index.css'
+
+      const root = createRoot(document.getElementById('root'))
+      const result = document.getElementById('result')
+      const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+      const assert = (condition, message) => {
+        if (!condition) throw new Error(message)
+      }
+      const slides = [
+        {
+          key: 'check',
+          title: 'Check',
+          render: () =>
+            React.createElement(
+              'h1',
+              { 'data-test-slide': true },
+              'Presentation ready'
+            ),
+        },
+      ]
+      const render = (key, isLoading) =>
+        root.render(
+          React.createElement(
+            React.StrictMode,
+            null,
+            React.createElement(PresentationPlayer, {
+              key,
+              monthKey: '2026-07',
+              slides,
+              isLoading,
+            })
+          )
+        )
+
+      try {
+        for (const pending of [true, false]) {
+          const name = pending ? 'Delayed data' : 'Cached data'
+          render(name, pending)
+          await pause(50)
+          assert(
+            document.querySelector('[data-presentation-loading]'),
+            `${name}: loader must appear first`
+          )
+          if (pending) {
+            await pause(800)
+            assert(
+              !document.querySelector('[data-test-slide]'),
+              'Slide appeared while data was pending'
+            )
+            assert(
+              Number(
+                document
+                  .querySelector('[role="progressbar"]')
+                  .getAttribute('aria-valuenow')
+              ) < 100,
+              'Pending data must not report 100%'
+            )
+            render(name, false)
+          }
+
+          let completedAt = 0
+          let fullBarSeen = false
+          const deadline = performance.now() + 5000
+          while (
+            !document.querySelector('[data-test-slide]') &&
+            performance.now() < deadline
+          ) {
+            const bar = document.querySelector('[role="progressbar"]')
+            if (bar?.getAttribute('aria-valuenow') === '100') {
+              completedAt ||= performance.now()
+              const fill = document.querySelector(
+                '[data-loading-progress-fill]'
+              )
+              fullBarSeen ||=
+                fill.getBoundingClientRect().width >=
+                bar.getBoundingClientRect().width - 1
+            }
+            await pause(16)
+          }
+          assert(
+            document.querySelector('[data-test-slide]'),
+            `${name}: slide never appeared`
+          )
+          assert(completedAt > 0, `${name}: slide appeared before 100%`)
+          assert(fullBarSeen, `${name}: progress bar never finished filling`)
+          assert(
+            performance.now() - completedAt >= 200,
+            `${name}: 100% disappeared too quickly`
+          )
+          await pause(400)
+          assert(
+            !document.querySelector('[data-presentation-loading]'),
+            `${name}: loader did not exit`
+          )
+        }
+        result.textContent =
+          'PASS: delayed + cached data reach 100%, fill completely, then reveal the slide.'
+        result.dataset.result = 'pass'
+      } catch (error) {
+        result.textContent = `FAIL: ${error.message}`
+        result.dataset.result = 'fail'
+      }
+    </script>
+  </body>
+</html>

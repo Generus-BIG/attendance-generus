@@ -1,5 +1,10 @@
 import { format, parse } from 'date-fns'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  type QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import * as matrixSvc from '../matrix/services'
 import * as programsSvc from '../programs/services'
@@ -22,6 +27,9 @@ import {
   type MonthlyReportWithSubmitterRow,
   type SensusRow,
 } from '../types'
+
+const invalidateMonthlyReport = (qc: QueryClient, id: string) =>
+  qc.invalidateQueries({ queryKey: ['lupg', 'monthly-report', id] })
 
 const KEYS = {
   monthlyReports: (params: {
@@ -707,6 +715,20 @@ export function useUpsertSensusCell() {
   })
 }
 
+export function useUpsertSensusCellForReport() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: sensusSvc.upsertSensusCellForReport,
+    onSuccess: (row, input) => {
+      qc.invalidateQueries({ queryKey: KEYS.sensus(row.kelompok_id) })
+      qc.invalidateQueries({
+        queryKey: KEYS.monthlyReport(input.monthlyReportId),
+      })
+      qc.invalidateQueries({ queryKey: KEYS.desaSensusTotals })
+    },
+  })
+}
+
 export function useSensusSnapshots(monthlyReportId: string | undefined) {
   return useQuery({
     queryKey: ['lupg', 'sensus-snapshots', monthlyReportId ?? 'none'] as const,
@@ -739,6 +761,7 @@ export function useUpsertProgramReport() {
       qc.invalidateQueries({
         queryKey: KEYS.programReports(row.monthly_report_id),
       })
+      invalidateMonthlyReport(qc, row.monthly_report_id)
     },
   })
 }
@@ -764,6 +787,7 @@ export function useUpsertMetricReport() {
       qc.invalidateQueries({
         queryKey: KEYS.metricReports(row.monthly_report_id),
       })
+      invalidateMonthlyReport(qc, row.monthly_report_id)
     },
   })
 }
@@ -789,6 +813,7 @@ export function useUpsertSarprasReport() {
       qc.invalidateQueries({
         queryKey: KEYS.sarprasReports(row.monthly_report_id),
       })
+      invalidateMonthlyReport(qc, row.monthly_report_id)
     },
   })
 }
@@ -826,6 +851,7 @@ export function useUpsertShodaqoh() {
     mutationFn: shodaqohSvc.upsertShodaqoh,
     onSuccess: (row) => {
       qc.invalidateQueries({ queryKey: KEYS.shodaqoh(row.monthly_report_id) })
+      invalidateMonthlyReport(qc, row.monthly_report_id)
     },
   })
 }
@@ -836,6 +862,7 @@ export function useUpsertShodaqohMonth() {
     mutationFn: shodaqohSvc.upsertShodaqohMonth,
     onSuccess: (row, input) => {
       qc.invalidateQueries({ queryKey: KEYS.shodaqoh(row.monthly_report_id) })
+      invalidateMonthlyReport(qc, row.monthly_report_id)
       qc.invalidateQueries({
         queryKey: KEYS.shodaqohYearly(
           input.kelompok_id,
@@ -866,6 +893,7 @@ export function useCreateMustinNote() {
     mutationFn: mustinSvc.createMustinNote,
     onSuccess: (row) => {
       qc.invalidateQueries({ queryKey: KEYS.mustin(row.monthly_report_id) })
+      invalidateMonthlyReport(qc, row.monthly_report_id)
     },
   })
 }
@@ -880,6 +908,7 @@ export function useUpdateMustinNote() {
     }) => mustinSvc.updateMustinNote(vars.id, vars.patch),
     onSuccess: (_row, vars) => {
       qc.invalidateQueries({ queryKey: KEYS.mustin(vars.monthlyReportId) })
+      invalidateMonthlyReport(qc, vars.monthlyReportId)
     },
   })
 }
@@ -891,6 +920,7 @@ export function useDeleteMustinNote() {
       mustinSvc.deleteMustinNote(vars.id),
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: KEYS.mustin(vars.monthlyReportId) })
+      invalidateMonthlyReport(qc, vars.monthlyReportId)
     },
   })
 }
@@ -917,6 +947,7 @@ export function useSeedMustinFromTemplates() {
     },
     onSuccess: (_rows, vars) => {
       qc.invalidateQueries({ queryKey: KEYS.mustin(vars.monthlyReportId) })
+      invalidateMonthlyReport(qc, vars.monthlyReportId)
     },
   })
 }
@@ -1011,6 +1042,7 @@ export function useUpsertCharacterMonitoringReport() {
       qc.invalidateQueries({
         queryKey: KEYS.characterReports(row.monthly_report_id),
       })
+      invalidateMonthlyReport(qc, row.monthly_report_id)
     },
   })
 }
@@ -1025,6 +1057,7 @@ export function useUpsertCharacterMonitoringReports() {
         qc.invalidateQueries({
           queryKey: KEYS.characterReports(monthlyReportId),
         })
+        invalidateMonthlyReport(qc, monthlyReportId)
       }
     },
   })
@@ -1206,6 +1239,7 @@ export function useUpsertCharacterTargetReport() {
       qc.invalidateQueries({
         queryKey: KEYS.characterTargetReports(row.monthly_report_id),
       })
+      invalidateMonthlyReport(qc, row.monthly_report_id)
     },
   })
 }
@@ -1220,6 +1254,7 @@ export function useUpsertCharacterTargetReports() {
         qc.invalidateQueries({
           queryKey: KEYS.characterTargetReports(monthlyReportId),
         })
+        invalidateMonthlyReport(qc, monthlyReportId)
       }
     },
   })
@@ -1443,6 +1478,7 @@ export function useUpsertProgramMonth() {
         queryKey: PROGRAM_YEARLY_KEY(vars.kelompok_id, year),
       })
       qc.invalidateQueries({ queryKey: ['lupg', 'monthly-reports'] })
+      invalidateMonthlyReport(qc, _row.monthly_report_id)
     },
   })
 }
@@ -1482,6 +1518,7 @@ export function useUpsertMetricMonth() {
         queryKey: ['lupg', 'metrics-yearly-desa', year],
       })
       qc.invalidateQueries({ queryKey: ['lupg', 'monthly-reports'] })
+      invalidateMonthlyReport(qc, _row.monthly_report_id)
     },
   })
 }
@@ -1592,6 +1629,7 @@ export function useUploadActivityPhoto() {
       qc.invalidateQueries({
         queryKey: KEYS.activityPhotoUrls(row.report_id),
       })
+      invalidateMonthlyReport(qc, row.report_id)
     },
   })
 }
@@ -1608,6 +1646,7 @@ export function useUpdatePhotoCaption() {
       qc.invalidateQueries({
         queryKey: KEYS.activityPhotos(vars.reportId),
       })
+      invalidateMonthlyReport(qc, vars.reportId)
     },
   })
 }
@@ -1621,6 +1660,7 @@ export function useDeleteActivityPhoto() {
       qc.invalidateQueries({
         queryKey: KEYS.activityPhotos(vars.reportId),
       })
+      invalidateMonthlyReport(qc, vars.reportId)
       qc.invalidateQueries({
         queryKey: KEYS.activityPhotoUrls(vars.reportId),
       })
@@ -1640,6 +1680,7 @@ export function useDeleteActivityPhotos() {
       qc.invalidateQueries({
         queryKey: KEYS.activityPhotos(vars.reportId),
       })
+      invalidateMonthlyReport(qc, vars.reportId)
       qc.invalidateQueries({
         queryKey: KEYS.activityPhotoUrls(vars.reportId),
       })
@@ -1658,6 +1699,7 @@ export function useReorderActivityPhotos() {
       qc.invalidateQueries({
         queryKey: KEYS.activityPhotos(vars.reportId),
       })
+      invalidateMonthlyReport(qc, vars.reportId)
     },
   })
 }

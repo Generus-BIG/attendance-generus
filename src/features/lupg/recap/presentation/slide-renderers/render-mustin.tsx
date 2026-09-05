@@ -1,22 +1,23 @@
-// Resume Mustin slide renderer — per-kelompok cards (2-col desa, single full-width kelompok).
-import { MUSTIN_STATUS_LABELS } from '../../../constants'
+// Resume Mustin slide renderer — one complete, scrollable kelompok report per slide.
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useReducedMotion } from 'framer-motion'
+import { Pause, Play, RotateCcw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   type MonthlyReportRow,
   type MustinNoteRow,
-  type MustinStatus,
   type MustinTemplateRow,
 } from '../../../types'
 import { AnimateItem } from '../components/animate-element'
-import { DataPane } from '../components/data-pane'
 import { SlideFrame } from '../components/slide-frame'
 import { type Slide } from '../slides'
-import { usePresPalette, type PresPalette } from '../use-pres-palette'
+import { usePresPalette } from '../use-pres-palette'
 
 interface SlideArgs {
   monthLabel: string
   scope: string
   isSingleKelompok: boolean
-  effectiveKelompokList: { id: string; value: string }[]
+  kelompok: { id: string; value: string }
   reports: MonthlyReportRow[]
   mustinRows: MustinNoteRow[]
   mustinTemplates: MustinTemplateRow[]
@@ -24,7 +25,8 @@ interface SlideArgs {
   totalSlides: number
 }
 
-// Sort: template-coded first by template.sort_order; non-template by note.sort_order + 1_000_000.
+const DEFAULT_AUTO_SCROLL_SPEED = 15
+
 function sortNotes(
   notes: MustinNoteRow[],
   templateByCode: Map<string, MustinTemplateRow>
@@ -38,40 +40,14 @@ function sortNotes(
   })
 }
 
-// Pill colors per status — load-bearing semantic mapping (done = success/green,
-// in_progress = primary/navy, open = muted). Tinted backgrounds per Principle 2.
-function pillStyle(
-  status: MustinStatus,
-  p: PresPalette
-): { background: string; color: string; fontWeight: 700 } {
-  if (status === 'done') {
-    return {
-      background: `color-mix(in oklch, ${p.success} 18%, ${p.bg})`,
-      color: p.success,
-      fontWeight: 700,
-    }
-  }
-  if (status === 'in_progress') {
-    return { background: p.primary, color: p.primaryFg, fontWeight: 700 }
-  }
-  return {
-    background: `color-mix(in oklch, ${p.muted} 14%, ${p.bg})`,
-    color: p.muted,
-    fontWeight: 700,
-  }
-}
-
-interface NoteItemProps {
-  note: MustinNoteRow
-  index: number
-}
-
-function NoteItem({ note, index }: NoteItemProps) {
+function NoteItem({ note, index }: { note: MustinNoteRow; index: number }) {
   const p = usePresPalette()
-  const status = note.status as MustinStatus
-  const { background, color, fontWeight } = pillStyle(status, p)
+
   return (
-    <AnimateItem className='flex gap-3'>
+    <AnimateItem
+      className='flex gap-3 rounded-xl border p-4'
+      style={{ borderColor: p.rule }}
+    >
       <div
         className='shrink-0 pt-px'
         style={{
@@ -85,103 +61,195 @@ function NoteItem({ note, index }: NoteItemProps) {
       >
         {String(index + 1).padStart(2, '0')}
       </div>
-      <div className='flex flex-1 flex-col gap-0.5'>
-        <span
-          className='inline-block rounded'
-          style={{
-            background,
-            color,
-            padding: '2px 6px',
-            fontSize: 'clamp(0.75rem, 1vw, 1rem)',
-            fontWeight,
-            letterSpacing: '0.15em',
-            textTransform: 'uppercase',
-            fontFamily: p.fontSans,
-            width: 'fit-content',
-          }}
-        >
-          {MUSTIN_STATUS_LABELS[status]}
-        </span>
-        <div
-          style={{
-            fontWeight: 700,
-            fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
-            color: p.ink,
-          }}
-        >
-          {note.pokok_masalah}
-        </div>
-        <div
-          style={{
-            fontStyle: 'italic',
-            fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
-            color: p.muted,
-          }}
-        >
-          {note.keputusan_rencana || '(kosong)'}
-        </div>
+      <div className='flex min-w-0 flex-1 flex-col gap-3'>
+        <section>
+          <p
+            style={{
+              color: p.muted,
+              fontSize: 'clamp(0.625rem, 0.8vw, 0.75rem)',
+              fontWeight: 700,
+              letterSpacing: '0.14em',
+            }}
+          >
+            PEMBAHASAN
+          </p>
+          <p
+            className='mt-1 whitespace-pre-wrap'
+            style={{
+              color: p.ink,
+              fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
+              fontWeight: 700,
+            }}
+          >
+            {note.pokok_masalah}
+          </p>
+        </section>
+        <section>
+          <p
+            style={{
+              color: p.muted,
+              fontSize: 'clamp(0.625rem, 0.8vw, 0.75rem)',
+              fontWeight: 700,
+              letterSpacing: '0.14em',
+            }}
+          >
+            KEPUTUSAN / RENCANA
+          </p>
+          <p
+            className='mt-1 whitespace-pre-wrap'
+            style={{
+              color: p.ink,
+              fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
+            }}
+          >
+            {note.keputusan_rencana || '(kosong)'}
+          </p>
+        </section>
       </div>
     </AnimateItem>
   )
 }
 
-interface KelompokCardProps {
-  name: string
+function MustinContent({
+  notes,
+  slideKey,
+}: {
   notes: MustinNoteRow[]
-}
-
-function KelompokCard({ name, notes }: KelompokCardProps) {
+  slideKey: string
+}) {
   const p = usePresPalette()
+  const reduceMotion = useReducedMotion()
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const frameRef = useRef<number | undefined>(undefined)
+  const previousTimeRef = useRef<number | undefined>(undefined)
+  const scrollTopRef = useRef(0)
+  const lastAutoScrollTopRef = useRef(0)
+  const [isScrolling, setIsScrolling] = useState(false)
+  const [isFinished, setIsFinished] = useState(false)
+  const [speed, setSpeed] = useState(DEFAULT_AUTO_SCROLL_SPEED)
+
+  useEffect(() => {
+    if (!isScrolling || reduceMotion) return
+
+    const scroll = (time: number) => {
+      const container = scrollRef.current
+      if (!container) return
+      const elapsed = time - (previousTimeRef.current ?? time)
+      previousTimeRef.current = time
+      const bottom = container.scrollHeight - container.clientHeight
+      scrollTopRef.current += (speed * elapsed) / 1_000
+      const nextTop = Math.min(scrollTopRef.current, bottom)
+      container.scrollTop = nextTop
+      lastAutoScrollTopRef.current = container.scrollTop
+      if (nextTop >= bottom) {
+        setIsScrolling(false)
+        setIsFinished(true)
+        return
+      }
+      frameRef.current = requestAnimationFrame(scroll)
+    }
+
+    frameRef.current = requestAnimationFrame(scroll)
+    return () => {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current)
+      previousTimeRef.current = undefined
+    }
+  }, [isScrolling, reduceMotion, speed])
+
+  const start = useCallback(() => {
+    const container = scrollRef.current
+    if (!container) return
+    if (isFinished) container.scrollTop = 0
+    scrollTopRef.current = container.scrollTop
+    lastAutoScrollTopRef.current = container.scrollTop
+    setIsFinished(false)
+    setIsScrolling(true)
+  }, [isFinished])
+
+  useEffect(() => {
+    const toggle = () => {
+      if (reduceMotion || notes.length === 0) return
+      if (isScrolling) setIsScrolling(false)
+      else start()
+    }
+    const handleToggle = (event: Event) => {
+      if ((event as CustomEvent<string>).detail === slideKey) toggle()
+    }
+    window.addEventListener('lupg:mustin-toggle-autoscroll', handleToggle)
+    return () =>
+      window.removeEventListener('lupg:mustin-toggle-autoscroll', handleToggle)
+  }, [isScrolling, notes.length, reduceMotion, slideKey, start])
+
   return (
-    <div className='flex flex-col gap-3 py-2'>
+    <div className='flex h-full min-h-0 items-center gap-3'>
       <div
-        className='flex items-baseline gap-3 pb-2'
-        style={{ borderBottom: `2px solid ${p.brandAccent}` }}
+        className='flex h-full min-h-0 flex-1 flex-col rounded-[1.5rem] border p-6'
+        style={{ borderColor: p.rule }}
       >
-        <h3
-          style={{
-            fontFamily: p.fontSans,
-            fontWeight: 700,
-            fontSize: 'clamp(1rem, 1.4vw, 1.5rem)',
-            color: p.primary,
-          }}
-        >
-          {name}
-        </h3>
-      </div>
-      {notes.length === 0 ? (
         <div
-          style={{
-            fontStyle: 'italic',
-            fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
-            color: p.muted,
+          ref={scrollRef}
+          className='min-h-0 flex-1 overflow-y-auto pr-3'
+          onScroll={(event) => {
+            const scrollTop = event.currentTarget.scrollTop
+            if (scrollTop !== lastAutoScrollTopRef.current) {
+              scrollTopRef.current = scrollTop
+              lastAutoScrollTopRef.current = scrollTop
+            }
           }}
         >
-          Tidak ada catatan.
+          {notes.length === 0 ? (
+            <p className='italic' style={{ color: p.muted }}>
+              Tidak ada catatan.
+            </p>
+          ) : (
+            <div className='flex flex-col gap-3'>
+              {notes.map((note, index) => (
+                <NoteItem key={note.id} note={note} index={index} />
+              ))}
+            </div>
+          )}
         </div>
-      ) : (
-        <div className='flex flex-col gap-3'>
-          {notes.map((n, idx) => (
-            <NoteItem key={n.id} note={n} index={idx} />
-          ))}
-        </div>
-      )}
+      </div>
+      <div
+        className='group/controls flex shrink-0 items-center rounded-lg border p-1 opacity-35 transition-opacity focus-within:opacity-100 hover:opacity-100'
+        style={{
+          background: `color-mix(in oklch, ${p.bg} 88%, transparent)`,
+          borderColor: p.rule,
+        }}
+      >
+        <label className='sr-only' htmlFor='mustin-auto-scroll-speed'>
+          Auto-scroll speed
+        </label>
+        <input
+          id='mustin-auto-scroll-speed'
+          className='h-24 w-3 [writing-mode:vertical-lr]'
+          type='range'
+          min='5'
+          max='60'
+          step='5'
+          value={speed}
+          onChange={(event) => setSpeed(Number(event.target.value))}
+          aria-label={`Auto-scroll speed: ${speed} px/s`}
+          style={{ accentColor: p.muted }}
+        />
+        <Button
+          size='icon'
+          variant='ghost'
+          onClick={isScrolling ? () => setIsScrolling(false) : start}
+          disabled={reduceMotion || notes.length === 0}
+          aria-label={
+            isScrolling
+              ? 'Pause auto-scroll'
+              : isFinished
+                ? 'Restart auto-scroll'
+                : 'Start auto-scroll'
+          }
+          style={{ color: p.muted }}
+        >
+          {isScrolling ? <Pause /> : isFinished ? <RotateCcw /> : <Play />}
+        </Button>
+      </div>
     </div>
-  )
-}
-
-function OverflowNotice({ count }: { count: number }) {
-  const p = usePresPalette()
-  return (
-    <p
-      style={{
-        color: p.muted,
-        fontFamily: p.fontSans,
-        fontSize: 'clamp(0.8rem, 1vw, 1rem)',
-      }}
-    >
-      +{count} catatan lainnya
-    </p>
   )
 }
 
@@ -190,65 +258,41 @@ export function renderMustinSlide(args: SlideArgs): Slide {
     monthLabel,
     scope,
     isSingleKelompok,
-    effectiveKelompokList,
+    kelompok,
     reports,
     mustinRows,
     mustinTemplates,
     slideNumber,
     totalSlides,
   } = args
-
-  const templateByCode = new Map<string, MustinTemplateRow>()
-  for (const t of mustinTemplates) templateByCode.set(t.code, t)
-
-  const reportByKelompok = new Map<string, MonthlyReportRow>()
-  for (const r of reports) reportByKelompok.set(r.kelompok_id, r)
-
-  const notesByReport = new Map<string, MustinNoteRow[]>()
-  for (const n of mustinRows) {
-    const arr = notesByReport.get(n.monthly_report_id) ?? []
-    arr.push(n)
-    notesByReport.set(n.monthly_report_id, arr)
-  }
+  const templateByCode = new Map(
+    mustinTemplates.map((template) => [template.code, template])
+  )
+  const report = reports.find((item) => item.kelompok_id === kelompok.id)
+  const notes = sortNotes(
+    report
+      ? mustinRows.filter((note) => note.monthly_report_id === report.id)
+      : [],
+    templateByCode
+  )
 
   return {
-    key: 'mustin',
+    key: `mustin-${kelompok.id}`,
     title: 'Resume Mustin',
     render: () => (
       <SlideFrame
         eyebrow='RESUME MUSTIN'
-        title='Resume Mustin'
+        title={
+          isSingleKelompok
+            ? 'Resume Mustin'
+            : `Resume Mustin - ${kelompok.value}`
+        }
         meta={monthLabel}
         scope={scope}
         slideNumber={slideNumber}
         totalSlides={totalSlides}
       >
-        <DataPane>
-          <div
-            className={
-              isSingleKelompok ? 'h-full' : 'grid h-full grid-cols-2 gap-6'
-            }
-          >
-            {effectiveKelompokList.map((k) => {
-              const report = reportByKelompok.get(k.id)
-              const rawNotes = report
-                ? (notesByReport.get(report.id) ?? [])
-                : []
-              const notes = sortNotes(rawNotes, templateByCode)
-              const visibleNotes = notes.slice(0, 4)
-              return (
-                <div key={k.id}>
-                  <KelompokCard name={k.value} notes={visibleNotes} />
-                  {notes.length > visibleNotes.length ? (
-                    <OverflowNotice
-                      count={notes.length - visibleNotes.length}
-                    />
-                  ) : null}
-                </div>
-              )
-            })}
-          </div>
-        </DataPane>
+        <MustinContent notes={notes} slideKey={`mustin-${kelompok.id}`} />
       </SlideFrame>
     ),
   }

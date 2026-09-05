@@ -51,6 +51,10 @@ export function ProgramEditableRow({
     if (!editability.editable) return
     const denomVal = parseInt(denominator, 10) || 0
     const countVal = parseInt(count, 10) || 0
+    if (countVal > denomVal) {
+      toast.error('Jumlah capaian tidak boleh melebihi jumlah sensus')
+      return
+    }
     upsert.mutate(
       {
         kelompok_id: kelompokId,
@@ -72,6 +76,10 @@ export function ProgramEditableRow({
     if ((notes ?? '') === (existing?.notes ?? '')) return
     const denomVal = parseInt(denominator, 10) || 0
     const countVal = parseInt(count, 10) || 0
+    if (countVal > denomVal) {
+      toast.error('Jumlah capaian tidak boleh melebihi jumlah sensus')
+      return
+    }
     upsert.mutate(
       {
         kelompok_id: kelompokId,
@@ -103,6 +111,7 @@ export function ProgramEditableRow({
     <Input
       type='number'
       min={0}
+      max={denomNum}
       value={denominator}
       onChange={(e) => setDenominator(e.target.value)}
       onBlur={saveNumeric}

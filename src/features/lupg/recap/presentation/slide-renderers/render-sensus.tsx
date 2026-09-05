@@ -160,7 +160,7 @@ function SensusKelompokBody({ perKelompok }: SensusKelompokBodyProps) {
           <EditorialTable density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
-                <EditorialTableHead>Kategori / Peran</EditorialTableHead>
+                <EditorialTableHead>Kategori</EditorialTableHead>
                 <EditorialTableHead className='text-right'>
                   L
                 </EditorialTableHead>

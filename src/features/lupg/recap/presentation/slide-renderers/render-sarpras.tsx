@@ -11,7 +11,6 @@ import {
   type SarprasStackedBarDatum,
 } from '../charts/sarpras-stacked-bar'
 import { ChartPane } from '../components/chart-pane'
-import { DataPane } from '../components/data-pane'
 import {
   EditorialTable,
   EditorialTableBody,
@@ -56,34 +55,29 @@ function SarprasSummary({
   const p = usePresPalette()
   const notFulfilled = total - fulfilled
   const pct = total > 0 ? Math.round((fulfilled / total) * 100) : 0
-  const countStyle = {
-    fontFamily: p.fontMono,
-    fontSize: 'clamp(1.75rem, 2.6cqw, 3rem)',
-    fontWeight: 700,
-    lineHeight: 1,
-  } as const
 
   return (
-    <div className='flex h-full min-h-0 flex-col justify-center px-2'>
+    <div className='flex h-full min-h-0 flex-col justify-center px-6'>
       <div className='text-center'>
         <div
           className='tabular-nums'
           style={{
             fontFamily: p.fontMono,
-            fontSize: 'clamp(5rem, 9cqw, 10rem)',
+            fontSize: 'clamp(4rem, 6.5cqw, 7rem)',
             fontWeight: 700,
-            lineHeight: 0.9,
-            letterSpacing: '-0.07em',
+            lineHeight: 1,
+            letterSpacing: '-0.06em',
             color: p.sarprasPrimary,
           }}
         >
           {pct}%
         </div>
         <p
-          className='mt-4'
+          className='mt-2'
           style={{
             fontFamily: p.fontSans,
-            fontSize: 'clamp(1.1rem, 1.6cqw, 2rem)',
+            fontSize: 'clamp(0.9rem, 1.15cqw, 1.25rem)',
+            fontWeight: 500,
             color: p.muted,
           }}
         >
@@ -91,59 +85,49 @@ function SarprasSummary({
         </p>
       </div>
 
-      <div className='mt-10 flex items-center gap-3'>
+      <div
+        className='mt-10 h-3 overflow-hidden rounded-full'
+        style={{ background: `color-mix(in oklch, ${p.muted} 18%, ${p.bg})` }}
+      >
         <div
-          className='h-7 flex-1 overflow-hidden rounded-full'
-          style={{ background: `color-mix(in oklch, ${p.muted} 20%, ${p.bg})` }}
-        >
-          <div
-            className='h-full rounded-full'
-            style={{
-              width: `${pct}%`,
-              background: p.sarprasPrimary,
-            }}
-          />
-        </div>
+          className='h-full rounded-full'
+          style={{
+            width: `${pct}%`,
+            background: p.sarprasPrimary,
+          }}
+        />
+      </div>
+
+      <div
+        className='mt-8 flex items-baseline justify-center gap-4 border-t pt-6'
+        style={{ borderColor: p.rule, fontFamily: p.fontSans }}
+      >
         <span
           className='tabular-nums'
           style={{
             fontFamily: p.fontMono,
-            fontSize: 'clamp(0.9rem, 1.15cqw, 1.25rem)',
+            fontSize: 'clamp(1.25rem, 1.8cqw, 2rem)',
             fontWeight: 700,
             color: p.sarprasPrimary,
           }}
         >
-          {pct}%
+          {fulfilled}
         </span>
-      </div>
-
-      <div
-        className='mt-12 grid grid-cols-2 rounded-2xl px-6 py-6'
-        style={{ background: p.cream }}
-      >
-        <div className='flex items-center gap-4'>
-          <StatusIcon fulfilled />
-          <div>
-            <div className='font-semibold' style={{ color: p.ink }}>
-              Sudah Tercukupi
-            </div>
-            <div style={{ ...countStyle, color: p.sarprasPrimary }}>
-              {fulfilled}
-            </div>
-          </div>
-        </div>
-        <div
-          className='flex items-center gap-4 border-l pl-6'
-          style={{ borderColor: p.rule }}
+        <span className='font-medium' style={{ color: p.ink }}>
+          sudah tercukupi
+        </span>
+        <span aria-hidden style={{ color: p.rule }}>
+          ·
+        </span>
+        <span
+          className='tabular-nums'
+          style={{ fontFamily: p.fontMono, color: p.muted }}
         >
-          <StatusIcon fulfilled={false} />
-          <div>
-            <div className='font-semibold' style={{ color: p.ink }}>
-              Belum Tercukupi
-            </div>
-            <div style={{ ...countStyle, color: p.muted }}>{notFulfilled}</div>
-          </div>
-        </div>
+          {notFulfilled}
+        </span>
+        <span className='font-medium' style={{ color: p.muted }}>
+          belum
+        </span>
       </div>
     </div>
   )
@@ -158,40 +142,27 @@ function SarprasKelompokBody({
   activeItems,
   fulfilledById,
 }: SarprasKelompokBodyProps) {
-  const p = usePresPalette()
   const totalCount = activeItems.length
   const fulfilledCount = activeItems.reduce(
     (acc, item) => acc + (fulfilledById.get(item.id) === true ? 1 : 0),
     0
   )
-  const notFulfilledCount = totalCount - fulfilledCount
-
-  const footerLineStyle = {
-    fontFamily: p.fontMono,
-    fontSize: 'clamp(0.68rem, 0.82vw, 0.95rem)',
-    fontWeight: 600,
-    letterSpacing: '0.1em',
-    color: p.muted,
-  } as const
 
   return (
     <ReportSplit>
-      <DataPane>
+      <div className='flex h-full min-h-0 items-start pt-12'>
         <EditorialTable headerVariant='hairline' density='micro'>
           <EditorialTableHeader>
             <EditorialTableRow>
               <EditorialTableHead
-                style={{
-                  background: `color-mix(in oklch, ${p.sarprasPrimary} 16%, ${p.bg})`,
-                }}
+                className='h-9 px-3'
+                style={{ fontSize: 'clamp(0.93rem, 1.08vw, 1.17rem)' }}
               >
                 Item
               </EditorialTableHead>
               <EditorialTableHead
-                className='text-center'
-                style={{
-                  background: `color-mix(in oklch, ${p.sarprasPrimary} 16%, ${p.bg})`,
-                }}
+                className='h-9 px-3 text-center'
+                style={{ fontSize: 'clamp(0.93rem, 1.08vw, 1.17rem)' }}
               >
                 Status
               </EditorialTableHead>
@@ -213,20 +184,10 @@ function SarprasKelompokBody({
             })}
           </EditorialTableBody>
         </EditorialTable>
-        <div
-          className='mt-4 flex items-center gap-4 rounded-2xl px-5 py-3 uppercase'
-          style={{ ...footerLineStyle, background: p.cream }}
-        >
-          <span>Sudah: {fulfilledCount}</span>
-          <span aria-hidden>·</span>
-          <span>Belum: {notFulfilledCount}</span>
-          <span aria-hidden>·</span>
-          <span>Total: {totalCount}</span>
-        </div>
-      </DataPane>
-      <ChartPane>
+      </div>
+      <div className='h-full min-h-0'>
         <SarprasSummary fulfilled={fulfilledCount} total={totalCount} />
-      </ChartPane>
+      </div>
     </ReportSplit>
   )
 }
@@ -290,7 +251,7 @@ function SarprasDesaBody({
 
   return (
     <ReportSplit>
-      <DataPane>
+      <div className='h-full min-h-0 overflow-auto'>
         <EditorialTable headerVariant='hairline' density='compact'>
           <EditorialTableHeader>
             <EditorialTableRow>
@@ -342,7 +303,7 @@ function SarprasDesaBody({
             </TotalRow>
           </EditorialTableBody>
         </EditorialTable>
-      </DataPane>
+      </div>
       <ChartPane>
         <SarprasStackedBar data={stackedData} totalItems={totalCount} />
       </ChartPane>

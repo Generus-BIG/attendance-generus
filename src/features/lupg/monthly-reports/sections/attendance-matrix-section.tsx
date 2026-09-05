@@ -337,7 +337,7 @@ function MatrixCell({
       value={val}
       onChange={(e) => setVal(e.target.value)}
       onBlur={save}
-      className='mx-auto block h-7 w-full max-w-18 text-center text-xs tabular-nums'
+      className='mx-auto block h-7 w-full max-w-18 appearance-none px-1 text-center text-xs tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
       inputMode='decimal'
     />
   )

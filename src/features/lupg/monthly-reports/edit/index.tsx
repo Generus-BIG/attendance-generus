@@ -1,5 +1,7 @@
+import { format } from 'date-fns'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
+import { enGB } from 'date-fns/locale'
 import { ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -136,7 +138,8 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
 
   // Locked is now only true for legacy rows that were auto-locked before the
   // 'Tandai Selesai' flow was introduced; new reports stay editable after Done.
-  const readOnly = report.locked || !isReportMonthAvailable(monthKeyFromDate(report.month))
+  const readOnly =
+    report.locked || !isReportMonthAvailable(monthKeyFromDate(report.month))
 
   return (
     <>
@@ -182,6 +185,21 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
                 </div>
               </div>
               <SectionNav sections={SECTIONS} />
+              {report.last_edited_at && report.last_editor_display_name && (
+                <div className='border-t pt-4 text-xs leading-relaxed text-muted-foreground'>
+                  <p>Last edited by {report.last_editor_display_name}</p>
+                  <time
+                    className='tabular-nums'
+                    dateTime={report.last_edited_at}
+                  >
+                    {format(
+                      new Date(report.last_edited_at),
+                      "d MMMM yyyy 'at' HH:mm",
+                      { locale: enGB }
+                    )}
+                  </time>
+                </div>
+              )}
             </div>
           </aside>
 

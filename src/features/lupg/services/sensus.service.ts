@@ -47,6 +47,22 @@ export async function upsertSensusCell(input: {
   return data as SensusRow
 }
 
+export async function upsertSensusCellForReport(input: {
+  monthlyReportId: string
+  category_code: CategoryCode
+  gender: SensusGender
+  count: number
+}): Promise<SensusRow> {
+  const { data, error } = await supabase.rpc('lupg_upsert_sensus_for_report', {
+    p_report_id: input.monthlyReportId,
+    p_category_code: input.category_code,
+    p_gender: input.gender,
+    p_count: input.count,
+  })
+  if (error) throw error
+  return data as SensusRow
+}
+
 export async function listSensusSnapshots(
   monthlyReportId: string
 ): Promise<SensusSnapshotRow[]> {

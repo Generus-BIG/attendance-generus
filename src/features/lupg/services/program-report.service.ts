@@ -21,6 +21,9 @@ export async function upsertProgramReport(input: {
   count_prev_month?: number | null
   notes?: string | null
 }): Promise<ProgramReportRow> {
+  if (input.count_this_month > input.denominator) {
+    throw new Error('Jumlah capaian tidak boleh melebihi jumlah sensus')
+  }
   const { data, error } = await supabase
     .from('lupg_program_reports')
     .upsert(
