@@ -29,35 +29,6 @@ export function Cover({
           padding: 'clamp(2.5rem, 7cqh, 4rem) clamp(2.5rem, 5.5cqw, 4.5rem)',
         }}
       >
-        {/* cover decoration start */}
-        <div
-          aria-hidden='true'
-          className='absolute -top-[15cqh] -left-[7cqw] h-[35cqh] w-[24cqw] rounded-full'
-          style={{
-            background: `color-mix(in oklch, ${p.primary} 4%, ${p.bg})`,
-          }}
-        />
-        <div
-          aria-hidden='true'
-          className='absolute -right-[11cqw] -bottom-[20cqh] h-[44cqh] w-[34cqw] rounded-full'
-          style={{
-            background: `color-mix(in oklch, ${p.primary} 7%, ${p.bg})`,
-          }}
-        />
-        <div
-          aria-hidden='true'
-          className='absolute right-[3cqw] bottom-[8cqh] grid grid-cols-6 gap-[0.8cqw] opacity-45'
-        >
-          {Array.from({ length: 18 }).map((_, index) => (
-            <span
-              key={index}
-              className='size-[0.38cqw] min-h-1 min-w-1 rounded-full'
-              style={{ background: p.coverAccent }}
-            />
-          ))}
-        </div>
-        {/* cover decoration end */}
-
         <div className='relative z-10 flex h-full w-[58%] min-w-0 flex-col'>
           <AnimateItem
             className='uppercase'

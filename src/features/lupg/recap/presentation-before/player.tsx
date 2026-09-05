@@ -29,12 +29,6 @@ import {
   AnimationProvider,
   usePresentationAnimation,
 } from './context/animation-context'
-import {
-  getMouseNavigationDirection,
-  getSwipeNavigationDirection,
-  isNavigationExcluded,
-} from './navigation'
-import './navigation.css'
 import { type Slide } from './slides'
 import { usePresPalette } from './use-pres-palette'
 
@@ -261,14 +255,6 @@ function PresentationPlayerInner({
   const containerRef = useRef<HTMLDivElement>(null)
   const parentRef = useRef<HTMLDivElement>(null)
   const thumbnailListRef = useRef<HTMLDivElement>(null)
-  const touchRef = useRef<{
-    pointerId: number
-    x: number
-    y: number
-    excluded: boolean
-    multitouch: boolean
-  } | null>(null)
-  const navigationPendingRef = useRef(false)
   const [scale, setScale] = useState(1)
   const [slideIndex, setSlideIndex] = useState(0)
   const [direction, setDirection] = useState(1)
@@ -299,52 +285,36 @@ function PresentationPlayerInner({
     return () => document.removeEventListener('fullscreenchange', onChange)
   }, [])
 
-  const clampedIndex = Math.min(slideIndex, Math.max(slides.length - 1, 0))
-  const currentSlide = slides[clampedIndex]
-
   const handleNext = useCallback(() => {
-    if (navigationPendingRef.current || clampedIndex >= slides.length - 1)
-      return
-    navigationPendingRef.current = true
+    if (slideIndex >= slides.length - 1) return
     setDirection(1)
-    setSlideIndex(clampedIndex + 1)
-  }, [clampedIndex, slides.length])
+    setSlideIndex(slideIndex + 1)
+  }, [slideIndex, slides.length])
 
   const handlePrev = useCallback(() => {
-    if (navigationPendingRef.current || clampedIndex <= 0) return
-    navigationPendingRef.current = true
+    if (slideIndex <= 0) return
     setDirection(-1)
-    setSlideIndex(clampedIndex - 1)
-  }, [clampedIndex])
+    setSlideIndex(slideIndex - 1)
+  }, [slideIndex])
 
   const selectSlide = useCallback(
     (index: number) => {
-      if (navigationPendingRef.current || index === slideIndex) return
-      navigationPendingRef.current = true
+      if (index === slideIndex) return
       setDirection(index > slideIndex ? 1 : -1)
       setSlideIndex(index)
     },
     [slideIndex]
   )
 
-  const isMustinSlide = currentSlide?.key.startsWith('mustin-') ?? false
+  const isMustinSlide = slides[slideIndex]?.key.startsWith('mustin-') ?? false
 
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      if (
-        event.defaultPrevented ||
-        event.altKey ||
-        event.ctrlKey ||
-        event.metaKey ||
-        document.querySelector('[data-radix-popper-content-wrapper]') ||
-        isNavigationExcluded(event.target, document.documentElement)
-      )
-        return
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
       if (event.key === ' ' && isMustinSlide) {
         event.preventDefault()
         window.dispatchEvent(
           new CustomEvent('lupg:mustin-toggle-autoscroll', {
-            detail: currentSlide?.key,
+            detail: slides[slideIndex]?.key,
           })
         )
       } else if (
@@ -359,32 +329,31 @@ function PresentationPlayerInner({
         handlePrev()
       } else if (event.key === 'Home') {
         event.preventDefault()
-        selectSlide(0)
+        setDirection(-1)
+        setSlideIndex(0)
       } else if (event.key === 'End') {
         event.preventDefault()
-        selectSlide(Math.max(slides.length - 1, 0))
+        setDirection(1)
+        setSlideIndex(Math.max(slides.length - 1, 0))
       } else if (event.key === 'Escape' && !isFullscreen && onExit) {
         event.preventDefault()
         onExit()
       }
-    },
-    [
-      handleNext,
-      handlePrev,
-      isFullscreen,
-      isMustinSlide,
-      onExit,
-      currentSlide,
-      selectSlide,
-      slides,
-    ]
-  )
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [
+    handleNext,
+    handlePrev,
+    isFullscreen,
+    isMustinSlide,
+    onExit,
+    slideIndex,
+    slides,
+  ])
 
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleKeyDown])
-
+  const clampedIndex = Math.min(slideIndex, Math.max(slides.length - 1, 0))
+  const currentSlide = slides[clampedIndex]
   const progress =
     slides.length > 0 ? ((clampedIndex + 1) / slides.length) * 100 : 0
   const supportsFullscreen =
@@ -420,7 +389,6 @@ function PresentationPlayerInner({
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  aria-label='Pengaturan presentasi'
                   variant='ghost'
                   size='sm'
                   className='min-h-11 min-w-11 sm:min-w-0'
@@ -437,7 +405,6 @@ function PresentationPlayerInner({
               <Button
                 variant='ghost'
                 size='sm'
-                aria-label='Layar penuh'
                 onClick={requestFullscreen}
                 className='min-h-11 min-w-11 sm:min-w-0'
               >
@@ -449,7 +416,6 @@ function PresentationPlayerInner({
               <Button
                 variant='ghost'
                 size='sm'
-                aria-label='Keluar presentasi'
                 onClick={onExit}
                 className='min-h-11 min-w-11 sm:min-w-0'
               >
@@ -462,6 +428,16 @@ function PresentationPlayerInner({
       )}
 
       <div className='relative flex min-h-0 flex-1 items-stretch overflow-hidden'>
+        <Button
+          variant='ghost'
+          size='icon'
+          className='hidden h-auto w-16 rounded-none sm:inline-flex'
+          onClick={handlePrev}
+          disabled={clampedIndex === 0}
+          aria-label='Slide sebelumnya'
+        >
+          <ChevronLeft className='h-6 w-6' />
+        </Button>
         <div
           ref={parentRef}
           className='relative flex min-w-0 flex-1 items-center justify-center overflow-hidden'
@@ -476,111 +452,7 @@ function PresentationPlayerInner({
               containerType: 'size',
               background: p.bg,
             }}
-            className='presentation-canvas relative flex items-center justify-center overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset'
-            data-presentation-canvas
-            role='region'
-            aria-roledescription='slide'
-            aria-label={currentSlide?.title ?? 'Presentasi'}
-            tabIndex={0}
-            onKeyDown={(event) => {
-              event.stopPropagation()
-              handleKeyDown(event.nativeEvent)
-            }}
-            data-can-previous={clampedIndex > 0}
-            data-can-next={clampedIndex < slides.length - 1}
-            onPointerDown={(event) => {
-              if (event.pointerType !== 'touch') return
-              if (touchRef.current) {
-                touchRef.current.multitouch = true
-                return
-              }
-              touchRef.current = {
-                pointerId: event.pointerId,
-                x: event.clientX,
-                y: event.clientY,
-                excluded: isNavigationExcluded(
-                  event.target,
-                  event.currentTarget
-                ),
-                multitouch: false,
-              }
-            }}
-            onPointerUp={(event) => {
-              const touch = touchRef.current
-              if (
-                event.pointerType !== 'touch' ||
-                touch?.pointerId !== event.pointerId
-              )
-                return
-              touchRef.current = null
-              if (touch.excluded || touch.multitouch) return
-              const swipeDirection = getSwipeNavigationDirection(
-                touch.x,
-                event.clientX,
-                touch.y,
-                event.clientY,
-                clampedIndex,
-                slides.length
-              )
-              if (!swipeDirection) return
-              event.preventDefault()
-              if (swipeDirection === -1) handlePrev()
-              else handleNext()
-            }}
-            onPointerCancel={() => {
-              touchRef.current = null
-            }}
-            onPointerMove={(event) => {
-              if (event.pointerType !== 'mouse') return
-              const canvas = event.currentTarget
-              const cursorDirection = !isNavigationExcluded(
-                event.target,
-                canvas
-              )
-                ? getMouseNavigationDirection(
-                    isFullscreen,
-                    event.clientX,
-                    canvas.getBoundingClientRect(),
-                    clampedIndex,
-                    slides.length
-                  )
-                : 0
-              canvas.dataset.navigation =
-                cursorDirection === -1
-                  ? 'previous'
-                  : cursorDirection === 1
-                    ? 'next'
-                    : 'none'
-            }}
-            onPointerLeave={(event) => {
-              event.currentTarget.dataset.navigation = 'none'
-            }}
-            onClick={(event) => {
-              if (
-                !isFullscreen ||
-                event.defaultPrevented ||
-                event.button !== 0 ||
-                event.altKey ||
-                event.ctrlKey ||
-                event.metaKey ||
-                event.shiftKey ||
-                !window.matchMedia('(hover: hover) and (pointer: fine)')
-                  .matches ||
-                ('pointerType' in event.nativeEvent &&
-                  event.nativeEvent.pointerType === 'touch') ||
-                isNavigationExcluded(event.target, event.currentTarget)
-              )
-                return
-              const direction = getMouseNavigationDirection(
-                isFullscreen,
-                event.clientX,
-                event.currentTarget.getBoundingClientRect(),
-                clampedIndex,
-                slides.length
-              )
-              if (direction === -1) handlePrev()
-              if (direction === 1) handleNext()
-            }}
+            className='relative flex items-center justify-center overflow-hidden'
           >
             <AnimatePresence mode='wait' custom={direction}>
               {!currentSlide ? (
@@ -618,10 +490,6 @@ function PresentationPlayerInner({
                           opacity: { duration: 0.15 },
                         }
                   }
-                  onAnimationComplete={(definition) => {
-                    if (definition === 'center')
-                      navigationPendingRef.current = false
-                  }}
                   className='h-full w-full overflow-hidden'
                 >
                   <Suspense
@@ -641,6 +509,16 @@ function PresentationPlayerInner({
             </AnimatePresence>
           </div>
         </div>
+        <Button
+          variant='ghost'
+          size='icon'
+          className='hidden h-auto w-16 rounded-none sm:inline-flex'
+          onClick={handleNext}
+          disabled={clampedIndex >= slides.length - 1}
+          aria-label='Slide berikutnya'
+        >
+          <ChevronRight className='h-6 w-6' />
+        </Button>
       </div>
 
       {!isFullscreen && slides.length > 0 && (
@@ -669,8 +547,6 @@ function PresentationPlayerInner({
                       <div
                         className='pointer-events-none absolute top-0 left-0 h-180 w-320 origin-top-left scale-[0.1125]'
                         aria-hidden='true'
-                        inert
-                        style={{ containerType: 'size' }}
                       >
                         {showThumbnails && (
                           <Suspense fallback={null}>{slide.render()}</Suspense>
@@ -712,7 +588,7 @@ function PresentationPlayerInner({
           <Button
             variant='ghost'
             size='icon'
-            className='size-11 shrink-0'
+            className='size-11 sm:hidden'
             onClick={handlePrev}
             disabled={clampedIndex === 0}
             aria-label='Slide sebelumnya'
@@ -723,14 +599,14 @@ function PresentationPlayerInner({
             Slide {clampedIndex + 1} / {slides.length}
             <span className='hidden sm:inline'>
               {' '}
-              · Gunakan ←/→ atau geser; klik sisi kiri/kanan saat fullscreen
+              · Use ←/→ or Space to navigate
               {onExit ? ' · Esc untuk keluar' : ''}
             </span>
           </p>
           <Button
             variant='ghost'
             size='icon'
-            className='size-11 shrink-0'
+            className='size-11 sm:hidden'
             onClick={handleNext}
             disabled={clampedIndex >= slides.length - 1}
             aria-label='Slide berikutnya'

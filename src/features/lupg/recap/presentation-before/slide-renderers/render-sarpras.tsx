@@ -379,8 +379,6 @@ export function renderSarprasSlide(args: {
 
       return (
         <SlideFrame
-          slideKey='sarpras'
-          decorationKind={isKelompokMode ? 'cards' : 'split'}
           eyebrow='SARANA PRASARANA'
           title={title}
           meta={monthLabel}

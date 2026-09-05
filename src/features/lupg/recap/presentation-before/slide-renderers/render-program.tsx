@@ -204,8 +204,6 @@ function ProgramKelompokBody(props: SlideArgs) {
 
   return (
     <SlideFrame
-      slideKey={`program-${program.code}`}
-      decorationKind='split'
       eyebrow='PROGRAM PEMBINAAN'
       title={program.name}
       meta={monthLabel}
@@ -298,8 +296,6 @@ function ProgramDesaBody(props: SlideArgs) {
 
   return (
     <SlideFrame
-      slideKey={`program-${program.code}`}
-      decorationKind='split'
       eyebrow='PROGRAM PEMBINAAN'
       title={program.name}
       meta={monthLabel}
@@ -625,8 +621,6 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
 
   return (
     <SlideFrame
-      slideKey={`program-${program.code}`}
-      decorationKind='table'
       eyebrow='PROGRAM PEMBINAAN'
       title={isGmkm ? 'Laporan GMKM' : program.name}
       meta={monthLabel}
@@ -910,8 +904,6 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
 
   return (
     <SlideFrame
-      slideKey={`program-${program.code}`}
-      decorationKind={view === 'data' ? 'table' : 'split'}
       eyebrow='PROGRAM PEMBINAAN'
       title={isGmkm ? 'Laporan GMKM' : program.name}
       meta={metaNode}
@@ -1524,8 +1516,6 @@ function NikahJmKelompokBody(props: SlideArgs) {
 
   return (
     <SlideFrame
-      slideKey={`program-${props.program.code}`}
-      decorationKind='table'
       eyebrow='PROGRAM PEMBINAAN'
       title='Progres Pernikahan Sesama Jamaah'
       meta={monthLabel}
@@ -1682,8 +1672,6 @@ function NikahJmDesaBody(props: SlideArgs) {
 
   return (
     <SlideFrame
-      slideKey={`program-${props.program.code}`}
-      decorationKind='table'
       eyebrow='PROGRAM PEMBINAAN'
       title='Progres Pernikahan Sesama Jamaah'
       meta={monthLabel}

@@ -609,19 +609,12 @@ export function renderCharacterTargetSummarySlide(args: SlideArgs): Slide {
     slideNumber,
     totalSlides,
   } = args
-  const { scopedReports } = buildJoinedRows(args)
 
   return {
     key: 'character-target-summary',
     title: 'Target Capaian Materi',
     render: () => (
       <SlideFrame
-        slideKey='character-target-summary'
-        decorationKind={
-          targetItems.length === 0 || scopedReports.length === 0
-            ? 'minimal'
-            : 'cards'
-        }
         eyebrow='TARGET CAPAIAN MATERI'
         title='Target Capaian Materi'
         meta={monthLabel}
@@ -652,22 +645,12 @@ export function renderCharacterTargetAgendaSlide(args: SlideArgs): Slide {
     slideNumber,
     totalSlides,
   } = args
-  const { joinedRows, scopedReports } = buildJoinedRows(args)
-  const hasAgendaRows = buildAgendaRows(joinedRows).length > 0
 
   return {
     key: 'character-target-agenda',
     title: 'Prioritas Target Materi',
     render: () => (
       <SlideFrame
-        slideKey='character-target-agenda'
-        decorationKind={
-          targetItems.length === 0 ||
-          scopedReports.length === 0 ||
-          !hasAgendaRows
-            ? 'minimal'
-            : 'cards'
-        }
         eyebrow='TARGET CAPAIAN MATERI'
         title='Prioritas Target Materi'
         meta={monthLabel}
@@ -751,7 +734,10 @@ function TargetRecapBody({
           {!isSingleKelompok ? (
             <EditorialTableRow>
               {effectiveKelompokList.map((kelompok) => (
-                <EditorialTableHead key={kelompok.id} className='text-center'>
+                <EditorialTableHead
+                  key={kelompok.id}
+                  className='text-center'
+                >
                   {kelompok.value}
                 </EditorialTableHead>
               ))}
@@ -818,18 +804,6 @@ export function renderCharacterTargetRecapSlide(
     title: `Rekap Target Capaian Materi | ${args.level}`,
     render: () => (
       <SlideFrame
-        slideKey={`character-target-recap-${args.level}`}
-        decorationKind={
-          buildTargetRecapLevel(
-            args.targetItems,
-            args.targetReports,
-            args.reports,
-            args.effectiveKelompokList,
-            args.level
-          ).length === 0
-            ? 'minimal'
-            : 'table'
-        }
         eyebrow='TARGET CAPAIAN MATERI'
         title={`Rekap Target Capaian Materi | ${args.level}`}
         meta={args.monthLabel}
