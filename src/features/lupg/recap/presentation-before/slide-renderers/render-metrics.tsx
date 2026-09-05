@@ -13,7 +13,6 @@ import {
 import { GenerusPiketAggregateBars } from '../charts/generus-piket-aggregate-bars'
 import { PairedMonthBars } from '../charts/paired-month-bars'
 import { SlideFrame } from '../components/slide-frame'
-import { SlideSurface } from '../components/slide-surface'
 import { type Slide } from '../slides'
 import { usePresPalette } from '../use-pres-palette'
 
@@ -701,8 +700,6 @@ export function renderMetricsTableSlide(args: RenderMetricsTableArgs): Slide {
       title: 'Metrik Kehadiran · Tabel',
       render: () => (
         <SlideFrame
-          slideKey='metrics-table'
-          decorationKind='table'
           eyebrow='METRIK KEHADIRAN'
           title='Persentase Kehadiran Perkelompok'
           meta={monthLabel}
@@ -773,8 +770,6 @@ export function renderMetricsTableSlide(args: RenderMetricsTableArgs): Slide {
     title: 'Metrik Kehadiran · Tabel',
     render: () => (
       <SlideFrame
-        slideKey='metrics-table'
-        decorationKind='table'
         eyebrow='METRIK KEHADIRAN'
         title='Persentase Kehadiran Generus'
         meta={monthLabel}
@@ -827,7 +822,7 @@ export function renderMetricsCompareSlide(
     titleSuffix,
     yearlyMonthlyReports,
     yearlyMetricReports,
-    slideNumber,
+    slideNumber: _slideNumber,
     totalSlides: _totalSlides,
   } = args
 
@@ -852,8 +847,6 @@ export function renderMetricsCompareSlide(
     title: `Metrik · ${titleSuffix}`,
     render: () => (
       <AttendanceComparisonSlide
-        slideKey={`metrics-compare-${kategoriCodes.join('-')}`}
-        slideNumber={slideNumber}
         monthLabel={monthLabel}
         titleSuffix={titleSuffix}
         gridColsClass={gridColsClass}
@@ -895,15 +888,11 @@ export function renderMetricsCompareSlide(
 }
 
 function AttendanceComparisonSlide({
-  slideKey,
-  slideNumber,
   monthLabel,
   titleSuffix,
   gridColsClass,
   children,
 }: {
-  slideKey: string
-  slideNumber: number
   monthLabel: string
   titleSuffix: string
   gridColsClass: string
@@ -911,41 +900,42 @@ function AttendanceComparisonSlide({
 }) {
   const palette = usePresPalette()
   return (
-    <SlideSurface
-      slideKey={slideKey}
-      slideNumber={slideNumber}
-      decorationKind='chart'
+    <div
+      className='flex h-full flex-col overflow-hidden p-[clamp(2.5rem,5cqw,5rem)]'
+      style={{
+        background: palette.bg,
+        color: palette.ink,
+        fontFamily: palette.fontSans,
+      }}
     >
-      <div className='flex h-full flex-col overflow-hidden p-[clamp(2.5rem,5cqw,5rem)]'>
-        <header className='flex shrink-0 items-start justify-between gap-8'>
-          <h1
-            style={{
-              fontFamily: palette.fontSans,
-              fontSize: 'clamp(2.5rem, 4.2cqw, 5rem)',
-              fontWeight: 700,
-              lineHeight: 1.04,
-              letterSpacing: '-0.045em',
-            }}
-          >
-            Grafik Kehadiran | {titleSuffix.split(' · ').join(', ')}
-          </h1>
-          <time
-            className='shrink-0 pt-2'
-            style={{
-              fontSize: 'clamp(1rem, 1.25cqw, 1.5rem)',
-              color: palette.muted,
-            }}
-          >
-            {monthLabel}
-          </time>
-        </header>
-        <div
-          className={`mt-[clamp(2rem,4cqh,4rem)] grid min-h-0 flex-1 ${gridColsClass} gap-6`}
+      <header className='flex shrink-0 items-start justify-between gap-8'>
+        <h1
+          style={{
+            fontFamily: palette.fontSans,
+            fontSize: 'clamp(2.5rem, 4.2cqw, 5rem)',
+            fontWeight: 700,
+            lineHeight: 1.04,
+            letterSpacing: '-0.045em',
+          }}
         >
-          {children}
-        </div>
+          Grafik Kehadiran | {titleSuffix.split(' · ').join(', ')}
+        </h1>
+        <time
+          className='shrink-0 pt-2'
+          style={{
+            fontSize: 'clamp(1rem, 1.25cqw, 1.5rem)',
+            color: palette.muted,
+          }}
+        >
+          {monthLabel}
+        </time>
+      </header>
+      <div
+        className={`mt-[clamp(2rem,4cqh,4rem)] grid min-h-0 flex-1 ${gridColsClass} gap-6`}
+      >
+        {children}
       </div>
-    </SlideSurface>
+    </div>
   )
 }
 
@@ -975,7 +965,7 @@ export function renderMetricsAggregateSlide(
     kelompokFilter,
     yearlyMonthlyReports,
     yearlyMetricReports,
-    slideNumber,
+    slideNumber: _slideNumber,
     totalSlides: _totalSlides,
   } = args
 
@@ -1017,8 +1007,6 @@ export function renderMetricsAggregateSlide(
     title: 'Rata-rata Kehadiran Generus vs Piket LUPG',
     render: () => (
       <AttendanceComparisonSlide
-        slideKey='metrics-aggregate'
-        slideNumber={slideNumber}
         monthLabel={monthLabel}
         titleSuffix='Generus Desa'
         gridColsClass='grid-cols-1'

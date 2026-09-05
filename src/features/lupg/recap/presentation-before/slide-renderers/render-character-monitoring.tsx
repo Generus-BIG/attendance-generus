@@ -593,8 +593,6 @@ export function renderCharacterAgendaSlide(args: SlideArgs): Slide {
     title: 'Penerapan 29 Karakter — Perlu Pembinaan',
     render: () => (
       <SlideFrame
-        slideKey='character-agenda'
-        decorationKind='cards'
         eyebrow='PENERAPAN 29 KARAKTER'
         title='Perlu Pembinaan'
         meta={monthLabel}
@@ -632,8 +630,6 @@ export function renderCharacterSummarySlide(args: SlideArgs): Slide {
     title: 'Penerapan 29 Karakter',
     render: () => (
       <SlideFrame
-        slideKey='character-summary'
-        decorationKind='cards'
         eyebrow='PENERAPAN 29 KARAKTER'
         title='Distribusi Penerapan'
         meta={monthLabel}
@@ -810,8 +806,6 @@ export function renderCharacterMonitoringRecapSlide(
     title: `Target 29 Karakter | Monitoring${category}`,
     render: () => (
       <SlideFrame
-        slideKey={`character-monitoring-recap${args.level ? `-${args.level}` : ''}`}
-        decorationKind='table'
         eyebrow='PENERAPAN 29 KARAKTER'
         title={`Target 29 Karakter | Monitoring${category}`}
         meta={args.monthLabel}

@@ -489,6 +489,27 @@ export function RekapDesa() {
     return m
   }, [monthReports])
 
+  // ponytail: same RPC pattern as presentation/index.tsx; raw reports lack display names.
+  const { data: editorNameByReport = new Map<string, string | null>() } =
+    useQuery({
+      queryKey: ['lupg', 'recap-report-editors', reportIdsKey],
+      queryFn: async () => {
+        const entries = await Promise.all(
+          monthReports.map(async (r) => {
+            if (!r.last_edited_by) return [r.id, null] as const
+            const { data, error } = await supabase.rpc(
+              'lupg_get_last_editor_display',
+              { p_report_id: r.id }
+            )
+            if (error) throw error
+            return [r.id, (data as string | null) ?? null] as const
+          })
+        )
+        return new Map<string, string | null>(entries)
+      },
+      enabled: monthReports.length > 0,
+    })
+
   return (
     <>
       <style>{`
@@ -531,7 +552,7 @@ export function RekapDesa() {
               {formatMonthLabel(monthKey)}
             </h2>
             <p className='text-sm text-muted-foreground'>
-              Konsolidasi laporan bulanan seluruh kelompok.
+              Summary laporan bulanan seluruh kelompok.
             </p>
           </div>
           <div className='flex flex-wrap items-center gap-2 print:hidden'>
@@ -569,6 +590,7 @@ export function RekapDesa() {
             <StatusGridCard
               kelompokList={kelompokList}
               reportByKelompok={reportByKelompok}
+              editorNameByReport={editorNameByReport}
               monthLabel={formatMonthLabel(monthKey)}
             />
             <div className='flex flex-col items-center gap-2 rounded-lg border border-dashed border-border/60 px-6 py-12 text-center'>
@@ -590,6 +612,7 @@ export function RekapDesa() {
             <StatusGridCard
               kelompokList={kelompokList}
               reportByKelompok={reportByKelompok}
+              editorNameByReport={editorNameByReport}
               monthLabel={formatMonthLabel(monthKey)}
             />
 
@@ -680,10 +703,12 @@ interface SectionProps {
 function StatusGridCard({
   kelompokList,
   reportByKelompok,
+  editorNameByReport,
   monthLabel,
 }: {
   kelompokList: KelompokLite[]
   reportByKelompok: Map<string, MonthlyReportRow>
+  editorNameByReport?: Map<string, string | null>
   monthLabel: string
 }) {
   return (
@@ -698,16 +723,21 @@ function StatusGridCard({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Kelompok</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Ditandai Selesai</TableHead>
+              <TableHead className='w-[130px]'>Kelompok</TableHead>
+              <TableHead className='w-[160px]'>Status</TableHead>
+              <TableHead className='w-[210px] whitespace-nowrap'>
+                Last Edited
+              </TableHead>
+              <TableHead className='w-[170px] whitespace-nowrap'>
+                Ditandai Selesai
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {kelompokList.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={3}
+                  colSpan={4}
                   className='text-center text-sm text-muted-foreground'
                 >
                   Tidak ada kelompok.
@@ -716,10 +746,16 @@ function StatusGridCard({
             ) : (
               kelompokList.map((k) => {
                 const r = reportByKelompok.get(k.id)
+                // ponytail: same admin-masking as presentation render-status.tsx
+                const rawEditor = r ? editorNameByReport?.get(r.id) : null
+                const editorName =
+                  rawEditor && !/admin/i.test(rawEditor) ? rawEditor : null
                 return (
                   <TableRow key={k.id}>
-                    <TableCell className='font-medium'>{k.value}</TableCell>
-                    <TableCell>
+                    <TableCell className='font-medium whitespace-nowrap'>
+                      {k.value}
+                    </TableCell>
+                    <TableCell className='whitespace-nowrap'>
                       {r ? (
                         <ReportStatusBadge
                           status={r.status as 'draft' | 'submitted'}
@@ -731,7 +767,30 @@ function StatusGridCard({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className='text-sm text-muted-foreground tabular-nums'>
+                    <TableCell className='text-sm text-muted-foreground'>
+                      {r?.last_edited_at ? (
+                        <span className='flex flex-col'>
+                          <span className='whitespace-nowrap tabular-nums'>
+                            {format(
+                              parseISO(r.last_edited_at),
+                              'dd MMM yyyy, HH:mm',
+                              { locale: idLocale }
+                            )}
+                          </span>
+                          {editorName && (
+                            <span
+                              className='max-w-[220px] truncate text-xs opacity-80'
+                              title={editorName}
+                            >
+                              by {editorName}
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </TableCell>
+                    <TableCell className='text-sm whitespace-nowrap text-muted-foreground tabular-nums'>
                       {r?.submitted_at
                         ? format(
                             parseISO(r.submitted_at),

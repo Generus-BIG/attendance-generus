@@ -317,23 +317,20 @@ function ShodaqohKelompokBody(props: SlideArgs) {
     yearlyShodaqohRows
   )
   const tableRows = allRows.filter((r) => r.monthKey <= monthKey)
-  // ponytail: chart stops at the report month like the table (no zeroed future months).
-  const visibleRows = allRows.filter((r) => r.monthKey <= monthKey)
-  const chartData = visibleRows.map((r, index) => {
-    const previousValue = index > 0 ? visibleRows[index - 1].nominal : undefined
+  const chartData = allRows.map((r, index) => {
+    const value = r.monthKey > monthKey ? 0 : r.nominal
+    const previousValue = index > 0 ? allRows[index - 1].nominal : undefined
     return {
       label: monthNameFromKey(r.monthKey).slice(0, 3),
-      value: r.nominal,
+      value,
       isHighlighted: r.monthKey === monthKey,
-      isPlaceholder: false,
-      showLabel: r.nominal > 0 && r.nominal !== previousValue,
+      isPlaceholder: r.monthKey > monthKey,
+      showLabel: value > 0 && value !== previousValue,
     }
   })
 
   return (
     <SlideFrame
-      slideKey='shodaqoh'
-      decorationKind='split'
       eyebrow='SHODAQOH PPG'
       title='Shodaqoh PPG'
       meta={monthLabel}
@@ -421,8 +418,6 @@ function ShodaqohDesaBody(props: SlideArgs) {
 
   return (
     <SlideFrame
-      slideKey='shodaqoh'
-      decorationKind='split'
       eyebrow='SHODAQOH PPG'
       title='Shodaqoh per Kelompok'
       meta={monthLabel}

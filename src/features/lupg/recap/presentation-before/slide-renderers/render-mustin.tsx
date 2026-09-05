@@ -281,8 +281,6 @@ export function renderMustinSlide(args: SlideArgs): Slide {
     title: 'Resume Mustin',
     render: () => (
       <SlideFrame
-        slideKey={`mustin-${kelompok.id}`}
-        decorationKind={notes.length === 0 ? 'minimal' : 'editorial'}
         eyebrow='RESUME MUSTIN'
         title={
           isSingleKelompok

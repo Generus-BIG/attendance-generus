@@ -126,8 +126,6 @@ export function renderDokumentasiSlides(args: DokumentasiSlideArgs): Slide[] {
     title: `Dokumentasi${chunks.length > 1 ? ` (${chunkIdx + 1}/${chunks.length})` : ''}`,
     render: () => (
       <SlideFrame
-        slideKey={`dokumentasi-${chunkIdx}`}
-        decorationKind='photo'
         eyebrow='Dokumentasi'
         title='Dokumentasi Kegiatan'
         meta={

@@ -302,3 +302,10 @@ Canonical triage roles use their default GitHub label names. See `docs/agents/tr
 ### Domain docs
 
 Single-context layout: root `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.
+
+### Presentation decorations and cursor navigation
+
+- `SlideSurface` owns palette-aware Swiss-minimal content decoration. Renderers preserve their `slideKey`, `slideNumber`, and `DecorationKind` API; `getDecorationSignature()` selects one or two cropped corner bubbles and exports their matching bounds. Keep bubbles behind content and noninteractive, never add botanical, dot-grid, path, or line motifs; cover and closing remain standalone and byte-identical.
+- Main slides and inert thumbnails use the same 1280 × 720 size container before scaling. Do not introduce global SVG IDs shared across thumbnail/main renders.
+- `PresentationPlayer` offers fullscreen-only mouse navigation by canvas half (left previous, right next) with static native SVG cursors, plus horizontal touch swipes in both modes. Tables, cards, text, images, captions, and ordinary scroll areas remain eligible. `navigation.ts` excludes native controls, editable content, interactive ARIA widgets, Radix popovers, Recharts, and `data-presentation-no-navigation`. Letterbox clicks and touch taps do not navigate; accessible footer buttons work at every viewport size and in fullscreen. Keep the Mustin Space shortcut and ignore presentation shortcuts while editing or using settings.
+- Browser regression check: open `/src/features/lupg/recap/presentation/navigation.browser-test.html` through the Vite dev server.

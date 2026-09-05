@@ -146,8 +146,6 @@ export function renderStatusSlide(args: SlideArgs): Slide {
     title: 'Status Laporan',
     render: () => (
       <SlideFrame
-        slideKey='status'
-        decorationKind='cards'
         eyebrow='STATUS'
         title='Status Laporan Bulanan'
         meta={monthLabel}
