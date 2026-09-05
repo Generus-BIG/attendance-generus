@@ -3,7 +3,6 @@ import { type ReactNode } from 'react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { Check, Hourglass, Minus } from 'lucide-react'
-import { type MonthlyReportRow } from '../../../types'
 import { DataPane } from '../components/data-pane'
 import {
   EditorialTable,
@@ -14,26 +13,30 @@ import {
   EditorialTableRow,
 } from '../components/editorial-table'
 import { SlideFrame } from '../components/slide-frame'
-import { type Slide } from '../slides'
+import { type PresentationMonthlyReport, type Slide } from '../slides'
 import { usePresPalette } from '../use-pres-palette'
 
 interface SlideArgs {
   monthLabel: string
   scope: string
   effectiveKelompokList: { id: string; value: string }[]
-  reports: MonthlyReportRow[]
+  reports: PresentationMonthlyReport[]
   slideNumber: number
   totalSlides: number
 }
 
 interface StatusBodyProps {
   effectiveKelompokList: { id: string; value: string }[]
-  reports: MonthlyReportRow[]
+  reports: PresentationMonthlyReport[]
+}
+
+function isAdminLabel(value: string | null | undefined): boolean {
+  return Boolean(value && /admin/i.test(value))
 }
 
 function StatusBody({ effectiveKelompokList, reports }: StatusBodyProps) {
   const p = usePresPalette()
-  const reportByKelompok = new Map<string, MonthlyReportRow>()
+  const reportByKelompok = new Map<string, PresentationMonthlyReport>()
   for (const r of reports) reportByKelompok.set(r.kelompok_id, r)
 
   return (
@@ -44,6 +47,7 @@ function StatusBody({ effectiveKelompokList, reports }: StatusBodyProps) {
             <EditorialTableHead>Kelompok</EditorialTableHead>
             <EditorialTableHead>Status</EditorialTableHead>
             <EditorialTableHead>Ditandai Selesai</EditorialTableHead>
+            <EditorialTableHead>Diperbarui</EditorialTableHead>
           </EditorialTableRow>
         </EditorialTableHeader>
         <EditorialTableBody>
@@ -84,6 +88,16 @@ function StatusBody({ effectiveKelompokList, reports }: StatusBodyProps) {
             const submittedLabel = r?.submitted_at
               ? format(new Date(r.submitted_at), 'd MMM yyyy', { locale: id })
               : '—'
+            const editorName = !isAdminLabel(r?.last_editor_display_name)
+              ? r?.last_editor_display_name
+              : !isAdminLabel(r?.submitter_display_name)
+                ? r?.submitter_display_name
+                : null
+            const editedLabel = r?.last_edited_at
+              ? format(new Date(r.last_edited_at), "d MMMM yyyy 'at' HH:mm", {
+                  locale: id,
+                })
+              : '—'
             return (
               <EditorialTableRow key={k.id}>
                 <EditorialTableCell className='font-medium'>
@@ -92,6 +106,21 @@ function StatusBody({ effectiveKelompokList, reports }: StatusBodyProps) {
                 <EditorialTableCell>{statusNode}</EditorialTableCell>
                 <EditorialTableCell style={{ color: p.muted }}>
                   {submittedLabel}
+                </EditorialTableCell>
+                <EditorialTableCell style={{ color: p.muted }}>
+                  {editorName ? (
+                    <span className='flex flex-col'>
+                      <span>Last edited by {editorName}</span>
+                      <time
+                        className='text-[0.8em] opacity-75'
+                        dateTime={r?.last_edited_at ?? undefined}
+                      >
+                        {editedLabel}
+                      </time>
+                    </span>
+                  ) : (
+                    '—'
+                  )}
                 </EditorialTableCell>
               </EditorialTableRow>
             )

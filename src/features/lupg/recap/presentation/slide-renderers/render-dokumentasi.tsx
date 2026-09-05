@@ -9,6 +9,7 @@ export interface ActivityPhotoWithUrl {
   id: string
   caption: string | null
   signedUrl: string
+  kelompokName?: string
 }
 
 interface DokumentasiSlideArgs {
@@ -20,6 +21,34 @@ interface DokumentasiSlideArgs {
 }
 
 const PHOTOS_PER_SLIDE = 2
+
+function DokumentasiMeta({
+  monthLabel,
+  kelompokName,
+}: {
+  monthLabel: string
+  kelompokName?: string
+}) {
+  const p = usePresPalette()
+
+  return (
+    <div className='flex flex-col items-end gap-1'>
+      <div>{monthLabel}</div>
+      {kelompokName && (
+        <div
+          style={{
+            fontSize: '0.68em',
+            letterSpacing: '0.14em',
+            opacity: 0.65,
+            color: p.muted,
+          }}
+        >
+          {kelompokName}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function DokumentasiGrid({ photos }: { photos: ActivityPhotoWithUrl[] }) {
   const p = usePresPalette()
@@ -99,7 +128,18 @@ export function renderDokumentasiSlides(args: DokumentasiSlideArgs): Slide[] {
       <SlideFrame
         eyebrow='Dokumentasi'
         title='Dokumentasi Kegiatan'
-        meta={monthLabel}
+        meta={
+          <DokumentasiMeta
+            monthLabel={monthLabel}
+            kelompokName={[
+              ...new Set(
+                chunk
+                  .map((photo) => photo.kelompokName)
+                  .filter((name): name is string => Boolean(name))
+              ),
+            ].join(' · ')}
+          />
+        }
         scope={scope}
         slideNumber={slideNumber + chunkIdx}
         totalSlides={totalSlides}

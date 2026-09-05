@@ -16,7 +16,6 @@ import {
 } from '../../../types'
 import { TrendBar, type TrendBarDatum } from '../charts/trend-bar'
 import { ChartPane } from '../components/chart-pane'
-import { DataPane } from '../components/data-pane'
 import {
   EditorialTable,
   EditorialTableBody,
@@ -107,9 +106,13 @@ function buildSingleKelompokChart(
   return monthKeys.map((mk) => {
     const report = reportByMonth.get(mk)
     const row = report ? progByReport.get(report.id) : undefined
+    const denom = row?.denominator ?? 0
     return {
       label: monthNameFromKey(mk).slice(0, 3),
-      value: row?.count_this_month ?? 0,
+      value:
+        denom > 0
+          ? Math.round(((row?.count_this_month ?? 0) / denom) * 100)
+          : 0,
       isHighlighted: mk === currentMonthKey,
       isPlaceholder: mk > currentMonthKey,
     }
@@ -209,7 +212,7 @@ function ProgramKelompokBody(props: SlideArgs) {
       totalSlides={totalSlides}
     >
       <ReportSplit>
-        <DataPane>
+        <div className='h-full min-h-0 overflow-auto'>
           <EditorialTable headerVariant='hairline'>
             <EditorialTableHeader>
               <EditorialTableRow>
@@ -248,9 +251,16 @@ function ProgramKelompokBody(props: SlideArgs) {
               })}
             </EditorialTableBody>
           </EditorialTable>
-        </DataPane>
+        </div>
         <ChartPane>
-          <TrendBar data={chartData} yAxisTitle='JUMLAH' valueLabel='Jumlah' />
+          <TrendBar
+            data={chartData}
+            yAxisTitle='%'
+            valueLabel='Capaian vs Sensus'
+            valueDomain={[0, 100]}
+            valueFormatter={(n) => `${n}%`}
+            labelFormatter={(n) => `${n}%`}
+          />
         </ChartPane>
       </ReportSplit>
     </SlideFrame>
@@ -294,7 +304,7 @@ function ProgramDesaBody(props: SlideArgs) {
       totalSlides={totalSlides}
     >
       <ReportSplit>
-        <DataPane>
+        <div className='h-full min-h-0 overflow-auto'>
           <EditorialTable headerVariant='hairline'>
             <EditorialTableHeader>
               <EditorialTableRow>
@@ -339,7 +349,7 @@ function ProgramDesaBody(props: SlideArgs) {
               </TotalRow>
             </EditorialTableBody>
           </EditorialTable>
-        </DataPane>
+        </div>
         <ChartPane>
           <TrendBar
             data={chartData}
@@ -620,7 +630,7 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
     >
       <div className='flex h-full min-h-0 flex-col justify-between'>
         <div
-          className='w-full flex-1 min-h-0 overflow-hidden rounded-xl'
+          className='min-h-0 w-full flex-1 overflow-hidden rounded-xl'
           style={{
             border: `1px solid ${p.rule}`,
           }}
@@ -642,7 +652,7 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
             <thead>
               <tr style={{ height: '44px' }}>
                 <th
-                  className='px-4 text-left font-bold tracking-wider uppercase align-middle'
+                  className='px-4 text-left align-middle font-bold tracking-wider uppercase'
                   style={{
                     fontSize: 'clamp(0.82rem, 1cqw, 1.05rem)',
                     color: headerFg,
@@ -654,7 +664,7 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
                   Quarter
                 </th>
                 <th
-                  className='px-3 text-center font-bold tracking-wider uppercase align-middle'
+                  className='px-3 text-center align-middle font-bold tracking-wider uppercase'
                   style={{
                     fontSize: 'clamp(0.8rem, 0.95cqw, 1rem)',
                     color: headerFg,
@@ -666,7 +676,7 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
                   {isGmkm ? 'Sensus Keputrian' : 'Sensus'}
                 </th>
                 <th
-                  className='px-3 text-center font-bold tracking-wider uppercase align-middle'
+                  className='px-3 text-center align-middle font-bold tracking-wider uppercase'
                   style={{
                     fontSize: 'clamp(0.8rem, 0.95cqw, 1rem)',
                     color: headerFg,
@@ -678,7 +688,7 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
                   {isGmkm ? 'Hadir' : 'Jumlah'}
                 </th>
                 <th
-                  className='px-3 text-center font-bold tracking-wider uppercase align-middle'
+                  className='px-3 text-center align-middle font-bold tracking-wider uppercase'
                   style={{
                     fontSize: 'clamp(0.8rem, 0.95cqw, 1rem)',
                     color: headerFg,
@@ -690,7 +700,7 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
                   %
                 </th>
                 <th
-                  className='px-4 text-left font-bold tracking-wider uppercase align-middle'
+                  className='px-4 text-left align-middle font-bold tracking-wider uppercase'
                   style={{
                     fontSize: 'clamp(0.82rem, 1cqw, 1.05rem)',
                     color: headerFg,
@@ -713,23 +723,27 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
                     className='transition-colors hover:bg-muted/10'
                   >
                     <td
-                      className='px-4 font-semibold align-middle'
+                      className='px-4 align-middle font-semibold'
                       style={{
                         fontSize: 'clamp(0.9rem, 1.1cqw, 1.18rem)',
                         color: p.ink,
                         borderRight: `1px solid ${p.rule}`,
-                        borderBottom: isLast ? undefined : `1px solid ${p.rule}`,
+                        borderBottom: isLast
+                          ? undefined
+                          : `1px solid ${p.rule}`,
                       }}
                     >
                       {rowTitle}
                     </td>
                     <td
-                      className='px-3 text-center tabular-nums font-medium align-middle'
+                      className='px-3 text-center align-middle font-medium tabular-nums'
                       style={{
                         fontSize: 'clamp(0.9rem, 1.1cqw, 1.18rem)',
                         color: p.ink,
                         borderRight: `1px solid ${p.rule}`,
-                        borderBottom: isLast ? undefined : `1px solid ${p.rule}`,
+                        borderBottom: isLast
+                          ? undefined
+                          : `1px solid ${p.rule}`,
                       }}
                     >
                       {isFuture && r.denom === 0 ? (
@@ -739,12 +753,14 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
                       )}
                     </td>
                     <td
-                      className='px-3 text-center tabular-nums font-medium align-middle'
+                      className='px-3 text-center align-middle font-medium tabular-nums'
                       style={{
                         fontSize: 'clamp(0.9rem, 1.1cqw, 1.18rem)',
                         color: p.ink,
                         borderRight: `1px solid ${p.rule}`,
-                        borderBottom: isLast ? undefined : `1px solid ${p.rule}`,
+                        borderBottom: isLast
+                          ? undefined
+                          : `1px solid ${p.rule}`,
                       }}
                     >
                       {isFuture && r.now === 0 ? (
@@ -754,12 +770,14 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
                       )}
                     </td>
                     <td
-                      className='px-3 text-center tabular-nums font-bold align-middle'
+                      className='px-3 text-center align-middle font-bold tabular-nums'
                       style={{
                         fontSize: 'clamp(0.95rem, 1.15cqw, 1.22rem)',
                         color: p.ink,
                         borderRight: `1px solid ${p.rule}`,
-                        borderBottom: isLast ? undefined : `1px solid ${p.rule}`,
+                        borderBottom: isLast
+                          ? undefined
+                          : `1px solid ${p.rule}`,
                       }}
                     >
                       {r.pct != null ? (
@@ -771,11 +789,13 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
                       )}
                     </td>
                     <td
-                      className='text-pretty px-4 py-2 align-middle text-muted-foreground'
+                      className='px-4 py-2 align-middle text-pretty text-muted-foreground'
                       style={{
                         fontSize: 'clamp(0.8rem, 0.95cqw, 1.02rem)',
                         lineHeight: 1.4,
-                        borderBottom: isLast ? undefined : `1px solid ${p.rule}`,
+                        borderBottom: isLast
+                          ? undefined
+                          : `1px solid ${p.rule}`,
                       }}
                     >
                       {r.notes || '—'}
@@ -894,7 +914,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
       {view === 'data' ? (
         <div className='flex h-full min-h-0 flex-col justify-between'>
           <div
-            className='w-full flex-1 min-h-0 overflow-hidden rounded-xl'
+            className='min-h-0 w-full flex-1 overflow-hidden rounded-xl'
             style={{
               border: `1px solid ${p.rule}`,
             }}
@@ -930,7 +950,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                 <tr style={{ height: '36px' }}>
                   <th
                     rowSpan={3}
-                    className='px-3 text-left font-bold tracking-wider uppercase align-middle'
+                    className='px-3 text-left align-middle font-bold tracking-wider uppercase'
                     style={{
                       fontSize: 'clamp(0.82rem, 0.98cqw, 1.05rem)',
                       color: headerFg,
@@ -943,7 +963,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                   </th>
                   <th
                     rowSpan={3}
-                    className='px-2 py-1 text-center font-bold tracking-wider uppercase align-middle leading-tight'
+                    className='px-2 py-1 text-center align-middle leading-tight font-bold tracking-wider uppercase'
                     style={{
                       fontSize: 'clamp(0.76rem, 0.92cqw, 0.98rem)',
                       color: headerFg,
@@ -971,7 +991,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                   </th>
                   <th
                     colSpan={8}
-                    className='px-2 py-1 text-center font-bold tracking-wider uppercase align-middle'
+                    className='px-2 py-1 text-center align-middle font-bold tracking-wider uppercase'
                     style={{
                       fontSize: 'clamp(0.82rem, 0.98cqw, 1.05rem)',
                       color: headerFg,
@@ -986,7 +1006,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                   </th>
                   <th
                     rowSpan={3}
-                    className='px-3 py-1 text-left font-bold tracking-wider uppercase align-middle'
+                    className='px-3 py-1 text-left align-middle font-bold tracking-wider uppercase'
                     style={{
                       fontSize: 'clamp(0.82rem, 0.98cqw, 1.05rem)',
                       color: headerFg,
@@ -1002,7 +1022,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                     <th
                       key={q}
                       colSpan={2}
-                      className='px-1 py-0.5 text-center font-bold uppercase align-middle'
+                      className='px-1 py-0.5 text-center align-middle font-bold uppercase'
                       style={{
                         fontSize: 'clamp(0.78rem, 0.92cqw, 0.98rem)',
                         color: headerFg,
@@ -1019,7 +1039,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                   {quarters.flatMap((q) => [
                     <th
                       key={`h-hadir-${q}`}
-                      className='px-1 py-0.5 text-center font-bold uppercase align-middle'
+                      className='px-1 py-0.5 text-center align-middle font-bold uppercase'
                       style={{
                         fontSize: 'clamp(0.68rem, 0.8cqw, 0.86rem)',
                         color: headerFg,
@@ -1032,7 +1052,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                     </th>,
                     <th
                       key={`h-pct-${q}`}
-                      className='px-1 py-0.5 text-center font-bold uppercase align-middle'
+                      className='px-1 py-0.5 text-center align-middle font-bold uppercase'
                       style={{
                         fontSize: 'clamp(0.68rem, 0.8cqw, 0.86rem)',
                         color: headerFg,
@@ -1053,7 +1073,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                     className='transition-colors hover:bg-muted/10'
                   >
                     <td
-                      className='px-3 font-semibold align-middle'
+                      className='px-3 align-middle font-semibold'
                       style={{
                         fontSize: 'clamp(0.88rem, 1.05cqw, 1.12rem)',
                         color: p.ink,
@@ -1064,7 +1084,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                       {r.kelompokName}
                     </td>
                     <td
-                      className='px-2 text-center tabular-nums font-medium align-middle'
+                      className='px-2 text-center align-middle font-medium tabular-nums'
                       style={{
                         fontSize: 'clamp(0.85rem, 1.02cqw, 1.08rem)',
                         color: p.ink,
@@ -1084,7 +1104,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                       return [
                         <td
                           key={`hadir-${q}`}
-                          className='px-1 text-center tabular-nums align-middle'
+                          className='px-1 text-center align-middle tabular-nums'
                           style={{
                             fontSize: 'clamp(0.85rem, 1.02cqw, 1.08rem)',
                             color: p.ink,
@@ -1100,7 +1120,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                         </td>,
                         <td
                           key={`pct-${q}`}
-                          className='px-1 text-center tabular-nums font-bold align-middle'
+                          className='px-1 text-center align-middle font-bold tabular-nums'
                           style={{
                             fontSize: 'clamp(0.88rem, 1.08cqw, 1.15rem)',
                             color: p.ink,
@@ -1119,7 +1139,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                       ]
                     })}
                     <td
-                      className='text-pretty px-3 py-1.5 align-middle text-muted-foreground'
+                      className='px-3 py-1.5 align-middle text-pretty text-muted-foreground'
                       style={{
                         fontSize: 'clamp(0.75rem, 0.9cqw, 0.95rem)',
                         lineHeight: 1.35,
@@ -1138,7 +1158,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                   }}
                 >
                   <td
-                    className='px-3 font-bold uppercase tracking-wide align-middle'
+                    className='px-3 align-middle font-bold tracking-wide uppercase'
                     style={{
                       fontSize: 'clamp(0.88rem, 1.05cqw, 1.12rem)',
                       color: p.ink,
@@ -1148,7 +1168,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                     {totals.kelompokName}
                   </td>
                   <td
-                    className='px-2 text-center tabular-nums font-bold align-middle'
+                    className='px-2 text-center align-middle font-bold tabular-nums'
                     style={{
                       fontSize: 'clamp(0.88rem, 1.05cqw, 1.12rem)',
                       color: p.ink,
@@ -1163,7 +1183,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                     return [
                       <td
                         key={`total-hadir-${q}`}
-                        className='px-1 text-center tabular-nums font-bold align-middle'
+                        className='px-1 text-center align-middle font-bold tabular-nums'
                         style={{
                           fontSize: 'clamp(0.88rem, 1.05cqw, 1.12rem)',
                           color: p.ink,
@@ -1180,7 +1200,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                       </td>,
                       <td
                         key={`total-pct-${q}`}
-                        className='px-1 text-center tabular-nums font-bold align-middle'
+                        className='px-1 text-center align-middle font-bold tabular-nums'
                         style={{
                           fontSize: 'clamp(0.92rem, 1.12cqw, 1.18rem)',
                           color: p.ink,
@@ -1212,7 +1232,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
         <ReportSplit>
           <div className='flex h-full min-h-0 flex-col justify-between'>
             <div
-              className='w-full flex-1 min-h-0 overflow-hidden rounded-xl'
+              className='min-h-0 w-full flex-1 overflow-hidden rounded-xl'
               style={{
                 border: `1px solid ${p.rule}`,
               }}
@@ -1235,7 +1255,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                 <thead>
                   <tr style={{ height: '38px' }}>
                     <th
-                      className='px-3 text-left font-bold tracking-wider uppercase align-middle'
+                      className='px-3 text-left align-middle font-bold tracking-wider uppercase'
                       style={{
                         fontSize: 'clamp(0.8rem, 0.95cqw, 1rem)',
                         color: headerFg,
@@ -1247,7 +1267,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                       Kelompok
                     </th>
                     <th
-                      className='px-2 text-center font-bold tracking-wider uppercase align-middle'
+                      className='px-2 text-center align-middle font-bold tracking-wider uppercase'
                       style={{
                         fontSize: 'clamp(0.78rem, 0.92cqw, 0.98rem)',
                         color: headerFg,
@@ -1261,7 +1281,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                     {quarters.map((q, idx) => (
                       <th
                         key={q}
-                        className='px-1 text-center font-bold uppercase align-middle'
+                        className='px-1 text-center align-middle font-bold uppercase'
                         style={{
                           fontSize: 'clamp(0.78rem, 0.92cqw, 0.98rem)',
                           color: headerFg,
@@ -1285,7 +1305,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                       className='transition-colors hover:bg-muted/10'
                     >
                       <td
-                        className='px-3 font-semibold align-middle'
+                        className='px-3 align-middle font-semibold'
                         style={{
                           fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)',
                           color: p.ink,
@@ -1296,7 +1316,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                         {r.kelompokName}
                       </td>
                       <td
-                        className='px-2 text-center tabular-nums font-medium align-middle'
+                        className='px-2 text-center align-middle font-medium tabular-nums'
                         style={{
                           fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)',
                           color: p.ink,
@@ -1316,7 +1336,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                         return (
                           <td
                             key={q}
-                            className='px-1 text-center font-medium tabular-nums align-middle'
+                            className='px-1 text-center align-middle font-medium tabular-nums'
                             style={{
                               fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)',
                               color: p.ink,
@@ -1345,7 +1365,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                     }}
                   >
                     <td
-                      className='px-3 font-bold uppercase tracking-wide align-middle'
+                      className='px-3 align-middle font-bold tracking-wide uppercase'
                       style={{
                         fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)',
                         color: p.ink,
@@ -1355,7 +1375,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                       {totals.kelompokName}
                     </td>
                     <td
-                      className='px-2 text-center tabular-nums font-bold align-middle'
+                      className='px-2 text-center align-middle font-bold tabular-nums'
                       style={{
                         fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)',
                         color: p.ink,
@@ -1370,7 +1390,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
                       return (
                         <td
                           key={q}
-                          className='px-1 text-center tabular-nums font-bold align-middle'
+                          className='px-1 text-center align-middle font-bold tabular-nums'
                           style={{
                             fontSize: 'clamp(0.85rem, 1cqw, 1.05rem)',
                             color: p.ink,
@@ -1504,7 +1524,7 @@ function NikahJmKelompokBody(props: SlideArgs) {
       totalSlides={totalSlides}
     >
       <div className='flex h-full flex-col gap-4 overflow-hidden'>
-        <DataPane>
+        <div className='h-full min-h-0 overflow-auto'>
           <EditorialTable headerVariant='hairline' density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
@@ -1587,7 +1607,7 @@ function NikahJmKelompokBody(props: SlideArgs) {
               })}
             </EditorialTableBody>
           </EditorialTable>
-        </DataPane>
+        </div>
       </div>
     </SlideFrame>
   )
@@ -1660,7 +1680,7 @@ function NikahJmDesaBody(props: SlideArgs) {
       totalSlides={totalSlides}
     >
       <div className='flex h-full flex-col gap-4 overflow-hidden'>
-        <DataPane>
+        <div className='h-full min-h-0 overflow-auto'>
           <EditorialTable headerVariant='hairline' density='compact'>
             <EditorialTableHeader>
               <EditorialTableRow>
@@ -1762,7 +1782,7 @@ function NikahJmDesaBody(props: SlideArgs) {
               </TotalRow>
             </EditorialTableBody>
           </EditorialTable>
-        </DataPane>
+        </div>
       </div>
     </SlideFrame>
   )

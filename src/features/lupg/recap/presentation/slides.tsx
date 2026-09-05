@@ -52,10 +52,15 @@ export interface Kelompok {
   value: string
 }
 
+export type PresentationMonthlyReport = MonthlyReportRow & {
+  last_editor_display_name?: string | null
+  submitter_display_name?: string | null
+}
+
 export interface PresentationData {
   monthKey: string
   kelompokList: Kelompok[]
-  reports: MonthlyReportRow[]
+  reports: PresentationMonthlyReport[]
   programs: ProgramDefinitionRow[]
   metrics: MetricDefinitionRow[]
   sarprasItems: SarprasItemRow[]
@@ -172,7 +177,7 @@ export function buildSlides(data: PresentationData): Slide[] {
         kind: 'character-monitoring-recap'
         level?: 'ACR' | 'APR' | 'AR' | 'GPN'
       }
-    | { kind: 'mustin' }
+    | { kind: 'mustin'; kelompok: Kelompok }
     | { kind: 'dokumentasi' }
     | { kind: 'closing' }
 
@@ -205,7 +210,9 @@ export function buildSlides(data: PresentationData): Slide[] {
   for (const level of ['ACR', 'APR', 'AR', 'GPN'] as const) {
     descriptors.push({ kind: 'character-target-recap', level })
   }
-  descriptors.push({ kind: 'mustin' })
+  for (const kelompok of effectiveKelompokList) {
+    descriptors.push({ kind: 'mustin', kelompok })
+  }
   if (activityPhotos.length > 0) {
     descriptors.push({ kind: 'dokumentasi' })
   }
@@ -419,7 +426,7 @@ export function buildSlides(data: PresentationData): Slide[] {
             monthLabel,
             scope,
             isSingleKelompok,
-            effectiveKelompokList,
+            kelompok: d.kelompok,
             reports,
             mustinRows,
             mustinTemplates,
