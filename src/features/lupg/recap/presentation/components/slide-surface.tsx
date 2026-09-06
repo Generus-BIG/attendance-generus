@@ -36,7 +36,7 @@ export function SlideSurface({
     slideNumber,
     decorationKind
   )
-  const bubble = `color-mix(in oklch, ${decoration.accent === 1 ? p.accent : p.primary} 40%, ${p.bg})`
+  const bubble = `color-mix(in oklch, ${decoration.accent === 1 ? p.accent : p.primary} 12%, ${p.bg})`
 
   return (
     <div
