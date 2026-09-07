@@ -237,7 +237,8 @@ LUPG presentation decks can be shared per `month × scope` through
   paths already returned by that RPC.
 - Internal and public routes both use
   `PresentationPlayer` + `buildSlides(PresentationData)`; do not add a
-  second public deck renderer.
+  second public deck renderer. Both surfaces support browser-side PPTX export
+  via `exportPresentationPptx`.
 
 ### UI Components
 
