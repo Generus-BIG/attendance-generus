@@ -28,8 +28,10 @@ import {
   type SensusRow,
 } from '../types'
 
-const invalidateMonthlyReport = (qc: QueryClient, id: string) =>
+const invalidateMonthlyReport = (qc: QueryClient, id: string) => {
   qc.invalidateQueries({ queryKey: ['lupg', 'monthly-report', id] })
+  qc.invalidateQueries({ queryKey: ['lupg', 'monthly-audit-dashboard'] })
+}
 
 const KEYS = {
   monthlyReports: (params: {
@@ -38,6 +40,8 @@ const KEYS = {
     toMonth?: string
   }) => ['lupg', 'monthly-reports', params] as const,
   monthlyReport: (id: string) => ['lupg', 'monthly-report', id] as const,
+  monthlyAuditDashboard: (month: string) =>
+    ['lupg', 'monthly-audit-dashboard', month] as const,
   monthlyReportByKelompokMonth: (kelompokId: string, month: string) =>
     ['lupg', 'monthly-report', 'by', kelompokId, month] as const,
   sensus: (kelompokId: string) => ['lupg', 'sensus', kelompokId] as const,
@@ -559,6 +563,17 @@ export function useMonthlyReport(id: string | undefined) {
   })
 }
 
+export function useMonthlyAuditDashboard(month: string | undefined) {
+  return useQuery({
+    queryKey: KEYS.monthlyAuditDashboard(month ?? 'none'),
+    queryFn: () =>
+      month
+        ? monthlyReportSvc.listMonthlyAuditDashboard(month)
+        : Promise.resolve([]),
+    enabled: !!month,
+  })
+}
+
 export function useMonthlyReportByKelompokMonth(
   kelompokId: string | undefined,
   month: string | undefined
@@ -592,6 +607,7 @@ export function useEnsureMonthlyReport() {
           report.month.slice(0, 7)
         ),
       })
+      qc.invalidateQueries({ queryKey: ['lupg', 'monthly-audit-dashboard'] })
     },
   })
 }
@@ -599,10 +615,14 @@ export function useEnsureMonthlyReport() {
 export function useSubmitMonthlyReport() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => monthlyReportSvc.submitMonthlyReport(id),
+    mutationFn: (input: { id: string; submittedByLabel: string }) =>
+      monthlyReportSvc.submitMonthlyReport(input),
     onSuccess: (report) => {
       qc.invalidateQueries({ queryKey: KEYS.monthlyReport(report.id) })
       qc.invalidateQueries({ queryKey: ['lupg', 'monthly-reports'] })
+      qc.invalidateQueries({
+        queryKey: KEYS.monthlyAuditDashboard(report.month.slice(0, 7)),
+      })
       qc.invalidateQueries({ queryKey: KEYS.sensusSnapshots(report.id) })
     },
   })
@@ -615,6 +635,9 @@ export function useUnlockMonthlyReport() {
     onSuccess: (report) => {
       qc.invalidateQueries({ queryKey: KEYS.monthlyReport(report.id) })
       qc.invalidateQueries({ queryKey: ['lupg', 'monthly-reports'] })
+      qc.invalidateQueries({
+        queryKey: KEYS.monthlyAuditDashboard(report.month.slice(0, 7)),
+      })
     },
   })
 }
@@ -725,6 +748,7 @@ export function useUpsertSensusCellForReport() {
         queryKey: KEYS.monthlyReport(input.monthlyReportId),
       })
       qc.invalidateQueries({ queryKey: KEYS.desaSensusTotals })
+      qc.invalidateQueries({ queryKey: ['lupg', 'monthly-audit-dashboard'] })
     },
   })
 }

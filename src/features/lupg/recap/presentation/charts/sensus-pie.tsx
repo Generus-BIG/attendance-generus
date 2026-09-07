@@ -1,6 +1,8 @@
 // Sensus pie chart (kelompok mode) — solid pie of the 6 generus categories with external labels.
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
+import { Cell, Pie, PieChart, Tooltip } from 'recharts'
+import { PresentationResponsiveContainer } from '../components/presentation-responsive-container'
 import { usePresentationAnimation } from '../context/animation-context'
+import { useCaptureMode } from '../context/capture-context'
 import { getSensusColor } from '../theme'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import { EditorialTooltipShell } from './chart-primitives'
@@ -122,6 +124,7 @@ function CustomTooltip({ active, payload, palette }: TipProps) {
 }
 
 export function SensusPie({ data }: SensusPieProps) {
+  const capture = useCaptureMode()
   const palette = usePresPalette()
   const { durationScale } = usePresentationAnimation()
   const grandTotal = data.reduce((acc, d) => acc + d.total, 0)
@@ -147,7 +150,7 @@ export function SensusPie({ data }: SensusPieProps) {
         ? 'sage-green'
         : 'modern-natural'
   return (
-    <ResponsiveContainer width='100%' height='100%'>
+    <PresentationResponsiveContainer>
       <PieChart margin={{ top: 36, right: 96, bottom: 36, left: 96 }}>
         <Tooltip
           content={(p) => (
@@ -167,7 +170,7 @@ export function SensusPie({ data }: SensusPieProps) {
           innerRadius={0}
           stroke={palette.bg}
           strokeWidth={1}
-          isAnimationActive={true}
+          isAnimationActive={!capture}
           animationDuration={Math.round(800 * durationScale)}
           label={(p) => (
             <ExternalLabel
@@ -182,6 +185,6 @@ export function SensusPie({ data }: SensusPieProps) {
           ))}
         </Pie>
       </PieChart>
-    </ResponsiveContainer>
+    </PresentationResponsiveContainer>
   )
 }

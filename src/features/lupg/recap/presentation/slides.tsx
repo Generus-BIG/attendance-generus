@@ -2,6 +2,7 @@
 // Each renderer lives in `./slide-renderers/render-*.tsx`.
 import { type ReactNode } from 'react'
 import { PROGRAM_ORDER } from '../../constants'
+import { CaptureContext } from './context/capture-context'
 import {
   type CharacterMonitoringActivityRow,
   type CharacterMonitoringReportRow,
@@ -105,7 +106,7 @@ function orderPrograms(
   return ordered
 }
 
-export function buildSlides(data: PresentationData): Slide[] {
+export function buildSlides(data: PresentationData, options?: { capture?: boolean }): Slide[] {
   const {
     monthKey,
     kelompokList,
@@ -454,5 +455,14 @@ export function buildSlides(data: PresentationData): Slide[] {
     }
   }
 
-  return slides
+  if (!options?.capture) return slides
+  const dualViews = new Set(isSingleKelompok ? [] : [
+    'sensus',
+    ...orderedPrograms.filter(p => p.reporting_style === 'quarterly' && p.code !== 'NIKAH_JM').map(p => `program-${p.code}`),
+  ])
+  return slides.flatMap(slide => (dualViews.has(slide.key) ? ['data', 'analysis'] as const : ['data'] as const).map(view => ({
+    ...slide,
+    key: dualViews.has(slide.key) ? `${slide.key}-${view}` : slide.key,
+    render: () => <CaptureContext.Provider value={{ view }}>{slide.render()}</CaptureContext.Provider>,
+  })))
 }

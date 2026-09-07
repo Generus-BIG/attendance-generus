@@ -1,0 +1,36 @@
+<!doctype html>
+<html><head><title>Screenshot PPTX regression</title></head><body>
+<pre id="result">RUNNING</pre>
+<script type="module">
+import { paginateMustin } from './paginate-mustin.ts'
+const assert = (ok, message) => { if (!ok) throw new Error(message) }
+try {
+ const root = document.createElement('div')
+ root.style.cssText = 'width:1280px;height:720px;font:16px/24px Arial'
+ root.innerHTML = '<div data-mustin-columns style="display:grid;grid-template-columns:1fr 1fr;gap:20px;height:500px"><div data-mustin-column style="display:flex;flex-direction:column;gap:12px;min-height:0"></div><div data-mustin-column style="display:flex;flex-direction:column;gap:12px;min-height:0"></div></div>'
+ const column = root.querySelector('[data-mustin-column]')
+ const expected = []
+ for(let i=0;i<10;i++) {
+  const card = document.createElement('div'); card.dataset.mustinCard=''
+  const body = i===3 ? 'Catatan sangat panjang harus tetap utuh. '.repeat(200) : `Keputusan ${i}`
+  expected.push(body)
+  card.innerHTML=`<div style="padding:16px;border:1px solid black"><span data-mustin-number>${i+1}</span><p data-mustin-topic>Pembahasan ${i}</p><p data-mustin-decision></p></div>`
+  card.querySelector('[data-mustin-decision]').textContent=body
+  column.append(card)
+ }
+ document.body.append(root)
+ const before=root.textContent
+ const pages=paginateMustin(root)
+ assert(pages.length>1,'long notes need continuation')
+ assert(root.textContent===before,'original DOM unchanged')
+ const actual=pages.flatMap(p=>[...p.querySelectorAll('[data-mustin-decision]')].map(n=>n.textContent)).join('')
+ assert(actual===expected.join(''),'all decision text in reading order')
+ for(const page of pages) {
+  document.body.append(page)
+  for(const col of page.querySelectorAll('[data-mustin-column]')) assert(col.scrollHeight<=col.clientHeight+1,'column overflow')
+  page.remove()
+ }
+ root.remove()
+ document.querySelector('#result').textContent='PASS: two columns, overflow, long card, text conservation, source isolation'
+} catch(error) { document.querySelector('#result').textContent='FAIL: '+error.stack }
+</script></body></html>

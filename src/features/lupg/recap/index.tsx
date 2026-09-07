@@ -750,6 +750,11 @@ function StatusGridCard({
                 const rawEditor = r ? editorNameByReport?.get(r.id) : null
                 const editorName =
                   rawEditor && !/admin/i.test(rawEditor) ? rawEditor : null
+                const submittedByLabel = (
+                  r as (MonthlyReportRow & {
+                    submitted_by_label?: string | null
+                  }) | undefined
+                )?.submitted_by_label
                 return (
                   <TableRow key={k.id}>
                     <TableCell className='font-medium whitespace-nowrap'>
@@ -779,10 +784,18 @@ function StatusGridCard({
                           </span>
                           {editorName && (
                             <span
-                              className='max-w-[220px] truncate text-xs opacity-80'
+                              className='max-w-55 truncate text-xs opacity-80'
                               title={editorName}
                             >
                               by {editorName}
+                            </span>
+                          )}
+                          {submittedByLabel && (
+                            <span
+                              className='max-w-55 truncate text-xs opacity-80'
+                              title={submittedByLabel}
+                            >
+                              konfirmasi: {submittedByLabel}
                             </span>
                           )}
                         </span>

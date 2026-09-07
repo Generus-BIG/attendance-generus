@@ -1,11 +1,12 @@
 import { z } from 'zod'
 import { createFileRoute } from '@tanstack/react-router'
 import { LupgDashboard } from '@/features/lupg/dashboard'
+import { isCalendarMonthKey } from '@/features/lupg/utils/month-utils'
 
 const searchSchema = z.object({
   month: z
     .string()
-    .regex(/^\d{4}-\d{2}$/, 'Format bulan harus YYYY-MM')
+    .refine(isCalendarMonthKey, 'Format bulan harus YYYY-MM')
     .optional(),
 })
 

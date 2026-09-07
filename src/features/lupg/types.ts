@@ -3,6 +3,24 @@ import { type Database } from '@/lib/database.types'
 type Tables = Database['public']['Tables']
 
 export type MonthlyReportRow = Tables['lupg_monthly_reports']['Row']
+export type MonthlyReportEditHistoryRow = Omit<
+  Database['public']['Functions']['lupg_get_monthly_report_edit_history']['Returns'][number],
+  'edited_by' | 'editor_display_name'
+> & {
+  edited_by: string | null
+  editor_display_name: string | null
+}
+export type MonthlyAuditDashboardRow = Omit<
+  Database['public']['Functions']['lupg_get_monthly_audit_dashboard']['Returns'][number],
+  'history'
+> & {
+  history: Array<
+    Pick<
+      MonthlyReportEditHistoryRow,
+      'id' | 'edited_at' | 'source_table' | 'action' | 'editor_display_name'
+    >
+  >
+}
 export type MonthlyReportInsert = Tables['lupg_monthly_reports']['Insert']
 export type MonthlyReportUpdate = Tables['lupg_monthly_reports']['Update']
 

@@ -1,4 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
+import { useCaptureMode } from '../context/capture-context'
 import { BarChart2, Table as TableIcon } from 'lucide-react'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { parseNikahClusterExtras } from '../../../programs/types'
@@ -818,7 +819,9 @@ function ProgramQuarterlyKelompokBody(props: SlideArgs) {
 }
 
 function ProgramQuarterlyDesaBody(props: SlideArgs) {
-  const [view, setView] = useState<'data' | 'analysis'>('data')
+  const capture = useCaptureMode()
+  const [interactiveView, setView] = useState<'data' | 'analysis'>('data')
+  const view = capture?.view ?? interactiveView
   const p = usePresPalette()
   const {
     program,
@@ -914,7 +917,7 @@ function ProgramQuarterlyDesaBody(props: SlideArgs) {
       decorationKind={view === 'data' ? 'table' : 'split'}
       eyebrow='PROGRAM PEMBINAAN'
       title={isGmkm ? 'Laporan GMKM' : program.name}
-      meta={metaNode}
+      meta={capture ? `${monthLabel} · ${view === 'data' ? 'Data' : 'Analisis'}` : metaNode}
       scope={scope}
       slideNumber={slideNumber}
       totalSlides={totalSlides}

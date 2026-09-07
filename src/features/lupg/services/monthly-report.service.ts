@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import {
+  type MonthlyAuditDashboardRow,
   type MonthlyReportInsert,
   type MonthlyReportRow,
   type MonthlyReportWithEditorRow,
@@ -66,6 +67,19 @@ export async function getMonthlyReportById(
   }
 }
 
+export async function listMonthlyAuditDashboard(
+  month: string
+): Promise<MonthlyAuditDashboardRow[]> {
+  const { data, error } = await supabase.rpc(
+    'lupg_get_monthly_audit_dashboard',
+    {
+      p_month: firstDayOfMonth(month),
+    }
+  )
+  if (error) throw error
+  return (data ?? []) as MonthlyAuditDashboardRow[]
+}
+
 export async function createMonthlyReport(
   input: Pick<MonthlyReportInsert, 'kelompok_id' | 'month'>
 ): Promise<MonthlyReportRow> {
@@ -103,13 +117,19 @@ export async function ensureMonthlyReport(
   return createMonthlyReport({ kelompok_id: kelompokId, month })
 }
 
-export async function submitMonthlyReport(
+export async function submitMonthlyReport(input: {
   id: string
-): Promise<MonthlyReportRow> {
+  submittedByLabel: string
+}): Promise<MonthlyReportRow> {
+  const submittedByLabel = input.submittedByLabel.trim()
+  if (!submittedByLabel || submittedByLabel.length > 100) {
+    throw new Error('Nama konfirmasi wajib diisi maksimal 100 karakter')
+  }
+
   const { data, error } = await supabase
     .from('lupg_monthly_reports')
-    .update({ status: 'submitted' })
-    .eq('id', id)
+    .update({ status: 'submitted', submitted_by_label: submittedByLabel })
+    .eq('id', input.id)
     .eq('status', 'draft')
     .select()
     .single()

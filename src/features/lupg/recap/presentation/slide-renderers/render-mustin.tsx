@@ -9,6 +9,7 @@ import {
   type MustinTemplateRow,
 } from '../../../types'
 import { AnimateItem } from '../components/animate-element'
+import { useCaptureMode } from '../context/capture-context'
 import { SlideFrame } from '../components/slide-frame'
 import { type Slide } from '../slides'
 import { usePresPalette } from '../use-pres-palette'
@@ -49,6 +50,7 @@ function NoteItem({ note, index }: { note: MustinNoteRow; index: number }) {
       style={{ borderColor: p.rule }}
     >
       <div
+        data-mustin-number
         className='shrink-0 pt-px'
         style={{
           fontFamily: p.fontMono,
@@ -75,6 +77,7 @@ function NoteItem({ note, index }: { note: MustinNoteRow; index: number }) {
           </p>
           <p
             className='mt-1 whitespace-pre-wrap'
+            data-mustin-topic
             style={{
               color: p.ink,
               fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
@@ -97,6 +100,7 @@ function NoteItem({ note, index }: { note: MustinNoteRow; index: number }) {
           </p>
           <p
             className='mt-1 whitespace-pre-wrap'
+            data-mustin-decision
             style={{
               color: p.ink,
               fontSize: 'clamp(0.875rem, 1.1vw, 1.25rem)',
@@ -119,6 +123,7 @@ function MustinContent({
 }) {
   const p = usePresPalette()
   const reduceMotion = useReducedMotion()
+  const capture = useCaptureMode()
   const scrollRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<number | undefined>(undefined)
   const previousTimeRef = useRef<number | undefined>(undefined)
@@ -129,7 +134,7 @@ function MustinContent({
   const [speed, setSpeed] = useState(DEFAULT_AUTO_SCROLL_SPEED)
 
   useEffect(() => {
-    if (!isScrolling || reduceMotion) return
+    if (capture || !isScrolling || reduceMotion) return
 
     const scroll = (time: number) => {
       const container = scrollRef.current
@@ -154,7 +159,7 @@ function MustinContent({
       if (frameRef.current) cancelAnimationFrame(frameRef.current)
       previousTimeRef.current = undefined
     }
-  }, [isScrolling, reduceMotion, speed])
+  }, [capture, isScrolling, reduceMotion, speed])
 
   const start = useCallback(() => {
     const container = scrollRef.current
@@ -167,6 +172,7 @@ function MustinContent({
   }, [isFinished])
 
   useEffect(() => {
+    if (capture) return
     const toggle = () => {
       if (reduceMotion || notes.length === 0) return
       if (isScrolling) setIsScrolling(false)
@@ -178,7 +184,16 @@ function MustinContent({
     window.addEventListener('lupg:mustin-toggle-autoscroll', handleToggle)
     return () =>
       window.removeEventListener('lupg:mustin-toggle-autoscroll', handleToggle)
-  }, [isScrolling, notes.length, reduceMotion, slideKey, start])
+  }, [capture, isScrolling, notes.length, reduceMotion, slideKey, start])
+
+  if (capture) return (
+    <div data-mustin-columns className='grid h-full min-h-0 grid-cols-2 gap-5'>
+      <div data-mustin-column className='flex min-h-0 flex-col gap-3'>
+        {notes.length ? notes.map((note, index) => <div data-mustin-card key={note.id}><NoteItem note={note} index={index} /></div>) : <p>Tidak ada catatan.</p>}
+      </div>
+      <div data-mustin-column className='flex min-h-0 flex-col gap-3' />
+    </div>
+  )
 
   return (
     <div className='flex h-full min-h-0 items-center gap-3'>

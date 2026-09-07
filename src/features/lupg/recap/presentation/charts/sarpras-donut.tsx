@@ -1,13 +1,9 @@
 // Sarpras donut chart (kelompok mode) — % fulfilled with center label and
 // 2-slice legend. Sudah uses palette.success, Belum uses palette.muted at 35%.
-import {
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts'
+import { Cell, Pie, PieChart, Tooltip } from 'recharts'
+import { PresentationResponsiveContainer } from '../components/presentation-responsive-container'
 import { usePresentationAnimation } from '../context/animation-context'
+import { useCaptureMode } from '../context/capture-context'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import { EditorialTooltipShell } from './chart-primitives'
 
@@ -81,6 +77,7 @@ function LegendItem({ color, label, count, palette }: LegendItemProps) {
 }
 
 export function SarprasDonut({ fulfilled, total }: SarprasDonutProps) {
+  const capture = useCaptureMode()
   const palette = usePresPalette()
   const { durationScale } = usePresentationAnimation()
   const colorSudah = palette.sarprasPrimary
@@ -122,7 +119,7 @@ export function SarprasDonut({ fulfilled, total }: SarprasDonutProps) {
   return (
     <div className='flex h-full w-full flex-col overflow-hidden'>
       <div className='relative min-h-0 flex-1'>
-        <ResponsiveContainer width='100%' height='100%'>
+        <PresentationResponsiveContainer>
           <PieChart margin={{ top: 18, right: 24, bottom: 18, left: 24 }}>
             <Tooltip
               content={(p) => (
@@ -142,7 +139,7 @@ export function SarprasDonut({ fulfilled, total }: SarprasDonutProps) {
               outerRadius='52%'
               stroke={palette.bg}
               strokeWidth={1}
-              isAnimationActive={true}
+              isAnimationActive={!capture}
               animationDuration={Math.round(800 * durationScale)}
             >
               {data.map((d) => (
@@ -150,7 +147,7 @@ export function SarprasDonut({ fulfilled, total }: SarprasDonutProps) {
               ))}
             </Pie>
           </PieChart>
-        </ResponsiveContainer>
+        </PresentationResponsiveContainer>
         <div className='pointer-events-none absolute inset-0 flex flex-col items-center justify-center'>
           <div
             style={{

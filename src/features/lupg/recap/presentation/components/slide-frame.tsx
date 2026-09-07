@@ -105,8 +105,10 @@ export function SlideFrame({
             {scope}
           </AnimateItem>
           <AnimateItem style={pageIndicatorStyle}>
+            <span data-capture-page-number>
             {String(slideNumber).padStart(2, '0')} —{' '}
             {String(totalSlides).padStart(2, '0')}
+            </span>
           </AnimateItem>
         </footer>
       </AnimateContainer>

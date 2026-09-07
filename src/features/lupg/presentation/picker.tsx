@@ -22,6 +22,8 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { KelompokSelector } from '../components/kelompok-selector'
 import { MonthPicker } from '../components/month-picker'
+import { PptxExportControl } from '../recap/presentation/pptx-export-control'
+import { loadPrivatePresentationData } from '../recap/presentation/private-presentation-data'
 import { isReportMonthAvailable, reportMonthKey } from '../utils/month-utils'
 import { PresentationShareCard } from './presentation-share-card'
 
@@ -80,7 +82,6 @@ export function PresentationPicker({
   const kelompokReady = !kelompokLoading && !kelompokError
   const sharingEnabled =
     kelompokReady && (!isTeamManager || Boolean(tmKelompokId))
-
   const launch = () => {
     navigate({
       to: '/admin/lupg/recap/present',
@@ -185,6 +186,21 @@ export function PresentationPicker({
                 <PresentationIcon className='mr-2 h-4 w-4' />
                 Mulai Presentasi
               </Button>
+              <PptxExportControl
+                disabled={!sharingEnabled}
+                onExport={async (palette, onProgress) => {
+                  if (!sharingEnabled || (isTeamManager && !tmKelompokId)) {
+                    throw new Error('Kelompok Anda belum dapat ditentukan.')
+                  }
+                  const data = await loadPrivatePresentationData({
+                    monthKey,
+                    kelompokId: effectiveKelompokId,
+                  })
+                  const { exportPresentationPptx } =
+                    await import('../recap/presentation/pptx/export-presentation-pptx')
+                  return exportPresentationPptx(data, { palette, onProgress })
+                }}
+              />
             </CardContent>
           </Card>
 

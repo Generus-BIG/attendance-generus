@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 
 export interface PresPalette {
   bg: string
@@ -85,10 +85,10 @@ function fallback(): PresPalette {
   }
 }
 
-function readTokens(): PresPalette {
+export function readPresentationTokens(rootDocument: Document = document): PresPalette {
   if (typeof window === 'undefined') return fallback()
 
-  const styles = getComputedStyle(document.documentElement)
+  const styles = rootDocument.defaultView!.getComputedStyle(rootDocument.documentElement)
   const get = (key: TokenKey) => styles.getPropertyValue(key).trim()
   const defaults = fallback()
   const bg = get('--background') || defaults.bg
@@ -129,18 +129,22 @@ function readTokens(): PresPalette {
   }
 }
 
+export const PresentationPaletteOverride = createContext<PresPalette | null>(null)
+
 export function usePresPalette(): PresPalette {
-  const [palette, setPalette] = useState(readTokens)
+  const override = useContext(PresentationPaletteOverride)
+  const [palette, setPalette] = useState(() => override ?? (typeof document === 'undefined' ? fallback() : readPresentationTokens()))
 
   useEffect(() => {
-    const update = () => setPalette(readTokens())
+    if (override) return
+    const update = () => setPalette(readPresentationTokens())
     const observer = new MutationObserver(update)
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['data-palette', 'class'],
     })
     return () => observer.disconnect()
-  }, [])
+  }, [override])
 
-  return palette
+  return override ?? palette
 }

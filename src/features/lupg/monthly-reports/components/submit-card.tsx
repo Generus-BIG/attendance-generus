@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { ReportStatusBadge } from '../../components/report-status-badge'
 import {
   useActiveCharacterMonitoringActivities,
@@ -31,6 +33,7 @@ interface Props {
 
 export function SubmitCard({ report }: Props) {
   const [confirmDone, setConfirmDone] = useState(false)
+  const [submittedByLabel, setSubmittedByLabel] = useState('')
   const [confirmRevert, setConfirmRevert] = useState(false)
 
   const markDone = useSubmitMonthlyReport()
@@ -71,7 +74,10 @@ export function SubmitCard({ report }: Props) {
   const isDone = report.status === 'submitted'
 
   const handleMarkDone = () => {
-    markDone.mutate(report.id, {
+    const label = submittedByLabel.trim()
+    if (!label) return
+
+    markDone.mutate({ id: report.id, submittedByLabel: label }, {
       onSuccess: () => {
         toast.success('Laporan ditandai Selesai. Masih bisa diedit kapan saja.')
         setConfirmDone(false)
@@ -111,6 +117,9 @@ export function SubmitCard({ report }: Props) {
                 <span className='text-xs text-muted-foreground'>
                   Ditandai selesai{' '}
                   {new Date(report.submitted_at).toLocaleString('id-ID')}
+                  {report.submitted_by_label
+                    ? ` oleh ${report.submitted_by_label}`
+                    : ''}
                 </span>
               )}
             </div>
@@ -183,10 +192,26 @@ export function SubmitCard({ report }: Props) {
                 </p>
               </div>
             ) : null}
+            <div className='space-y-2 pt-2'>
+              <Label htmlFor='submitted-by-label'>Dikonfirmasi oleh</Label>
+              <Input
+                id='submitted-by-label'
+                value={submittedByLabel}
+                maxLength={100}
+                placeholder='Nama lengkap / nama panggilan'
+                onChange={(event) => setSubmittedByLabel(event.target.value)}
+              />
+              <p className='text-xs text-muted-foreground'>
+                Isi nama orang yang terakhir mengedit laporan ini.
+              </p>
+            </div>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleMarkDone}>
+            <AlertDialogAction
+              onClick={handleMarkDone}
+              disabled={!submittedByLabel.trim() || markDone.isPending}
+            >
               Ya, Tandai Selesai
             </AlertDialogAction>
           </AlertDialogFooter>
