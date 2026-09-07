@@ -4,7 +4,6 @@ import {
   AreaChart,
   CartesianGrid,
   LabelList,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -29,8 +28,10 @@ import {
   EditorialTableRow,
   TotalRow,
 } from '../components/editorial-table'
+import { PresentationResponsiveContainer } from '../components/presentation-responsive-container'
 import { ReportSplit } from '../components/report-split'
 import { SlideFrame } from '../components/slide-frame'
+import { useCaptureMode } from '../context/capture-context'
 import { type Slide } from '../slides'
 import { usePresPalette } from '../use-pres-palette'
 
@@ -135,12 +136,13 @@ function TrendLabel({
 }
 
 function ShodaqohTrend({ data }: ShodaqohTrendProps) {
+  const capture = useCaptureMode()
   const p = usePresPalette()
   const yMax = 1_000_000
   const ticks = [0, 200_000, 400_000, 600_000, 800_000, yMax]
 
   return (
-    <ResponsiveContainer width='100%' height='100%'>
+    <PresentationResponsiveContainer>
       <AreaChart
         data={data}
         margin={{ top: 44, right: 24, bottom: 14, left: 24 }}
@@ -180,6 +182,7 @@ function ShodaqohTrend({ data }: ShodaqohTrendProps) {
           }}
         />
         <Area
+          isAnimationActive={!capture}
           type='linear'
           dataKey='value'
           stroke={p.shodaqohPrimary}
@@ -210,7 +213,7 @@ function ShodaqohTrend({ data }: ShodaqohTrendProps) {
           />
         </Area>
       </AreaChart>
-    </ResponsiveContainer>
+    </PresentationResponsiveContainer>
   )
 }
 
