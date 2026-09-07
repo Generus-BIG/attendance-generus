@@ -185,19 +185,43 @@ export function MonthlyReportEdit({ monthlyReportId }: Props) {
                 </div>
               </div>
               <SectionNav sections={SECTIONS} />
-              {report.last_edited_at && report.last_editor_display_name && (
+              {(report.last_edited_at || report.submitted_at) && (
                 <div className='border-t pt-4 text-xs leading-relaxed text-muted-foreground'>
-                  <p>Last edited by {report.last_editor_display_name}</p>
-                  <time
-                    className='tabular-nums'
-                    dateTime={report.last_edited_at}
-                  >
-                    {format(
-                      new Date(report.last_edited_at),
-                      "d MMMM yyyy 'at' HH:mm",
-                      { locale: enGB }
-                    )}
-                  </time>
+                  {report.last_edited_at && (
+                    <>
+                      <p>
+                        Last edited by{' '}
+                        {report.last_editor_display_name ?? 'unknown'}
+                      </p>
+                      <time
+                        className='block tabular-nums'
+                        dateTime={report.last_edited_at}
+                      >
+                        {format(
+                          new Date(report.last_edited_at),
+                          "d MMMM yyyy 'at' HH:mm",
+                          { locale: enGB }
+                        )}
+                      </time>
+                    </>
+                  )}
+                  {report.submitted_by_label && (
+                    <>
+                      <p>Dikonfirmasi oleh {report.submitted_by_label}</p>
+                      {report.submitted_at && (
+                        <time
+                          className='block tabular-nums'
+                          dateTime={report.submitted_at}
+                        >
+                          {format(
+                            new Date(report.submitted_at),
+                            "d MMMM yyyy 'at' HH:mm",
+                            { locale: enGB }
+                          )}
+                        </time>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </div>
