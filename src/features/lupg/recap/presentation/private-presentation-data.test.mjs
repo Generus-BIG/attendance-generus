@@ -368,7 +368,7 @@ test('private loader preserves enrichment, query scope, ordering and error propa
   }
 })
 
-test('both private surfaces share export control; public player omits callback', () => {
+test('private surfaces and public player share export capability', () => {
   const control = new URL('./pptx-export-control.tsx', import.meta.url)
   assert.ok(existsSync(control), 'reusable export control must exist')
   const player = readFileSync(new URL('./player.tsx', import.meta.url), 'utf8')
@@ -388,5 +388,6 @@ test('both private surfaces share export control; public player omits callback',
   assert.match(picker, /loadPrivatePresentationData/)
   assert.match(route, /loadPrivatePresentationData/)
   assert.match(route, /onExport=.*data/s)
-  assert.doesNotMatch(publicPage, /onExport|PptxExportControl/)
+  assert.match(publicPage, /onExport=/)
+  assert.match(publicPage, /exportPresentationPptx/)
 })

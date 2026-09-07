@@ -150,12 +150,12 @@ export function PptxExportControl({
           size='sm'
           aria-label='Download PPTX'
           aria-busy={pending}
-          className='min-h-11'
+          className='min-h-11 min-w-11 sm:min-w-0'
         >
           {pending ? (
-            <Loader2 data-icon='inline-start' className='animate-spin' />
+            <Loader2 className='h-4 w-4 animate-spin sm:mr-2' />
           ) : (
-            <Download data-icon='inline-start' />
+            <Download className='h-4 w-4 sm:mr-2' />
           )}
           <span className='hidden sm:inline'>
             {pending ? 'Menyiapkan PPTX…' : 'Download PPTX'}
