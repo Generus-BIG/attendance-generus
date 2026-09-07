@@ -57,6 +57,10 @@ export function SarprasSection({ report, readOnly }: Props) {
       qc.invalidateQueries({
         queryKey: LUPG_QUERY_KEYS.sarprasReports(report.id),
       })
+      qc.invalidateQueries({
+        queryKey: LUPG_QUERY_KEYS.monthlyReport(report.id),
+      })
+      qc.invalidateQueries({ queryKey: ['lupg', 'monthly-audit-dashboard'] })
       toast.success(
         mode === 'check'
           ? `${items.length} item dicentang`

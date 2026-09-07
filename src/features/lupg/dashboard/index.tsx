@@ -4,6 +4,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { Route } from '@/routes/admin/lupg/dashboard'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useAuthStore } from '@/stores/auth-store'
+import { type Role } from '@/lib/rbac'
 import { supabase } from '@/lib/supabase'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
@@ -16,6 +18,7 @@ import { ReportCard } from '../components/report-card'
 import { SummaryStrip } from '../components/summary-strip'
 import {
   useEnsureMonthlyReport,
+  useMonthlyAuditDashboard,
   useMonthlyReports,
 } from '../hooks/use-lupg-queries'
 import {
@@ -24,11 +27,14 @@ import {
   isReportMonthAvailable,
   reportMonthKey,
 } from '../utils/month-utils'
+import { ReportActivityPanel } from './report-activity-panel'
 
 export function LupgDashboard() {
   const navigate = useNavigate({ from: Route.fullPath })
   const { month: searchMonth } = Route.useSearch()
   const activeMonth = searchMonth ?? reportMonthKey()
+  const role = useAuthStore((s) => s.auth.role) as Role
+  const canViewAudit = role === 'super_admin' || role === 'admin'
 
   const { data: kelompokOptions = [] } = useQuery({
     queryKey: ['lookup_values', 'GROUP'],
@@ -49,6 +55,9 @@ export function LupgDashboard() {
   })
 
   const ensure = useEnsureMonthlyReport()
+  const auditDashboard = useMonthlyAuditDashboard(
+    canViewAudit ? activeMonth : undefined
+  )
 
   const reportByKelompok = useMemo(() => {
     const m = new Map<string, (typeof reports)[number]>()
@@ -177,6 +186,14 @@ export function LupgDashboard() {
               )
             })}
           </div>
+        )}
+
+        {canViewAudit && (
+          <ReportActivityPanel
+            reports={auditDashboard.data ?? []}
+            isLoading={auditDashboard.isLoading}
+            isError={auditDashboard.isError}
+          />
         )}
       </Main>
     </>

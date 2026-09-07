@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '14.5'
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -83,25 +83,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'attendance_form_id_fkey'
-            columns: ['form_id']
+            foreignKeyName: "attendance_form_id_fkey"
+            columns: ["form_id"]
             isOneToOne: false
-            referencedRelation: 'attendance_forms'
-            referencedColumns: ['id']
+            referencedRelation: "attendance_forms"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'attendance_merged_with_participant_id_fkey'
-            columns: ['merged_with_participant_id']
+            foreignKeyName: "attendance_merged_with_participant_id_fkey"
+            columns: ["merged_with_participant_id"]
             isOneToOne: false
-            referencedRelation: 'participants'
-            referencedColumns: ['id']
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'attendance_participant_id_fkey'
-            columns: ['participant_id']
+            foreignKeyName: "attendance_participant_id_fkey"
+            columns: ["participant_id"]
             isOneToOne: false
-            referencedRelation: 'participants'
-            referencedColumns: ['id']
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -147,11 +147,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'attendance_forms_kelompok_id_fkey'
-            columns: ['kelompok_id']
+            foreignKeyName: "attendance_forms_kelompok_id_fkey"
+            columns: ["kelompok_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -209,11 +209,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_activity_photos_report_id_fkey'
-            columns: ['report_id']
+            foreignKeyName: "lupg_activity_photos_report_id_fkey"
+            columns: ["report_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_monthly_reports'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_monthly_reports"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -280,18 +280,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_character_monitoring_reports_activity_id_fkey'
-            columns: ['activity_id']
+            foreignKeyName: "lupg_character_monitoring_reports_activity_id_fkey"
+            columns: ["activity_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_character_monitoring_activities'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_character_monitoring_activities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'lupg_character_monitoring_reports_monthly_report_id_fkey'
-            columns: ['monthly_report_id']
+            foreignKeyName: "lupg_character_monitoring_reports_monthly_report_id_fkey"
+            columns: ["monthly_report_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_monthly_reports'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_monthly_reports"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -355,11 +355,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_character_target_items_template_id_fkey'
-            columns: ['template_id']
+            foreignKeyName: "lupg_character_target_items_template_id_fkey"
+            columns: ["template_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_character_target_templates'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_character_target_templates"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -408,18 +408,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_character_target_reports_monthly_report_id_fkey'
-            columns: ['monthly_report_id']
+            foreignKeyName: "lupg_character_target_reports_monthly_report_id_fkey"
+            columns: ["monthly_report_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_monthly_reports'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_monthly_reports"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'lupg_character_target_reports_target_item_id_fkey'
-            columns: ['target_item_id']
+            foreignKeyName: "lupg_character_target_reports_target_item_id_fkey"
+            columns: ["target_item_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_character_target_items'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_character_target_items"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -510,11 +510,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_intensif_activities_kelompok_id_fkey'
-            columns: ['kelompok_id']
+            foreignKeyName: "lupg_intensif_activities_kelompok_id_fkey"
+            columns: ["kelompok_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -557,18 +557,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_intensif_attendance_activity_id_fkey'
-            columns: ['activity_id']
+            foreignKeyName: "lupg_intensif_attendance_activity_id_fkey"
+            columns: ["activity_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_intensif_activities'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_intensif_activities"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'lupg_intensif_attendance_participant_id_fkey'
-            columns: ['participant_id']
+            foreignKeyName: "lupg_intensif_attendance_participant_id_fkey"
+            columns: ["participant_id"]
             isOneToOne: false
-            referencedRelation: 'participants'
-            referencedColumns: ['id']
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -650,18 +650,63 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_metric_reports_metric_code_fkey'
-            columns: ['metric_code']
+            foreignKeyName: "lupg_metric_reports_metric_code_fkey"
+            columns: ["metric_code"]
             isOneToOne: false
-            referencedRelation: 'lupg_metric_definitions'
-            referencedColumns: ['code']
+            referencedRelation: "lupg_metric_definitions"
+            referencedColumns: ["code"]
           },
           {
-            foreignKeyName: 'lupg_metric_reports_monthly_report_id_fkey'
-            columns: ['monthly_report_id']
+            foreignKeyName: "lupg_metric_reports_monthly_report_id_fkey"
+            columns: ["monthly_report_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_monthly_reports'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_monthly_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lupg_monthly_report_edit_history: {
+        Row: {
+          action: string
+          edited_at: string
+          edited_by: string | null
+          id: string
+          kelompok_id: string
+          monthly_report_id: string
+          source_table: string
+        }
+        Insert: {
+          action: string
+          edited_at?: string
+          edited_by?: string | null
+          id?: string
+          kelompok_id: string
+          monthly_report_id: string
+          source_table: string
+        }
+        Update: {
+          action?: string
+          edited_at?: string
+          edited_by?: string | null
+          id?: string
+          kelompok_id?: string
+          monthly_report_id?: string
+          source_table?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lupg_monthly_report_edit_history_kelompok_id_fkey"
+            columns: ["kelompok_id"]
+            isOneToOne: false
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lupg_monthly_report_edit_history_monthly_report_id_fkey"
+            columns: ["monthly_report_id"]
+            isOneToOne: false
+            referencedRelation: "lupg_monthly_reports"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -677,6 +722,7 @@ export type Database = {
           status: string
           submitted_at: string | null
           submitted_by: string | null
+          submitted_by_label: string | null
           updated_at: string
         }
         Insert: {
@@ -690,6 +736,7 @@ export type Database = {
           status?: string
           submitted_at?: string | null
           submitted_by?: string | null
+          submitted_by_label?: string | null
           updated_at?: string
         }
         Update: {
@@ -703,15 +750,16 @@ export type Database = {
           status?: string
           submitted_at?: string | null
           submitted_by?: string | null
+          submitted_by_label?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_monthly_reports_kelompok_id_fkey'
-            columns: ['kelompok_id']
+            foreignKeyName: "lupg_monthly_reports_kelompok_id_fkey"
+            columns: ["kelompok_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -757,18 +805,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_mustin_notes_monthly_report_id_fkey'
-            columns: ['monthly_report_id']
+            foreignKeyName: "lupg_mustin_notes_monthly_report_id_fkey"
+            columns: ["monthly_report_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_monthly_reports'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_monthly_reports"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'lupg_mustin_notes_template_code_fkey'
-            columns: ['template_code']
+            foreignKeyName: "lupg_mustin_notes_template_code_fkey"
+            columns: ["template_code"]
             isOneToOne: false
-            referencedRelation: 'lupg_mustin_templates'
-            referencedColumns: ['code']
+            referencedRelation: "lupg_mustin_templates"
+            referencedColumns: ["code"]
           },
         ]
       }
@@ -838,18 +886,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_phq_attendance_meeting_id_fkey'
-            columns: ['meeting_id']
+            foreignKeyName: "lupg_phq_attendance_meeting_id_fkey"
+            columns: ["meeting_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_phq_meetings'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_phq_meetings"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'lupg_phq_attendance_participant_id_fkey'
-            columns: ['participant_id']
+            foreignKeyName: "lupg_phq_attendance_participant_id_fkey"
+            columns: ["participant_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_phq_participants'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_phq_participants"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -883,11 +931,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_phq_meetings_kelompok_id_fkey'
-            columns: ['kelompok_id']
+            foreignKeyName: "lupg_phq_meetings_kelompok_id_fkey"
+            columns: ["kelompok_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -918,11 +966,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_phq_monthly_notes_kelompok_id_fkey'
-            columns: ['kelompok_id']
+            foreignKeyName: "lupg_phq_monthly_notes_kelompok_id_fkey"
+            columns: ["kelompok_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -977,11 +1025,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_phq_participants_kelompok_id_fkey'
-            columns: ['kelompok_id']
+            foreignKeyName: "lupg_phq_participants_kelompok_id_fkey"
+            columns: ["kelompok_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1030,18 +1078,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_phq_progress_meeting_id_fkey'
-            columns: ['meeting_id']
+            foreignKeyName: "lupg_phq_progress_meeting_id_fkey"
+            columns: ["meeting_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_phq_meetings'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_phq_meetings"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'lupg_phq_progress_participant_id_fkey'
-            columns: ['participant_id']
+            foreignKeyName: "lupg_phq_progress_participant_id_fkey"
+            columns: ["participant_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_phq_participants'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_phq_participants"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1072,11 +1120,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_presentation_shares_kelompok_id_fkey'
-            columns: ['kelompok_id']
+            foreignKeyName: "lupg_presentation_shares_kelompok_id_fkey"
+            columns: ["kelompok_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1161,18 +1209,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_program_reports_monthly_report_id_fkey'
-            columns: ['monthly_report_id']
+            foreignKeyName: "lupg_program_reports_monthly_report_id_fkey"
+            columns: ["monthly_report_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_monthly_reports'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_monthly_reports"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'lupg_program_reports_program_code_fkey'
-            columns: ['program_code']
+            foreignKeyName: "lupg_program_reports_program_code_fkey"
+            columns: ["program_code"]
             isOneToOne: false
-            referencedRelation: 'lupg_program_definitions'
-            referencedColumns: ['code']
+            referencedRelation: "lupg_program_definitions"
+            referencedColumns: ["code"]
           },
         ]
       }
@@ -1233,18 +1281,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_sarpras_reports_item_id_fkey'
-            columns: ['item_id']
+            foreignKeyName: "lupg_sarpras_reports_item_id_fkey"
+            columns: ["item_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_sarpras_items'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_sarpras_items"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'lupg_sarpras_reports_monthly_report_id_fkey'
-            columns: ['monthly_report_id']
+            foreignKeyName: "lupg_sarpras_reports_monthly_report_id_fkey"
+            columns: ["monthly_report_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_monthly_reports'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_monthly_reports"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1281,11 +1329,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_sensus_kelompok_id_fkey'
-            columns: ['kelompok_id']
+            foreignKeyName: "lupg_sensus_kelompok_id_fkey"
+            columns: ["kelompok_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1319,18 +1367,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_sensus_snapshots_kelompok_id_fkey'
-            columns: ['kelompok_id']
+            foreignKeyName: "lupg_sensus_snapshots_kelompok_id_fkey"
+            columns: ["kelompok_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'lupg_sensus_snapshots_monthly_report_id_fkey'
-            columns: ['monthly_report_id']
+            foreignKeyName: "lupg_sensus_snapshots_monthly_report_id_fkey"
+            columns: ["monthly_report_id"]
             isOneToOne: false
-            referencedRelation: 'lupg_monthly_reports'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_monthly_reports"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1364,11 +1412,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_shodaqoh_monthly_report_id_fkey'
-            columns: ['monthly_report_id']
+            foreignKeyName: "lupg_shodaqoh_monthly_report_id_fkey"
+            columns: ["monthly_report_id"]
             isOneToOne: true
-            referencedRelation: 'lupg_monthly_reports'
-            referencedColumns: ['id']
+            referencedRelation: "lupg_monthly_reports"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1408,18 +1456,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'participants_category_id_fkey'
-            columns: ['category_id']
+            foreignKeyName: "participants_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'participants_group_id_fkey'
-            columns: ['group_id']
+            foreignKeyName: "participants_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1522,11 +1570,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_intensif_activities_kelompok_id_fkey'
-            columns: ['kelompok_id']
+            foreignKeyName: "lupg_intensif_activities_kelompok_id_fkey"
+            columns: ["kelompok_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1541,11 +1589,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lupg_phq_meetings_kelompok_id_fkey'
-            columns: ['kelompok_id']
+            foreignKeyName: "lupg_phq_meetings_kelompok_id_fkey"
+            columns: ["kelompok_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1558,17 +1606,21 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'participants_group_id_fkey'
-            columns: ['kelompok_id']
+            foreignKeyName: "participants_group_id_fkey"
+            columns: ["kelompok_id"]
             isOneToOne: false
-            referencedRelation: 'lookup_values'
-            referencedColumns: ['id']
+            referencedRelation: "lookup_values"
+            referencedColumns: ["id"]
           },
         ]
       }
     }
     Functions: {
       calculate_age: { Args: { birth: string }; Returns: number }
+      fn_lupg_record_monthly_report_edit: {
+        Args: { p_action: string; p_report_id: string; p_source_table: string }
+        Returns: undefined
+      }
       get_public_dashboard_payload: {
         Args: { p_month?: string; p_token: string }
         Returns: Json
@@ -1610,6 +1662,33 @@ export type Database = {
         Args: { p_report_id: string }
         Returns: string
       }
+      lupg_get_monthly_audit_dashboard: {
+        Args: { p_month: string }
+        Returns: {
+          history: Json
+          kelompok_id: string
+          kelompok_name: string
+          last_edited_at: string
+          last_editor_display_name: string
+          report_id: string
+          status: string
+          submitted_at: string
+          submitted_by_label: string
+        }[]
+      }
+      lupg_get_monthly_report_edit_history: {
+        Args: { p_limit?: number; p_report_id: string }
+        Returns: {
+          action: string
+          edited_at: string
+          edited_by: string
+          editor_display_name: string
+          id: string
+          kelompok_id: string
+          monthly_report_id: string
+          source_table: string
+        }[]
+      }
       lupg_get_submitter_display: {
         Args: { p_user_id: string }
         Returns: string
@@ -1642,8 +1721,8 @@ export type Database = {
           updated_by: string | null
         }
         SetofOptions: {
-          from: '*'
-          to: 'lupg_sensus'
+          from: "*"
+          to: "lupg_sensus"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1661,8 +1740,8 @@ export type Database = {
           token: string
         }
         SetofOptions: {
-          from: '*'
-          to: 'lupg_presentation_shares'
+          from: "*"
+          to: "lupg_presentation_shares"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1744,33 +1823,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
-    : never = never,
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -1779,23 +1858,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-    : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -1804,23 +1883,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-    : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -1829,36 +1908,36 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
-    : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
-    : never = never,
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {

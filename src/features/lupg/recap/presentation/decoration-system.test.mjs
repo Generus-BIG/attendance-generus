@@ -112,14 +112,14 @@ test('surface renders soft, visible bubbles without forbidden motifs', async () 
     'utf8'
   )
   assert.match(surface, /<ellipse/)
-  assert.match(surface, /color-mix\(in oklch,.* 40%, \$\{p\.bg\}\)/)
+  assert.match(surface, /color-mix\(in oklch,.* 12%, \$\{p\.bg\}\)/)
   assert.doesNotMatch(
     surface,
     /<path|<line|<circle|Botanical|Dots|shape === 'dots'/
   )
 })
 
-test('cover preserves HEAD exactly outside abstract decoration', async () => {
+test('cover stays byte-for-byte frozen', async () => {
   const cover = await readFile(
     new URL('./components/cover.tsx', import.meta.url),
     'utf8'
@@ -129,11 +129,7 @@ test('cover preserves HEAD exactly outside abstract decoration', async () => {
     ['show', 'HEAD:src/features/lupg/recap/presentation/components/cover.tsx'],
     { encoding: 'utf8' }
   )
-  const normalized = cover.replace(
-    /\s*\{\/\* cover decoration start \*\/\}[\s\S]*?\{\/\* cover decoration end \*\/\}\s*/,
-    '\n        '
-  )
-  assert.equal(normalized.trim(), head.trim())
+  assert.equal(cover.trim(), head.trim())
   assert.match(cover, /rounded-full/)
   assert.match(cover, /grid-cols-6/)
   assert.doesNotMatch(

@@ -1,4 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
+import { useCaptureMode } from '../context/capture-context'
 import { m } from 'framer-motion'
 import { BarChart2, Table as TableIcon } from 'lucide-react'
 import { TableRow } from '@/components/ui/table'
@@ -737,7 +738,9 @@ function SensusDesaSlide({
   effectiveKelompokList,
   byKey,
 }: SensusDesaSlideProps) {
-  const [view, setView] = useState<'data' | 'analysis'>('data')
+  const capture = useCaptureMode()
+  const [interactiveView, setView] = useState<'data' | 'analysis'>('data')
+  const view = capture?.view ?? interactiveView
   const p = usePresPalette()
   const stopDeckKeys = (event: KeyboardEvent<HTMLDivElement>) =>
     event.stopPropagation()
@@ -792,7 +795,7 @@ function SensusDesaSlide({
       decorationKind={view === 'data' ? 'table' : 'split'}
       eyebrow='SENSUS'
       title='Sensus Generus per Kelompok'
-      meta={metaNode}
+      meta={capture ? `${monthLabel} · ${view === 'data' ? 'Data' : 'Analisis'}` : metaNode}
       scope={scope}
       slideNumber={slideNumber}
       totalSlides={totalSlides}

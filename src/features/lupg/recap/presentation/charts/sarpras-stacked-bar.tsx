@@ -4,12 +4,13 @@ import {
   BarChart,
   CartesianGrid,
   LabelList,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
+import { PresentationResponsiveContainer } from '../components/presentation-responsive-container'
 import { usePresentationAnimation } from '../context/animation-context'
+import { useCaptureMode } from '../context/capture-context'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
 
@@ -110,6 +111,7 @@ export function SarprasStackedBar({
   data,
   totalItems,
 }: SarprasStackedBarProps) {
+  const capture = useCaptureMode()
   const palette = usePresPalette()
   const { durationScale } = usePresentationAnimation()
   const colorSudah = palette.sarprasPrimary
@@ -128,7 +130,7 @@ export function SarprasStackedBar({
     )
   }
   return (
-    <ResponsiveContainer width='100%' height='100%'>
+    <PresentationResponsiveContainer>
       <BarChart
         data={data}
         margin={{ top: 28, right: 24, bottom: 36, left: 36 }}
@@ -162,7 +164,7 @@ export function SarprasStackedBar({
           dataKey='sudah'
           fill={colorSudah}
           radius={[7, 7, 0, 0]}
-          isAnimationActive={true}
+          isAnimationActive={!capture}
           animationDuration={Math.round(800 * durationScale)}
         >
           <LabelList
@@ -180,6 +182,6 @@ export function SarprasStackedBar({
           />
         </Bar>
       </BarChart>
-    </ResponsiveContainer>
+    </PresentationResponsiveContainer>
   )
 }

@@ -12,12 +12,13 @@ import {
   BarChart,
   CartesianGrid,
   LabelList,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
+import { PresentationResponsiveContainer } from '../components/presentation-responsive-container'
 import { usePresentationAnimation } from '../context/animation-context'
+import { useCaptureMode } from '../context/capture-context'
 import { SENSUS_STACK_ORDER, getSensusColor } from '../theme'
 import { usePresPalette, type PresPalette } from '../use-pres-palette'
 import { EditorialTooltipShell, hairlineAxisProps } from './chart-primitives'
@@ -177,6 +178,7 @@ export function SensusStackedBar({
   data,
   animationDuration = 800,
 }: SensusStackedBarProps) {
+  const capture = useCaptureMode()
   const palette = usePresPalette()
   const { durationScale } = usePresentationAnimation()
   const grandTotal = data.reduce((a, b) => a + b.total, 0)
@@ -206,7 +208,7 @@ export function SensusStackedBar({
   return (
     <div className='flex h-full min-h-0 w-full flex-col'>
       <div className='min-h-0 flex-1'>
-        <ResponsiveContainer width='100%' height='100%'>
+        <PresentationResponsiveContainer>
           <BarChart
             data={data}
             margin={{ top: 36, right: 24, bottom: 12, left: 36 }}
@@ -245,7 +247,7 @@ export function SensusStackedBar({
                   dataKey={code}
                   name={CATEGORY_LABELS[code]}
                   fill={getSensusColor(code, paletteName)}
-                  isAnimationActive={true}
+                  isAnimationActive={!capture}
                   animationDuration={Math.round(
                     animationDuration * durationScale
                   )}
@@ -277,7 +279,7 @@ export function SensusStackedBar({
               )
             })}
           </BarChart>
-        </ResponsiveContainer>
+        </PresentationResponsiveContainer>
       </div>
       <div className='flex shrink-0 items-center justify-center gap-6 pt-5 pb-2 whitespace-nowrap'>
         {SENSUS_STACK_ORDER.map((code) => (

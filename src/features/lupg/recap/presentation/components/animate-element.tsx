@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { m, type Variants, type HTMLMotionProps } from 'framer-motion'
+import { useCaptureMode } from '../context/capture-context'
 import {
   usePresentationAnimation,
   type AnimationPreset,
@@ -14,10 +15,12 @@ interface WrapperProps {
 
 // Staggered Container
 export function AnimateContainer({ children, className, style }: WrapperProps) {
+  const capture = useCaptureMode()
   const { preset, trigger, durationScale, reduceMotion } =
     usePresentationAnimation()
 
   const transition = getStaggerTransition(preset)
+  if (capture) return <div className={className} style={style}>{children}</div>
 
   const variants: Variants = {
     hidden: {},
@@ -54,6 +57,7 @@ export function AnimateContainer({ children, className, style }: WrapperProps) {
 
 // Individual Animated Item
 export function AnimateItem({ children, className, style }: WrapperProps) {
+  const capture = useCaptureMode()
   const { preset, trigger, durationScale, reduceMotion } =
     usePresentationAnimation()
 
@@ -63,6 +67,7 @@ export function AnimateItem({ children, className, style }: WrapperProps) {
     durationScale,
     reduceMotion
   )
+  if (capture) return <div className={className} style={style}>{children}</div>
 
   return (
     <m.div
@@ -83,6 +88,7 @@ export function AnimateTableRow({
   style,
   ...props
 }: HTMLMotionProps<'tr'>) {
+  const capture = useCaptureMode()
   const { preset, trigger, durationScale, reduceMotion } =
     usePresentationAnimation()
 
@@ -92,6 +98,7 @@ export function AnimateTableRow({
     durationScale,
     reduceMotion
   )
+  if (capture) return <tr {...props as React.HTMLAttributes<HTMLTableRowElement>} className={className} style={style as React.CSSProperties}>{children as React.ReactNode}</tr>
 
   return (
     <m.tr

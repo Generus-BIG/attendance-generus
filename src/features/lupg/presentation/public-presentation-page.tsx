@@ -120,6 +120,19 @@ export function PublicPresentationPage({ token }: PublicPresentationPageProps) {
       monthKey={payload?.share.monthKey ?? ''}
       slides={slides}
       isLoading={query.isLoading}
+      onExport={
+        payload
+          ? async (palette, onProgress) => {
+              const { exportPresentationPptx } = await import(
+                '../recap/presentation/pptx/export-presentation-pptx'
+              )
+              return exportPresentationPptx(payload.data, {
+                palette,
+                onProgress,
+              })
+            }
+          : undefined
+      }
     />
   )
 }
