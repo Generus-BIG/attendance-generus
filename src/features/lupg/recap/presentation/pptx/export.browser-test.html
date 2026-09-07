@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PPTX export regression check</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=Geist+Mono:wght@100..900&amp;display=swap" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import React from 'react'
+      import { createRoot } from 'react-dom/client'
+      import { PptxExportControl } from '../pptx-export-control.tsx'
+      import { PresentationPlayer } from '../player.tsx'
+      import { Toaster } from '/src/components/ui/sonner.tsx'
+      import { exportPresentationPptx } from './export-presentation-pptx.ts'
+      import { buildSlides } from '../slides.tsx'
+      import { capturePresentationSlides } from './capture-slides.tsx'
+      import { captureFixture } from './capture-fixture.mjs'
+      import '/src/styles/index.css'
+
+      const data = {
+        monthKey: '2026-07',
+        kelompokList: [{id:'sample',value:'Kel. Uji PPTX'}], kelompokFilter:'sample',
+        reports:[{id:'report',kelompok_id:'sample',month:'2026-07-01',status:'draft'}],
+        programs:[],metrics:[],sarprasItems:[],sensusCells:[{kelompok_id:'sample',category_code:'ACR',gender:'L',count:12},{kelompok_id:'sample',category_code:'ACR',gender:'P',count:8}],
+        programReports:[],metricReports:[],sarprasReports:[],shodaqohRows:[],mustinRows:[],
+        activityPhotos:[{id:'image',caption:'Gambar uji lokal — objek foto dapat dipindah dan dipotong.',signedUrl:'/images/header-cover.png'},{id:'missing',caption:'Placeholder jika foto gagal dimuat.',signedUrl:''}],
+      }
+      function App() {
+        const [mode,setMode]=React.useState('picker')
+        const [result,setResult]=React.useState('Siap. Pilih tema lalu Download PPTX.')
+        const onExport=async (palette,onProgress)=>{
+          const before=document.documentElement.getAttribute('data-palette')
+          let result
+          try { result=await exportPresentationPptx(data,{palette,onProgress}) }
+          catch(error) { setResult('FAIL: '+error.stack); throw error }
+          if(result.warnings.length!==1) throw new Error('Expected exactly one missing photo')
+          if(before!==document.documentElement.getAttribute('data-palette')) throw new Error('Export changed palette')
+          setResult(`PASS: ${palette}, satu placeholder, download selesai.`)
+          return result
+        }
+        if(mode!=='picker') return React.createElement(React.Fragment,null,
+          React.createElement(PresentationPlayer,{monthKey:data.monthKey,slides:buildSlides(data),isLoading:false,onExit:()=>setMode('picker'),...(mode==='private'?{onExport}:{})}),
+          React.createElement(Toaster))
+        return React.createElement('main',{className:'flex flex-col gap-6 p-8'},
+          React.createElement('h1',null,'PPTX export regression check'),
+          React.createElement('p',{role:'status'},result),
+          React.createElement(PptxExportControl,{onExport}),
+          React.createElement('button',{onClick:async()=>{
+            const rows=[]
+            try {
+              for(const palette of ['modern-natural','anthropic-claude','sage-green']) for(const single of [false,true]) {
+                const fixture={...captureFixture,...(single?{kelompokFilter:'a'}:{})}
+                const before=JSON.stringify(fixture)
+                let count=0
+                const result=await exportPresentationPptx(fixture,{palette,onProgress:p=>{count=p.total;setResult(`${palette} ${single?'Kelompok':'Desa'} ${p.phase} ${p.completed}/${p.total}`)}})
+                if(result.warnings.length!==1 || JSON.stringify(fixture)!==before || document.querySelector('iframe[title="Menyiapkan gambar PPTX"]')) throw new Error('Warnings, data isolation or cleanup failed')
+                rows.push(`${palette} ${single?'Kelompok':'Desa'}: ${count} slides PASS`)
+              }
+              setResult(rows.join('\n'))
+            }catch(error){setResult(rows.join('\n')+'\nFAIL: '+error.stack)}
+          }},'Run six-deck acceptance'),
+          React.createElement('button',{onClick:async()=>{
+            setResult('Capturing previews…')
+            try {
+              await capturePresentationSlides({...data, activityPhotos: data.activityPhotos.slice(0,1)},'modern-natural',(png,title)=>{
+                const img=document.createElement('img'); img.src=png; img.alt=title; img.style.width='640px'; document.body.append(img)
+              })
+              setResult('PASS: capture previews complete')
+            } catch(error) { setResult('FAIL: '+error.stack) }
+          }},'Preview captures'),
+          React.createElement('button',{onClick:()=>setMode('private')},'Buka player private'),
+          React.createElement('button',{onClick:()=>setMode('public')},'Buka player public (tanpa export)'),
+          React.createElement(Toaster))
+      }
+      createRoot(document.getElementById('root')).render(React.createElement(App))
+    </script>
+  </body>
+</html>

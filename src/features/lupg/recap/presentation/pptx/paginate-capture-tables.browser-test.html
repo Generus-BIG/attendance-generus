@@ -1,0 +1,366 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Capture table pagination regression</title>
+<pre id="results">Running…</pre>
+<script type="module">
+  const output = document.querySelector('#results')
+  const assert = (ok, message) => {
+    if (!ok) throw new Error(message)
+  }
+  const iframe = document.createElement('iframe')
+  iframe.style = 'width:1280px;height:720px'
+  document.body.append(iframe)
+  const doc = iframe.contentDocument
+  doc.head.innerHTML = `<style>
+    *{box-sizing:border-box} body{margin:0} .slide{width:1280px;height:720px;padding:30px;position:relative;overflow:hidden}
+    .port{width:400px;height:180px;overflow:auto} table{border-collapse:separate;border-spacing:0;width:400px;table-layout:fixed}
+    th,td{padding:8px;border-bottom:1px solid #aaa;font:16px/20px Arial;overflow-wrap:break-word} th{text-align:left}
+    header,footer{height:40px}.chart{position:absolute;left:600px;top:100px;width:300px;height:200px;background:gold}
+  </style>`
+  const fixture = (
+    body,
+    width = 400,
+    head = '<tr><th>ID</th><th>Value</th></tr>'
+  ) => {
+    const root = doc.createElement('div')
+    root.className = 'slide'
+    root.innerHTML = `<header>Heading</header><div class="port"><table style="width:${width}px"><thead>${head}</thead><tbody>${body}</tbody></table></div><div class="chart">Chart/KPI</div><footer>Footer</footer>`
+    doc.body.replaceChildren(root)
+    return root
+  }
+  const rows = (n) =>
+    Array.from(
+      { length: n },
+      (_, i) => `<tr><td>ID${i}</td><td>Value${i}</td></tr>`
+    ).join('')
+  function checkPages(root, pages) {
+    assert(pages.length > 0, 'at least one page')
+    for (const page of pages) {
+      assert(!page.isConnected, 'returns detached pages')
+      doc.body.append(page)
+      assert(
+        page.querySelector('.chart').outerHTML ===
+          root.querySelector('.chart').outerHTML,
+        'chart preserved'
+      )
+      assert(
+        page.querySelector('header').textContent === 'Heading' &&
+          page.querySelector('footer').textContent === 'Footer',
+        'surroundings preserved'
+      )
+      for (const port of page.querySelectorAll('.port')) {
+        assert(
+          port.scrollHeight <= port.clientHeight + 1,
+          'no vertical clipping'
+        )
+        assert(
+          port.scrollWidth <= port.clientWidth + 1,
+          'no horizontal clipping'
+        )
+      }
+      page.remove()
+    }
+  }
+  try {
+    let paginate
+    try {
+      ;({ paginateCaptureTables: paginate } =
+        await import('./paginate-capture-tables.ts'))
+    } catch {
+      /* missing implementation is a red test */
+    }
+    assert(
+      typeof paginate === 'function',
+      'paginateCaptureTables API must exist'
+    )
+    const passed = []
+    let root = fixture(rows(2)),
+      before = root.outerHTML
+    let pages = paginate(root)
+    assert(
+      pages.length === 1 &&
+        pages[0].outerHTML === before &&
+        root.outerHTML === before,
+      'fit is unchanged'
+    )
+    checkPages(root, pages)
+    passed.push('fit and source immutability')
+    root = fixture(rows(20))
+    before = root.outerHTML
+    pages = paginate(root)
+    assert(pages.length > 1, 'vertical pages')
+    assert(
+      pages
+        .flatMap((p) =>
+          [...p.querySelectorAll('tbody tr')].map((r) => r.cells[0].textContent)
+        )
+        .join('|') === Array.from({ length: 20 }, (_, i) => `ID${i}`).join('|'),
+      'all rows exactly once'
+    )
+    assert(root.outerHTML === before, 'overflow source unchanged')
+    checkPages(root, pages)
+    passed.push('whole-row vertical pagination')
+    const long = 'Measured café 👩🏽‍💻 text boundary. '.repeat(110)
+    root = fixture(
+      `<tr><td>Identity</td><td><strong>${long}</strong></td></tr>`
+    )
+    pages = paginate(root)
+    assert(pages.length > 1, 'oversized row split')
+    assert(
+      pages
+        .map((p) => p.querySelector('tbody tr').cells[1].textContent)
+        .join('') === long,
+      'oversized text lossless'
+    )
+    assert(
+      pages.every(
+        (p) => p.querySelector('tbody tr').cells[0].textContent === 'Identity'
+      ),
+      'identity repeated'
+    )
+    checkPages(root, pages)
+    passed.push('oversized rich text lossless')
+    root = fixture(
+      '<tr><td>Identity</td>' +
+        Array.from({ length: 6 }, (_, i) => `<td>V${i}</td>`).join('') +
+        '</tr>',
+      980,
+      '<tr><th rowspan="2">ID</th><th colspan="3">Group A</th><th colspan="3">Group B</th></tr><tr>' +
+        Array.from({ length: 6 }, (_, i) => `<th>C${i}</th>`).join('') +
+        '</tr>'
+    )
+    pages = paginate(root)
+    assert(pages.length > 1, 'horizontal pages')
+    assert(
+      pages
+        .flatMap((p) =>
+          [...p.querySelector('tbody tr').cells]
+            .slice(1)
+            .map((c) => c.textContent)
+        )
+        .join('') === 'V0V1V2V3V4V5',
+      'columns complete'
+    )
+    for (const p of pages) {
+      const t = p.querySelector('table')
+      assert(t.tHead.rows[0].cells[0].rowSpan === 2, 'identity header rowspan')
+      assert(
+        [...t.tHead.rows[0].cells].reduce((n, c) => n + c.colSpan, 0) ===
+          t.tBodies[0].rows[0].cells.length,
+        'group colspan integrity'
+      )
+    }
+    checkPages(root, pages)
+    passed.push('horizontal grouped headers and column integrity')
+    root = fixture(rows(12))
+    root.append(root.querySelector('.port').cloneNode(true))
+    root.lastChild.style.height = '150px'
+    pages = paginate(root)
+    checkPages(root, pages)
+    for (let i = 0; i < 2; i++)
+      assert(
+        new Set(
+          pages.flatMap((p) =>
+            [...p.querySelectorAll('table')[i].tBodies[0].rows].map(
+              (r) => r.cells[0].textContent
+            )
+          )
+        ).size === 12,
+        'both tables complete'
+      )
+    passed.push('multiple overflowing tables')
+    root = fixture(
+      '<tr><td rowspan="8">Shared</td><td>0</td></tr>' +
+        Array.from({ length: 7 }, (_, i) => `<tr><td>${i + 1}</td></tr>`).join(
+          ''
+        )
+    )
+    pages = paginate(root)
+    checkPages(root, pages)
+    assert(
+      pages
+        .flatMap((p) => [...p.querySelectorAll('tbody tr')])
+        .every((r) => r.cells[0].textContent === 'Shared'),
+      'body row identity preserved'
+    )
+    passed.push('body rowspans')
+    root = fixture(
+      Array.from(
+        { length: 12 },
+        (_, r) =>
+          '<tr><td>R' +
+          r +
+          '</td>' +
+          Array.from(
+            { length: 5 },
+            (_, c) => '<td>R' + r + 'C' + c + '</td>'
+          ).join('') +
+          '</tr>'
+      ).join(''),
+      900,
+      '<tr><th>ID</th>' +
+        Array.from({ length: 5 }, (_, c) => '<th>C' + c + '</th>').join('') +
+        '</tr>'
+    )
+    pages = paginate(root)
+    checkPages(root, pages)
+    const values = pages.flatMap((p) =>
+      [...p.querySelectorAll('tbody tr')].flatMap((r) =>
+        [...r.cells].slice(1).map((c) => c.textContent)
+      )
+    )
+    assert(
+      values.length === 60 && new Set(values).size === 60,
+      'both axes preserve each data cell once'
+    )
+    passed.push('simultaneous horizontal and vertical overflow')
+    root = fixture(rows(1))
+    const notes = doc.createElement('div')
+    notes.style = 'height:20px;overflow:auto'
+    notes.innerHTML = '<p>' + long + '</p>'
+    root.append(notes)
+    before = root.outerHTML
+    pages = paginate(root)
+    assert(
+      pages.length === 1 && pages[0].outerHTML === before,
+      'non-table overflow unchanged'
+    )
+    passed.push('non-table scroll area untouched')
+    root = fixture(
+      '<tr><td>Identity</td><td style="white-space:nowrap">' +
+        long +
+        '</td></tr>'
+    )
+    let error = ''
+    try {
+      paginate(root)
+    } catch (e) {
+      error = e.message
+    }
+    assert(
+      error.startsWith('Cannot paginate capture table:'),
+      'unbreakable overflowing content must throw'
+    )
+    passed.push('unbreakable content explicit error')
+    const failures = []
+    function reviewCase(name, run) {
+      try {
+        run()
+        passed.push(name)
+      } catch (e) {
+        failures.push(name + ': ' + e.message)
+      }
+    }
+    reviewCase('cell-local clipping rejected', () => {
+      for (const style of [
+        'height:20px;overflow:hidden',
+        'width:40px;white-space:nowrap;overflow:hidden',
+      ]) {
+        root = fixture(
+          `<tr><td>ID</td><td><div style="${style}">${'Hidden text '.repeat(8)}</div></td></tr>`
+        )
+        before = root.outerHTML
+        let message = ''
+        try {
+          paginate(root)
+        } catch (e) {
+          message = e.message
+        }
+        assert(
+          message.includes('clipped inside a table cell'),
+          'must report cell-local clipping'
+        )
+        assert(
+          root.outerHTML === before,
+          'clipping error leaves source untouched'
+        )
+        assert(
+          doc.querySelectorAll('.slide').length === 1,
+          'clipping error cleans temporary clones'
+        )
+      }
+    })
+    reviewCase('independent tables zip without duplicate data', () => {
+      root = fixture(rows(9))
+      const expected = paginate(root).length
+      assert(expected === 3, 'fixture produces three pages')
+      for (const n of [9, 6, 2]) {
+        root = fixture(rows(9))
+        const second = root.querySelector('.port').cloneNode(true)
+        second.querySelector('tbody').innerHTML = rows(n)
+        second.style = 'position:absolute;top:300px;left:30px'
+        root.append(second)
+        before = root.outerHTML
+        pages = paginate(root)
+        assert(pages.length === expected, 'page count is maximum, not product')
+        for (const [i, total] of [
+          [0, 9],
+          [1, n],
+        ]) {
+          const ids = pages.flatMap((p) =>
+            [...p.querySelectorAll('table')[i].tBodies[0].rows].map(
+              (r) => r.cells[0].textContent
+            )
+          )
+          assert(
+            ids.join('|') ===
+              Array.from({ length: total }, (_, j) => `ID${j}`).join('|'),
+            'each table row appears once'
+          )
+        }
+        assert(
+          pages.every(
+            (p) =>
+              p.querySelectorAll('table')[1].tHead.textContent === 'IDValue'
+          ),
+          'exhausted headers preserved'
+        )
+        if (n < 9)
+          assert(
+            pages.at(-1).querySelectorAll('table')[1].tBodies[0].rows.length ===
+              0,
+            'exhausted body is empty'
+          )
+        assert(root.outerHTML === before, 'zip leaves source untouched')
+        checkPages(root, pages)
+      }
+    })
+    reviewCase('continuations retain nested inline styling', () => {
+      root = fixture(
+        `<tr><td>Identity</td><td><strong><span style="font-size:24px;line-height:30px;color:rgb(1, 2, 3)">${long}</span></strong></td></tr>`
+      )
+      pages = paginate(root)
+      assert(pages.length > 1, 'styled row splits')
+      assert(
+        pages
+          .map((p) => p.querySelector('tbody tr').cells[1].textContent)
+          .join('') === long,
+        'styled text lossless'
+      )
+      for (const p of pages) {
+        const cell = p.querySelector('tbody tr').cells[1]
+        const span = cell.querySelector('strong > span')
+        assert(
+          span && span.textContent === cell.textContent,
+          'same-node range retains strong and styled span'
+        )
+        doc.body.append(p)
+        const css = doc.defaultView.getComputedStyle(span)
+        assert(
+          css.fontSize === '24px' &&
+            css.color === 'rgb(1, 2, 3)' &&
+            Number(css.fontWeight) >= 700,
+          'computed inline styles preserved'
+        )
+        p.remove()
+      }
+      checkPages(root, pages)
+    })
+    if (failures.length) throw new Error(failures.join('\n'))
+    output.textContent = passed.map((p) => 'PASS ' + p).join('\n')
+    document.title = `PASS ${passed.length} capture table tests`
+  } catch (error) {
+    output.textContent = 'FAIL ' + error.stack
+    document.title = 'FAIL capture table tests'
+  }
+</script>

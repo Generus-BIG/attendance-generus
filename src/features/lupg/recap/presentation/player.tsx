@@ -35,6 +35,7 @@ import {
   isNavigationExcluded,
 } from './navigation'
 import './navigation.css'
+import { PptxExportControl, type PptxExportHandler } from './pptx-export-control'
 import { type Slide } from './slides'
 import { usePresPalette } from './use-pres-palette'
 
@@ -43,6 +44,7 @@ interface PresentationPlayerProps {
   slides: Slide[]
   isLoading: boolean
   onExit?: () => void
+  onExport?: PptxExportHandler
 }
 
 const PRESENTATION_INTRO_SEEN_KEY = 'lupg:presentation-intro-seen'
@@ -255,6 +257,7 @@ function PresentationPlayerInner({
   monthKey,
   slides,
   onExit,
+  onExport,
 }: PresentationPlayerProps) {
   const p = usePresPalette()
   const reduceMotion = useReducedMotion()
@@ -417,6 +420,7 @@ function PresentationPlayerInner({
             </span>
           </div>
           <div className='flex items-center gap-1 sm:gap-2'>
+            {onExport && <PptxExportControl onExport={onExport} compact />}
             <Popover>
               <PopoverTrigger asChild>
                 <Button

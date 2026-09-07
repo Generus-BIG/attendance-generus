@@ -1,0 +1,78 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Rekap Desa capture regression</title>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=Geist+Mono:wght@100..900&amp;display=swap"
+/>
+<pre id="result">RUNNING</pre>
+<script type="module">
+  import { captureFixture } from './capture-fixture.mjs'
+  import { capturePresentationSlides } from './capture-slides.tsx'
+  import '/src/styles/index.css'
+
+  const kelompokList = Array.from({ length: 30 }, (_, i) => ({
+    id: `k${i}`,
+    value: `Kelompok Sangat Panjang ${i + 1}`,
+  }))
+  const reports = kelompokList.map((kelompok, i) => ({
+    id: `r${i}`,
+    kelompok_id: kelompok.id,
+    month: '2026-07-01',
+    status: 'draft',
+  }))
+  const sensusCells = kelompokList.flatMap((kelompok) =>
+    [
+      'ACR',
+      'APR',
+      'AR',
+      'GPN_A',
+      'GPN_B',
+      'PENDIDIK_MT',
+      'PENDIDIK_MS',
+    ].flatMap((category_code) =>
+      ['L', 'P'].map((gender) => ({
+        kelompok_id: kelompok.id,
+        category_code,
+        gender,
+        count: 10,
+      }))
+    )
+  )
+
+  const cssErrors = []
+  const originalConsoleError = console.error
+  console.error = (...args) => {
+    if (
+      String(args[0]).includes('CSS rules') ||
+      String(args[0]).includes('remote css')
+    )
+      cssErrors.push(args)
+    originalConsoleError(...args)
+  }
+  try {
+    let count = 0
+    await capturePresentationSlides(
+      {
+        ...captureFixture,
+        kelompokList,
+        reports,
+        sensusCells,
+        activityPhotos: [],
+      },
+      'modern-natural',
+      () => count++
+    )
+    if (!count) throw new Error('No slides captured')
+    if (cssErrors.length)
+      throw new Error('Capture accessed an opaque font stylesheet')
+    document.querySelector('#result').textContent =
+      `PASS: ${count} Rekap Desa slides captured with readable font CSS`
+    document.title = 'PASS Rekap Desa capture'
+  } catch (error) {
+    document.querySelector('#result').textContent = `FAIL: ${error.stack}`
+    document.title = 'FAIL Rekap Desa capture'
+  } finally {
+    console.error = originalConsoleError
+  }
+</script>
