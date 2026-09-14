@@ -721,17 +721,14 @@ function TargetRecapBody({
       <EditorialTable density='micro'>
         <EditorialTableHeader>
           <EditorialTableRow>
-            <EditorialTableHead rowSpan={isSingleKelompok ? 1 : 2}>
-              Kategori
-            </EditorialTableHead>
-            <EditorialTableHead rowSpan={isSingleKelompok ? 1 : 2}>
-              Materi
-            </EditorialTableHead>
-            <EditorialTableHead rowSpan={isSingleKelompok ? 1 : 2}>
-              Detail materi
+            <EditorialTableHead rowSpan={2}>Kategori</EditorialTableHead>
+            <EditorialTableHead rowSpan={2}>Materi</EditorialTableHead>
+            <EditorialTableHead rowSpan={2}>Detail materi</EditorialTableHead>
+            <EditorialTableHead colSpan={2} className='text-center'>
+              Ayat/Hal
             </EditorialTableHead>
             {isSingleKelompok ? (
-              <EditorialTableHead className='text-center'>
+              <EditorialTableHead rowSpan={2} className='text-center'>
                 Capaian
               </EditorialTableHead>
             ) : (
@@ -748,15 +745,21 @@ function TargetRecapBody({
               </>
             )}
           </EditorialTableRow>
-          {!isSingleKelompok ? (
-            <EditorialTableRow>
-              {effectiveKelompokList.map((kelompok) => (
-                <EditorialTableHead key={kelompok.id} className='text-center'>
-                  {kelompok.value}
-                </EditorialTableHead>
-              ))}
-            </EditorialTableRow>
-          ) : null}
+          <EditorialTableRow>
+            <EditorialTableHead className='text-center'>
+              Dari
+            </EditorialTableHead>
+            <EditorialTableHead className='text-center'>
+              Sampai
+            </EditorialTableHead>
+            {!isSingleKelompok
+              ? effectiveKelompokList.map((kelompok) => (
+                  <EditorialTableHead key={kelompok.id} className='text-center'>
+                    {kelompok.value}
+                  </EditorialTableHead>
+                ))
+              : null}
+          </EditorialTableRow>
         </EditorialTableHeader>
         <EditorialTableBody>
           {groups.flatMap((group) =>
@@ -770,11 +773,22 @@ function TargetRecapBody({
                     {group.category}
                   </EditorialTableCell>
                 ) : null}
-                <EditorialTableCell className='max-w-[30ch] wrap-break-word whitespace-normal'>
-                  {row.item.material_label}
-                </EditorialTableCell>
+                {row.materialRowSpan > 0 ? (
+                  <EditorialTableCell
+                    rowSpan={row.materialRowSpan}
+                    className='max-w-[30ch] align-middle wrap-break-word whitespace-normal'
+                  >
+                    {row.item.material_label}
+                  </EditorialTableCell>
+                ) : null}
                 <EditorialTableCell className='max-w-[54ch] wrap-break-word whitespace-normal'>
-                  {row.item.detail_label?.trim() || '—'}
+                  {row.item.detail_label}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-center'>
+                  {row.item.reference_from?.trim() || '—'}
+                </EditorialTableCell>
+                <EditorialTableCell className='text-center'>
+                  {row.item.reference_to?.trim() || '—'}
                 </EditorialTableCell>
                 {isSingleKelompok ? (
                   <TargetValue value={row.values[0] ?? null} />

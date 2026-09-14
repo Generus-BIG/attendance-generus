@@ -1778,7 +1778,8 @@ const MONTHS = [
   ['DESEMBER', 12],
 ] as const
 
-function deterministicParse({
+// eslint-disable-next-line react-refresh/only-export-components
+export function deterministicParse({
   year: _year,
   defaultLevel,
   sheets,
@@ -1807,35 +1808,37 @@ function deterministicParse({
     const mapping = makeMapping(headers)
     let currentMonth: { label: string; index: number } | null = null
     let currentCategory = ''
+    let currentMaterial = ''
 
     for (const row of sheet.rows.slice(headerRowIndex + 1)) {
       const cells = row.cells.map(normalizeText)
       const rowText = cells.join(' ')
       const month = normalizeMonth(rowText)
+      if (month && month.index !== currentMonth?.index) currentMaterial = ''
       if (month) currentMonth = month
       if (!currentMonth) continue
 
       const material = normalizeMaterialText(cells[mapping.material])
       const detail = normalizeMaterialText(cells[mapping.detail])
+      if (material) currentMaterial = material
       const rawCategory = normalizeText(cells[mapping.category])
       if (isUsefulCategory(rawCategory)) currentCategory = rawCategory
       const category = normalizeCategoryLabel(
         currentCategory,
-        material,
+        currentMaterial,
         defaultLevel
       )
 
-      if (!material && !detail) continue
-      if (isNonMaterialRow(material, detail)) continue
-      if (shouldSkipMaterialOnlyRow(material, detail)) continue
+      if (!detail || !currentMaterial) continue
+      if (isNonMaterialRow(currentMaterial, detail)) continue
 
       items.push({
         month_label: currentMonth.label,
         month_index: currentMonth.index,
         level_code: defaultLevel,
         category_label: category,
-        material_label: material || detail,
-        detail_label: detail || null,
+        material_label: currentMaterial,
+        detail_label: detail,
         reference_from:
           mapping.referenceFrom >= 0
             ? normalizeText(cells[mapping.referenceFrom])
@@ -1845,7 +1848,7 @@ function deterministicParse({
             ? normalizeText(cells[mapping.referenceTo])
             : null,
         uses_reference:
-          isReferenceMaterialText(material, detail) ||
+          isReferenceMaterialText(currentMaterial, detail) ||
           Boolean(
             mapping.referenceFrom >= 0 &&
             normalizeText(cells[mapping.referenceFrom])
@@ -1909,22 +1912,14 @@ function normalizeParseResult(result: ParseResult): ParseResult {
   const items = result.items.reduce<ParsedItem[]>((acc, item) => {
     const material = normalizeMaterialText(item.material_label)
     const detail = normalizeMaterialText(item.detail_label)
-    if (!material && !detail) {
-      skippedRows += 1
-      return acc
-    }
-    if (isNonMaterialRow(material, detail)) {
-      skippedRows += 1
-      return acc
-    }
-    if (shouldSkipMaterialOnlyRow(material, detail)) {
+    if (!material || !detail || isNonMaterialRow(material, detail)) {
       skippedRows += 1
       return acc
     }
     acc.push({
       ...item,
-      material_label: material || detail,
-      detail_label: detail || null,
+      material_label: material,
+      detail_label: detail,
       reference_from: normalizeMaterialText(item.reference_from) || null,
       reference_to: normalizeMaterialText(item.reference_to) || null,
       uses_reference:
@@ -2038,16 +2033,6 @@ function isNonMaterialRow(material: string, detail: string): boolean {
   return false
 }
 
-function shouldSkipMaterialOnlyRow(material: string, detail: string): boolean {
-  if (!material || detail) return false
-  return !isReferenceMaterial(material)
-}
-
-function isReferenceMaterial(material: string): boolean {
-  const lower = material.toLowerCase()
-  return /\bmakna\s+qur/.test(lower) || /\bhadi[st]/.test(lower)
-}
-
 function isReferenceMaterialText(
   material: string | null,
   detail: string | null
@@ -2071,8 +2056,10 @@ function makeMapping(headers: string[]) {
     if (header.includes('kategori')) columns.push({ header, index })
     return columns
   }, [])
-  const materialIndex = findIndex(['materi'])
   const detailIndex = findIndex(['detail', 'materi'])
+  const materialIndex = lower.findIndex(
+    (header, index) => header.includes('materi') && index !== detailIndex
+  )
   const dariIndex = findIndex(['dari'])
   const sampaiIndex = findIndex(['sampai'])
   const ayatIndex = findIndex(['ayat'])

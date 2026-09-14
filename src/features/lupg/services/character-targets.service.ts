@@ -177,7 +177,9 @@ export async function listActiveCharacterTargetItemsForMonth(
   return {
     template: templates[0] ?? null,
     templates,
-    items: (data ?? []) as CharacterTargetItemRow[],
+    items: ((data ?? []) as CharacterTargetItemRow[]).filter((item) =>
+      Boolean(item.detail_label?.trim())
+    ),
   }
 }
 
@@ -265,17 +267,17 @@ export async function upsertCharacterTargetReport(input: {
   const payload: Record<string, unknown> = {
     monthly_report_id: input.monthly_report_id,
     target_item_id: input.target_item_id,
-    discussion_flag: input.discussion_flag ?? false,
-    realization_percent: input.realization_percent ?? null,
-    material_gap: input.material_gap ?? null,
-    notes: input.notes ?? null,
   }
-  if (input.status !== undefined) payload.status = input.status
-  if (input.reference_from_actual !== undefined) {
-    payload.reference_from_actual = input.reference_from_actual
-  }
-  if (input.reference_to_actual !== undefined) {
-    payload.reference_to_actual = input.reference_to_actual
+  for (const key of [
+    'status',
+    'discussion_flag',
+    'realization_percent',
+    'material_gap',
+    'reference_from_actual',
+    'reference_to_actual',
+    'notes',
+  ] as const) {
+    if (input[key] !== undefined) payload[key] = input[key]
   }
 
   const { data, error } = await supabase

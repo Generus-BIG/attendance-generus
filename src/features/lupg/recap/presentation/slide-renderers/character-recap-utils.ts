@@ -26,6 +26,7 @@ export interface TargetRecapRow {
   item: CharacterTargetItemRow
   values: (number | null)[]
   average: number | null
+  materialRowSpan: number
 }
 
 export interface TargetRecapGroup {
@@ -67,7 +68,7 @@ export function buildTargetRecapGroups(
   return CHARACTER_LEVELS.flatMap((level) => {
     const byCategory = new Map<string, CharacterTargetItemRow[]>()
     for (const item of items) {
-      if (item.level_code !== level) continue
+      if (item.level_code !== level || !item.detail_label?.trim()) continue
       const group = byCategory.get(item.category_label) ?? []
       group.push(item)
       byCategory.set(item.category_label, group)
@@ -88,8 +89,25 @@ export function buildTargetRecapGroups(
                 ? (realizationByCell.get(`${report.id}:${item.id}`) ?? null)
                 : null
             })
-            return { item, values, average: averageFilled(values) }
+            return {
+              item,
+              values,
+              average: averageFilled(values),
+              materialRowSpan: 0,
+            }
           })
+        for (let index = 0; index < rows.length; ) {
+          const material = rows[index].item.material_label.trim()
+          let end = index + 1
+          while (
+            end < rows.length &&
+            rows[end].item.material_label.trim() === material
+          ) {
+            end += 1
+          }
+          rows[index].materialRowSpan = end - index
+          index = end
+        }
         return {
           level,
           category,
