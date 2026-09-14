@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Assistant composer checks</title>
+  <body style="max-width: 390px; margin: 24px auto; padding: 16px">
+    <button id="run">Run composer checks</button>
+    <pre id="result" role="status" style="white-space: pre-wrap">Ready</pre>
+    <div id="root"></div>
+    <script type="module">
+      import React from 'react'
+      import { createRoot } from 'react-dom/client'
+      import { flushSync } from 'react-dom'
+      import { PromptInput } from '/src/components/agents/prompt-input.tsx'
+      import { AssistantMarkdown } from '/src/features/assistant/assistant-markdown.tsx'
+      import '/src/styles/index.css'
+
+      const root = createRoot(document.getElementById('root'))
+      const assert = (condition, message) => {
+        if (!condition) throw new Error(message)
+      }
+      document.getElementById('run').onclick = () => {
+        try {
+          let submitted = 0
+          for (const [name, options, expected] of [
+            ['Enter', {}, 1],
+            ['Shift+Enter', { shiftKey: true }, 0],
+            ['IME Enter', { isComposing: true }, 0],
+          ]) {
+            submitted = 0
+            flushSync(() =>
+              root.render(
+                React.createElement(PromptInput, {
+                  key: name,
+                  defaultValue: 'Sensus',
+                  onSubmit: () => submitted++,
+                })
+              )
+            )
+            const event = new KeyboardEvent('keydown', {
+              key: 'Enter',
+              bubbles: true,
+              cancelable: true,
+              ...options,
+            })
+            document.querySelector('textarea').dispatchEvent(event)
+            assert(
+              submitted === expected,
+              `${name}: expected ${expected} submissions, got ${submitted}`
+            )
+            assert(
+              event.defaultPrevented === !!expected,
+              `${name}: incorrect default handling`
+            )
+          }
+          let stopped = false
+          flushSync(() =>
+            root.render(
+              React.createElement(PromptInput, {
+                key: 'loading',
+                loading: true,
+                onStop: () => (stopped = true),
+                defaultValue: 'draft',
+                onSubmit: () => {
+                  throw new Error('Sent while loading')
+                },
+              })
+            )
+          )
+          document.querySelector('textarea').dispatchEvent(
+            new KeyboardEvent('keydown', {
+              key: 'Enter',
+              bubbles: true,
+              cancelable: true,
+            })
+          )
+          document.querySelector('button[aria-label="Batalkan"]').click()
+          assert(stopped, 'Stop callback missing')
+          const long = 'x'.repeat(200)
+          flushSync(() =>
+            root.render(
+              React.createElement(AssistantMarkdown, {
+                text:
+                  '# Overflow check\n\n| One | Two | Three | Four | Five |\n|---|---|---|---|---|\n| 1 | 2 | 3 | 4 | 5 |\n\n```js\n' +
+                  long +
+                  '\n```',
+              })
+            )
+          )
+          assert(
+            document.documentElement.scrollWidth <= innerWidth,
+            'Page overflow'
+          )
+          const pre = document.querySelector('pre[aria-label="Blok kode"]')
+          assert(
+            pre.scrollWidth > pre.clientWidth,
+            'Long code should scroll inside its block'
+          )
+          document.getElementById('result').textContent =
+            'PASS: Enter, Shift+Enter, IME, stop, loading guard, long code overflow'
+        } catch (error) {
+          document.getElementById('result').textContent =
+            `FAIL: ${error.message}`
+        }
+      }
+    </script>
+  </body>
+</html>
