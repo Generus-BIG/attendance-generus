@@ -11,6 +11,7 @@ import {
   Wrench,
   Palette,
   Bell,
+  Bot,
 } from 'lucide-react'
 import { type Role } from '@/lib/rbac'
 import { type NavItem, type NavGroup } from '../types'
@@ -53,6 +54,11 @@ export function getAbsensiNavGroups(role: Role): NavGroup[] {
       title: 'Dashboard Sharing',
       url: '/admin/dashboard-sharing',
       icon: Share2,
+    })
+    generalItems.push({
+      title: 'AI Assistant',
+      url: '/admin/absensi/assistant',
+      icon: Bot,
     })
   }
 
