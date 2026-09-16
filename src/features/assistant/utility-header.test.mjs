@@ -135,5 +135,20 @@ test('assistant-page integrates UtilityHeader and preserves chat viewport layout
     content,
     /<Header fixed>\s*<span className='text-sm font-medium'>/
   )
-  assert.match(content, /<Main fixed className='min-h-0 px-2 py-0 sm:px-4'>/)
+  assert.match(content, /<Main fixed fluid className='min-h-0 p-0'>/)
+  assert.match(content, /activeThread \?\? crypto\.randomUUID\(\)/)
+  assert.match(content, /id: threadId/)
+  assert.match(content, /key=\{renameTarget\?\.id \?\? 'closed'\}/)
+  assert.doesNotMatch(content, /MessageDeleteContext|Delete response/)
+})
+
+test('assistant history recovery exposes retry actions', async () => {
+  const fs = await import('node:fs/promises')
+  const content = await fs.readFile(
+    new URL('./assistant-page.tsx', import.meta.url),
+    'utf-8'
+  )
+  assert.match(content, /threadsQuery\.refetch\(\)/)
+  assert.match(content, /historyQuery\.refetch\(\)/)
+  assert.match(content, /Could not restore this conversation\. Try again\./)
 })

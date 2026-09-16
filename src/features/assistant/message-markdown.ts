@@ -5,6 +5,7 @@ export type CopyPart = {
   text?: unknown
   toolName?: unknown
   result?: unknown
+  output?: unknown
 }
 
 function escapeCell(value: string): string {
@@ -36,9 +37,7 @@ export function dataViewToMarkdown(data: AssistantDataResult): string {
   ].join('\n')
 }
 
-export function buildCopyMarkdown(
-  parts: ReadonlyArray<CopyPart>
-): string {
+export function buildCopyMarkdown(parts: ReadonlyArray<CopyPart>): string {
   const blocks: string[] = []
   for (const part of parts) {
     if (
@@ -47,12 +46,8 @@ export function buildCopyMarkdown(
       part.text.trim()
     ) {
       blocks.push(part.text.trim())
-    } else if (
-      part.type === 'tool-call' &&
-      part.result &&
-      typeof part.result === 'object'
-    ) {
-      const parsed = parseDataView(part.result)
+    } else if (part.type === 'tool-call' || part.type.startsWith('tool-')) {
+      const parsed = parseDataView(part.output ?? part.result)
       if (parsed.status !== 'validation-error')
         blocks.push(dataViewToMarkdown(parsed.data))
     }
@@ -60,8 +55,6 @@ export function buildCopyMarkdown(
   return blocks.join('\n\n')
 }
 
-export function hasExportableContent(
-  parts: ReadonlyArray<CopyPart>
-): boolean {
+export function hasExportableContent(parts: ReadonlyArray<CopyPart>): boolean {
   return buildCopyMarkdown(parts).length > 0
 }

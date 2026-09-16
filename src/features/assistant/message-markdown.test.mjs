@@ -52,6 +52,10 @@ test('assistant copy markdown serializes text and data views', async () => {
       `Hello\n\n${markdown}`
     )
     assert.equal(
+      buildCopyMarkdown([{ type: 'tool-readAbsensiData', output: view }]),
+      markdown
+    )
+    assert.equal(
       buildCopyMarkdown([{ type: 'tool-call', result: { secret: 'nope' } }]),
       ''
     )
