@@ -1,4 +1,4 @@
-import { type AssistantModelOption } from './http'
+import { type AssistantModelOption } from './http.js'
 
 // Server-only: never import this catalogue into a browser module.
 export const models = [

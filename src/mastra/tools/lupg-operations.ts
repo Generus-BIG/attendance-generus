@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import { createTool } from '@mastra/core/tools'
-import { dataViewSchema, monthSchema } from '../../features/assistant/data-view'
+import {
+  dataViewSchema,
+  monthSchema,
+} from '../../features/assistant/data-view.js'
 import {
   callerDatabase,
   callerSchema,
@@ -9,8 +12,8 @@ import {
   resolveScope,
   scopeFields,
   type DataConfig,
-} from './data'
-import { col, resultView, scopeResult } from './result'
+} from './data.js'
+import { col, resultView, scopeResult } from './result.js'
 
 const id = z.string()
 const nullable = z.string().nullable().optional()

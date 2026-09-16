@@ -2,7 +2,7 @@ import {
   type MastraDBMessage,
   type MastraMessagePart,
 } from '@mastra/core/agent'
-import { dataViewSchema } from '../features/assistant/data-view'
+import { dataViewSchema } from '../features/assistant/data-view.js'
 
 // Persist the approved public result envelope, never provider metadata or reasoning.
 export function sanitizeMessages(
