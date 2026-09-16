@@ -44,8 +44,10 @@ import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/s
 import { Route as AdminSettingsAppearanceRouteImport } from './routes/admin/settings/appearance'
 import { Route as AdminSettingsAccountRouteImport } from './routes/admin/settings/account'
 import { Route as AdminLupgDashboardRouteImport } from './routes/admin/lupg/dashboard'
+import { Route as AdminLupgAssistantRouteImport } from './routes/admin/lupg/assistant'
 import { Route as AdminFormsCreateRouteImport } from './routes/admin/forms/create'
 import { Route as AdminErrorsErrorRouteImport } from './routes/admin/errors/$error'
+import { Route as AdminAbsensiAssistantRouteImport } from './routes/admin/absensi/assistant'
 import { Route as AdminLupgSensusIndexRouteImport } from './routes/admin/lupg/sensus/index'
 import { Route as AdminLupgReportsIndexRouteImport } from './routes/admin/lupg/reports/index'
 import { Route as AdminLupgRecapIndexRouteImport } from './routes/admin/lupg/recap/index'
@@ -240,6 +242,11 @@ const AdminLupgDashboardRoute = AdminLupgDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminLupgRouteRoute,
 } as any)
+const AdminLupgAssistantRoute = AdminLupgAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AdminLupgRouteRoute,
+} as any)
 const AdminFormsCreateRoute = AdminFormsCreateRouteImport.update({
   id: '/forms/create',
   path: '/forms/create',
@@ -248,6 +255,11 @@ const AdminFormsCreateRoute = AdminFormsCreateRouteImport.update({
 const AdminErrorsErrorRoute = AdminErrorsErrorRouteImport.update({
   id: '/errors/$error',
   path: '/errors/$error',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAbsensiAssistantRoute = AdminAbsensiAssistantRouteImport.update({
+  id: '/absensi/assistant',
+  path: '/absensi/assistant',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminLupgSensusIndexRoute = AdminLupgSensusIndexRouteImport.update({
@@ -357,8 +369,10 @@ export interface FileRoutesByFullPath {
   '/forms/$slug': typeof FormsSlugRoute
   '/register/add-participant': typeof RegisterAddParticipantRoute
   '/forms': typeof FormsIndexRoute
+  '/admin/absensi/assistant': typeof AdminAbsensiAssistantRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
   '/admin/forms/create': typeof AdminFormsCreateRoute
+  '/admin/lupg/assistant': typeof AdminLupgAssistantRoute
   '/admin/lupg/dashboard': typeof AdminLupgDashboardRoute
   '/admin/settings/account': typeof AdminSettingsAccountRoute
   '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
@@ -411,8 +425,10 @@ export interface FileRoutesByTo {
   '/forms/$slug': typeof FormsSlugRoute
   '/register/add-participant': typeof RegisterAddParticipantRoute
   '/forms': typeof FormsIndexRoute
+  '/admin/absensi/assistant': typeof AdminAbsensiAssistantRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
   '/admin/forms/create': typeof AdminFormsCreateRoute
+  '/admin/lupg/assistant': typeof AdminLupgAssistantRoute
   '/admin/lupg/dashboard': typeof AdminLupgDashboardRoute
   '/admin/settings/account': typeof AdminSettingsAccountRoute
   '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
@@ -467,8 +483,10 @@ export interface FileRoutesById {
   '/forms/$slug': typeof FormsSlugRoute
   '/register/add-participant': typeof RegisterAddParticipantRoute
   '/forms/': typeof FormsIndexRoute
+  '/admin/absensi/assistant': typeof AdminAbsensiAssistantRoute
   '/admin/errors/$error': typeof AdminErrorsErrorRoute
   '/admin/forms/create': typeof AdminFormsCreateRoute
+  '/admin/lupg/assistant': typeof AdminLupgAssistantRoute
   '/admin/lupg/dashboard': typeof AdminLupgDashboardRoute
   '/admin/settings/account': typeof AdminSettingsAccountRoute
   '/admin/settings/appearance': typeof AdminSettingsAppearanceRoute
@@ -524,8 +542,10 @@ export interface FileRouteTypes {
     | '/forms/$slug'
     | '/register/add-participant'
     | '/forms'
+    | '/admin/absensi/assistant'
     | '/admin/errors/$error'
     | '/admin/forms/create'
+    | '/admin/lupg/assistant'
     | '/admin/lupg/dashboard'
     | '/admin/settings/account'
     | '/admin/settings/appearance'
@@ -578,8 +598,10 @@ export interface FileRouteTypes {
     | '/forms/$slug'
     | '/register/add-participant'
     | '/forms'
+    | '/admin/absensi/assistant'
     | '/admin/errors/$error'
     | '/admin/forms/create'
+    | '/admin/lupg/assistant'
     | '/admin/lupg/dashboard'
     | '/admin/settings/account'
     | '/admin/settings/appearance'
@@ -633,8 +655,10 @@ export interface FileRouteTypes {
     | '/forms/$slug'
     | '/register/add-participant'
     | '/forms/'
+    | '/admin/absensi/assistant'
     | '/admin/errors/$error'
     | '/admin/forms/create'
+    | '/admin/lupg/assistant'
     | '/admin/lupg/dashboard'
     | '/admin/settings/account'
     | '/admin/settings/appearance'
@@ -936,6 +960,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLupgDashboardRouteImport
       parentRoute: typeof AdminLupgRouteRoute
     }
+    '/admin/lupg/assistant': {
+      id: '/admin/lupg/assistant'
+      path: '/assistant'
+      fullPath: '/admin/lupg/assistant'
+      preLoaderRoute: typeof AdminLupgAssistantRouteImport
+      parentRoute: typeof AdminLupgRouteRoute
+    }
     '/admin/forms/create': {
       id: '/admin/forms/create'
       path: '/forms/create'
@@ -948,6 +979,13 @@ declare module '@tanstack/react-router' {
       path: '/errors/$error'
       fullPath: '/admin/errors/$error'
       preLoaderRoute: typeof AdminErrorsErrorRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/absensi/assistant': {
+      id: '/admin/absensi/assistant'
+      path: '/absensi/assistant'
+      fullPath: '/admin/absensi/assistant'
+      preLoaderRoute: typeof AdminAbsensiAssistantRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/lupg/sensus/': {
@@ -1066,6 +1104,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminLupgRouteRouteChildren {
+  AdminLupgAssistantRoute: typeof AdminLupgAssistantRoute
   AdminLupgDashboardRoute: typeof AdminLupgDashboardRoute
   AdminLupgPhqAttendanceRoute: typeof AdminLupgPhqAttendanceRoute
   AdminLupgPhqParticipantsRoute: typeof AdminLupgPhqParticipantsRoute
@@ -1085,6 +1124,7 @@ interface AdminLupgRouteRouteChildren {
 }
 
 const AdminLupgRouteRouteChildren: AdminLupgRouteRouteChildren = {
+  AdminLupgAssistantRoute: AdminLupgAssistantRoute,
   AdminLupgDashboardRoute: AdminLupgDashboardRoute,
   AdminLupgPhqAttendanceRoute: AdminLupgPhqAttendanceRoute,
   AdminLupgPhqParticipantsRoute: AdminLupgPhqParticipantsRoute,
@@ -1129,6 +1169,7 @@ interface AdminRouteRouteChildren {
   AdminSettingsRouteRoute: typeof AdminSettingsRouteRouteWithChildren
   Admin403Route: typeof Admin403Route
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminAbsensiAssistantRoute: typeof AdminAbsensiAssistantRoute
   AdminErrorsErrorRoute: typeof AdminErrorsErrorRoute
   AdminFormsCreateRoute: typeof AdminFormsCreateRoute
   AdminApprovalsIndexRoute: typeof AdminApprovalsIndexRoute
@@ -1148,6 +1189,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminSettingsRouteRoute: AdminSettingsRouteRouteWithChildren,
   Admin403Route: Admin403Route,
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminAbsensiAssistantRoute: AdminAbsensiAssistantRoute,
   AdminErrorsErrorRoute: AdminErrorsErrorRoute,
   AdminFormsCreateRoute: AdminFormsCreateRoute,
   AdminApprovalsIndexRoute: AdminApprovalsIndexRoute,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
-import { Check, ChevronDown, Loader2, MessageSquareText, X } from 'lucide-react'
+import { Check, Loader2, MessageSquareText, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -58,12 +58,7 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
     error: reportsError,
   } = useCharacterTargetReports(report.id)
   const [activeLevel, setActiveLevel] = useState<CharacterLevelCode | ''>('')
-  const [openCategory, setOpenCategory] = useState<string | null>(null)
-  const [expandedByCategory, setExpandedByCategory] = useState<
-    Record<string, string | null>
-  >({})
   const [bulkPercent, setBulkPercent] = useState(90)
-  const initializedCategoryLevelRef = useRef<CharacterLevelCode | null>(null)
 
   const items = useMemo(() => data?.items ?? [], [data?.items])
   const templates = data?.templates ?? (data?.template ? [data.template] : [])
@@ -128,20 +123,6 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
     reportsLoading,
   ])
 
-  useEffect(() => {
-    if (!activeLevel || itemsLoading || reportsLoading) return
-    if (initializedCategoryLevelRef.current === activeLevel) return
-    const categoryMap = grouped.get(activeLevel)
-    if (!categoryMap || categoryMap.size === 0) return
-    initializedCategoryLevelRef.current = activeLevel
-    const firstIncomplete = [...categoryMap.entries()].find(([, rows]) =>
-      rows.some((item) => !isTargetComplete(reportByItem.get(item.id)))
-    )
-    const nextCategory = firstIncomplete?.[0] ?? null
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setOpenCategory(nextCategory)
-  }, [activeLevel, grouped, itemsLoading, reportByItem, reportsLoading])
-
   const activeCategoryMap = activeLevel ? grouped.get(activeLevel) : undefined
   const filledCount = items.filter((item) =>
     isTargetComplete(reportByItem.get(item.id))
@@ -167,17 +148,6 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
             : filledCount < items.length
               ? 'partial'
               : 'complete'
-        }
-        action={
-          !readOnly && activeLevel && activeCategoryMap ? (
-            <TargetFillAll
-              reportId={report.id}
-              items={[...activeCategoryMap.values()].flat()}
-              reportByItem={reportByItem}
-              percent={bulkPercent}
-              onPercentChange={setBulkPercent}
-            />
-          ) : undefined
         }
       />
 
@@ -205,17 +175,17 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
               setActiveLevel(value as CharacterLevelCode)
             }
           >
-            <TabsList className='grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4'>
+            <TabsList className='h-auto w-full justify-start gap-1 overflow-x-auto p-1 sm:grid sm:grid-cols-4'>
               {availableLevels.map((level) => {
                 const progress = progressByLevel.get(level)
                 return (
                   <TabsTrigger
                     key={level}
                     value={level}
-                    className='min-h-11 flex-col gap-0.5 px-2'
+                    className='min-h-11 min-w-24 shrink-0 gap-2 px-3 sm:min-w-0'
                   >
                     <span>{CHARACTER_LEVEL_LABELS[level]}</span>
-                    <span className='text-[10px] font-normal tabular-nums opacity-75'>
+                    <span className='text-xs font-normal tabular-nums opacity-75'>
                       {progress?.completed ?? 0}/{progress?.total ?? 0}
                     </span>
                   </TabsTrigger>
@@ -224,84 +194,58 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
             </TabsList>
           </Tabs>
 
-          <div className='flex flex-col gap-3'>
+          {activeLevel && activeCategoryMap ? (
+            <div className='flex flex-wrap items-center justify-between gap-3 border-y bg-muted/20 px-3 py-2.5'>
+              <div>
+                <p className='text-sm font-semibold'>
+                  {CHARACTER_LEVEL_LABELS[activeLevel]}
+                </p>
+                <p className='text-xs text-muted-foreground tabular-nums'>
+                  {progressByLevel.get(activeLevel)?.completed ?? 0} dari{' '}
+                  {progressByLevel.get(activeLevel)?.total ?? 0} materi terisi
+                </p>
+              </div>
+              {!readOnly ? (
+                <TargetFillAll
+                  reportId={report.id}
+                  levelLabel={CHARACTER_LEVEL_LABELS[activeLevel]}
+                  items={[...activeCategoryMap.values()].flat()}
+                  reportByItem={reportByItem}
+                  percent={bulkPercent}
+                  onPercentChange={setBulkPercent}
+                />
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className='flex flex-col gap-5'>
             {[...(activeCategoryMap?.entries() ?? [])].map(
               ([category, rows]) => {
                 const completed = rows.filter((item) =>
                   isTargetComplete(reportByItem.get(item.id))
                 ).length
-                const categoryKey = `${activeLevel}:${category}`
-                const expandedItemId =
-                  expandedByCategory[categoryKey] ??
-                  rows.find(
-                    (item) => !isTargetComplete(reportByItem.get(item.id))
-                  )?.id ??
-                  null
-                const isOpen = openCategory === category
                 return (
-                  <Collapsible
-                    key={categoryKey}
-                    open={isOpen}
-                    onOpenChange={(nextOpen) => {
-                      setOpenCategory(nextOpen ? category : null)
-                      if (nextOpen && !expandedByCategory[categoryKey]) {
-                        const nextItem =
-                          rows.find(
-                            (item) =>
-                              !isTargetComplete(reportByItem.get(item.id))
-                          ) ?? rows[0]
-                        setExpandedByCategory((current) => ({
-                          ...current,
-                          [categoryKey]: nextItem?.id ?? null,
-                        }))
-                      }
-                    }}
-                    className='overflow-hidden rounded-lg border'
-                  >
-                    <CollapsibleTrigger asChild>
-                      <Button
-                        type='button'
-                        variant='ghost'
-                        className='group h-auto min-h-12 w-full justify-between rounded-none px-3 py-2'
-                      >
-                        <span className='min-w-0 text-left'>
-                          <span className='block truncate text-sm font-semibold'>
-                            {category}
-                          </span>
-                          <span className='block text-xs text-muted-foreground tabular-nums'>
-                            {completed}/{rows.length} materi
-                          </span>
-                        </span>
-                        <ChevronDown className='transition-transform duration-150 group-data-[state=open]:rotate-180 motion-reduce:transition-none' />
-                      </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <div className='divide-y border-t'>
-                        {rows.map((item) => (
-                          <CharacterTargetRow
-                            key={item.id}
-                            report={report}
-                            item={item}
-                            existing={reportByItem.get(item.id)}
-                            readOnly={readOnly}
-                            expanded={expandedItemId === item.id}
-                            onAdjust={() =>
-                              setExpandedByCategory((current) => ({
-                                ...current,
-                                [categoryKey]: item.id,
-                              }))
-                            }
-                            onCollapse={() =>
-                              setExpandedByCategory((current) => ({
-                                ...current,
-                                [categoryKey]: null,
-                              }))
-                            }
-                          />
-                        ))}
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
+                  <div key={`${activeLevel}:${category}`}>
+                    <div className='flex items-baseline justify-between gap-3 border-b pb-2'>
+                      <h4 className='text-sm font-semibold tracking-tight'>
+                        {category}
+                      </h4>
+                      <span className='shrink-0 text-xs text-muted-foreground tabular-nums'>
+                        {completed}/{rows.length} terisi
+                      </span>
+                    </div>
+                    <div className='divide-y'>
+                      {rows.map((item) => (
+                        <CharacterTargetRow
+                          key={item.id}
+                          report={report}
+                          item={item}
+                          existing={reportByItem.get(item.id)}
+                          readOnly={readOnly}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 )
               }
             )}
@@ -314,12 +258,14 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
 
 function TargetFillAll({
   reportId,
+  levelLabel,
   items,
   reportByItem,
   percent,
   onPercentChange,
 }: {
   reportId: string
+  levelLabel: string
   items: CharacterTargetItemRow[]
   reportByItem: Map<string, CharacterTargetReportRow>
   percent: number
@@ -359,23 +305,24 @@ function TargetFillAll({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button type='button' variant='outline' size='sm'>
+        <Button type='button' variant='outline' className='min-h-11'>
           Fill all
         </Button>
       </PopoverTrigger>
       <PopoverContent align='end' className='w-[min(20rem,calc(100vw-2rem))]'>
         <div className='flex flex-col gap-3'>
           <div>
-            <p className='text-sm font-semibold'>Fill active jenjang</p>
+            <p className='text-sm font-semibold'>Isi jenjang {levelLabel}</p>
             <p className='mt-1 text-xs text-muted-foreground'>
-              Fill all preserves existing values. Overwrite all replaces them.
+              {emptyCount} materi belum terisi. Nilai yang sudah ada tidak
+              berubah.
             </p>
           </div>
           <label
             className='flex flex-col gap-1 text-xs font-medium'
             htmlFor='target-fill-percent'
           >
-            Progress
+            Realisasi (%)
             <div className='relative'>
               <Input
                 id='target-fill-percent'
@@ -386,7 +333,7 @@ function TargetFillAll({
                 onChange={(event) =>
                   onPercentChange(Number(event.target.value))
                 }
-                className='min-h-10 pr-9 tabular-nums'
+                className='min-h-11 pr-9 tabular-nums'
               />
               <span className='pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm text-muted-foreground'>
                 %
@@ -396,23 +343,23 @@ function TargetFillAll({
           <div className='flex flex-col gap-2 sm:flex-row'>
             <Button
               type='button'
-              className='flex-1'
+              className='min-h-11 flex-1'
               disabled={emptyCount === 0 || bulkUpsert.isPending}
               onClick={() => apply(false)}
             >
               {bulkUpsert.isPending ? (
                 <Loader2 className='animate-spin' />
               ) : null}
-              Fill all ({emptyCount})
+              Isi yang kosong ({emptyCount})
             </Button>
             <Button
               type='button'
               variant='outline'
-              className='flex-1'
+              className='min-h-11 flex-1'
               disabled={bulkUpsert.isPending}
               onClick={() => apply(true)}
             >
-              Overwrite all
+              Timpa semua nilai
             </Button>
           </div>
         </div>
@@ -429,9 +376,6 @@ function CharacterTargetRow({
   item: CharacterTargetItemRow
   existing: CharacterTargetReportRow | undefined
   readOnly: boolean
-  expanded: boolean
-  onAdjust: () => void
-  onCollapse: () => void
 }) {
   return (
     <CharacterTargetRowDraft
@@ -447,17 +391,11 @@ function CharacterTargetRowDraft({
   item,
   existing,
   readOnly,
-  expanded,
-  onAdjust,
-  onCollapse,
 }: {
   report: MonthlyReportRow
   item: CharacterTargetItemRow
   existing: CharacterTargetReportRow | undefined
   readOnly: boolean
-  expanded: boolean
-  onAdjust: () => void
-  onCollapse: () => void
 }) {
   const upsert = useUpsertCharacterTargetReport()
   const [values, setValues] = useReducer(
@@ -466,8 +404,7 @@ function CharacterTargetRowDraft({
         realization: string
         materialGap: string
         notes: string
-        notesVisible: boolean
-        materialGapVisible: boolean
+        detailsOpen: boolean
       },
       change: Partial<typeof current>
     ) => ({ ...current, ...change }),
@@ -475,12 +412,10 @@ function CharacterTargetRowDraft({
       realization: existing?.realization_percent?.toString() ?? '',
       materialGap: existing?.material_gap ?? '',
       notes: existing?.notes ?? '',
-      notesVisible: Boolean(existing?.notes),
-      materialGapVisible: Boolean(existing?.material_gap),
+      detailsOpen: Boolean(existing?.notes || existing?.material_gap),
     }
   )
-  const { realization, materialGap, notes, notesVisible, materialGapVisible } =
-    values
+  const { realization, materialGap, notes, detailsOpen } = values
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>(
     'idle'
   )
@@ -492,26 +427,18 @@ function CharacterTargetRowDraft({
     }
   }, [])
 
-  const save = (next?: {
-    realization?: string
-    materialGap?: string
-    notes?: string
+  const save = (patch: {
+    realization_percent?: number | null
+    material_gap?: string | null
+    notes?: string | null
   }) => {
-    const rawRealization = next?.realization ?? realization
-    const numberValue = Number(rawRealization)
-    const parsedRealization =
-      rawRealization.trim() === '' || !Number.isFinite(numberValue)
-        ? null
-        : Math.max(0, Math.min(100, numberValue))
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
     setSaveStatus('saving')
     upsert.mutate(
       {
         monthly_report_id: report.id,
         target_item_id: item.id,
-        realization_percent: parsedRealization,
-        material_gap: (next?.materialGap ?? materialGap).trim() || null,
-        notes: (next?.notes ?? notes).trim() || null,
+        ...patch,
       },
       {
         onSuccess: () => {
@@ -531,147 +458,138 @@ function CharacterTargetRowDraft({
   const targetReference = [item.reference_from, item.reference_to]
     .filter(Boolean)
     .join(' – ')
+  const saveRealization = () => {
+    const numeric = Number(realization)
+    const next =
+      realization.trim() === '' || !Number.isFinite(numeric)
+        ? null
+        : Math.max(0, Math.min(100, numeric))
+    if (next === existing?.realization_percent) return
+    setValues({ realization: next?.toString() ?? '' })
+    save({ realization_percent: next })
+  }
+  const saveText = (field: 'material_gap' | 'notes', value: string) => {
+    const next = value.trim() || null
+    if (next === existing?.[field]) return
+    save({ [field]: next })
+  }
 
   return (
-    <div className='px-3 py-3'>
-      <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-        <div className='min-w-0'>
-          <div className='flex flex-wrap items-center gap-2'>
-            <span className='rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground tabular-nums'>
-              {realization ? `${realization}%` : 'Belum diisi'}
-            </span>
-            {saveStatus === 'saving' ? (
-              <span className='flex items-center gap-1 text-[10px] text-muted-foreground'>
-                <Loader2 className='size-3 animate-spin' /> Menyimpan...
-              </span>
-            ) : null}
-            {saveStatus === 'saved' ? (
-              <span className='flex items-center gap-1 text-[10px] font-medium text-emerald-600'>
-                <Check className='size-3' /> Disimpan
-              </span>
-            ) : null}
-          </div>
-          <p className='mt-1 text-sm leading-6 font-semibold wrap-break-word whitespace-normal'>
+    <div className='grid gap-3 py-4 lg:grid-cols-[minmax(0,1fr)_9rem] lg:items-start lg:gap-6'>
+      <div className='min-w-0'>
+        <div className='flex flex-wrap items-center gap-2'>
+          <p className='text-sm leading-6 font-semibold wrap-break-word whitespace-normal'>
             {item.material_label}
           </p>
-          {item.detail_label ? (
-            <p className='mt-0.5 text-sm leading-5 wrap-break-word whitespace-normal text-muted-foreground'>
-              {item.detail_label}
-            </p>
-          ) : null}
-          {targetReference ? (
-            <p className='mt-1 text-xs text-muted-foreground'>
-              Target: {targetReference}
-            </p>
-          ) : null}
-          {!expanded && (materialGap || notes) ? (
-            <p className='mt-1 line-clamp-1 text-xs text-muted-foreground'>
-              {[materialGap && `Kurang: ${materialGap}`, notes]
-                .filter(Boolean)
-                .join(' · ')}
-            </p>
-          ) : null}
-        </div>
-        {!readOnly ? (
-          <Button
-            type='button'
-            variant={expanded ? 'ghost' : 'outline'}
-            size='sm'
-            className='min-h-10 shrink-0 self-start'
-            onClick={expanded ? onCollapse : onAdjust}
+          <span
+            role='status'
+            aria-live='polite'
+            className='flex min-h-4 items-center gap-1 text-[10px] text-muted-foreground'
           >
-            {expanded ? 'Done' : 'Adjust'}
-          </Button>
+            {saveStatus === 'saving' ? (
+              <>
+                <Loader2 className='size-3 animate-spin' /> Menyimpan…
+              </>
+            ) : saveStatus === 'saved' ? (
+              <>
+                <Check className='size-3' /> Disimpan
+              </>
+            ) : null}
+          </span>
+        </div>
+        <p className='text-sm leading-5 wrap-break-word whitespace-normal text-muted-foreground'>
+          {item.detail_label}
+        </p>
+        {targetReference ? (
+          <p className='mt-1 text-xs text-muted-foreground tabular-nums'>
+            Ayat/Hal {targetReference}
+          </p>
+        ) : null}
+        {!detailsOpen && (materialGap || notes) ? (
+          <p className='mt-1 line-clamp-1 text-xs text-muted-foreground'>
+            {[materialGap && `Kurang materi: ${materialGap}`, notes]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
         ) : null}
       </div>
 
-      {expanded && !readOnly ? (
-        <div className='mt-3 flex flex-col gap-2 rounded-lg bg-muted/20 p-3'>
-          <label
-            className='flex flex-col gap-1 text-xs font-medium'
-            htmlFor={`realization-${item.id}`}
-          >
-            Progress (%)
-            <Input
-              id={`realization-${item.id}`}
-              type='number'
-              min={0}
-              max={100}
-              value={realization}
-              onChange={(event) =>
-                setValues({ realization: event.target.value })
-              }
-              onBlur={() => save({ realization })}
-              disabled={upsert.isPending}
-              placeholder='0–100'
-              className='min-h-10 tabular-nums sm:max-w-40'
-            />
-          </label>
+      <label
+        className='flex min-w-0 flex-col gap-1 text-xs font-medium'
+        htmlFor={`realization-${item.id}`}
+      >
+        Realisasi (%)
+        <Input
+          id={`realization-${item.id}`}
+          type='number'
+          inputMode='decimal'
+          min={0}
+          max={100}
+          value={realization}
+          onChange={(event) => setValues({ realization: event.target.value })}
+          onBlur={saveRealization}
+          disabled={readOnly || upsert.isPending}
+          placeholder='0–100'
+          className='min-h-11 text-base tabular-nums sm:text-sm'
+        />
+      </label>
 
-          {materialGapVisible ? (
-            <OptionalInput
-              value={materialGap}
-              onChange={(materialGap) => setValues({ materialGap })}
-              onBlur={() => save({ materialGap })}
-              onRemove={() => {
-                setValues({ materialGap: '' })
-                save({ materialGap: '' })
-                setValues({ materialGapVisible: false })
-              }}
-              placeholder='Kurang materi (opsional)'
-              disabled={upsert.isPending}
-              removeLabel='Hapus kurang materi'
-            />
+      {materialGap || notes || !readOnly ? (
+        <Collapsible
+          open={detailsOpen}
+          onOpenChange={(detailsOpen) => setValues({ detailsOpen })}
+          className='lg:col-span-2'
+        >
+          {!readOnly ? (
+            <CollapsibleTrigger asChild>
+              <Button
+                type='button'
+                variant='ghost'
+                className='min-h-11 px-2 text-muted-foreground'
+              >
+                <MessageSquareText data-icon='inline-start' />
+                {detailsOpen ? 'Tutup catatan' : 'Catatan'}
+              </Button>
+            </CollapsibleTrigger>
           ) : null}
-          {notesVisible ? (
-            <OptionalInput
-              value={notes}
-              onChange={(notes) => setValues({ notes })}
-              onBlur={() => save({ notes })}
-              onRemove={() => {
-                setValues({ notes: '' })
-                save({ notes: '' })
-                setValues({ notesVisible: false })
-              }}
-              placeholder='Catatan singkat (opsional)'
-              disabled={upsert.isPending}
-              removeLabel='Hapus catatan'
-            />
-          ) : null}
-
-          {!materialGapVisible || !notesVisible ? (
-            <div className='flex flex-wrap justify-end gap-2'>
-              {!materialGapVisible ? (
-                <Button
-                  type='button'
-                  variant='ghost'
-                  size='sm'
-                  className='min-h-10'
-                  onClick={() => setValues({ materialGapVisible: true })}
-                >
-                  + Material gap
-                </Button>
-              ) : null}
-              {!notesVisible ? (
-                <Button
-                  type='button'
-                  variant='ghost'
-                  size='sm'
-                  className='min-h-10'
-                  onClick={() => setValues({ notesVisible: true })}
-                >
-                  <MessageSquareText data-icon='inline-start' /> + Note
-                </Button>
-              ) : null}
+          <CollapsibleContent className='pt-2'>
+            <div className='grid gap-3 rounded-md bg-muted/30 p-3 sm:grid-cols-2'>
+              <OptionalInput
+                label='Kurang materi'
+                value={materialGap}
+                onChange={(materialGap) => setValues({ materialGap })}
+                onBlur={() => saveText('material_gap', materialGap)}
+                onRemove={() => {
+                  setValues({ materialGap: '' })
+                  save({ material_gap: null })
+                }}
+                placeholder='Tuliskan materi yang belum tercapai'
+                disabled={readOnly || upsert.isPending}
+                removeLabel='Hapus kurang materi'
+              />
+              <OptionalInput
+                label='Catatan'
+                value={notes}
+                onChange={(notes) => setValues({ notes })}
+                onBlur={() => saveText('notes', notes)}
+                onRemove={() => {
+                  setValues({ notes: '' })
+                  save({ notes: null })
+                }}
+                placeholder='Tambahkan catatan singkat'
+                disabled={readOnly || upsert.isPending}
+                removeLabel='Hapus catatan'
+              />
             </div>
-          ) : null}
-        </div>
+          </CollapsibleContent>
+        </Collapsible>
       ) : null}
     </div>
   )
 }
 
 function OptionalInput({
+  label,
   value,
   onChange,
   onBlur,
@@ -680,6 +598,7 @@ function OptionalInput({
   disabled,
   removeLabel,
 }: {
+  label: string
   value: string
   onChange: (value: string) => void
   onBlur: () => void
@@ -689,26 +608,30 @@ function OptionalInput({
   removeLabel: string
 }) {
   return (
-    <div className='flex min-w-0 items-center gap-2'>
-      <Input
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        onBlur={onBlur}
-        disabled={disabled}
-        placeholder={placeholder}
-        className='min-h-10 min-w-0 flex-1 text-xs'
-      />
-      <Button
-        type='button'
-        variant='ghost'
-        size='icon'
-        className='size-10 shrink-0'
-        disabled={disabled}
-        onClick={onRemove}
-        aria-label={removeLabel}
-      >
-        <X />
-      </Button>
-    </div>
+    <label className='flex min-w-0 flex-col gap-1 text-xs font-medium'>
+      {label}
+      <span className='flex min-w-0 items-center gap-1'>
+        <Input
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          onBlur={onBlur}
+          disabled={disabled}
+          placeholder={placeholder}
+          className='min-h-11 min-w-0 flex-1 text-base sm:text-sm'
+        />
+        {!disabled && value ? (
+          <Button
+            type='button'
+            variant='ghost'
+            size='icon'
+            className='size-11 shrink-0'
+            onClick={onRemove}
+            aria-label={removeLabel}
+          >
+            <X />
+          </Button>
+        ) : null}
+      </span>
+    </label>
   )
 }

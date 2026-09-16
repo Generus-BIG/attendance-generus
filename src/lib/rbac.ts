@@ -114,6 +114,7 @@ export interface Permissions {
 // inherits from /admin/lupg/recap). Keep in sync with sidebar-data-lupg.ts
 // visibility gating.
 export const ROUTE_ACCESS: Record<string, Role[]> = {
+  '/admin/absensi/assistant': ['super_admin', 'admin'],
   '/admin/dashboard': ['super_admin', 'admin', 'team_manager', 'member'],
   '/admin/participants': ['super_admin', 'admin', 'team_manager', 'member'],
   '/admin/attendance': ['super_admin', 'admin', 'team_manager', 'member'],
@@ -139,6 +140,7 @@ export const ROUTE_ACCESS: Record<string, Role[]> = {
   '/admin/lupg/recap/present': ['super_admin', 'admin', 'team_manager'],
   '/admin/lupg/recap': ['super_admin', 'admin'],
   '/admin/lupg/presentation': ['super_admin', 'admin', 'team_manager'],
+  '/admin/lupg/assistant': ['super_admin', 'admin'],
   '/admin/lupg/mustin': ['super_admin', 'admin', 'team_manager'],
   '/admin/lupg/config': ['super_admin', 'admin'],
 }

@@ -15,6 +15,7 @@ import {
   ClipboardCheck,
   HeartPulse,
   Users,
+  Bot,
 } from 'lucide-react'
 import { type Role } from '@/lib/rbac'
 import { type NavGroup, type NavItem } from '../types'
@@ -137,6 +138,11 @@ export function getLupgNavGroups(role: Role): NavGroup[] {
       title: 'Konfigurasi Metrik & LUPG',
       url: '/admin/lupg/config',
       icon: Settings2,
+    })
+    generalItems.push({
+      title: 'AI Assistant',
+      url: '/admin/lupg/assistant',
+      icon: Bot,
     })
   }
 

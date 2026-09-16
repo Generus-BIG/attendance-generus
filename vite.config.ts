@@ -23,4 +23,12 @@ export default defineConfig({
     target: 'baseline-widely-available',
     sourcemap: false,
   },
+  server: {
+    proxy: {
+      '/api/assistant': {
+        target: `http://localhost:${process.env.ASSISTANT_PORT ?? 4111}`,
+        rewrite: (path) => path.replace(/^\/api\/assistant/, '/assistant'),
+      },
+    },
+  },
 })
