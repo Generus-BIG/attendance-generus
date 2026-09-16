@@ -1,8 +1,8 @@
 import {
   dataViewSchema,
   type AssistantDataResult,
-} from '../../features/assistant/data-view'
-import { type ScopeInput, type ResolvedScope } from './data'
+} from '../../features/assistant/data-view.js'
+import { type ScopeInput, type ResolvedScope } from './data.js'
 
 type Cell = string | number | null
 export function resultView(

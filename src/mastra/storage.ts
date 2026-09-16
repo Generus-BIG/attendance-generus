@@ -7,7 +7,7 @@ import {
   deletionIds,
   rebuildWorkingMemory,
   sanitizeMessages,
-} from './conversation-content'
+} from './conversation-content.js'
 
 export type RunScope = {
   threadId: string

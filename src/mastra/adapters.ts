@@ -6,8 +6,8 @@ import {
   type AssistantChatRequest,
   type AssistantRequestContext,
   normalizeHistory,
-} from './http'
-import { getConversationStorage } from './storage'
+} from './http.js'
+import { getConversationStorage } from './storage.js'
 
 const supabaseUrl =
   process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? ''

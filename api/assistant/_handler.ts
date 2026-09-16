@@ -57,7 +57,7 @@ export async function handleNodeRequest(
   const request = new Request(`https://${host}${req.url ?? '/'}`, {
     method: req.method ?? 'GET',
     headers,
-    body,
+    body: body ? Buffer.from(body) : null,
     signal: controller.signal,
   })
   const response = await handleAssistantRequest(request, {

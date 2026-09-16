@@ -4,7 +4,7 @@ import {
   dataViewSchema,
   monthSchema,
   type AssistantDataResult,
-} from '../../features/assistant/data-view'
+} from '../../features/assistant/data-view.js'
 import {
   callerDatabase,
   callerSchema,
@@ -14,8 +14,8 @@ import {
   resolveScope,
   scopeFields,
   type DataConfig,
-} from './data'
-import { col, resultView, scopeResult } from './result'
+} from './data.js'
+import { col, resultView, scopeResult } from './result.js'
 
 const id = z.string(),
   nullable = z.string().nullable().optional(),
