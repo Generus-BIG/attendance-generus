@@ -48,8 +48,8 @@ test('agent streams text, tool call and retry metadata through the HTTP seam', a
         ],
         stream: async (_body, caller, signal) => {
           const requestContext = new RequestContext(Object.entries(caller))
-          const result = await tools.getAbsensiDashboardSummary.execute(
-            { month: '2026-09' },
+          const result = await tools.readAbsensiData.execute(
+            { operation: 'dashboard', detail: 'totals', month: '2026-09' },
             { requestContext, abortSignal: signal }
           )
           assert.equal(result.source.route, '/admin/dashboard')
@@ -66,4 +66,19 @@ test('agent streams text, tool call and retry metadata through the HTTP seam', a
   } finally {
     await vite.close()
   }
+})
+
+test('agent reserves visualizations for validated inline result cards', async () => {
+  const fs = await import('node:fs/promises')
+  const source = await fs.readFile(
+    new URL('./index.ts', import.meta.url),
+    'utf-8'
+  )
+  assert.match(source, /chart-ready detail\/grouping/)
+  assert.match(source, /Never invent numeric Markdown tables or charts/)
+  assert.match(source, /raw records, unique people, and rate/)
+  assert.match(
+    source,
+    /Never repeat a chart specification or tool result as JSON/
+  )
 })
