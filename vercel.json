@@ -5,6 +5,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/assistant/:path*",
+      "destination": "/api/assistant/[...path]"
+    },
+    {
       "source": "/",
       "has": [{ "type": "host", "value": "forms.generusbig.my.id" }],
       "destination": "/api/forms"

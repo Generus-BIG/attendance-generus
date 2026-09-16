@@ -14,6 +14,19 @@ async function sourceFiles(directory) {
   return files.flat().filter((file) => file.endsWith('.ts'))
 }
 
+test('Vercel routes nested Assistant paths through the catch-all function', async () => {
+  const config = JSON.parse(
+    await readFile(new URL('../../vercel.json', import.meta.url), 'utf8')
+  )
+  assert.ok(
+    config.rewrites.some(
+      (rewrite) =>
+        rewrite.source === '/api/assistant/:path*' &&
+        rewrite.destination === '/api/assistant/[...path]'
+    )
+  )
+})
+
 test('Vercel Assistant runtime uses resolvable ESM imports', async () => {
   const files = [
     ...(await sourceFiles(new URL('.', import.meta.url).pathname)),
