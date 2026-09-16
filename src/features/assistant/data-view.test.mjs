@@ -235,3 +235,71 @@ test('Data View renders escaped accessible evidence and distinct fallback, empty
     await vite.close()
   }
 })
+
+test('Data View mounts each trusted chart card with a visible table fallback', async () => {
+  const vite = await createServer({
+    configFile: false,
+    resolve: { alias: { '@': new URL('../../', import.meta.url).pathname } },
+    esbuild: { jsx: 'automatic' },
+    optimizeDeps: { noDiscovery: true, include: [] },
+    appType: 'custom',
+    server: { middlewareMode: true, hmr: false, watch: null },
+  })
+  try {
+    const { createElement } = await import('react')
+    const { renderToStaticMarkup } = await import('react-dom/server')
+    const { DataViewCard } = await vite.ssrLoadModule(
+      '/src/features/assistant/data-view-card.tsx'
+    )
+    const render = (result) =>
+      renderToStaticMarkup(createElement(DataViewCard, { result }))
+    const cartesian = {
+      ...fixture,
+      columns: [
+        ...fixture.columns,
+        { key: 'izin', label: 'Izin', format: 'number' },
+      ],
+      rows: fixture.rows.map((row, index) => ({ ...row, izin: index + 1 })),
+    }
+    for (const chartType of ['line', 'area', 'bar', 'stacked-bar']) {
+      const html = render({
+        ...cartesian,
+        presentation: {
+          kind: 'cartesian',
+          chartType,
+          xKey: 'month',
+          series: [
+            { key: 'present', label: 'Present', valueType: 'number' },
+            { key: 'izin', label: 'Izin', valueType: 'number' },
+          ],
+        },
+      })
+      assert.match(html, /recharts-wrapper/)
+      assert.match(html, />Chart</)
+      assert.match(html, />Table</)
+    }
+    const pie = render({
+      summary: 'Sensus',
+      source: {
+        workspace: 'lupg',
+        scope: 'All authorized kelompok',
+        route: '/admin/lupg/sensus',
+        section: 'Sensus',
+      },
+      columns: [
+        { key: 'category', label: 'Category', format: 'text' },
+        { key: 'count', label: 'Count', format: 'number' },
+      ],
+      rows: [
+        { category: 'AR', count: 8 },
+        { category: 'APR', count: 12 },
+      ],
+      presentation: { kind: 'pie', categoryKey: 'category', valueKey: 'count' },
+    })
+    assert.match(pie, /recharts-wrapper/)
+    assert.match(pie, />Chart</)
+    assert.match(pie, />Table</)
+  } finally {
+    await vite.close()
+  }
+})

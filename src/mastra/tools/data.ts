@@ -76,3 +76,85 @@ export function monthRange(month: string) {
     end: `${next}-01T00:00:00+07:00`,
   }
 }
+
+export function jakartaDate(now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(now)
+  return ['year', 'month', 'day']
+    .map((kind) => parts.find((part) => part.type === kind)!.value)
+    .join('-')
+}
+export function defaultReportMonth(now = new Date()) {
+  const date = jakartaDate(now)
+  const [year, month, day] = date.split('-').map(Number)
+  if (day >= 8) return date.slice(0, 7)
+  return month === 1
+    ? `${year - 1}-12`
+    : `${year}-${String(month - 1).padStart(2, '0')}`
+}
+export const scopeFields = {
+  kelompok: z
+    .string()
+    .trim()
+    .min(1)
+    .max(100)
+    .optional()
+    .describe('Exact kelompok name; use allGroups to clear previous scope.'),
+  kelompokId: z.string().uuid().optional(),
+  allGroups: z.boolean().optional(),
+  offset: z.number().int().min(0).max(10000).default(0),
+  limit: z.number().int().min(1).max(50).default(50),
+}
+export type ScopeInput = {
+  kelompok?: string
+  kelompokId?: string
+  allGroups?: boolean
+  offset?: number
+  limit?: number
+}
+export const groupRow = z.object({ id: z.string().uuid(), value: z.string() })
+export type ResolvedScope = {
+  id?: string
+  label: string
+  groups: z.infer<typeof groupRow>[]
+  unresolved?: string[]
+}
+export async function resolveScope(
+  client: ReturnType<typeof callerDatabase>['client'],
+  signal: AbortSignal,
+  input: ScopeInput
+): Promise<ResolvedScope> {
+  const groups = await readRows(groupRow, signal, (from, to) =>
+    client
+      .from('lookup_values')
+      .select('id,value')
+      .eq('type', 'GROUP')
+      .order('value')
+      .order('id')
+      .range(from, to)
+      .abortSignal(signal)
+  )
+  if (input.allGroups || (!input.kelompok && !input.kelompokId))
+    return { label: 'Seluruh kelompok', groups }
+  const normalize = (name: string) =>
+    name.trim().replace(/\s+/g, ' ').toLocaleLowerCase('id')
+  const name = input.kelompok ? normalize(input.kelompok) : undefined
+  const exact = groups.filter(
+    (g) =>
+      (!input.kelompokId || g.id === input.kelompokId) &&
+      (!name || normalize(g.value) === name)
+  )
+  if (exact.length === 1)
+    return { id: exact[0].id, label: exact[0].value, groups: exact }
+  return {
+    label: input.kelompok ?? input.kelompokId!,
+    groups: [],
+    unresolved: groups
+      .filter((g) => name && normalize(g.value).includes(name))
+      .map((g) => g.value),
+  }
+}

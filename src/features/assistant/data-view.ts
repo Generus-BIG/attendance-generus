@@ -1,12 +1,28 @@
 import { z } from 'zod'
 
 export const sourceRoutes = {
-  absensi: ['/admin/dashboard', '/admin/attendance'],
+  absensi: [
+    '/admin/dashboard',
+    '/admin/attendance',
+    '/admin/participants',
+    '/admin/forms',
+    '/admin/approvals',
+  ],
   lupg: [
     '/admin/lupg/dashboard',
     '/admin/lupg/sensus',
     '/admin/lupg/programs',
     '/admin/lupg/phq/summary',
+    '/admin/lupg/phq/participants',
+    '/admin/lupg/phq/attendance',
+    '/admin/lupg/phq/progress',
+    '/admin/lupg/reports',
+    '/admin/lupg/mustin',
+    '/admin/lupg/recap',
+    '/admin/lupg/presentation',
+    '/admin/lupg/config',
+    '/admin/lupg/apr-intensif',
+    '/admin/lupg/ar-intensif',
   ],
 } as const
 
@@ -48,6 +64,20 @@ const sourceSchema = z
 const tableSchema = z
   .object({
     summary: text,
+    retrievedAt: z.string().datetime().optional(),
+    pagination: z
+      .object({
+        offset: z.number().int().nonnegative(),
+        limit: z.number().int().min(1).max(50),
+        totalRows: z.number().int().nonnegative(),
+        hasMore: z.boolean(),
+      })
+      .strict()
+      .optional(),
+    coverage: z
+      .object({ complete: z.boolean(), reason: text.optional() })
+      .strict()
+      .optional(),
     source: sourceSchema,
     columns: z
       .array(

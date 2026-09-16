@@ -271,7 +271,6 @@ function ResultChart({ data }: { data: AssistantDataResult }) {
               key={series.key}
               dataKey={series.key}
               name={series.label}
-              stackId='total'
               stroke={color(index)}
               fill={color(index)}
               isAnimationActive={false}
