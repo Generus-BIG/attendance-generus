@@ -55,3 +55,4 @@ docs/*
 *docs/
 testsprite_tests/
 graphify-out
+.env*
