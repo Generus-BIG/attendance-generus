@@ -131,7 +131,7 @@ export async function streamAdapter(
     await storage.finishRun(run, status)
   }
   try {
-    const { mastra } = await import('./index')
+    const { mastra } = await import('./index.js')
     const stream = await handleChatStream({
       mastra,
       agentId: 'assistant',

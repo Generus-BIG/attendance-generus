@@ -23,7 +23,9 @@ test('Vercel Assistant runtime uses resolvable ESM imports', async () => {
   ]
   for (const file of files) {
     const source = await readFile(file, 'utf8')
-    const extensionless = source.match(/from ['"]\.\.?\/[^'"]+(?<!\.js)['"]/g)
+    const extensionless = source.match(
+      /(?:from\s+|import\()['"]\.\.?\/[^'"]+(?<!\.js)['"]/g
+    )
     assert.equal(extensionless, null, `${file}: ${extensionless?.join(', ')}`)
   }
 })
