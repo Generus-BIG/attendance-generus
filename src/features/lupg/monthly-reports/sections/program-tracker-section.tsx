@@ -6,23 +6,41 @@ import { type Role } from '@/lib/rbac'
 import { supabase } from '@/lib/supabase'
 import { PROGRAM_ORDER } from '../../constants'
 import {
-  useActivePrograms,
+  useAllPrograms,
   useYearlyProgramData,
 } from '../../hooks/use-lupg-queries'
 import { ProgramClusterBody } from '../../programs/components/program-cluster-card'
 import { ProgramMonthlyBody } from '../../programs/components/program-monthly-card'
 import { ProgramQuarterlyBody } from '../../programs/components/program-quarterly-card'
-import { type MonthlyReportRow, type ProgramDefinitionRow } from '../../types'
 import {
   getQuarterStartMonthKey,
   type Quarter,
 } from '../../programs/utils/editability'
+import { type MonthlyReportRow, type ProgramDefinitionRow } from '../../types'
 import { ProgramSectionCard } from '../components/program-section-card'
 import { SectionHeading } from '../components/section-heading'
 
 interface Props {
   report: MonthlyReportRow
   readOnly?: boolean
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function selectReportPrograms(programs: ProgramDefinitionRow[]) {
+  const visible = programs.filter(
+    (program) => program.active || program.code === 'SHOLAT_ACR'
+  )
+  const byCode = new Map(visible.map((program) => [program.code, program]))
+  return [
+    ...PROGRAM_ORDER.flatMap((code) => {
+      const program = byCode.get(code)
+      return program ? [program] : []
+    }),
+    ...visible.filter(
+      (program) =>
+        !PROGRAM_ORDER.includes(program.code as (typeof PROGRAM_ORDER)[number])
+    ),
+  ]
 }
 
 export function ProgramTrackerSection({ report, readOnly = false }: Props) {
@@ -34,23 +52,11 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
   const year = parseInt(report.month.slice(0, 4), 10)
 
   const { data, isLoading } = useYearlyProgramData(report.kelompok_id, year)
-  const { data: programs = [] } = useActivePrograms()
-
-  const orderedPrograms = useMemo(() => {
-    const byCode = new Map(programs.map((p) => [p.code, p]))
-    const ordered: ProgramDefinitionRow[] = []
-    for (const code of PROGRAM_ORDER) {
-      const p = byCode.get(code)
-      if (p) ordered.push(p)
-    }
-    // Append any active programs not in the list
-    for (const p of programs) {
-      if (!PROGRAM_ORDER.includes(p.code as (typeof PROGRAM_ORDER)[number])) {
-        ordered.push(p)
-      }
-    }
-    return ordered
-  }, [programs])
+  const { data: programs = [] } = useAllPrograms()
+  const orderedPrograms = useMemo(
+    () => selectReportPrograms(programs),
+    [programs]
+  )
 
   const { data: kelompokOptions = [] } = useQuery({
     queryKey: ['lookup_values', 'GROUP'],
@@ -89,7 +95,7 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
           <Loader2 className='mr-2 h-5 w-5 animate-spin' />
           Memuat...
         </div>
-      ) : programs.length === 0 ? (
+      ) : orderedPrograms.length === 0 ? (
         <div className='rounded-xl border bg-card py-8 text-center text-sm text-muted-foreground shadow-sm'>
           Belum ada program aktif.
         </div>
@@ -121,7 +127,9 @@ export function ProgramTrackerSection({ report, readOnly = false }: Props) {
                 currentMonthKey={
                   p.reporting_style === 'quarterly'
                     ? getQuarterStartMonthKey(
-                        Math.ceil(parseInt(reportMonthKey.slice(5), 10) / 3) as Quarter,
+                        Math.ceil(
+                          parseInt(reportMonthKey.slice(5), 10) / 3
+                        ) as Quarter,
                         year
                       )
                     : reportMonthKey

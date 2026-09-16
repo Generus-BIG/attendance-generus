@@ -45,6 +45,7 @@ Design specs + implementation plans live in `docs/superpowers/specs/` and `docs/
 ```bash
 pnpm install          # Install dependencies
 pnpm dev              # Start Vite dev server (regenerates routeTree.gen.ts)
+pnpm assistant:dev    # Start Mastra assistant server (:4111, proxied as /api/assistant/*)
 pnpm build            # TypeScript check + Vite production build (tsc -b && vite build)
 pnpm lint             # ESLint
 pnpm format:check     # Prettier check
@@ -53,7 +54,7 @@ pnpm knip             # Find unused exports/dependencies
 pnpm typecheck:functions # Type-check Supabase Edge Functions
 ```
 
-Package manager is **pnpm** (not npm/yarn). No test framework is installed — verify changes via `pnpm build` (tsc) + `pnpm lint` + manual browser check.
+Package manager is **pnpm** (not npm/yarn). No test framework is installed — verify changes via `pnpm build` (tsc) + `pnpm lint` + manual browser check. Standalone checks use Node assert + `.test.mjs` files run directly: `node --test <file>` (assistant: `src/mastra/*.test.mjs`, `src/mastra/tools/*.test.mjs`, `src/features/assistant/*.test.mjs`).
 
 If `pnpm build` fails with "missing route" errors, run `pnpm exec vite build` first to regenerate `src/routeTree.gen.ts`, then `pnpm build` again.
 
@@ -63,6 +64,18 @@ Requires `.env.local` with:
 ```
 VITE_SUPABASE_URL=<supabase_url>
 VITE_SUPABASE_ANON_KEY=<supabase_anon_key>
+ASSISTANT_DATABASE_URL=postgresql://assistant_runtime:<provisioned-password>@<pooler-host>:5432/postgres
+```
+
+`ASSISTANT_DATABASE_URL` is server-only and restricted to the `assistant` schema. Provision the `assistant_runtime` password outside migrations; never expose this URL to Vite/client code.
+
+Assistant server additionally requires (server-only, never `VITE_`-prefixed):
+```
+SUPABASE_URL=<supabase_url>
+SUPABASE_ANON_KEY=<supabase_anon_key>
+AZURE_OPENAI_ENDPOINT=<azure_endpoint>
+AZURE_OPENAI_API_KEY=<azure_key>
+AZURE_OPENAI_API_VERSION=<api_version>
 ```
 
 ## Architecture
@@ -77,7 +90,8 @@ React 19 + Vite 7 (SWC) + TypeScript ~5.9 + Tailwind CSS v4 (Vite plugin, no `ta
 - `(auth)/` — public auth pages
 - `admin/route.tsx` — auth guard + workspace-default redirect (reads `useWorkspaceStore` + `WORKSPACE_DEFAULT_PATH`) + `ROUTE_ACCESS` enforcement
 - `admin/absensi/*` — attendance workspace routes
-- `admin/lupg/*` — reporting workspace routes; admin-only by default (`dashboard`, `recap`, `recap/present`, `mustin`, `config`). Team managers see `reports`, `programs`, `presentation`, `sensus`. `super_admin`, `admin`, and `mt` can use PHQ (`phq/summary`, `phq/participants`, `phq/progress`, `phq/attendance`) plus APR/AR Intensif; the PHQ children have explicit access entries.
+- `admin/lupg/*` — reporting workspace routes; admin-only by default (`dashboard`, `recap`, `recap/present`, `mustin`, `config`, `assistant`). Team managers see `reports`, `programs`, `presentation`, `sensus`. `super_admin`, `admin`, and `mt` can use PHQ (`phq/summary`, `phq/participants`, `phq/progress`, `phq/attendance`) plus APR/AR Intensif; the PHQ children have explicit access entries.
+- Assistant lives at `/admin/absensi/assistant` + `/admin/lupg/assistant` (one shared `AssistantPage`, `super_admin`/`admin` only) — see Dashboard Assistant section.
 - `/absensi/$formId` and `/register/add-participant` — public routes (no auth)
 - Router context passes `queryClient` via `createRootRouteWithContext`
 
@@ -91,6 +105,16 @@ Two parallel sidebars dispatched by active workspace:
 - `src/hooks/use-active-workspace.ts` — syncs store with URL (reads pathname, updates store if mismatch)
 - `TeamSwitcher` in sidebar header triggers `setActiveWorkspace` + `navigate` to workspace default
 - `getWorkspaceDefaultPath(workspace, role)` — resolves workspace navigation defaults; MT always lands on `/admin/lupg/phq/summary`, while other roles use `WORKSPACE_DEFAULT_PATH`.
+
+### Dashboard Assistant (Mastra + Azure OpenAI)
+
+- One shared `AssistantPage` (`src/features/assistant/`) exposed at `/admin/absensi/assistant` and `/admin/lupg/assistant`; `super_admin`/`admin` only (explicit `ROUTE_ACCESS` entries + sidebar gating).
+- Server code lives in `src/mastra/` but runs as a separate Node service (`pnpm assistant:dev`, port 4111; Vite proxies `/api/assistant/*`). Production uses same-origin Vercel functions in `api/assistant/` importing the same HTTP module + adapters. Browser modules must never import server Mastra code (only the `AssistantModelOption` type from `mastra/http`).
+- Three cohesive read-only caller-JWT tools: `readAbsensiData` (`absensi-readers.ts`), `readLupgReports` (`reports.ts`), and `readLupgOperations` (`lupg-operations.ts`). No service role or arbitrary SQL; reads time out after 15s and return ≤50 rows / ≤10 columns. Names resolve to an exact authorized kelompok or an unresolved-scope card; never widen scope.
+- Data View envelope (`src/features/assistant/data-view.ts`) is the only rich-result contract. Tools deterministically select validated tables/Bar/Line/Area/Donut/multi-series/stacked charts; browser re-validates and degrades invalid chart metadata to its evidence table. Conversations persist only sanitized text/valid Data Views in the private `assistant` schema; transient auth/storage availability failures return retryable 503 rather than false sign-out/not-found. The private schema intentionally stays outside browser-facing `database.types.ts`; server storage uses `pg` directly. Model catalogue (`src/mastra/models.ts`) maps 8 public IDs to server-only model names; default `gpt-5.6-terra`, selection persisted in `assistant_model` cookie.
+- The LLM endpoint is an Azure-style deployment gateway proxy (`AZURE_OPENAI_ENDPOINT` root path, NOT a standard `*.openai.azure.com` host — it strips its mount prefix before routing). `src/mastra/index.ts` builds the provider with `baseURL` = endpoint as-is, `apiKey` = `AZURE_OPENAI_API_KEY` as-is, `apiVersion` = `AZURE_OPENAI_API_VERSION`, and a custom fetch that rewrites to `{baseURL}/openai/deployments/{deployment}/chat/completions?api-version=...` (other sub-paths 404 "No listener"). GPT-5/reasoning deployments get the 9router-style body transform (`max_tokens` → `max_completion_tokens`, drop non-default `temperature`, drop `reasoning_effort` with tools). Never use `resourceName` + Basic-auth scheme — that produces 401 "invalid subscription key". Missing endpoint/credential fails fast with `AZURE_PROXY_*_MISSING`.
+- Chat rendering keeps `MessagePrimitive.Parts` as the ordered component boundary: `AssistantMarkdown` handles safe GFM (raw HTML disabled), registered tool/data UIs remain supported, and fallback tool Data Views render inline with secondary execution metadata. The adapted `@beui/prompt-input` binds directly to the runtime composer; model selection remains in `assistant_model`. Thread-level `ThinkingShimmer` follows `isRunning`, including the pre-token interval, and the runtime viewport owns scrolling.
+- Tests: `node --test` on `src/mastra/*.test.mjs`, `src/mastra/tools/*.test.mjs`, `src/features/assistant/*.test.mjs` (HTTP / Data View / navigation / provider seams).
 
 ### Data Layer
 
@@ -110,7 +134,7 @@ Two parallel sidebars dispatched by active workspace:
 
 All LUPG tables prefixed `lupg_`. Container pattern: one `lupg_monthly_reports` row per kelompok per month (`draft` → `submitted` lifecycle), with child tables referencing it:
 - `lupg_sensus` (master) + `lupg_sensus_snapshots` (frozen at submit via DB trigger)
-- `lupg_program_definitions` / `lupg_program_reports` (generic: Turba, GOMA, GMKM, PHQ, Sholat ACR, Nikah JM)
+- `lupg_program_definitions` / `lupg_program_reports` (generic: Turba, GOMA, GMKM, PHQ, Sholat ACR, Nikah JM). GMSU is the `SHOLAT_ACR` program and remains visible in monthly report input even when its definition is inactive; it uses the generic Sensus, Realisasi, percentage, and Keterangan fields.
 - `lupg_metric_definitions` / `lupg_metric_reports` (configurable; seed = 5 attendance % metrics)
 - `lupg_sarpras_items` / `lupg_sarpras_reports` (14 seeded items, global checklist)
 - `lupg_shodaqoh` (1:1 with monthly report)
@@ -119,6 +143,8 @@ All LUPG tables prefixed `lupg_`. Container pattern: one `lupg_monthly_reports` 
 - `lupg_mustin_notes` + `lupg_mustin_templates` (templates seed the per-report notes; see `mustin-section.tsx`)
 - PHQ uses `lupg_phq_participants`, `lupg_phq_meetings`, `lupg_phq_progress`, `lupg_phq_attendance`, and `lupg_phq_monthly_notes`; APR/AR Intensif use `lupg_intensif_activities` and `lupg_intensif_attendance`. Admins have all-kelompok access; MT is restricted to `user_kelompok_id()` by RLS, including child rows through their meeting/activity parent.
 - `list_lupg_intensif_candidates(p_program_code, p_kelompok_id)` is a `SECURITY DEFINER` RPC with execute granted only to `authenticated`. It accepts only `APR_INTENSIF`/`AR_INTENSIF`; for MT it ignores the supplied `p_kelompok_id` and uses `user_kelompok_id()` server-side. Do not rely on the browser-provided kelompok for MT candidate scope.
+
+**Target Capaian Materi import/recap**: regional workbook imports inherit merged `Materi` cells only across following non-empty `Detail Materi` rows in the same month. Empty-detail rows are filtered at the shared active-item service boundary and are not shown or counted. Quran/Hadith `Ayat/Hal` `Dari`/`Sampai` values stay attached to each detail row. Monthly entry uses flat category groups with always-visible percentage inputs and optional inline notes; single-field blur saves must not reset omitted report fields. The shared internal/public/PPTX recap renderer merges consecutive equal Materi labels with native table `rowSpan`.
 
 **Penerapan 29 Karakter assessment**: `lupg_character_monitoring_reports.status` is nullable (`NULL` = Belum dinilai) and accepts `needs_guidance`, `not_applied`, `in_progress`, `consistent`, or `established`. `needs_guidance` means Perlu Pembinaan and requires a non-empty row-specific note; the note constraint is `NOT VALID` so historical coaching rows without notes remain visible for correction while new/edited rows are enforced. This assessment is collective per `jenjang × konteks penerapan`, not per participant or per individual character. Keep this status model separate from the legacy `lupg_character_target_reports.status` field.
 

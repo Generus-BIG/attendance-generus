@@ -112,3 +112,27 @@ candidate and participant-edit RPCs are `SECURITY DEFINER` only because they
 enforce a narrower authority surface than direct participant-table access.
 Their execute grants are limited to `authenticated`, with `PUBLIC` and `anon`
 revoked.
+
+## Dashboard Assistant
+
+The Dashboard Assistant is a conversational, read-only capability over six
+approved Absensi and LUPG data tools. It may retrieve data only within the
+signed-in user's existing role and kelompok scope. It is not a general SQL
+interface and cannot change records. Its initial audience is `super_admin` and
+`admin`; other authenticated roles do not have access.
+
+The Dashboard Assistant is one implementation exposed through workspace-bound
+routes at `/admin/absensi/assistant` and `/admin/lupg/assistant`. The route
+selects the default workspace context; cross-workspace retrieval requires an
+explicit user request. Conversations are ephemeral and reset on refresh; the
+MVP has no Assistant Memory or persisted thread history.
+
+A Data View is a validated Dashboard Assistant tool result rendered through an
+approved table or Recharts component. Deterministic tool code selects a
+supported view such as table, bar, line, or pie; the model cannot emit
+executable UI code, arbitrary visualization schemas, or SQL.
+
+The Dashboard Assistant responds in the language of the user's current prompt.
+The first prompt's language is the fallback when a later prompt is ambiguous;
+canonical domain terms such as kelompok, sensus, PHQ, and Mustin remain
+unchanged.
