@@ -1,5 +1,5 @@
 import { formatMonthLabel } from '../../../utils/month-utils'
-import { polylinePoints, sparklineDomain } from '../../../utils/sparkline'
+import { pointFor, sparklineDomain } from '../../../utils/sparkline'
 import { areaPath } from '../../../utils/svg-charts'
 import {
   type DesaSummary,
@@ -10,7 +10,7 @@ interface Props {
   summary: DesaSummary
   trend: TrendPoint[]
   currentMonthKey: string
-  /** Target line %. Default 90. */
+  /** Target line %. Default 80. */
   target?: number
 }
 
@@ -21,17 +21,28 @@ export function TileHeroTrend({
   summary,
   trend,
   currentMonthKey,
-  target = 90,
+  target = 80,
 }: Props) {
   const values = trend.map((p) => p.value)
   const { yMin, yMax } = sparklineDomain(values)
   const area = areaPath(values, { width: SVG_W, height: SVG_H, yMin, yMax })
-  const line = polylinePoints(values, {
-    width: SVG_W,
-    height: SVG_H,
-    yMin,
-    yMax,
+  const lineSegments: string[] = []
+  let run: string[] = []
+  values.forEach((value, index) => {
+    if (value == null || Number.isNaN(value)) {
+      if (run.length) lineSegments.push(run.join(' '))
+      run = []
+      return
+    }
+    const point = pointFor(values, index, {
+      width: SVG_W,
+      height: SVG_H,
+      yMin,
+      yMax,
+    })
+    if (point) run.push(`${point.x},${point.y}`)
   })
+  if (run.length) lineSegments.push(run.join(' '))
   const padding = 2
   const innerH = Math.max(1, SVG_H - padding * 2)
   const targetY =
@@ -80,16 +91,34 @@ export function TileHeroTrend({
         aria-hidden='true'
       >
         {area && <path d={area} fill='currentColor' fillOpacity={0.15} />}
-        {line && (
+        {lineSegments.map((points, index) => (
           <polyline
-            points={line}
+            key={index}
+            points={points}
             fill='none'
             stroke='currentColor'
             strokeWidth={1.5}
             strokeLinecap='round'
             strokeLinejoin='round'
           />
-        )}
+        ))}
+        {values.map((_, index) => {
+          const point = pointFor(values, index, {
+            width: SVG_W,
+            height: SVG_H,
+            yMin,
+            yMax,
+          })
+          return point ? (
+            <circle
+              key={trend[index]?.monthKey}
+              cx={point.x}
+              cy={point.y}
+              r={1.5}
+              fill='currentColor'
+            />
+          ) : null
+        })}
         {targetY != null && (
           <line
             x1={0}
