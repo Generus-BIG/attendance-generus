@@ -266,6 +266,35 @@ LUPG presentation decks can be shared per `month × scope` through
   second public deck renderer. Both surfaces support browser-side PPTX export
   via `exportPresentationPptx`.
 
+### Public LUPG Program Analytics Sharing
+
+Desa Overview can be shared with submitted-month history through
+`/share/lupg/program-analytics/$token` — one active token browses submitted
+months via a validated `?month=YYYY-MM` param with fallback to the share month:
+- `lupg_program_analytics_shares` stores one Desa-only share per first-of-month
+  date. RLS permits only `super_admin`/`admin` to manage share rows; token
+  rotation immediately invalidates the previous public route. The existing token
+  remains the capability boundary; the requested month only selects among
+  submitted public data.
+- `get_public_lupg_program_analytics_payload(token, month)` returns allowlisted
+  aggregates, full Mustin topic/decision text, submitted-month documentation
+  captions grouped by kelompok, available month keys, and the live Desa sensus
+  aggregate. The selected month must have a submitted report or falls back to
+  the share month; its trailing 12-month chart aggregate includes draft and
+  submitted program values to match Desa Overview. Details and photos stay
+  bounded per request — only the selected month is returned. Report rows and
+  selected-month details are limited to `submitted`; Mustin status, UUIDs, PIC,
+  deadlines, and audit identities are omitted.
+  The fixed-search-path `SECURITY DEFINER` function is the public data entry
+  point for this feature.
+- Private storage paths are not returned in the public payload.
+  `get_public_lupg_program_analytics_photo_paths(token, month)` is executable only by
+  `service_role`; `supabase/functions/lupg-public-program-analytics/index.ts`
+  uses it to sign one-hour URLs from `lupg-activity-photos`.
+- Internal and public surfaces render `DesaOverviewDashboard`; public mode is
+  read-only and uses synthetic kelompok, note, and photo keys instead of DB
+  identifiers. The public route does not query protected LUPG tables.
+
 ### UI Components
 
 - `src/components/ui/` — shadcn/ui primitives (excluded from ESLint). Add new ones via shadcn CLI. Note: `accordion` primitive is NOT installed (LUPG Rekap Desa Mustin section falls back to flat grouped list).
@@ -306,6 +335,8 @@ Schema changes are tracked in `supabase/migrations/` as timestamped `.sql` files
 - `20260820000000_mt_phq_intensif.sql` through `20260820230000_add_intensif_candidate_rpc.sql` — MT role, PHQ and Intensif tables/RLS, scope and attendance triggers, immutable PHQ parent kelompok controller rule, progress mastery percent, and scoped Intensif candidate RPC
 - `20260905000000_track_lupg_monthly_report_last_editor.sql` — report-level last-editor audit fields, child-content touch triggers, scoped editor-name lookup, and atomic Sensus save + report touch RPC
 - `20260906000000_lupg_submission_editor_label.sql` + `20260906010000_lupg_monthly_report_edit_history.sql` (+ `.01`–`.05` fixups) — submitted_by label column, append-only `lupg_monthly_report_edit_history` audit table, lifecycle/history triggers, bounded single-report history RPC, and complete admin-only all-kelompok monthly audit dashboard RPC
+- `20260923041020_lupg_program_analytics_sharing.sql` — admin-only month-scoped Desa share tokens, a submitted-only public payload RPC, and a service-role-only photo-path RPC
+- `20260923154924_expand_lupg_program_analytics_sharing.sql` — submitted-month history selection, trailing 12-month analytics, and selected-month photo signing boundaries
 
 ## Known Debt / Future Improvements
 

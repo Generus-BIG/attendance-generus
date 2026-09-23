@@ -4,9 +4,10 @@ import { type SarprasCompletenessRow } from '../../hooks/use-desa-overview'
 
 interface Props {
   rows: SarprasCompletenessRow[]
+  readOnly?: boolean
 }
 
-export function TileSarprasChecklist({ rows }: Props) {
+export function TileSarprasChecklist({ rows, readOnly }: Props) {
   return (
     <div className='flex h-full flex-col rounded-lg border bg-card p-4'>
       <div className='mb-3 text-xs font-medium tracking-wide text-muted-foreground uppercase'>
@@ -18,34 +19,56 @@ export function TileSarprasChecklist({ rows }: Props) {
             Tidak ada sarpras item.
           </div>
         ) : (
-          rows.map((r) => (
-            <Link
-              key={r.kelompokId}
-              to='/admin/lupg/programs'
-              search={{ tab: 'kelompok' as const, kelompok: r.kelompokId }}
-              className='flex items-center gap-2 rounded px-1 py-0.5 hover:bg-muted focus:ring-2 focus:ring-ring focus:outline-none'
-              title={`${r.kelompokName}: ${r.okCount}/${r.total} item lengkap`}
-            >
-              <div className='w-16 truncate text-xs font-medium'>
-                {r.kelompokName}
+          rows.map((r) => {
+            const content = (
+              <div className='flex items-center gap-2 rounded px-1 py-0.5'>
+                <div className='w-16 truncate text-xs font-medium'>
+                  {r.kelompokName}
+                </div>
+                <div className='flex flex-1 gap-0.5'>
+                  {r.items.map((ok, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        'h-3 flex-1 rounded-[2px]',
+                        ok ? 'bg-success' : 'bg-muted'
+                      )}
+                      title={`Item ${i + 1}`}
+                    />
+                  ))}
+                </div>
+                <div className='w-10 text-right font-mono text-xs tabular-nums'>
+                  {r.okCount}/{r.total}
+                </div>
               </div>
-              <div className='flex flex-1 gap-0.5'>
-                {r.items.map((ok, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      'h-3 flex-1 rounded-[2px]',
-                      ok ? 'bg-success' : 'bg-muted'
-                    )}
-                    title={`Item ${i + 1}`}
-                  />
-                ))}
+            )
+            return (
+              <div
+                key={r.kelompokId}
+                className={
+                  readOnly
+                    ? ''
+                    : 'rounded focus-within:ring-2 focus-within:ring-ring hover:bg-muted'
+                }
+              >
+                {readOnly ? (
+                  content
+                ) : (
+                  <Link
+                    to='/admin/lupg/programs'
+                    search={{
+                      tab: 'kelompok' as const,
+                      kelompok: r.kelompokId,
+                    }}
+                    className='block focus-visible:outline-none'
+                    title={`${r.kelompokName}: ${r.okCount}/${r.total} item lengkap`}
+                  >
+                    {content}
+                  </Link>
+                )}
               </div>
-              <div className='w-10 text-right font-mono text-xs tabular-nums'>
-                {r.okCount}/{r.total}
-              </div>
-            </Link>
-          ))
+            )
+          })
         )}
       </div>
     </div>

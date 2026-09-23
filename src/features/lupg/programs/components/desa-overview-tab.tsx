@@ -1,14 +1,8 @@
 import { Loader2 } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 import { useDesaOverview } from '../hooks/use-desa-overview'
-import { DesaKPIStrip } from './desa-overview/desa-kpi-strip'
-import { TileFullTrend } from './desa-overview/tile-full-trend'
-import { TileHeroTrend } from './desa-overview/tile-hero-trend'
-import { TileKehadiranMetrics } from './desa-overview/tile-kehadiran-metrics'
-import { TileProgramMatrix } from './desa-overview/tile-program-matrix'
-import { TileProgramRanked } from './desa-overview/tile-program-ranked'
-import { TileSarprasChecklist } from './desa-overview/tile-sarpras-checklist'
-import { TileSensusDonut } from './desa-overview/tile-sensus-donut'
-import { TileShodaqohBars } from './desa-overview/tile-shodaqoh-bars'
+import { DesaOverviewDashboard } from './desa-overview/desa-overview-dashboard'
+import { ProgramAnalyticsShareCard } from './program-analytics-share-card'
 
 interface Props {
   year: number
@@ -16,6 +10,7 @@ interface Props {
 }
 
 export function DesaOverviewTab({ year, monthKey }: Props) {
+  const role = useAuthStore((state) => state.auth.role)
   const { data, isLoading, error } = useDesaOverview(year, monthKey)
 
   if (isLoading) {
@@ -43,56 +38,15 @@ export function DesaOverviewTab({ year, monthKey }: Props) {
     )
   }
 
-  const sensusTotal = data.sensusByCategory.reduce((a, b) => a + b.count, 0)
-
+  const canShare = role === 'super_admin' || role === 'admin'
   return (
-    <div className='@container/desa flex flex-col gap-3'>
-      <DesaKPIStrip summary={data.summary} />
-      <div
-        aria-live='polite'
-        aria-busy={false}
-        className='grid auto-rows-[minmax(120px,auto)] grid-cols-1 gap-3 @md/desa:grid-cols-6'
-      >
-        <div className='row-span-2 @md/desa:col-span-6 @3xl/desa:col-span-4'>
-          <TileHeroTrend
-            summary={data.summary}
-            trend={data.trendRataDesa}
-            currentMonthKey={monthKey}
-          />
-        </div>
-        <div className='row-span-2 @md/desa:col-span-6 @3xl/desa:col-span-2'>
-          <TileSensusDonut
-            slices={data.sensusByCategory}
-            sensusTotal={sensusTotal}
-          />
-        </div>
-        <div className='row-span-2 @md/desa:col-span-6 @2xl/desa:col-span-3'>
-          <TileKehadiranMetrics rows={data.kehadiranMetrics} />
-        </div>
-        <div className='row-span-2 @md/desa:col-span-6 @2xl/desa:col-span-3'>
-          <TileProgramRanked rows={data.programRanked} />
-        </div>
-        <div className='row-span-2 @md/desa:col-span-6 @2xl/desa:col-span-3'>
-          <TileProgramMatrix
-            rows={data.programKelompokMatrix}
-            kelompoks={data.kelompoks}
-            year={year}
-          />
-        </div>
-        <div className='row-span-2 @md/desa:col-span-6 @2xl/desa:col-span-3'>
-          <TileSarprasChecklist rows={data.sarprasCompleteness} />
-        </div>
-        <div className='row-span-2 @md/desa:col-span-6'>
-          <TileShodaqohBars rows={data.shodaqohPerKelompok} />
-        </div>
-        <div className='row-span-1 @md/desa:col-span-6'>
-          <TileFullTrend
-            lines={data.programTrendLines}
-            desaTrend={data.trendRataDesa}
-            monthKeys={data.trendRataDesa.map((p) => p.monthKey)}
-          />
-        </div>
-      </div>
-    </div>
+    <DesaOverviewDashboard
+      data={data}
+      year={year}
+      monthKey={monthKey}
+      shareAction={
+        canShare ? <ProgramAnalyticsShareCard monthKey={monthKey} /> : undefined
+      }
+    />
   )
 }

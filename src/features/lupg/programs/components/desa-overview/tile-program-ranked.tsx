@@ -8,11 +8,13 @@ interface Props {
   rows: ProgramRankedRow[]
   /** Target % line drawn on each row. Default 80. */
   target?: number
+  readOnly?: boolean
 }
 
 export function TileProgramRanked({
   rows,
   target = PROGRAM_TARGET_PCT,
+  readOnly,
 }: Props) {
   return (
     <div className='flex h-full flex-col rounded-lg border bg-card p-4'>
@@ -27,21 +29,22 @@ export function TileProgramRanked({
           </div>
         ) : (
           rows.map((p) => {
-            const pct = p.pct ?? 0
-            return (
-              <Link
-                key={p.code}
-                to='/admin/lupg/programs'
-                search={{ tab: 'kelompok' as const }}
-                className='flex items-center gap-2 rounded px-1 py-0.5 hover:bg-muted focus:ring-2 focus:ring-ring focus:outline-none'
-                title={`${p.name}: ${p.pct != null ? `${p.pct}%` : 'tidak ada data'} — buka tab Per Kelompok`}
-              >
+            const content = (
+              <div className='flex items-center gap-2 rounded px-1 py-0.5'>
                 <div className='min-w-0 flex-1 truncate text-xs'>{p.name}</div>
-                <div className='relative h-2 w-32 overflow-hidden rounded bg-muted'>
-                  <div
-                    className={cn('h-full', statusBg(getStatus(p.pct)))}
-                    style={{ width: `${Math.min(100, pct)}%` }}
-                  />
+                <div
+                  className='relative flex h-2 w-32 items-center overflow-hidden rounded bg-muted'
+                  role='img'
+                  aria-label={`${p.name}: ${p.pct == null ? 'tidak ada data' : `${p.pct}%`}`}
+                >
+                  {p.pct == null ? (
+                    <span className='sr-only'>Tidak ada data</span>
+                  ) : (
+                    <div
+                      className={cn('h-full', statusBg(getStatus(p.pct)))}
+                      style={{ width: `${Math.min(100, p.pct)}%` }}
+                    />
+                  )}
                   <div
                     className='absolute top-0 bottom-0 w-px bg-foreground/50'
                     style={{ left: `${target}%` }}
@@ -51,7 +54,30 @@ export function TileProgramRanked({
                 <div className='w-10 text-right font-mono text-xs tabular-nums'>
                   {p.pct != null ? `${p.pct}%` : '—'}
                 </div>
-              </Link>
+              </div>
+            )
+            return (
+              <div
+                key={p.code}
+                className={
+                  readOnly
+                    ? ''
+                    : 'rounded focus-within:ring-2 focus-within:ring-ring hover:bg-muted'
+                }
+              >
+                {readOnly ? (
+                  content
+                ) : (
+                  <Link
+                    to='/admin/lupg/programs'
+                    search={{ tab: 'kelompok' as const }}
+                    className='block focus-visible:outline-none'
+                    title={`${p.name}: ${p.pct != null ? `${p.pct}%` : 'tidak ada data'} — buka tab Per Kelompok`}
+                  >
+                    {content}
+                  </Link>
+                )}
+              </div>
             )
           })
         )}

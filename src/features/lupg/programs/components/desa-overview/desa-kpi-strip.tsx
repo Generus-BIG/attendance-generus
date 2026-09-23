@@ -100,7 +100,11 @@ export function DesaKPIStrip({ summary }: Props) {
       />
       <Chip
         label='Shodaqoh PPG'
-        value={formatRupiahShort(summary.shodaqohMtd)}
+        value={
+          summary.shodaqohMtd == null
+            ? '—'
+            : formatRupiahShort(summary.shodaqohMtd)
+        }
         sub={<DeltaBadge delta={summary.deltaShodaqoh} unit='%' />}
       />
     </div>
