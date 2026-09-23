@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { getSignedUrls } from '../../services/activity-photos.service'
 import {
   type MetricReportRow,
   type MonthlyReportRow,
@@ -9,6 +10,11 @@ import {
   type ShodaqohRow,
 } from '../../types'
 import { shiftMonth } from '../../utils/month-utils'
+import {
+  aggregateAttendanceCategories,
+  type AttendanceAggregate,
+  type AttendanceValue,
+} from '../utils/attendance-aggregate'
 
 export interface KelompokLite {
   id: string
@@ -21,7 +27,7 @@ export interface DesaSummary {
   kehadiranAvg: number | null
   programOkCount: number
   sarprasOkCount: number
-  shodaqohMtd: number
+  shodaqohMtd: number | null
   deltaDesaAvg: number | null
   deltaSensus: number | null
   deltaKehadiran: number | null
@@ -37,13 +43,6 @@ export interface SensusCategorySlice {
   category: string
   count: number
   pct: number
-}
-
-export interface KehadiranMetricRow {
-  code: string
-  name: string
-  pct: number | null
-  trend: 'up' | 'down' | 'flat' | 'none'
 }
 
 export interface ProgramRankedRow {
@@ -69,13 +68,29 @@ export interface SarprasCompletenessRow {
 export interface ShodaqohPerKelompokRow {
   kelompokId: string
   kelompokName: string
-  nominal: number
+  nominal: number | null
 }
 
 export interface ProgramTrendLine {
   code: string
   name: string
   monthly: Array<number | null>
+}
+
+export interface MustinRecapRow {
+  id: string
+  kelompokName: string
+  pokokMasalah: string
+  keputusanRencana: string
+  status?: string
+  sortOrder: number
+}
+
+export interface DocumentationPreview {
+  id: string
+  kelompokName: string
+  caption: string | null
+  signedUrl: string | null
 }
 
 export interface DesaOverviewData {
@@ -85,7 +100,9 @@ export interface DesaOverviewData {
   summary: DesaSummary
   trendRataDesa: TrendPoint[]
   sensusByCategory: SensusCategorySlice[]
-  kehadiranMetrics: KehadiranMetricRow[]
+  attendance: AttendanceAggregate
+  mustinNotes: MustinRecapRow[]
+  documentation: DocumentationPreview[]
   programRanked: ProgramRankedRow[]
   programKelompokMatrix: ProgramKelompokMatrixRow[]
   sarprasCompleteness: SarprasCompletenessRow[]
@@ -105,10 +122,10 @@ async function fetchDesaOverview(
   const [
     { data: kelompokRows, error: kelompokError },
     { data: programRows, error: programError },
-    { data: metricRows, error: metricError },
     { data: sarprasItemRows, error: sarprasItemError },
     { data: monthlyReportRows, error: monthlyError },
     { data: sensusMasterRows, error: sensusMasterError },
+    { data: previousYearMonthRows, error: previousYearMonthError },
   ] = await Promise.all([
     supabase
       .from('lookup_values')
@@ -117,11 +134,6 @@ async function fetchDesaOverview(
       .order('value'),
     supabase
       .from('lupg_program_definitions')
-      .select('*')
-      .eq('active', true)
-      .order('sort_order'),
-    supabase
-      .from('lupg_metric_definitions')
       .select('*')
       .eq('active', true)
       .order('sort_order'),
@@ -139,25 +151,25 @@ async function fetchDesaOverview(
     // so the dashboard reflects current roster even when monthly reports are still in draft
     // (snapshots are only frozen on submit).
     supabase.from('lupg_sensus').select('*'),
+    prevMonthKey.startsWith(`${year}-`)
+      ? Promise.resolve({ data: [], error: null })
+      : supabase
+          .from('lupg_monthly_reports')
+          .select('id, kelompok_id, month')
+          .eq('month', `${prevMonthKey}-01`),
   ])
 
   if (kelompokError) throw kelompokError
   if (programError) throw programError
-  if (metricError) throw metricError
   if (sarprasItemError) throw sarprasItemError
   if (monthlyError) throw monthlyError
   if (sensusMasterError) throw sensusMasterError
+  if (previousYearMonthError) throw previousYearMonthError
 
   const kelompoks: KelompokLite[] = (kelompokRows ?? []).map(
     (k: { id: string; value: string }) => ({ id: k.id, name: k.value })
   )
   const programs = (programRows ?? []) as ProgramDefinitionRow[]
-  const metrics = (metricRows ?? []) as Array<{
-    code: string
-    name: string
-    value_format: string
-    category_label: string | null
-  }>
   const sarprasItems = (sarprasItemRows ?? []) as Array<{
     id: string
     name: string
@@ -166,6 +178,15 @@ async function fetchDesaOverview(
   const monthlyReports = (monthlyReportRows ?? []) as MonthlyReportRow[]
 
   const reportIds = monthlyReports.map((r) => r.id)
+  const selectedReports = monthlyReports.filter(
+    (report) => report.month.slice(0, 7) === monthKey
+  )
+  const selectedReportIds = selectedReports.map((report) => report.id)
+  const priorYearReports = (previousYearMonthRows ?? []) as Array<{
+    id: string
+    kelompok_id: string
+    month: string
+  }>
 
   // Second batch: child rows scoped to the monthly_reports we just fetched.
   const emptyResult = { data: [], error: null }
@@ -174,6 +195,9 @@ async function fetchDesaOverview(
     { data: metricReportRows, error: metricRepError },
     { data: sarprasReportRows, error: sarprasRepError },
     { data: shodaqohRows, error: shodaqohError },
+    { data: mustinRows, error: mustinError },
+    { data: photoRows, error: photoError },
+    { data: priorYearMetricRows, error: priorYearMetricError },
   ] = await Promise.all([
     reportIds.length > 0
       ? supabase
@@ -199,12 +223,41 @@ async function fetchDesaOverview(
           .select('*')
           .in('monthly_report_id', reportIds)
       : Promise.resolve(emptyResult),
+    selectedReportIds.length > 0
+      ? supabase
+          .from('lupg_mustin_notes')
+          .select(
+            'id, monthly_report_id, pokok_masalah, keputusan_rencana, status, sort_order'
+          )
+          .in('monthly_report_id', selectedReportIds)
+          .order('sort_order')
+      : Promise.resolve(emptyResult),
+    selectedReportIds.length > 0
+      ? supabase
+          .from('lupg_activity_photos')
+          .select('id, report_id, caption, storage_path, sort_order')
+          .in('report_id', selectedReportIds)
+          .order('report_id')
+          .order('sort_order')
+      : Promise.resolve(emptyResult),
+    priorYearReports.length > 0
+      ? supabase
+          .from('lupg_metric_reports')
+          .select('monthly_report_id, metric_code, current_value')
+          .in(
+            'monthly_report_id',
+            priorYearReports.map((report) => report.id)
+          )
+      : Promise.resolve(emptyResult),
   ])
 
   if (progRepError) throw progRepError
   if (metricRepError) throw metricRepError
   if (sarprasRepError) throw sarprasRepError
   if (shodaqohError) throw shodaqohError
+  if (mustinError) throw mustinError
+  if (photoError) throw photoError
+  if (priorYearMetricError) throw priorYearMetricError
 
   const programReports = (programReportRows ?? []) as ProgramReportRow[]
   const metricReports = (metricReportRows ?? []) as MetricReportRow[]
@@ -218,6 +271,40 @@ async function fetchDesaOverview(
     count: number
   }>
   const activeKelompokIds = new Set(kelompoks.map((k) => k.id))
+  const kelompokNameById = new Map(kelompoks.map((k) => [k.id, k.name]))
+  const selectedReportById = new Map(
+    selectedReports.map((report) => [report.id, report])
+  )
+  const mustinNotes: MustinRecapRow[] = (mustinRows ?? []).flatMap((note) => {
+    const report = selectedReportById.get(note.monthly_report_id)
+    if (!report) return []
+    return [
+      {
+        id: note.id,
+        kelompokName: kelompokNameById.get(report.kelompok_id) ?? 'Kelompok',
+        pokokMasalah: note.pokok_masalah,
+        keputusanRencana: note.keputusan_rencana,
+        status: note.status,
+        sortOrder: note.sort_order,
+      },
+    ]
+  })
+  const photos = photoRows ?? []
+  const signedUrls = await getSignedUrls(
+    photos.map((photo) => photo.storage_path)
+  ).catch(() => new Map<string, string>())
+  const documentation: DocumentationPreview[] = photos.flatMap((photo) => {
+    const report = selectedReportById.get(photo.report_id)
+    if (!report) return []
+    return [
+      {
+        id: photo.id,
+        kelompokName: kelompokNameById.get(report.kelompok_id) ?? 'Kelompok',
+        caption: photo.caption,
+        signedUrl: signedUrls.get(photo.storage_path) ?? null,
+      },
+    ]
+  })
 
   // Index monthly_reports by (kelompok, month).
   const reportByKelompokMonth = new Map<string, MonthlyReportRow>()
@@ -226,6 +313,38 @@ async function fetchDesaOverview(
   }
   const reportById = new Map(
     monthlyReports.map((report) => [report.id, report])
+  )
+
+  const attendanceRows: AttendanceValue[] = metricReports.flatMap((metric) => {
+    const report = reportById.get(metric.monthly_report_id)
+    if (!report || !activeKelompokIds.has(report.kelompok_id)) return []
+    return [
+      {
+        monthKey: report.month.slice(0, 7),
+        kelompokId: report.kelompok_id,
+        code: metric.metric_code,
+        value:
+          metric.current_value == null ? null : Number(metric.current_value),
+      },
+    ]
+  })
+  const priorReportById = new Map(
+    priorYearReports.map((report) => [report.id, report])
+  )
+  for (const metric of priorYearMetricRows ?? []) {
+    const report = priorReportById.get(metric.monthly_report_id)
+    if (!report || !activeKelompokIds.has(report.kelompok_id)) continue
+    attendanceRows.push({
+      monthKey: prevMonthKey,
+      kelompokId: report.kelompok_id,
+      code: metric.metric_code,
+      value: metric.current_value == null ? null : Number(metric.current_value),
+    })
+  }
+  const attendance = aggregateAttendanceCategories(
+    attendanceRows,
+    monthKey,
+    prevMonthKey
   )
 
   // ---- Per-month program aggregates (for trend + ranked + matrix + weighted desa avg) ----
@@ -346,60 +465,7 @@ async function fetchDesaOverview(
     }))
     .sort((a, b) => b.count - a.count)
 
-  // --- kehadiranMetrics (current month, avg across kelompoks per metric) ---
-  const kehadiranMetrics: KehadiranMetricRow[] = metrics.map((m) => {
-    const thisMonthValues: number[] = []
-    const prevMonthValues: number[] = []
-    for (const k of kelompoks) {
-      const curReport = reportByKelompokMonth.get(`${k.id}__${monthKey}`)
-      const prevReport = reportByKelompokMonth.get(`${k.id}__${prevMonthKey}`)
-      const curRow = curReport
-        ? metricReports.find(
-            (r) =>
-              r.monthly_report_id === curReport.id && r.metric_code === m.code
-          )
-        : undefined
-      const prevRow = prevReport
-        ? metricReports.find(
-            (r) =>
-              r.monthly_report_id === prevReport.id && r.metric_code === m.code
-          )
-        : undefined
-      if (curRow?.current_value != null)
-        thisMonthValues.push(Number(curRow.current_value))
-      if (prevRow?.current_value != null)
-        prevMonthValues.push(Number(prevRow.current_value))
-    }
-    const curAvg =
-      thisMonthValues.length > 0
-        ? Math.round(
-            thisMonthValues.reduce((a, b) => a + b, 0) / thisMonthValues.length
-          )
-        : null
-    const prevAvg =
-      prevMonthValues.length > 0
-        ? Math.round(
-            prevMonthValues.reduce((a, b) => a + b, 0) / prevMonthValues.length
-          )
-        : null
-    let trend: 'up' | 'down' | 'flat' | 'none' = 'none'
-    if (curAvg != null && prevAvg != null) {
-      if (curAvg > prevAvg + 0.5) trend = 'up'
-      else if (curAvg < prevAvg - 0.5) trend = 'down'
-      else trend = 'flat'
-    }
-    return { code: m.code, name: m.name, pct: curAvg, trend }
-  })
-
-  const definedKehadiran = kehadiranMetrics
-    .map((km) => km.pct)
-    .filter((v): v is number => v != null)
-  const kehadiranAvgThis =
-    definedKehadiran.length > 0
-      ? Math.round(
-          definedKehadiran.reduce((a, b) => a + b, 0) / definedKehadiran.length
-        )
-      : null
+  const kehadiranAvgThis = attendance.generus.average
 
   // --- sarprasCompleteness (current month) + sarprasOkCount ---
   const sarprasCompleteness: SarprasCompletenessRow[] = kelompoks.map((k) => {
@@ -436,20 +502,28 @@ async function fetchDesaOverview(
     return {
       kelompokId: k.id,
       kelompokName: k.name,
-      nominal: Number(row?.nominal ?? 0),
+      nominal: row?.nominal == null ? null : Number(row.nominal),
     }
   })
-  const shodaqohMtd = shodaqohPerKelompok.reduce((a, b) => a + b.nominal, 0)
+  const currentShodaqohValues = shodaqohPerKelompok.flatMap((row) =>
+    row.nominal == null ? [] : [row.nominal]
+  )
+  const shodaqohMtd = currentShodaqohValues.length
+    ? currentShodaqohValues.reduce((a, b) => a + b, 0)
+    : null
 
-  const shodaqohPrevMtd = kelompoks.reduce((acc, k) => {
+  const shodaqohPrevValues = kelompoks.flatMap((k) => {
     const prevReport = reportByKelompokMonth.get(`${k.id}__${prevMonthKey}`)
     const row = prevReport
       ? shodaqohList.find((s) => s.monthly_report_id === prevReport.id)
       : undefined
-    return acc + Number(row?.nominal ?? 0)
-  }, 0)
+    return row?.nominal == null ? [] : [Number(row.nominal)]
+  })
+  const shodaqohPrevMtd = shodaqohPrevValues.length
+    ? shodaqohPrevValues.reduce((a, b) => a + b, 0)
+    : null
   const deltaShodaqoh =
-    shodaqohPrevMtd > 0
+    shodaqohMtd != null && shodaqohPrevMtd != null && shodaqohPrevMtd > 0
       ? Math.round(((shodaqohMtd - shodaqohPrevMtd) / shodaqohPrevMtd) * 100)
       : null
 
@@ -491,25 +565,7 @@ async function fetchDesaOverview(
   const deltaSensus: number | null = null
 
   // --- deltaKehadiran (avg across metrics, MoM) ---
-  const kehadiranAvgPrev = (() => {
-    const perMetric = metrics.map((m) => {
-      const vs: number[] = []
-      for (const k of kelompoks) {
-        const rep = reportByKelompokMonth.get(`${k.id}__${prevMonthKey}`)
-        const row = rep
-          ? metricReports.find(
-              (r) => r.monthly_report_id === rep.id && r.metric_code === m.code
-            )
-          : undefined
-        if (row?.current_value != null) vs.push(Number(row.current_value))
-      }
-      return vs.length > 0 ? vs.reduce((a, b) => a + b, 0) / vs.length : null
-    })
-    const defined = perMetric.filter((v): v is number => v != null)
-    return defined.length > 0
-      ? Math.round(defined.reduce((a, b) => a + b, 0) / defined.length)
-      : null
-  })()
+  const kehadiranAvgPrev = attendance.generus.previousAverage
   const deltaKehadiran =
     kehadiranAvgThis != null && kehadiranAvgPrev != null
       ? kehadiranAvgThis - kehadiranAvgPrev
@@ -540,7 +596,9 @@ async function fetchDesaOverview(
     },
     trendRataDesa,
     sensusByCategory,
-    kehadiranMetrics,
+    attendance,
+    mustinNotes,
+    documentation,
     programRanked,
     programKelompokMatrix,
     sarprasCompleteness,

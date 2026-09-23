@@ -16,6 +16,7 @@ interface Props {
   value: string
   onChange: (monthKey: string) => void
   monthsBack?: number
+  availableKeys?: string[]
   className?: string
 }
 
@@ -23,10 +24,21 @@ export function MonthPickerSelect({
   value,
   onChange,
   monthsBack = 12,
+  availableKeys,
   className,
 }: Props) {
   const now = reportMonthKey()
   const options = useMemo(() => {
+    if (availableKeys) {
+      const list = availableKeys.map((key) => ({
+        key,
+        label: formatMonthLabel(key),
+      }))
+      if (!list.find((o) => o.key === value)) {
+        list.push({ key: value, label: formatMonthLabel(value) })
+      }
+      return list
+    }
     const list: { key: string; label: string }[] = []
     for (let i = 0; i < monthsBack; i++) {
       const key = shiftMonth(now, -i)
@@ -36,7 +48,7 @@ export function MonthPickerSelect({
       list.push({ key: value, label: formatMonthLabel(value) })
     }
     return list
-  }, [now, monthsBack, value])
+  }, [now, monthsBack, value, availableKeys])
 
   return (
     <Select value={value} onValueChange={onChange}>

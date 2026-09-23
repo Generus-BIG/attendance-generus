@@ -1128,6 +1128,30 @@ export type Database = {
           },
         ]
       }
+      lupg_program_analytics_shares: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          month: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          month: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          month?: string
+          token?: string
+        }
+        Relationships: []
+      }
       lupg_program_definitions: {
         Row: {
           active: boolean
@@ -1633,6 +1657,14 @@ export type Database = {
         Args: { p_token: string }
         Returns: Json
       }
+      get_public_lupg_program_analytics_payload: {
+        Args: { p_month?: string; p_token: string }
+        Returns: Json
+      }
+      get_public_lupg_program_analytics_photo_paths: {
+        Args: { p_month?: string; p_token: string }
+        Returns: Json
+      }
       list_lupg_desa_sensus_totals: {
         Args: never
         Returns: {
@@ -1742,6 +1774,22 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "lupg_presentation_shares"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      rotate_lupg_program_analytics_share: {
+        Args: { p_share_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          is_active: boolean
+          month: string
+          token: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "lupg_program_analytics_shares"
           isOneToOne: true
           isSetofReturn: false
         }
