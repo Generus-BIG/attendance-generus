@@ -77,6 +77,7 @@ async function getActiveParticipants(): Promise<Participant[]> {
     `
     )
     .eq('status_active', true)
+    .eq('is_khusus', false)
     .order('name')
 
   if (error) throw error
@@ -98,11 +99,15 @@ async function getActiveParticipants(): Promise<Participant[]> {
     if (dbCategory === 'GPN B') return 'B'
     if (dbCategory === 'AR') return 'AR'
     if (dbCategory === 'APR') return 'APR'
+    if (dbCategory === 'Paud') return 'Paud'
+    if (dbCategory === 'ACR') return 'ACR'
     if (
       dbCategory === 'A' ||
       dbCategory === 'B' ||
       dbCategory === 'AR' ||
-      dbCategory === 'APR'
+      dbCategory === 'APR' ||
+      dbCategory === 'Paud' ||
+      dbCategory === 'ACR'
     )
       return dbCategory
     return 'AR'
@@ -114,6 +119,7 @@ async function getActiveParticipants(): Promise<Participant[]> {
     gender: p.gender,
     kelompok: (p.groups?.value || 'BIG 1') as Participant['kelompok'],
     kategori: mapDbCategoryToInternal(p.categories?.value || ''),
+    isKhusus: false,
     status: p.status_active ? 'active' : 'inactive',
     createdAt: new Date(p.created_at),
     updatedAt: new Date(p.created_at),

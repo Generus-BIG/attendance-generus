@@ -73,8 +73,13 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     cell: ({ row }) => {
       const kategori = row.getValue('kategori') as string
       const label =
-        kategori === 'AR' || kategori === 'APR' ? kategori : `GPN ${kategori}`
-      return <Badge variant='outline'>{label}</Badge>
+        kategori === 'A' || kategori === 'B' ? `GPN ${kategori}` : kategori
+      return (
+        <div className='flex flex-wrap gap-1'>
+          <Badge variant='outline'>{label}</Badge>
+          {row.original.isKhusus && <Badge>Khusus</Badge>}
+        </div>
+      )
     },
     filterFn: (row, id, value) => {
       return Array.isArray(value) && value.includes(row.getValue(id))

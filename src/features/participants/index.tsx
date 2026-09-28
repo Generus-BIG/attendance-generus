@@ -33,7 +33,7 @@ export function Participants() {
         <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
           <PageHeader
             kicker='Absensi MuMiBig'
-            title='Daftar Peserta'
+            title='Daftar Sensus'
             description='Kelola data peserta GPN MuMiBig di sini.'
             actions={<ParticipantsPrimaryButtons />}
           />

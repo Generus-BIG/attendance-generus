@@ -46,6 +46,7 @@ export async function fetchCensusParticipants(
     `
     )
     .eq('status_active', true)
+    .eq('is_khusus', false)
 
   if (kelompokId) {
     query = query.eq('group_id', kelompokId)

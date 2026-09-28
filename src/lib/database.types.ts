@@ -1453,6 +1453,7 @@ export type Database = {
           gender: string | null
           group_id: string | null
           id: string
+          is_khusus: boolean
           name: string
           status_active: boolean | null
         }
@@ -1464,6 +1465,7 @@ export type Database = {
           gender?: string | null
           group_id?: string | null
           id?: string
+          is_khusus?: boolean
           name: string
           status_active?: boolean | null
         }
@@ -1475,6 +1477,7 @@ export type Database = {
           gender?: string | null
           group_id?: string | null
           id?: string
+          is_khusus?: boolean
           name?: string
           status_active?: boolean | null
         }
@@ -1582,6 +1585,132 @@ export type Database = {
         }
         Relationships: []
       }
+      sensus_sync_items: {
+        Row: {
+          confidence: string
+          created_at: string
+          error: string | null
+          id: string
+          matched_participant_id: string | null
+          patch: Json
+          run_id: string
+          source_birth_date: string | null
+          source_gender: string
+          source_kategori: string
+          source_kelompok: string
+          source_khusus: boolean
+          source_name: string
+          status: string
+        }
+        Insert: {
+          confidence: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          matched_participant_id?: string | null
+          patch?: Json
+          run_id: string
+          source_birth_date?: string | null
+          source_gender: string
+          source_kategori: string
+          source_kelompok: string
+          source_khusus?: boolean
+          source_name: string
+          status?: string
+        }
+        Update: {
+          confidence?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          matched_participant_id?: string | null
+          patch?: Json
+          run_id?: string
+          source_birth_date?: string | null
+          source_gender?: string
+          source_kategori?: string
+          source_kelompok?: string
+          source_khusus?: boolean
+          source_name?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sensus_sync_items_matched_participant_id_fkey"
+            columns: ["matched_participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sensus_sync_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "sensus_sync_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sensus_sync_runs: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          mode: string
+          row_count: number
+          source_fetched_at: string
+          status: string
+          triggered_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          mode: string
+          row_count?: number
+          source_fetched_at?: string
+          status?: string
+          triggered_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          mode?: string
+          row_count?: number
+          source_fetched_at?: string
+          status?: string
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
+      sensus_sync_settings: {
+        Row: {
+          auto_apply_new: boolean
+          cron_daily_time: string | null
+          cron_expression: string | null
+          cron_mode: string
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          auto_apply_new?: boolean
+          cron_daily_time?: string | null
+          cron_expression?: string | null
+          cron_mode?: string
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          auto_apply_new?: boolean
+          cron_daily_time?: string | null
+          cron_expression?: string | null
+          cron_mode?: string
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       lupg_intensif_summary: {
@@ -1640,6 +1769,7 @@ export type Database = {
       }
     }
     Functions: {
+      apply_sensus_sync_items: { Args: { p_item_ids: string[] }; Returns: Json }
       calculate_age: { Args: { birth: string }; Returns: number }
       fn_lupg_record_monthly_report_edit: {
         Args: { p_action: string; p_report_id: string; p_source_table: string }
@@ -1803,6 +1933,10 @@ export type Database = {
           id: string
           name: string
         }[]
+      }
+      sensus_sync_cron_configure: {
+        Args: { p_expression?: string; p_mode: string; p_time?: string }
+        Returns: Json
       }
       submit_attendance_guarded: {
         Args: {

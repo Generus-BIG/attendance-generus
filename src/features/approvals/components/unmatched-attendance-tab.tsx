@@ -82,7 +82,7 @@ export function UnmatchedAttendanceTab() {
     attendanceService.linkToParticipant(selectedAttendance.id, linkTarget)
     const targetParticipant = participants.find((p) => p.id === linkTarget)
     toast.success(
-      `Absensi berhasil dihubungkan ke "${targetParticipant?.name}"`
+      `Attendance linked to "${targetParticipant?.name}"`
     )
     setLinkDialogOpen(false)
     setSelectedAttendance(null)
@@ -92,7 +92,7 @@ export function UnmatchedAttendanceTab() {
 
   const handleDelete = (attendance: Attendance) => {
     attendanceService.delete(attendance.id)
-    toast.success('Data absensi dihapus')
+    toast.success('Attendance record deleted')
     loadData()
   }
 
@@ -107,12 +107,12 @@ export function UnmatchedAttendanceTab() {
         <CardHeader>
           <CardTitle>Unmatched Attendance</CardTitle>
           <CardDescription>
-            Absensi yang belum terhubung ke peserta
+            Attendance records not linked to participants
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className='flex h-32 items-center justify-center text-muted-foreground'>
-            Semua data absensi sudah terhubung ke peserta
+            All attendance records are linked to participants
           </div>
         </CardContent>
       </Card>
@@ -132,11 +132,11 @@ export function UnmatchedAttendanceTab() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Tanggal</TableHead>
-                <TableHead>Nama (Sementara)</TableHead>
-                <TableHead>Kelompok</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Name (Temporary)</TableHead>
+                <TableHead>Group</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className='text-right'>Aksi</TableHead>
+                <TableHead className='text-right'>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -156,7 +156,7 @@ export function UnmatchedAttendanceTab() {
                       variant='outline'
                       className='text-[0.6875rem] tracking-[0.08em] uppercase'
                     >
-                      {attendance.status === 'hadir' ? 'Hadir' : 'Izin'}
+                      {attendance.status === 'hadir' ? 'Present' : 'Excused'}
                     </Badge>
                   </TableCell>
                   <TableCell className='text-right'>
@@ -167,8 +167,8 @@ export function UnmatchedAttendanceTab() {
                           variant='ghost'
                           className='h-11 w-11'
                           onClick={() => openLinkDialog(attendance)}
-                          title='Hubungkan ke peserta'
-                          aria-label='Hubungkan ke peserta'
+                          title='Link to participant'
+                          aria-label='Link to participant'
                         >
                           <Link2 className='h-4 w-4' />
                         </Button>
@@ -177,8 +177,8 @@ export function UnmatchedAttendanceTab() {
                           variant='ghost'
                           className='h-11 w-11 text-destructive hover:text-destructive'
                           onClick={() => handleDelete(attendance)}
-                          title='Hapus absensi'
-                          aria-label='Hapus absensi'
+                          title='Delete attendance'
+                          aria-label='Delete attendance'
                         >
                           <X className='h-4 w-4' />
                         </Button>
@@ -195,18 +195,18 @@ export function UnmatchedAttendanceTab() {
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Hubungkan ke Peserta</DialogTitle>
+            <DialogTitle>Link to Participant</DialogTitle>
             <DialogDescription>
-              Hubungkan absensi ini ke peserta yang sudah terdaftar.
+              Link this attendance record to an existing participant.
             </DialogDescription>
           </DialogHeader>
           <div className='py-4'>
             <div className='mb-4 rounded-md border p-3 text-sm'>
               <p>
-                <strong>Nama:</strong> {selectedAttendance?.tempName || '-'}
+                <strong>Name:</strong> {selectedAttendance?.tempName || '-'}
               </p>
               <p>
-                <strong>Tanggal:</strong>{' '}
+                <strong>Date:</strong>{' '}
                 {selectedAttendance &&
                   format(new Date(selectedAttendance.date), 'dd MMM yyyy', {
                     locale: idLocale,
@@ -230,15 +230,15 @@ export function UnmatchedAttendanceTab() {
                 >
                   {linkTarget
                     ? participants.find((p) => p.id === linkTarget)?.name
-                    : 'Pilih peserta...'}
+                    : 'Select participant...'}
                   <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className='w-full p-0' align='start'>
                 <Command>
-                  <CommandInput placeholder='Cari peserta...' />
+                  <CommandInput placeholder='Search participants...' />
                   <CommandList>
-                    <CommandEmpty>Peserta tidak ditemukan</CommandEmpty>
+                    <CommandEmpty>No participant found</CommandEmpty>
                     <CommandGroup>
                       {participants.map((participant) => (
                         <CommandItem
@@ -274,10 +274,10 @@ export function UnmatchedAttendanceTab() {
           </div>
           <DialogFooter>
             <Button variant='outline' onClick={() => setLinkDialogOpen(false)}>
-              Batal
+              Cancel
             </Button>
             <Button onClick={handleLink} disabled={!linkTarget}>
-              Hubungkan
+              Link
             </Button>
           </DialogFooter>
         </DialogContent>
