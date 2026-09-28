@@ -36,29 +36,29 @@ export function PendingReviewDrawer({
       >
         <SheetHeader className='border-b border-border/70 px-6 py-5 text-left'>
           <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
-            Pengajuan peserta
+            Participant submission
           </div>
           <SheetTitle className='text-xl'>{pending?.name ?? '—'}</SheetTitle>
           <SheetDescription className='max-w-[42ch]'>
-            Tinjau data lengkap sebelum menyetujui, menggabungkan, atau menolak.
+            Review the full record before approving, merging, or rejecting it.
           </SheetDescription>
         </SheetHeader>
 
         {pending && (
           <div className='flex-1 overflow-y-auto px-6 py-2'>
-            <DetailRow label='Kelompok' value={pending.suggestedKelompok} />
+            <DetailRow label='Group' value={pending.suggestedKelompok} />
             <DetailRow
-              label='Kategori'
+              label='Category'
               value={formatKategoriLabel(pending.suggestedKategori)}
             />
             <DetailRow
-              label='Jenis kelamin'
+              label='Gender'
               value={
-                pending.suggestedGender === 'L' ? 'Laki-laki' : 'Perempuan'
+                pending.suggestedGender === 'L' ? 'Male' : 'Female'
               }
             />
             <DetailRow
-              label='Tanggal lahir'
+              label='Birth date'
               value={
                 pending.birthDate
                   ? format(pending.birthDate, 'dd MMM yyyy', {
@@ -67,13 +67,13 @@ export function PendingReviewDrawer({
                   : '—'
               }
             />
-            <DetailRow label='Tempat lahir' value={pending.birthPlace ?? '—'} />
+            <DetailRow label='Birth place' value={pending.birthPlace ?? '—'} />
             <DetailRow
-              label='Jumlah absensi terhubung'
-              value={`${pending.attendanceRefIds.length} entri`}
+              label='Linked attendance'
+              value={`${pending.attendanceRefIds.length} entries`}
             />
             <DetailRow
-              label='Diajukan'
+              label='Submitted'
               value={format(pending.createdAt, 'dd MMM yyyy, HH:mm', {
                 locale: idLocale,
               })}
@@ -88,7 +88,7 @@ export function PendingReviewDrawer({
             onClick={() => pending && onApprove(pending)}
           >
             <Check className='mr-2 h-4 w-4' />
-            Setujui sebagai peserta baru
+            Approve as new participant
           </Button>
           <Button
             type='button'
@@ -97,7 +97,7 @@ export function PendingReviewDrawer({
             onClick={() => pending && onMerge(pending)}
           >
             <Merge className='mr-2 h-4 w-4' />
-            Gabungkan ke peserta yang ada
+            Merge with existing participant
           </Button>
           <Button
             type='button'
@@ -106,7 +106,7 @@ export function PendingReviewDrawer({
             onClick={() => pending && onReject(pending)}
           >
             <X className='mr-2 h-4 w-4' />
-            Tolak pengajuan
+            Reject submission
           </Button>
         </SheetFooter>
       </SheetContent>

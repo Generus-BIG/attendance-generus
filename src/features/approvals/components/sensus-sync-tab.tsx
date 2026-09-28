@@ -37,8 +37,8 @@ import { formatKategoriLabel } from '../approval-utils'
 
 const confidenceLabels = {
   exact: 'Exact',
-  similar: 'Mirip',
-  none: 'Baru',
+  similar: 'Similar',
+  none: 'New',
 } as const
 
 function confidenceClass(confidence: SensusSyncItem['confidence']) {
@@ -69,7 +69,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
   const [pickedRun, setPickedRun] = useState('')
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
-  const [kelompok, setKelompok] = useState('all')
+  const [kelompok, setGroup] = useState('all')
   const [confidence, setConfidence] = useState('all')
   const [name, setName] = useState('')
   const [savingMatch, setSavingMatch] = useState<string | null>(null)
@@ -123,14 +123,14 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
   if (!can.syncSensus)
     return (
       <div className='rounded-md border p-6 text-sm text-muted-foreground'>
-        Tidak ada akses
+        Access denied
       </div>
     )
 
   const toggleAll = (checked: boolean) =>
     setSelected(checked ? new Set(pendingIds) : new Set())
-  const handleKelompokChange = (value: string) => {
-    setKelompok(value)
+  const handleGroupChange = (value: string) => {
+    setGroup(value)
     setSelected(new Set())
   }
   const handleConfidenceChange = (value: string) => {
@@ -168,10 +168,10 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
     }).length
     try {
       const result = await applySensusSyncItems(ids)
-      toast.success(`${result.applied} diterapkan, ${result.failed} gagal`)
+      toast.success(`${result.applied} applied, ${result.failed} failed`)
       if (autoPromoteCount > 0 && result.applied > 0) {
         toast.info(
-          `${autoPromoteCount} peserta otomatis diubah ke GPN B karena usia ≥ 23 tahun`
+          `${autoPromoteCount} participants were automatically moved to GPN B because they are 23 or older`
         )
       }
       setSelected(new Set())
@@ -180,7 +180,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
         queryClient.invalidateQueries({ queryKey: ['participants'] }),
       ])
     } catch (_error) {
-      toast.error('Gagal menerapkan sinkronisasi sensus')
+      toast.error('Could not apply sensus sync')
     }
   }
 
@@ -193,10 +193,10 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
       .in('id', ids)
       .eq('status', 'pending')
     if (error) {
-      toast.error('Gagal menolak item')
+      toast.error('Could not reject items')
       return
     }
-    toast.success(`${ids.length} item ditolak`)
+    toast.success(`${ids.length} items rejected`)
     setSelected(new Set())
     void queryClient.invalidateQueries({ queryKey: ['sensus-sync'] })
   }
@@ -230,7 +230,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
       .eq('status', 'pending')
     setSavingMatch(null)
     if (error) {
-      toast.error('Gagal memilih peserta')
+      toast.error('Could not select participant')
       return
     }
     void queryClient.invalidateQueries({ queryKey: ['sensus-sync'] })
@@ -246,7 +246,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
 
   return (
     <div className='space-y-4'>
-      <div className='flex flex-wrap items-center gap-2'>
+      <div className='flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center'>
         <Select
           value={selectedRun}
           onValueChange={(id) => {
@@ -256,23 +256,23 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
           }}
         >
           <SelectTrigger className='w-64'>
-            <SelectValue placeholder='Pilih run sinkronisasi' />
+            <SelectValue placeholder='Select a sync run' />
           </SelectTrigger>
           <SelectContent>
             {(runsQuery.data ?? []).map((run) => (
               <SelectItem key={run.id} value={run.id}>
                 {new Date(run.created_at).toLocaleString('id-ID')} ·{' '}
-                {run.status === 'failed' ? 'Gagal' : `${run.row_count} baris`}
+                {run.status === 'failed' ? 'Failed' : `${run.row_count} rows`}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Select value={kelompok} onValueChange={handleKelompokChange}>
+        <Select value={kelompok} onValueChange={handleGroupChange}>
           <SelectTrigger className='w-44'>
-            <SelectValue placeholder='Semua kelompok' />
+            <SelectValue placeholder='All groups' />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='all'>Semua kelompok</SelectItem>
+            <SelectItem value='all'>All groups</SelectItem>
             {groups.map((group) => (
               <SelectItem key={group} value={group}>
                 {group}
@@ -282,61 +282,61 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
         </Select>
         <Select value={confidence} onValueChange={handleConfidenceChange}>
           <SelectTrigger className='w-36'>
-            <SelectValue placeholder='Semua confidence' />
+            <SelectValue placeholder='All confidence levels' />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='all'>Semua confidence</SelectItem>
+            <SelectItem value='all'>All confidence levels</SelectItem>
             <SelectItem value='exact'>Exact</SelectItem>
-            <SelectItem value='similar'>Mirip</SelectItem>
-            <SelectItem value='none'>Baru</SelectItem>
+            <SelectItem value='similar'>Similar</SelectItem>
+            <SelectItem value='none'>New</SelectItem>
           </SelectContent>
         </Select>
         <Input
           className='w-52'
-          placeholder='Cari nama sumber'
+          placeholder='Search source name'
           value={name}
           onChange={(event) => handleNameChange(event.target.value)}
         />
-        <div className='ms-auto flex gap-2'>
+        <div className='flex gap-2 sm:ms-auto'>
           <Button
             variant='outline'
             onClick={() => void reject()}
             disabled={selectedPendingCount === 0}
           >
-            Tolak terpilih
+            Reject selected
           </Button>
           <Button
             onClick={() => void apply()}
             disabled={selectedAppliableCount === 0}
           >
-            Terapkan terpilih
+            Apply selected
           </Button>
         </div>
       </div>
       {activeRun?.status === 'failed' && (
         <div className='rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive'>
-          Sinkronisasi gagal: {activeRun.error ?? 'Kesalahan tidak diketahui'}.
-          Jalankan sinkronisasi lagi untuk mencoba ulang.
+          Sinkronisasi failed: {activeRun.error ?? 'Unknown error'}.
+          Run sync again to retry.
         </div>
       )}
-      <div className='rounded-md border'>
-        <Table>
+      <div className='overflow-x-auto rounded-md border'>
+        <Table className='min-w-[850px]'>
           <TableHeader>
             <TableRow>
               <TableHead className='w-10'>
                 <Checkbox
-                  aria-label='Pilih semua baris pending'
+                  aria-label='Select all pending rows'
                   checked={headerCheckboxState}
                   onCheckedChange={(value) => toggleAll(value === true)}
                 />
               </TableHead>
-              <TableHead>Nama sumber</TableHead>
-              <TableHead>Kelompok</TableHead>
+              <TableHead>Source name</TableHead>
+              <TableHead>Group</TableHead>
               <TableHead>JK</TableHead>
-              <TableHead>Tgl lahir sumber</TableHead>
-              <TableHead>Kategori sumber → label</TableHead>
+              <TableHead>Source birth date</TableHead>
+              <TableHead>Source category → label</TableHead>
               <TableHead>Confidence</TableHead>
-              <TableHead>Khusus</TableHead>
+              <TableHead>Special</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -347,7 +347,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                   colSpan={9}
                   className='h-24 text-center text-muted-foreground'
                 >
-                  Tidak ada item.
+                  No items found.
                 </TableCell>
               </TableRow>
             ) : (
@@ -356,7 +356,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                   <TableRow>
                     <TableCell onClick={(event) => event.stopPropagation()}>
                       <Checkbox
-                        aria-label={`Pilih ${item.source_name}`}
+                        aria-label={`Select ${item.source_name}`}
                         checked={selected.has(item.id)}
                         disabled={!isPending(item)}
                         onCheckedChange={() => toggle(item)}
@@ -391,7 +391,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                     </TableCell>
                     <TableCell>
                       {item.source_khusus ? (
-                        <Badge variant='secondary'>Khusus</Badge>
+                        <Badge variant='secondary'>Special</Badge>
                       ) : (
                         '—'
                       )}
@@ -417,17 +417,17 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                           {item.matched_participant_id === null ? (
                             rowNeedsCandidate(item) ? (
                               <div className='text-muted-foreground'>
-                                Pilih peserta cocok sebelum menerapkan.
+                                Select matching participant senot yet applying.
                               </div>
                             ) : (
                               <div className='text-muted-foreground'>
-                                Peserta baru akan dibuat saat diterapkan.
+                                Participant baru akan dibuat saat diterapkan.
                               </div>
                             )
                           ) : (
                             <div className='grid gap-1'>
                               <div>
-                                <span className='font-medium'>Peserta:</span>{' '}
+                                <span className='font-medium'>Participant:</span>{' '}
                                 {item.patch.current?.name ?? '—'}
                               </div>
                               <div>
@@ -436,7 +436,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                                 {item.patch.birth_date ?? '—'}
                               </div>
                               <div>
-                                <span className='font-medium'>kategori:</span>{' '}
+                                <span className='font-medium'>category:</span>{' '}
                                 {formatKategoriLabel(
                                   item.patch.current?.kategori ??
                                     item.patch.kategori
@@ -444,7 +444,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                                 → {formatKategoriLabel(item.patch.kategori)}
                               </div>
                               <div>
-                                <span className='font-medium'>khusus:</span>{' '}
+                                <span className='font-medium'>special:</span>{' '}
                                 {String(item.patch.current?.khusus ?? false)} →{' '}
                                 {String(item.patch.khusus)}
                               </div>
@@ -453,7 +453,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                           {rowNeedsCandidate(item) ? (
                             <div className='flex items-center gap-2'>
                               <Label htmlFor={`sensus-sync-match-${item.id}`}>
-                                Pilih peserta:
+                                Select participant:
                               </Label>
                               <Select
                                 value={item.matched_participant_id ?? ''}
@@ -470,7 +470,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                                   id={`sensus-sync-match-${item.id}`}
                                   className='w-72'
                                 >
-                                  <SelectValue placeholder='Pilih peserta cocok' />
+                                  <SelectValue placeholder='Select matching participant' />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {item.patch.candidates?.map((candidate) => (

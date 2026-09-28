@@ -36,15 +36,15 @@ export function Approvals() {
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <PageHeader
           kicker='Absensi MuMiBig'
-          title='Antrean Persetujuan'
-          description='Kelola pengajuan peserta baru dan absensi yang belum terhubung.'
+          title='Approval Queue'
+          description='Review new participant submissions and unmatched attendance.'
         />
 
         <Tabs defaultValue={defaultTab} className='w-full'>
-          <TabsList>
-            <TabsTrigger value='pending'>Pengajuan</TabsTrigger>
-            <TabsTrigger value='history'>Riwayat</TabsTrigger>
-            <TabsTrigger value='unmatched'>Absensi Belum Terhubung</TabsTrigger>
+          <TabsList className='flex h-auto w-full justify-start gap-1 overflow-x-auto p-1'>
+            <TabsTrigger value='pending'>Submissions</TabsTrigger>
+            <TabsTrigger value='history'>History</TabsTrigger>
+            <TabsTrigger value='unmatched'>Unmatched Attendance</TabsTrigger>
             {can.syncSensus && (
               <TabsTrigger value='sync'>Sync Sensus</TabsTrigger>
             )}

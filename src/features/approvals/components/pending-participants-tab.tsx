@@ -188,17 +188,17 @@ export function PendingParticipantsTab() {
 
   useEffect(() => {
     if (pendingQuery.error || participantsQuery.error) {
-      toast.error('Gagal memuat data persetujuan')
+      toast.error('Could not load approval data')
     }
   }, [pendingQuery.error, participantsQuery.error])
 
   const executeApproveNew = async (pending: PendingParticipant) => {
     try {
       await approvalService.approve(pending, true)
-      toast.success(`Peserta "${pending.name}" berhasil ditambahkan`)
+      toast.success(`Participant "${pending.name}" added`)
       void queryClient.invalidateQueries({ queryKey: ['approvals'] })
     } catch (_error) {
-      toast.error('Gagal menyetujui peserta')
+      toast.error('Could not approve participant')
     }
     setApproveConfirm(null)
   }
@@ -210,24 +210,24 @@ export function PendingParticipantsTab() {
       await approvalService.approve(selectedPending.current, false, mergeTarget)
       const targetParticipant = participants.find((p) => p.id === mergeTarget)
       toast.success(
-        `Absensi berhasil dihubungkan ke "${targetParticipant?.name}"`
+        `Attendance linked to "${targetParticipant?.name}"`
       )
       setApproveDialogOpen(false)
       selectedPending.current = null
       setMergeTarget(null)
       void queryClient.invalidateQueries({ queryKey: ['approvals'] })
     } catch (_error) {
-      toast.error('Gagal menghubungkan data')
+      toast.error('Could not link attendance data')
     }
   }
 
   const executeReject = async (pending: PendingParticipant) => {
     try {
       await approvalService.reject(pending.id)
-      toast.success(`Pengajuan "${pending.name}" ditolak`)
+      toast.success(`Submission "${pending.name}" rejected`)
       void queryClient.invalidateQueries({ queryKey: ['approvals'] })
     } catch (_error) {
-      toast.error('Gagal menolak pengajuan')
+      toast.error('Could not reject submission')
     }
     setRejectConfirm(null)
   }
@@ -257,8 +257,8 @@ export function PendingParticipantsTab() {
     )
     const ok = results.filter(Boolean).length
     const fail = results.length - ok
-    if (ok > 0) toast.success(`${ok} pengajuan disetujui`)
-    if (fail > 0) toast.error(`${fail} pengajuan gagal`)
+    if (ok > 0) toast.success(`${ok} submissions approved`)
+    if (fail > 0) toast.error(`${fail} submissions failed`)
     void queryClient.invalidateQueries({ queryKey: ['approvals'] })
     setBulkApproveConfirm([])
     setRowSelection({})
@@ -275,8 +275,8 @@ export function PendingParticipantsTab() {
     )
     const ok = results.filter(Boolean).length
     const fail = results.length - ok
-    if (ok > 0) toast.success(`${ok} pengajuan ditolak`)
-    if (fail > 0) toast.error(`${fail} pengajuan gagal ditolak`)
+    if (ok > 0) toast.success(`${ok} submissions rejected`)
+    if (fail > 0) toast.error(`${fail} submissions could not be rejected`)
     void queryClient.invalidateQueries({ queryKey: ['approvals'] })
     setBulkRejectConfirm([])
     setRowSelection({})
@@ -293,14 +293,14 @@ export function PendingParticipantsTab() {
               (table.getIsSomePageRowsSelected() && 'indeterminate')
             }
             onCheckedChange={(v) => table.toggleAllPageRowsSelected(!!v)}
-            aria-label='Pilih semua baris di halaman ini'
+            aria-label='Select all rows on this page'
           />
         ),
         cell: ({ row }) => (
           <Checkbox
             checked={row.getIsSelected()}
             onCheckedChange={(v) => row.toggleSelected(!!v)}
-            aria-label='Pilih baris'
+            aria-label='Select row'
             onClick={(e) => e.stopPropagation()}
           />
         ),
@@ -327,7 +327,7 @@ export function PendingParticipantsTab() {
                 variant='outline'
                 className='border-emerald-500 bg-emerald-50/50 text-emerald-600 hover:bg-emerald-50/50'
               >
-                Data Baru
+                New Data
               </Badge>
             )
           }
@@ -365,7 +365,7 @@ export function PendingParticipantsTab() {
                         : 'Nama mirip ditemukan di database:'}
                     </p>
                     <p className='text-muted-foreground'>
-                      • {m.name} ({m.kelompok || 'Tanpa Kelompok'} -{' '}
+                      • {m.name} ({m.kelompok || 'No Group'} -{' '}
                       {formatKategoriLabel(m.kategori)})
                     </p>
                     <p className='mt-1 text-[10px] text-muted-foreground italic'>
@@ -381,7 +381,7 @@ export function PendingParticipantsTab() {
       {
         accessorKey: 'suggestedKelompok',
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title='Kelompok' />
+          <DataTableColumnHeader column={column} title='Group' />
         ),
         filterFn: (row, id, value: string[]) =>
           value.length === 0 ? true : value.includes(row.getValue<string>(id)),
@@ -399,13 +399,13 @@ export function PendingParticipantsTab() {
         accessorKey: 'suggestedGender',
         header: 'Jenis Kelamin',
         cell: ({ row }) =>
-          row.original.suggestedGender === 'L' ? 'Laki-laki' : 'Perempuan',
+          row.original.suggestedGender === 'L' ? 'Male' : 'Female',
       },
       {
         id: 'attendanceCount',
         accessorFn: (r) => r.attendanceRefIds.length,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title='Absensi' />
+          <DataTableColumnHeader column={column} title='Attendance' />
         ),
         cell: ({ row }) => (
           <span className='tabular-nums'>
@@ -419,7 +419,7 @@ export function PendingParticipantsTab() {
       {
         accessorKey: 'createdAt',
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title='Diajukan' />
+          <DataTableColumnHeader column={column} title='Submitted' />
         ),
         cell: ({ row }) => (
           <span className='tabular-nums'>
@@ -483,11 +483,11 @@ export function PendingParticipantsTab() {
             <TableRow>
               <TableHead className='w-8' />
               <TableHead>Nama</TableHead>
-              <TableHead>Kelompok</TableHead>
+              <TableHead>Group</TableHead>
               <TableHead>Kategori</TableHead>
               <TableHead>Jenis Kelamin</TableHead>
-              <TableHead>Absensi</TableHead>
-              <TableHead>Diajukan</TableHead>
+              <TableHead>Attendance</TableHead>
+              <TableHead>Submitted</TableHead>
               <TableHead className='text-right'>Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -501,7 +501,7 @@ export function PendingParticipantsTab() {
     return (
       <div className='rounded-md border border-dashed p-10 text-center'>
         <p className='text-sm text-muted-foreground'>
-          Tidak ada pengajuan peserta baru.
+          No new participant submissions.
         </p>
       </div>
     )
@@ -517,7 +517,7 @@ export function PendingParticipantsTab() {
           filters={[
             {
               columnId: 'suggestedKelompok',
-              title: 'Kelompok',
+              title: 'Group',
               options: kelompokOptions,
             },
           ]}
@@ -549,7 +549,7 @@ export function PendingParticipantsTab() {
                     colSpan={table.getAllColumns().length + 1}
                     className='h-24 text-center text-muted-foreground'
                   >
-                    Tidak ada pengajuan yang cocok dengan filter.
+                    No submissions match the filters.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -612,7 +612,7 @@ export function PendingParticipantsTab() {
                                 })}
                               />
                               <DetailField
-                                label='Absensi terhubung'
+                                label='Linked attendance'
                                 value={`${pending.attendanceRefIds.length} entri`}
                               />
                             </div>
@@ -627,7 +627,7 @@ export function PendingParticipantsTab() {
                                   }}
                                 >
                                   <Check className='mr-1.5 h-3.5 w-3.5' />{' '}
-                                  Setujui baru
+                                  Approve new
                                 </Button>
                                 <Button
                                   type='button'
@@ -651,7 +651,7 @@ export function PendingParticipantsTab() {
                                     setRejectConfirm(pending)
                                   }}
                                 >
-                                  <X className='mr-1.5 h-3.5 w-3.5' /> Tolak
+                                  <X className='mr-1.5 h-3.5 w-3.5' /> Reject
                                 </Button>
                               </div>
                             </PermissionGate>
@@ -679,7 +679,7 @@ export function PendingParticipantsTab() {
               )
             }
           >
-            <Check className='mr-1 h-3.5 w-3.5' /> Setujui semua
+            <Check className='mr-1 h-3.5 w-3.5' /> Approve all
           </Button>
           <Button
             size='sm'
@@ -691,7 +691,7 @@ export function PendingParticipantsTab() {
               )
             }
           >
-            <X className='mr-1 h-3.5 w-3.5' /> Tolak semua
+            <X className='mr-1 h-3.5 w-3.5' /> Reject all
           </Button>
         </PermissionGate>
       </DataTableBulkActions>
@@ -699,27 +699,27 @@ export function PendingParticipantsTab() {
       <ConfirmDialog
         open={!!rejectConfirm}
         onOpenChange={(open) => !open && setRejectConfirm(null)}
-        title='Tolak pengajuan peserta?'
+        title='Reject participant submission?'
         desc={
           <>
-            Pengajuan <strong>{rejectConfirm?.name}</strong> akan ditolak dan
+            Submission <strong>{rejectConfirm?.name}</strong> akan ditolak dan
             dihapus dari antrean. Tindakan ini tidak bisa dibatalkan.
           </>
         }
         destructive
-        confirmText='Tolak pengajuan'
-        cancelBtnText='Batal'
+        confirmText='Reject submission'
+        cancelBtnText='Cancel'
         handleConfirm={() => rejectConfirm && void executeReject(rejectConfirm)}
       />
 
       <ConfirmDialog
         open={!!approveConfirm}
         onOpenChange={(open) => !open && setApproveConfirm(null)}
-        title='Setujui sebagai peserta baru?'
+        title='Approve as new participant?'
         desc={
           <>
             <strong>{approveConfirm?.name}</strong> akan ditambahkan sebagai
-            peserta baru di kelompok {approveConfirm?.suggestedKelompok},
+            new participant in group {approveConfirm?.suggestedKelompok},
             kategori{' '}
             {approveConfirm
               ? formatKategoriLabel(approveConfirm.suggestedKategori)
@@ -727,8 +727,8 @@ export function PendingParticipantsTab() {
             .
           </>
         }
-        confirmText='Ya, setujui'
-        cancelBtnText='Batal'
+        confirmText='Yes, approve'
+        cancelBtnText='Cancel'
         handleConfirm={() =>
           approveConfirm && void executeApproveNew(approveConfirm)
         }
@@ -737,22 +737,22 @@ export function PendingParticipantsTab() {
       <ConfirmDialog
         open={bulkApproveConfirm.length > 0}
         onOpenChange={(open) => !open && setBulkApproveConfirm([])}
-        title={`Setujui ${bulkApproveConfirm.length} pengajuan?`}
+        title={`Approve ${bulkApproveConfirm.length} submissions?`}
         desc={
           <>
             {bulkApproveConfirm.length} pengajuan akan ditambahkan sebagai
             peserta baru. Pastikan data-nya sesuai.
           </>
         }
-        confirmText='Ya, setujui semua'
-        cancelBtnText='Batal'
+        confirmText='Yes, approve all'
+        cancelBtnText='Cancel'
         handleConfirm={() => void executeBulkApprove(bulkApproveConfirm)}
       />
 
       <ConfirmDialog
         open={bulkRejectConfirm.length > 0}
         onOpenChange={(open) => !open && setBulkRejectConfirm([])}
-        title={`Tolak ${bulkRejectConfirm.length} pengajuan?`}
+        title={`Reject ${bulkRejectConfirm.length} pengajuan?`}
         desc={
           <>
             {bulkRejectConfirm.length} pengajuan akan ditolak dan dihapus dari
@@ -760,8 +760,8 @@ export function PendingParticipantsTab() {
           </>
         }
         destructive
-        confirmText='Tolak semua'
-        cancelBtnText='Batal'
+        confirmText='Reject all'
+        cancelBtnText='Cancel'
         handleConfirm={() => void executeBulkReject(bulkRejectConfirm)}
       />
 
@@ -791,9 +791,9 @@ export function PendingParticipantsTab() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Gabungkan ke Peserta yang Ada</DialogTitle>
+            <DialogTitle>Merge with Existing Participant</DialogTitle>
             <DialogDescription>
-              Hubungkan absensi dan lengkapi tempat/tanggal lahir yang masih
+              Link attendance and complete any missing place/date of birth
               kosong pada peserta terdaftar.
             </DialogDescription>
           </DialogHeader>
@@ -812,15 +812,15 @@ export function PendingParticipantsTab() {
                 >
                   {mergeTarget
                     ? participants.find((p) => p.id === mergeTarget)?.name
-                    : 'Pilih peserta...'}
+                    : 'Select participant...'}
                   <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className='w-full p-0' align='start'>
                 <Command>
-                  <CommandInput placeholder='Cari peserta...' />
+                  <CommandInput placeholder='Search participants...' />
                   <CommandList>
-                    <CommandEmpty>Peserta tidak ditemukan</CommandEmpty>
+                    <CommandEmpty>No participant found</CommandEmpty>
                     <CommandGroup>
                       {participants.map((participant) => (
                         <CommandItem
@@ -859,7 +859,7 @@ export function PendingParticipantsTab() {
               variant='outline'
               onClick={() => setApproveDialogOpen(false)}
             >
-              Batal
+              Cancel
             </Button>
             <Button onClick={handleApproveMerge} disabled={!mergeTarget}>
               Gabungkan

@@ -36,12 +36,12 @@ export function HistoryApprovalTab() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => approvalService.delete(id),
     onSuccess: () => {
-      toast.success('Berhasil menghapus riwayat')
+      toast.success('Approval history deleted')
       queryClient.invalidateQueries({ queryKey: ['approvals', 'history'] })
       setDeleteId(null)
     },
     onError: () => {
-      toast.error('Gagal menghapus riwayat')
+      toast.error('Could not delete approval history')
     },
   })
 
@@ -54,7 +54,7 @@ export function HistoryApprovalTab() {
 
   useEffect(() => {
     if (historyQuery.error) {
-      toast.error('Gagal memuat riwayat persetujuan')
+      toast.error('Could not load approval history')
     }
   }, [historyQuery.error])
 
@@ -62,14 +62,14 @@ export function HistoryApprovalTab() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>History Approval</CardTitle>
+          <CardTitle>Approval History</CardTitle>
           <CardDescription>
-            Riwayat persetujuan dan penolakan peserta
+            Participant approval and rejection history
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className='flex h-32 items-center justify-center text-muted-foreground'>
-            Tidak ada riwayat
+            No history yet
           </div>
         </CardContent>
       </Card>
@@ -79,9 +79,9 @@ export function HistoryApprovalTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>History Approval</CardTitle>
+        <CardTitle>Approval History</CardTitle>
         <CardDescription>
-          Riwayat {historyList.length} pengajuan terakhir
+          Latest {historyList.length} submissions
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -106,11 +106,11 @@ export function HistoryApprovalTab() {
                       {formatKategoriLabel(item.suggestedKategori)}
                     </span>
                     <span>
-                      {item.suggestedGender === 'L' ? 'Laki-laki' : 'Perempuan'}
+                      {item.suggestedGender === 'L' ? 'Male' : 'Female'}
                     </span>
                     {item.birthPlace && item.birthDate && (
                       <span className='text-xs'>
-                        Lahir: {item.birthPlace},{' '}
+                        Born: {item.birthPlace},{' '}
                         {format(item.birthDate, 'dd MMM yyyy', {
                           locale: idLocale,
                         })}
@@ -126,11 +126,11 @@ export function HistoryApprovalTab() {
                   >
                     {item.status === 'approved' ? (
                       <div className='flex items-center gap-1'>
-                        <Check className='h-3 w-3' /> Disetujui
+                        <Check className='h-3 w-3' /> Approved
                       </div>
                     ) : (
                       <div className='flex items-center gap-1'>
-                        <X className='h-3 w-3' /> Ditolak
+                        <X className='h-3 w-3' /> Rejected
                       </div>
                     )}
                   </Badge>
@@ -145,7 +145,7 @@ export function HistoryApprovalTab() {
                     variant='ghost'
                     size='icon'
                     className='h-11 w-11 text-destructive hover:bg-destructive/10 hover:text-destructive'
-                    aria-label='Hapus riwayat persetujuan'
+                    aria-label='Delete approval history'
                     onClick={() => setDeleteId(item.id)}
                   >
                     <Trash2 className='h-4 w-4' />
@@ -160,9 +160,9 @@ export function HistoryApprovalTab() {
       <ConfirmDialog
         open={deleteId !== null}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title='Hapus Riwayat'
-        desc='Apakah Anda yakin ingin menghapus riwayat persetujuan ini? Tindakan ini tidak dapat dibatalkan.'
-        confirmText='Hapus'
+        title='Delete History'
+        desc='Are you sure you want to delete this approval history entry? This cannot be undone.'
+        confirmText='Delete'
         destructive
         isLoading={deleteMutation.isPending}
         handleConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
