@@ -51,12 +51,11 @@ edgeRuntime.serve(async (req: Request) => {
 
     const token = authHeader.slice('Bearer '.length)
     admin = createClient(supabaseUrl, serviceRoleKey)
-    // Cron readiness (phase 2 deferred): accept a provisioned CRON_SECRET as a
-    // Bearer token for stage-only runs. Unprovisioned/empty secret disables the
-    // path, so ordinary admin JWT remains required until then.
+    // Scheduled runs arrive from pg_cron via pg_net with the service role key
+    // (stored in Supabase Vault) as the bearer. Only the DB job can produce
+    // that token — the anon key is public and must never count as cron.
     // ponytail: plain === compare (no timing-safe primitive in this runtime)
-    const cronSecret = edgeRuntime.env.get('CRON_SECRET')
-    const isCron = !!cronSecret && token === cronSecret
+    const isCron = token === serviceRoleKey
     let callerUserId: string | null = null
     if (!isCron) {
       const { data: authData, error: authError } = await admin.auth.getUser(token)
@@ -208,7 +207,38 @@ edgeRuntime.serve(async (req: Request) => {
       .eq('id', runId)
     if (updateError) throw updateError
 
-    return jsonResponse({ run_id: runId, staged: items.length })
+    // Auto-apply pure-new rows (confidence 'none', no match, zero candidates)
+    // when the admin toggle is on. Candidate-bearing rows stay in review —
+    // the DB constraint already blocks applying them unresolved.
+    let autoApplied = 0
+    const { data: settings } = await admin
+      .from('sensus_sync_settings')
+      .select('auto_apply_new')
+      .eq('id', 1)
+      .maybeSingle()
+    if (settings?.auto_apply_new) {
+      const { data: newItems, error: newItemsError } = await admin
+        .from('sensus_sync_items')
+        .select('id, patch')
+        .eq('run_id', currentRunId)
+        .eq('status', 'pending')
+        .eq('confidence', 'none')
+        .is('matched_participant_id', null)
+      if (newItemsError) throw newItemsError
+      const newIds = (newItems ?? [])
+        .filter((item) => ((item.patch as { candidates?: unknown[] })?.candidates?.length ?? 0) === 0)
+        .map((item) => item.id)
+      if (newIds.length > 0) {
+        const { data: appliedResult, error: applyError } = await admin.rpc(
+          'apply_sensus_sync_items',
+          { p_item_ids: newIds },
+        )
+        if (applyError) throw applyError
+        autoApplied = (appliedResult as { applied?: number } | null)?.applied ?? 0
+      }
+    }
+
+    return jsonResponse({ run_id: runId, staged: items.length, auto_applied: autoApplied })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Internal server error'
     if (admin && runId) {

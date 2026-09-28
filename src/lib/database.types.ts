@@ -1684,6 +1684,33 @@ export type Database = {
         }
         Relationships: []
       }
+      sensus_sync_settings: {
+        Row: {
+          auto_apply_new: boolean
+          cron_daily_time: string | null
+          cron_expression: string | null
+          cron_mode: string
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          auto_apply_new?: boolean
+          cron_daily_time?: string | null
+          cron_expression?: string | null
+          cron_mode?: string
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          auto_apply_new?: boolean
+          cron_daily_time?: string | null
+          cron_expression?: string | null
+          cron_mode?: string
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       lupg_intensif_summary: {
@@ -1906,6 +1933,10 @@ export type Database = {
           id: string
           name: string
         }[]
+      }
+      sensus_sync_cron_configure: {
+        Args: { p_expression?: string; p_mode: string; p_time?: string }
+        Returns: Json
       }
       submit_attendance_guarded: {
         Args: {

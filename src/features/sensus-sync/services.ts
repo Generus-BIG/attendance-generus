@@ -50,12 +50,13 @@ export interface SensusSyncItem {
 export async function stageSensusSync(): Promise<{
   run_id: string
   staged: number
+  auto_applied?: number
 }> {
   const { data, error } = await supabase.functions.invoke('sensus-sync', {
     body: { action: 'stage' },
   })
   if (error) throw error
-  return data as { run_id: string; staged: number }
+  return data as { run_id: string; staged: number; auto_applied?: number }
 }
 
 export async function applySensusSyncItems(
@@ -88,4 +89,54 @@ export async function listSensusItems(
     .order('source_name')
   if (error) throw error
   return data as unknown as SensusSyncItem[]
+}
+
+export interface SensusSyncSettings {
+  auto_apply_new: boolean
+  cron_mode: SensusSyncCronMode
+  cron_daily_time: string | null
+  cron_expression: string | null
+  updated_at: string
+}
+
+export type SensusSyncCronMode =
+  | 'off'
+  | 'daily'
+  | 'every_3_days'
+  | 'weekly'
+  | 'every_2_weeks'
+  | 'custom'
+
+export async function getSensusSyncSettings(): Promise<SensusSyncSettings | null> {
+  const { data, error } = await supabase
+    .from('sensus_sync_settings')
+    .select('*')
+    .eq('id', 1)
+    .maybeSingle()
+  if (error) throw error
+  return data as unknown as SensusSyncSettings | null
+}
+
+export async function setSensusSyncAutoApplyNew(
+  enabled: boolean
+): Promise<void> {
+  const { error } = await supabase
+    .from('sensus_sync_settings')
+    .update({ auto_apply_new: enabled, updated_at: new Date().toISOString() })
+    .eq('id', 1)
+  if (error) throw error
+}
+
+export async function configureSensusSyncCron(
+  mode: SensusSyncCronMode,
+  time: string | null,
+  expression: string | null
+): Promise<{ cron_enabled: boolean; schedule?: string }> {
+  const { data, error } = await supabase.rpc('sensus_sync_cron_configure', {
+    p_mode: mode,
+    p_time: time,
+    p_expression: expression,
+  })
+  if (error) throw error
+  return data as { cron_enabled: boolean; schedule?: string }
 }
