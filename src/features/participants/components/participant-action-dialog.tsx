@@ -29,6 +29,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { DatePicker } from '@/components/date-picker'
 import { SelectDropdown } from '@/components/select-dropdown'
@@ -38,6 +39,7 @@ const formSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi.'),
   kelompok: z.enum(KELOMPOK, { message: 'Kelompok wajib dipilih.' }),
   kategori: z.enum(KATEGORI, { message: 'Kategori wajib dipilih.' }),
+  isKhusus: z.boolean(),
   gender: z.enum(GENDER, { message: 'Jenis kelamin wajib dipilih.' }),
   status: z.enum(PARTICIPANT_STATUS),
   birthPlace: z
@@ -93,6 +95,7 @@ export function ParticipantActionDialog({
       name: currentRow?.name ?? '',
       kelompok: defaultKelompok,
       kategori: currentRow?.kategori ?? 'A',
+      isKhusus: currentRow?.isKhusus ?? false,
       gender: currentRow?.gender ?? 'L',
       status: currentRow?.status ?? 'active',
       birthPlace: currentRow?.birthPlace ?? '',
@@ -107,6 +110,7 @@ export function ParticipantActionDialog({
       name: currentRow?.name ?? '',
       kelompok: defaultKelompok,
       kategori: currentRow?.kategori ?? 'A',
+      isKhusus: currentRow?.isKhusus ?? false,
       gender: currentRow?.gender ?? 'L',
       status: currentRow?.status ?? 'active',
       birthPlace: currentRow?.birthPlace ?? '',
@@ -117,6 +121,7 @@ export function ParticipantActionDialog({
     form,
     currentRow?.name,
     currentRow?.kategori,
+    currentRow?.isKhusus,
     currentRow?.gender,
     currentRow?.status,
     currentRow?.birthPlace,
@@ -299,6 +304,21 @@ export function ParticipantActionDialog({
                   <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
                     Status
                   </div>
+                  <FormField
+                    control={form.control}
+                    name='isKhusus'
+                    render={({ field }) => (
+                      <FormItem className='flex items-center gap-2 space-y-0'>
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>Peserta khusus</FormLabel>
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name='status'

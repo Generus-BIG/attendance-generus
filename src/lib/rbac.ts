@@ -22,6 +22,7 @@ export type PermissionKey =
   | 'createAttendance'
   | 'editAttendance'
   | 'deleteAttendance'
+  | 'syncSensus'
 
 // === Permission Map ===
 const PERMISSION_MAP: Record<Role, Record<PermissionKey, boolean>> = {
@@ -38,6 +39,7 @@ const PERMISSION_MAP: Record<Role, Record<PermissionKey, boolean>> = {
     createAttendance: true,
     editAttendance: true,
     deleteAttendance: true,
+    syncSensus: true,
   },
   admin: {
     manageUsers: false,
@@ -52,6 +54,7 @@ const PERMISSION_MAP: Record<Role, Record<PermissionKey, boolean>> = {
     createAttendance: true,
     editAttendance: true,
     deleteAttendance: true,
+    syncSensus: true,
   },
   team_manager: {
     manageUsers: false,
@@ -66,6 +69,7 @@ const PERMISSION_MAP: Record<Role, Record<PermissionKey, boolean>> = {
     createAttendance: true,
     editAttendance: true,
     deleteAttendance: true,
+    syncSensus: false,
   },
   mt: {
     manageUsers: false,
@@ -80,6 +84,7 @@ const PERMISSION_MAP: Record<Role, Record<PermissionKey, boolean>> = {
     createAttendance: false,
     editAttendance: false,
     deleteAttendance: false,
+    syncSensus: false,
   },
   member: {
     manageUsers: false,
@@ -94,6 +99,7 @@ const PERMISSION_MAP: Record<Role, Record<PermissionKey, boolean>> = {
     createAttendance: false,
     editAttendance: false,
     deleteAttendance: false,
+    syncSensus: false,
   },
 }
 

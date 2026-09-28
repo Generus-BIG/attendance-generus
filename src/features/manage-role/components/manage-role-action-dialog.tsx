@@ -48,6 +48,7 @@ const PERMISSION_KEYS: PermissionKey[] = [
   'createAttendance',
   'editAttendance',
   'deleteAttendance',
+  'syncSensus',
 ]
 
 const PERMISSION_LABELS: Record<PermissionKey, string> = {
@@ -63,6 +64,7 @@ const PERMISSION_LABELS: Record<PermissionKey, string> = {
   createAttendance: 'Input absensi',
   editAttendance: 'Edit absensi',
   deleteAttendance: 'Hapus absensi',
+  syncSensus: 'Sinkronisasi sensus',
 }
 
 function isEscalation(current: Role | undefined, next: Role): boolean {

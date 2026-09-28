@@ -1,0 +1,507 @@
+'use client'
+
+import { Fragment, useMemo, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
+import { usePermissions } from '@/hooks/use-permissions'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { isSyncAutoPromoted } from '@/features/sensus-sync/auto-promote'
+import {
+  applySensusSyncItems,
+  listSensusItems,
+  listSensusRuns,
+  type SensusSyncCandidate,
+  type SensusSyncItem,
+} from '@/features/sensus-sync/services'
+import { formatKategoriLabel } from '../approval-utils'
+
+const confidenceLabels = {
+  exact: 'Exact',
+  similar: 'Mirip',
+  none: 'Baru',
+} as const
+
+function confidenceClass(confidence: SensusSyncItem['confidence']) {
+  return confidence === 'exact'
+    ? 'border-green-200 bg-green-50 text-green-700'
+    : confidence === 'similar'
+      ? 'border-amber-200 bg-amber-50 text-amber-700'
+      : 'border-blue-200 bg-blue-50 text-blue-700'
+}
+
+function isPending(item: SensusSyncItem) {
+  return item.status === 'pending'
+}
+
+// Candidate-bearing rows need an explicit participant before apply. Pure new
+// rows (no candidates) remain legitimate creates.
+function isAppliable(item: SensusSyncItem) {
+  return (
+    isPending(item) &&
+    (item.matched_participant_id !== null ||
+      (item.patch.candidates?.length ?? 0) === 0)
+  )
+}
+
+export function SensusSyncTab({ runId }: { runId?: string }) {
+  const { can } = usePermissions()
+  const queryClient = useQueryClient()
+  const [pickedRun, setPickedRun] = useState('')
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [kelompok, setKelompok] = useState('all')
+  const [confidence, setConfidence] = useState('all')
+  const [name, setName] = useState('')
+  const [savingMatch, setSavingMatch] = useState<string | null>(null)
+
+  const runsQuery = useQuery({
+    queryKey: ['sensus-sync', 'runs'],
+    queryFn: listSensusRuns,
+    enabled: can.syncSensus,
+  })
+  const selectedRun = pickedRun || runId || runsQuery.data?.[0]?.id || ''
+
+  const itemsQuery = useQuery({
+    queryKey: ['sensus-sync', 'items', selectedRun],
+    queryFn: () => listSensusItems(selectedRun),
+    enabled: can.syncSensus && Boolean(selectedRun),
+  })
+
+  const groups = useMemo(
+    () =>
+      [
+        ...new Set((itemsQuery.data ?? []).map((item) => item.source_kelompok)),
+      ].sort(),
+    [itemsQuery.data]
+  )
+  const candidates = useMemo(
+    () =>
+      (itemsQuery.data ?? []).filter(
+        (item) =>
+          (kelompok === 'all' || item.source_kelompok === kelompok) &&
+          (confidence === 'all' || item.confidence === confidence) &&
+          item.source_name.toLowerCase().includes(name.toLowerCase())
+      ),
+    [confidence, itemsQuery.data, kelompok, name]
+  )
+  const pendingIds = useMemo(
+    () => new Set(candidates.filter(isPending).map((item) => item.id)),
+    [candidates]
+  )
+  const appliableIds = useMemo(
+    () => new Set(candidates.filter(isAppliable).map((item) => item.id)),
+    [candidates]
+  )
+  const pendingCount = pendingIds.size
+  const selectedPendingCount = [...pendingIds].filter((id) =>
+    selected.has(id)
+  ).length
+  const selectedAppliableCount = [...appliableIds].filter((id) =>
+    selected.has(id)
+  ).length
+
+  if (!can.syncSensus)
+    return (
+      <div className='rounded-md border p-6 text-sm text-muted-foreground'>
+        Tidak ada akses
+      </div>
+    )
+
+  const toggleAll = (checked: boolean) =>
+    setSelected(checked ? new Set(pendingIds) : new Set())
+  const handleKelompokChange = (value: string) => {
+    setKelompok(value)
+    setSelected(new Set())
+  }
+  const handleConfidenceChange = (value: string) => {
+    setConfidence(value)
+    setSelected(new Set())
+  }
+  const handleNameChange = (value: string) => {
+    setName(value)
+    setSelected(new Set())
+  }
+  const toggleRowExpansion = (id: string) =>
+    setExpanded((current) => {
+      const next = new Set(current)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const toggle = (item: SensusSyncItem) =>
+    setSelected((current) => {
+      const next = new Set(current)
+      if (next.has(item.id)) next.delete(item.id)
+      else next.add(item.id)
+      return next
+    })
+
+  const apply = async () => {
+    const itemsById = new Map(
+      (itemsQuery.data ?? []).map((item) => [item.id, item])
+    )
+    const ids = [...selected].filter((id) => appliableIds.has(id))
+    if (ids.length === 0) return
+    const autoPromoteCount = ids.filter((id) => {
+      const item = itemsById.get(id)
+      return item ? isSyncAutoPromoted(item) : false
+    }).length
+    try {
+      const result = await applySensusSyncItems(ids)
+      toast.success(`${result.applied} diterapkan, ${result.failed} gagal`)
+      if (autoPromoteCount > 0 && result.applied > 0) {
+        toast.info(
+          `${autoPromoteCount} peserta otomatis diubah ke GPN B karena usia ≥ 23 tahun`
+        )
+      }
+      setSelected(new Set())
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['sensus-sync'] }),
+        queryClient.invalidateQueries({ queryKey: ['participants'] }),
+      ])
+    } catch (_error) {
+      toast.error('Gagal menerapkan sinkronisasi sensus')
+    }
+  }
+
+  const reject = async () => {
+    const ids = [...selected].filter((id) => pendingIds.has(id))
+    if (ids.length === 0) return
+    const { error } = await supabase
+      .from('sensus_sync_items')
+      .update({ status: 'rejected' })
+      .in('id', ids)
+      .eq('status', 'pending')
+    if (error) {
+      toast.error('Gagal menolak item')
+      return
+    }
+    toast.success(`${ids.length} item ditolak`)
+    setSelected(new Set())
+    void queryClient.invalidateQueries({ queryKey: ['sensus-sync'] })
+  }
+
+  const rowNeedsCandidate = (item: SensusSyncItem) =>
+    item.status === 'pending' &&
+    item.matched_participant_id === null &&
+    (item.patch.candidates?.length ?? 0) > 0
+
+  const pickSimilar = async (
+    item: SensusSyncItem,
+    candidate: SensusSyncCandidate
+  ) => {
+    setSavingMatch(item.id)
+    const { error } = await supabase
+      .from('sensus_sync_items')
+      .update({
+        matched_participant_id: candidate.id,
+        patch: {
+          ...item.patch,
+          current: {
+            id: candidate.id,
+            name: candidate.name,
+            birth_date: candidate.birth_date,
+            kategori: candidate.category,
+            khusus: candidate.is_khusus,
+          },
+        },
+      })
+      .eq('id', item.id)
+      .eq('status', 'pending')
+    setSavingMatch(null)
+    if (error) {
+      toast.error('Gagal memilih peserta')
+      return
+    }
+    void queryClient.invalidateQueries({ queryKey: ['sensus-sync'] })
+  }
+
+  const headerCheckboxState =
+    pendingCount > 0 && selectedPendingCount === pendingCount
+      ? true
+      : selectedPendingCount > 0
+        ? 'indeterminate'
+        : false
+  const activeRun = (runsQuery.data ?? []).find((run) => run.id === selectedRun)
+
+  return (
+    <div className='space-y-4'>
+      <div className='flex flex-wrap items-center gap-2'>
+        <Select
+          value={selectedRun}
+          onValueChange={(id) => {
+            setPickedRun(id)
+            setSelected(new Set())
+            setExpanded(new Set())
+          }}
+        >
+          <SelectTrigger className='w-64'>
+            <SelectValue placeholder='Pilih run sinkronisasi' />
+          </SelectTrigger>
+          <SelectContent>
+            {(runsQuery.data ?? []).map((run) => (
+              <SelectItem key={run.id} value={run.id}>
+                {new Date(run.created_at).toLocaleString('id-ID')} ·{' '}
+                {run.status === 'failed' ? 'Gagal' : `${run.row_count} baris`}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={kelompok} onValueChange={handleKelompokChange}>
+          <SelectTrigger className='w-44'>
+            <SelectValue placeholder='Semua kelompok' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>Semua kelompok</SelectItem>
+            {groups.map((group) => (
+              <SelectItem key={group} value={group}>
+                {group}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={confidence} onValueChange={handleConfidenceChange}>
+          <SelectTrigger className='w-36'>
+            <SelectValue placeholder='Semua confidence' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>Semua confidence</SelectItem>
+            <SelectItem value='exact'>Exact</SelectItem>
+            <SelectItem value='similar'>Mirip</SelectItem>
+            <SelectItem value='none'>Baru</SelectItem>
+          </SelectContent>
+        </Select>
+        <Input
+          className='w-52'
+          placeholder='Cari nama sumber'
+          value={name}
+          onChange={(event) => handleNameChange(event.target.value)}
+        />
+        <div className='ms-auto flex gap-2'>
+          <Button
+            variant='outline'
+            onClick={() => void reject()}
+            disabled={selectedPendingCount === 0}
+          >
+            Tolak terpilih
+          </Button>
+          <Button
+            onClick={() => void apply()}
+            disabled={selectedAppliableCount === 0}
+          >
+            Terapkan terpilih
+          </Button>
+        </div>
+      </div>
+      {activeRun?.status === 'failed' && (
+        <div className='rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive'>
+          Sinkronisasi gagal: {activeRun.error ?? 'Kesalahan tidak diketahui'}.
+          Jalankan sinkronisasi lagi untuk mencoba ulang.
+        </div>
+      )}
+      <div className='rounded-md border'>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className='w-10'>
+                <Checkbox
+                  aria-label='Pilih semua baris pending'
+                  checked={headerCheckboxState}
+                  onCheckedChange={(value) => toggleAll(value === true)}
+                />
+              </TableHead>
+              <TableHead>Nama sumber</TableHead>
+              <TableHead>Kelompok</TableHead>
+              <TableHead>JK</TableHead>
+              <TableHead>Tgl lahir sumber</TableHead>
+              <TableHead>Kategori sumber → label</TableHead>
+              <TableHead>Confidence</TableHead>
+              <TableHead>Khusus</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {candidates.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={9}
+                  className='h-24 text-center text-muted-foreground'
+                >
+                  Tidak ada item.
+                </TableCell>
+              </TableRow>
+            ) : (
+              candidates.map((item) => (
+                <Fragment key={item.id}>
+                  <TableRow>
+                    <TableCell onClick={(event) => event.stopPropagation()}>
+                      <Checkbox
+                        aria-label={`Pilih ${item.source_name}`}
+                        checked={selected.has(item.id)}
+                        disabled={!isPending(item)}
+                        onCheckedChange={() => toggle(item)}
+                      />
+                    </TableCell>
+                    <TableCell className='font-medium'>
+                      <Button
+                        type='button'
+                        variant='link'
+                        size='sm'
+                        className='h-auto p-0 text-left font-medium'
+                        aria-expanded={expanded.has(item.id)}
+                        onClick={() => toggleRowExpansion(item.id)}
+                      >
+                        {item.source_name}
+                      </Button>
+                    </TableCell>
+                    <TableCell>{item.source_kelompok}</TableCell>
+                    <TableCell>{item.source_gender}</TableCell>
+                    <TableCell>{item.source_birth_date ?? '—'}</TableCell>
+                    <TableCell>
+                      {formatKategoriLabel(item.source_kategori)} →{' '}
+                      {formatKategoriLabel(item.patch.kategori)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant='outline'
+                        className={confidenceClass(item.confidence)}
+                      >
+                        {confidenceLabels[item.confidence]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {item.source_khusus ? (
+                        <Badge variant='secondary'>Khusus</Badge>
+                      ) : (
+                        '—'
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          item.status === 'pending'
+                            ? 'outline'
+                            : item.status === 'applied'
+                              ? 'default'
+                              : 'destructive'
+                        }
+                      >
+                        {item.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                  {expanded.has(item.id) && (
+                    <TableRow>
+                      <TableCell colSpan={9} className='bg-muted/30'>
+                        <div className='space-y-2 text-sm'>
+                          {item.matched_participant_id === null ? (
+                            rowNeedsCandidate(item) ? (
+                              <div className='text-muted-foreground'>
+                                Pilih peserta cocok sebelum menerapkan.
+                              </div>
+                            ) : (
+                              <div className='text-muted-foreground'>
+                                Peserta baru akan dibuat saat diterapkan.
+                              </div>
+                            )
+                          ) : (
+                            <div className='grid gap-1'>
+                              <div>
+                                <span className='font-medium'>Peserta:</span>{' '}
+                                {item.patch.current?.name ?? '—'}
+                              </div>
+                              <div>
+                                <span className='font-medium'>birth_date:</span>{' '}
+                                {item.patch.current?.birth_date ?? '—'} →{' '}
+                                {item.patch.birth_date ?? '—'}
+                              </div>
+                              <div>
+                                <span className='font-medium'>kategori:</span>{' '}
+                                {formatKategoriLabel(
+                                  item.patch.current?.kategori ??
+                                    item.patch.kategori
+                                )}{' '}
+                                → {formatKategoriLabel(item.patch.kategori)}
+                              </div>
+                              <div>
+                                <span className='font-medium'>khusus:</span>{' '}
+                                {String(item.patch.current?.khusus ?? false)} →{' '}
+                                {String(item.patch.khusus)}
+                              </div>
+                            </div>
+                          )}
+                          {rowNeedsCandidate(item) ? (
+                            <div className='flex items-center gap-2'>
+                              <Label htmlFor={`sensus-sync-match-${item.id}`}>
+                                Pilih peserta:
+                              </Label>
+                              <Select
+                                value={item.matched_participant_id ?? ''}
+                                disabled={savingMatch === item.id}
+                                onValueChange={(id) => {
+                                  const candidate = item.patch.candidates?.find(
+                                    (entry) => entry.id === id
+                                  )
+                                  if (candidate)
+                                    void pickSimilar(item, candidate)
+                                }}
+                              >
+                                <SelectTrigger
+                                  id={`sensus-sync-match-${item.id}`}
+                                  className='w-72'
+                                >
+                                  <SelectValue placeholder='Pilih peserta cocok' />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {item.patch.candidates?.map((candidate) => (
+                                    <SelectItem
+                                      key={candidate.id}
+                                      value={candidate.id}
+                                    >
+                                      {candidate.name} · {candidate.kelompok} ·{' '}
+                                      {candidate.gender} ·{' '}
+                                      {formatKategoriLabel(
+                                        candidate.category ?? ''
+                                      )}
+                                      {candidate.birth_date
+                                        ? ` · ${candidate.birth_date}`
+                                        : ''}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </Fragment>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  )
+}

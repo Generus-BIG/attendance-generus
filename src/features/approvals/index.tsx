@@ -1,3 +1,5 @@
+import { Route } from '@/routes/admin/approvals'
+import { usePermissions } from '@/hooks/use-permissions'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
@@ -9,9 +11,17 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { ApprovalsProvider } from './components/approvals-provider'
 import { HistoryApprovalTab } from './components/history-approval-tab'
 import { PendingParticipantsTab } from './components/pending-participants-tab'
+import { SensusSyncTab } from './components/sensus-sync-tab'
 import { UnmatchedAttendanceTab } from './components/unmatched-attendance-tab'
 
 export function Approvals() {
+  const search = Route.useSearch()
+  const { can } = usePermissions()
+  const defaultTab =
+    search.tab === 'sync' && !can.syncSensus
+      ? 'pending'
+      : (search.tab ?? 'pending')
+
   return (
     <ApprovalsProvider>
       <Header fixed>
@@ -30,11 +40,14 @@ export function Approvals() {
           description='Kelola pengajuan peserta baru dan absensi yang belum terhubung.'
         />
 
-        <Tabs defaultValue='pending' className='w-full'>
+        <Tabs defaultValue={defaultTab} className='w-full'>
           <TabsList>
             <TabsTrigger value='pending'>Pengajuan</TabsTrigger>
             <TabsTrigger value='history'>Riwayat</TabsTrigger>
             <TabsTrigger value='unmatched'>Absensi Belum Terhubung</TabsTrigger>
+            {can.syncSensus && (
+              <TabsTrigger value='sync'>Sync Sensus</TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value='pending' className='mt-4'>
             <PendingParticipantsTab />
@@ -45,6 +58,11 @@ export function Approvals() {
           <TabsContent value='unmatched' className='mt-4'>
             <UnmatchedAttendanceTab />
           </TabsContent>
+          {can.syncSensus && (
+            <TabsContent value='sync' className='mt-4'>
+              <SensusSyncTab runId={search.run} />
+            </TabsContent>
+          )}
         </Tabs>
       </Main>
     </ApprovalsProvider>
