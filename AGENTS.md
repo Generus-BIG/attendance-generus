@@ -152,12 +152,12 @@ All LUPG tables prefixed `lupg_`. Container pattern: one `lupg_monthly_reports` 
 
 ### Sensus Auto-Sync (participant-derived)
 
-Categories `GPN_A`, `GPN_B`, `AR`, `APR` are **auto-derived** from the `participants` table — not manually entered. The pipeline:
-- **View** `lupg_sensus_participant_derived` (SECURITY INVOKER): aggregates active participants by `group_id × category × gender`. Covers all four categories.
+Categories `GPN_A`, `GPN_B`, `AR`, `APR`, `PAUD`, `ACR` are **auto-derived** from the `participants` table — not manually entered (PAUD/ACR joined in `20260930010000_sensus_paud_acr_derived.sql`, overwriting their old manual numbers). The pipeline:
+- **View** `lupg_sensus_participant_derived` (SECURITY INVOKER): aggregates active participants by `group_id × category × gender`. Covers all six categories.
 - **Sync function** `lupg_sync_derived_sensus(p_kelompok_id)`: zero-out then upsert derived counts into `lupg_sensus`. Handles count→0 when participants leave.
 - **Trigger** `tg_participants_sync_sensus` (AFTER INSERT/UPDATE OF status_active, category_id, group_id, gender OR DELETE): auto-calls sync for affected kelompok(s), including old kelompok on group transfer.
 
-Categories `PAUD`, `ACR`, `PENDIDIK_MT`, `PENDIDIK_MS` remain **manual entry** (no corresponding participant records). PAUD is included in Generus sensus totals and presentation decks only; never add it to attendance, participant-derived sensus, PHQ, or program categories. The frontend uses `DERIVED_SENSUS_CATEGORIES` set in [constants.ts](src/features/lupg/constants.ts) to render derived categories as read-only.
+Only `PENDIDIK_MT` and `PENDIDIK_MS` remain **manual entry**. PAUD is included in Generus sensus totals and presentation decks only; never add it to attendance, PHQ, or program categories. The frontend uses `DERIVED_SENSUS_CATEGORIES` set in [constants.ts](src/features/lupg/constants.ts) to render derived categories as read-only.
 
 **RLS helpers (already in DB)**:
 - `user_role()`, `user_kelompok()`, `user_kelompok_id()` — read from `auth.jwt() -> 'app_metadata'`
@@ -339,6 +339,7 @@ Schema changes are tracked in `supabase/migrations/` as timestamped `.sql` files
 - `20260929000000_sensus_sync.sql` through `20260929070000_sensus_sync_pg_net_schema.sql` — desabig web sensus staging (runs/items, RLS, apply RPC), admin automation settings + `pg_cron` scheduling RPC, auto-apply of pure-new rows from the `sensus-sync` Edge Function (deployed with `verify_jwt=false`; handler authenticates cron via env key or the service_role-only vault-comparison RPC), and admin-only run history
 - `20260929100000_khusus_attendance_participation.sql` — re-creates `search_form_participants` and `submit_attendance_guarded` without the khusus exclusion so Khusus participants can fill attendance; public dashboard and Intensif guards unchanged
 - `20260929110000_sensus_sync_preserve_name_on_resolve.sql` — similar-resolve apply overwrites birth_date/category/khusus from desabig while preserving the existing participant name
+- `20260930000000_sensus_sync_apply_reconcile.sql` — `sensus_sync_reconcile_applied()` marks identical pending rows (same normalized name/kelompok/gender + identical source fields) as applied across ALL runs, so a person applied in one run no longer stays pending in others; runs at the end of every apply and stage. Applied new-participant rows record the created participant id. Admin run deletion is a direct RLS-gated table delete (items cascade).
 - `20260906000000_lupg_submission_editor_label.sql` + `20260906010000_lupg_monthly_report_edit_history.sql` (+ `.01`–`.05` fixups) — submitted_by label column, append-only `lupg_monthly_report_edit_history` audit table, lifecycle/history triggers, bounded single-report history RPC, and complete admin-only all-kelompok monthly audit dashboard RPC
 - `20260923041020_lupg_program_analytics_sharing.sql` — admin-only month-scoped Desa share tokens, a submitted-only public payload RPC, and a service-role-only photo-path RPC
 - `20260923154924_expand_lupg_program_analytics_sharing.sql` — submitted-month history selection, trailing 12-month analytics, and selected-month photo signing boundaries
