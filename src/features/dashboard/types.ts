@@ -32,6 +32,8 @@ export type AttendanceRecord = {
   group_value: string | null
   gender_value: 'L' | 'P' | null
   permission_reason: PermissionReason | null
+  /** Khusus participants attend privately; excluded from all rate aggregates. */
+  is_khusus?: boolean
 }
 
 // Aggregated meeting recap for a single date

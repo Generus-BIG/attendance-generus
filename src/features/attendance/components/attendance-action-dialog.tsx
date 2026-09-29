@@ -77,7 +77,6 @@ async function getActiveParticipants(): Promise<Participant[]> {
     `
     )
     .eq('status_active', true)
-    .eq('is_khusus', false)
     .order('name')
 
   if (error) throw error

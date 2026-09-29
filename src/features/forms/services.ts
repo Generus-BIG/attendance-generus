@@ -103,7 +103,6 @@ async function assertAttendanceMatchesFormScope(
       .select('group_id, categories:category_id(value)')
       .eq('id', data.participantId)
       .eq('status_active', true)
-      .eq('is_khusus', false)
       .single()
 
     if (error) throw error

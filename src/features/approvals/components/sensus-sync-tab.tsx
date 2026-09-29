@@ -80,6 +80,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
     enabled: can.syncSensus,
   })
   const selectedRun = pickedRun || runId || runsQuery.data?.[0]?.id || ''
+  const selectedRunLabel = runsQuery.data?.find((run) => run.id === selectedRun)
 
   const itemsQuery = useQuery({
     queryKey: ['sensus-sync', 'items', selectedRun],
@@ -246,7 +247,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
 
   return (
     <div className='space-y-4'>
-      <div className='flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center'>
+      <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(15rem,1.4fr)_minmax(10rem,0.8fr)_minmax(12rem,1fr)_minmax(13rem,1fr)_auto] lg:items-center'>
         <Select
           value={selectedRun}
           onValueChange={(id) => {
@@ -255,8 +256,12 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
             setExpanded(new Set())
           }}
         >
-          <SelectTrigger className='w-64'>
-            <SelectValue placeholder='Select a sync run' />
+          <SelectTrigger className='w-full min-w-0'>
+            <SelectValue placeholder='Select a sync run'>
+              {selectedRunLabel
+                ? `${new Date(selectedRunLabel.created_at).toLocaleString('id-ID')} · ${selectedRunLabel.status === 'failed' ? 'Failed' : `${selectedRunLabel.row_count} rows`}`
+                : undefined}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {(runsQuery.data ?? []).map((run) => (
@@ -268,8 +273,10 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
           </SelectContent>
         </Select>
         <Select value={kelompok} onValueChange={handleGroupChange}>
-          <SelectTrigger className='w-44'>
-            <SelectValue placeholder='All groups' />
+          <SelectTrigger className='w-full min-w-0'>
+            <SelectValue placeholder='All groups'>
+              {kelompok === 'all' ? 'All groups' : kelompok}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value='all'>All groups</SelectItem>
@@ -281,8 +288,12 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
           </SelectContent>
         </Select>
         <Select value={confidence} onValueChange={handleConfidenceChange}>
-          <SelectTrigger className='w-36'>
-            <SelectValue placeholder='All confidence levels' />
+          <SelectTrigger className='w-full min-w-0'>
+            <SelectValue placeholder='All confidence levels'>
+              {confidence === 'all'
+                ? 'All confidence levels'
+                : confidenceLabels[confidence as keyof typeof confidenceLabels]}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value='all'>All confidence levels</SelectItem>
@@ -292,20 +303,32 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
           </SelectContent>
         </Select>
         <Input
-          className='w-52'
+          className='h-11 w-full text-base sm:col-span-2 lg:col-span-1 lg:h-9 lg:text-sm'
           placeholder='Search source name'
           value={name}
           onChange={(event) => handleNameChange(event.target.value)}
         />
-        <div className='flex gap-2 sm:ms-auto'>
+        <div className='grid grid-cols-2 gap-2 sm:col-span-2 lg:col-span-1 lg:flex lg:justify-end'>
+          {selected.size > 0 && (
+            <span
+              role='status'
+              className='col-span-2 flex items-center justify-center text-sm text-muted-foreground tabular-nums lg:col-span-1 lg:justify-end'
+            >
+              {selectedAppliableCount === selected.size
+                ? `${selected.size} selected`
+                : `${selected.size} selected · ${selectedAppliableCount} appliable`}
+            </span>
+          )}
           <Button
             variant='outline'
+            className='min-h-11 lg:min-h-9'
             onClick={() => void reject()}
             disabled={selectedPendingCount === 0}
           >
             Reject selected
           </Button>
           <Button
+            className='min-h-11 lg:min-h-9'
             onClick={() => void apply()}
             disabled={selectedAppliableCount === 0}
           >
@@ -336,7 +359,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
               <TableHead>Source birth date</TableHead>
               <TableHead>Source category → label</TableHead>
               <TableHead>Confidence</TableHead>
-              <TableHead>Special</TableHead>
+              <TableHead>Khusus</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -391,7 +414,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                     </TableCell>
                     <TableCell>
                       {item.source_khusus ? (
-                        <Badge variant='secondary'>Special</Badge>
+                        <Badge variant='secondary'>Khusus</Badge>
                       ) : (
                         '—'
                       )}
@@ -417,7 +440,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                           {item.matched_participant_id === null ? (
                             rowNeedsCandidate(item) ? (
                               <div className='text-muted-foreground'>
-                                Select matching participant senot yet applying.
+                                Select a matching participant before applying.
                               </div>
                             ) : (
                               <div className='text-muted-foreground'>
@@ -436,6 +459,15 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                                 <span className='font-medium'>birth_date:</span>{' '}
                                 {item.patch.current?.birth_date ?? '—'} →{' '}
                                 {item.patch.birth_date ?? '—'}
+                                {item.patch.current?.birth_date &&
+                                item.patch.birth_date &&
+                                item.patch.current.birth_date !==
+                                  item.patch.birth_date ? (
+                                  <span className='text-muted-foreground'>
+                                    {' '}
+                                    (replaced by desabig)
+                                  </span>
+                                ) : null}
                               </div>
                               <div>
                                 <span className='font-medium'>category:</span>{' '}
@@ -444,11 +476,27 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                                     item.patch.kategori
                                 )}{' '}
                                 → {formatKategoriLabel(item.patch.kategori)}
+                                {item.patch.current?.kategori &&
+                                item.patch.current.kategori !==
+                                  item.patch.kategori ? (
+                                  <span className='text-muted-foreground'>
+                                    {' '}
+                                    (replaced by desabig)
+                                  </span>
+                                ) : null}
                               </div>
                               <div>
                                 <span className='font-medium'>special:</span>{' '}
                                 {String(item.patch.current?.khusus ?? false)} →{' '}
                                 {String(item.patch.khusus)}
+                                {item.patch.current &&
+                                item.patch.current.khusus !==
+                                  item.patch.khusus ? (
+                                  <span className='text-muted-foreground'>
+                                    {' '}
+                                    (replaced by desabig)
+                                  </span>
+                                ) : null}
                               </div>
                             </div>
                           )}

@@ -20,7 +20,7 @@ export function Approvals() {
   const defaultTab =
     search.tab === 'sync' && !can.syncSensus
       ? 'pending'
-      : (search.tab ?? 'pending')
+      : (search.tab ?? (can.syncSensus ? 'sync' : 'pending'))
 
   return (
     <ApprovalsProvider>
@@ -40,15 +40,17 @@ export function Approvals() {
           description='Review new participant submissions and unmatched attendance.'
         />
 
-        <Tabs defaultValue={defaultTab} className='w-full'>
-          <TabsList className='flex h-auto w-full justify-start gap-1 overflow-x-auto p-1'>
-            <TabsTrigger value='pending'>Submissions</TabsTrigger>
-            <TabsTrigger value='history'>History</TabsTrigger>
-            <TabsTrigger value='unmatched'>Unmatched Attendance</TabsTrigger>
-            {can.syncSensus && (
-              <TabsTrigger value='sync'>Sync Sensus</TabsTrigger>
-            )}
-          </TabsList>
+        <Tabs defaultValue={defaultTab} className='w-full min-w-0'>
+          <div className='overflow-x-auto pb-1'>
+            <TabsList className='grid h-auto min-w-max auto-cols-[minmax(10rem,1fr)] grid-flow-col justify-start gap-1 p-1 sm:min-w-full'>
+              {can.syncSensus && (
+                <TabsTrigger value='sync'>Sync Sensus</TabsTrigger>
+              )}
+              <TabsTrigger value='pending'>Submissions</TabsTrigger>
+              <TabsTrigger value='history'>History</TabsTrigger>
+              <TabsTrigger value='unmatched'>Unmatched Attendance</TabsTrigger>
+            </TabsList>
+          </div>
           <TabsContent value='pending' className='mt-4'>
             <PendingParticipantsTab />
           </TabsContent>

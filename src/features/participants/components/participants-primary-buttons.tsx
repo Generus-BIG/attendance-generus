@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button'
 import { PermissionGate } from '@/components/permission-gate'
 import { stageSensusSync } from '@/features/sensus-sync/services'
 import { useParticipantsCRUD } from '../context/participants-context'
-import { SensusSyncAutomationDialog } from './sensus-sync-automation-dialog'
 import { useParticipants } from './participants-provider'
+import { SensusSyncAutomationDialog } from './sensus-sync-automation-dialog'
 
 export function ParticipantsPrimaryButtons() {
   const { setOpen } = useParticipants()
@@ -18,50 +18,53 @@ export function ParticipantsPrimaryButtons() {
   const [syncing, setSyncing] = useState(false)
 
   return (
-    <div className='flex gap-2'>
+    <div className='grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap'>
       <Button
         variant='outline'
-        className='space-x-1'
+        className='w-full gap-1 sm:w-auto'
         onClick={() => setOpen('export')}
         disabled={participants.length === 0}
       >
         <span>Export</span> <Download size={18} />
       </Button>
       <PermissionGate allowed={can.syncSensus}>
-        <div className='flex gap-2'>
-          <Button
-            variant='outline'
-            className='space-x-1'
-            disabled={syncing}
-            onClick={async () => {
-              setSyncing(true)
-              try {
-                const r = await stageSensusSync()
-                toast.success(
-                  `${r.staged} sensus rows ready for review${
-                    r.auto_applied
-                      ? ` (+${r.auto_applied} added automatically)`
-                      : ''
-                  }`
-                )
-                navigate({
-                  to: '/admin/approvals',
-                  search: { tab: 'sync', run: r.run_id },
-                })
-              } catch {
-                toast.error('Could not fetch web sensus data')
-              } finally {
-                setSyncing(false)
-              }
-            }}
-          >
-            <span>Sync Sensus</span> <RefreshCw size={18} />
-          </Button>
-          <SensusSyncAutomationDialog />
-        </div>
+        <Button
+          variant='outline'
+          className='w-full gap-1 sm:w-auto'
+          disabled={syncing}
+          onClick={async () => {
+            setSyncing(true)
+            try {
+              const r = await stageSensusSync()
+              toast.success(
+                `${r.staged} sensus rows ready for review${
+                  r.auto_applied
+                    ? ` (+${r.auto_applied} added automatically)`
+                    : ''
+                }`
+              )
+              navigate({
+                to: '/admin/approvals',
+                search: { tab: 'sync', run: r.run_id },
+              })
+            } catch {
+              toast.error('Could not fetch web sensus data')
+            } finally {
+              setSyncing(false)
+            }
+          }}
+        >
+          <span>Sync Sensus</span> <RefreshCw size={18} />
+        </Button>
+      </PermissionGate>
+      <PermissionGate allowed={can.syncSensus}>
+        <SensusSyncAutomationDialog />
       </PermissionGate>
       <PermissionGate allowed={can.createParticipant}>
-        <Button className='space-x-1' onClick={() => setOpen('add')}>
+        <Button
+          className='w-full gap-1 sm:w-auto'
+          onClick={() => setOpen('add')}
+        >
           <span>Tambah Peserta</span> <Plus size={18} />
         </Button>
       </PermissionGate>
