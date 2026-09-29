@@ -1,0 +1,6 @@
+-- Attempted advisor remediation (extension_in_public) for pg_net.
+-- The extension is non-relocatable (it owns the `net` schema) and the
+-- Supabase platform reinstalls its registration into `public`, so the warn
+-- is not fixable via SQL. Kept as a no-op record: functions live in `net`,
+-- nothing is exposed in `public`. Do not re-run the drop/recreate — it only
+-- clears `net._http_response` diagnostics.
