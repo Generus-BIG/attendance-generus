@@ -11,9 +11,11 @@ const yearsAgo = (years) => {
   return toDateOnly(d)
 }
 // Simulate the source helper without importing the TS alias module.
+// Similar resolve overwrites birth_date with the source value, so only the
+// source date decides promotion — an existing birth_date never wins.
 const isSyncAutoPromoted = (item) => {
   if (item.source_kategori !== 'GPN A') return false
-  const basis = item.patch.current?.birth_date ?? item.patch.birth_date
+  const basis = item.patch.birth_date
   if (!basis) return false
   return (
     differenceInYears(new Date(), parse(basis, 'yyyy-MM-dd', new Date())) >= 23
@@ -28,10 +30,7 @@ test('sync auto-promote check fires only for GPN A with age >= 23', async () => 
   assert.match(source, /export function isSyncAutoPromoted/)
   assert.match(source, /source_kategori !== 'GPN A'/)
   assert.match(source, />=\s*23/)
-  assert.match(
-    source,
-    /patch\.current\?\.birth_date \?\? item\.patch\.birth_date/
-  )
+  assert.match(source, /const basis = item\.patch\.birth_date/)
 
   // Mirrors Task 8 live-DB fixtures (verified 2026-09-28): GPN A + 25y
   // promotes, GPN A + 20y stays, confirming the trigger + helper agree.
@@ -50,8 +49,8 @@ test('sync auto-promote check fires only for GPN A with age >= 23', async () => 
         current: { birth_date: yearsAgo(20) },
       },
     }),
-    false,
-    'existing birth_date wins (RPC COALESCE semantics)'
+    true,
+    'source birth_date wins (similar resolve overwrites it)'
   )
   assert.equal(
     isSyncAutoPromoted({
