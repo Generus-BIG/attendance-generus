@@ -45,5 +45,5 @@ test('similar staging and review require an explicit participant choice', async 
   assert.match(edge, /gender: candidate\.gender/)
   assert.match(ui, /candidates\.filter\(isPending\)/)
   assert.match(ui, /candidates\.filter\(isAppliable\)/)
-  assert.match(ui, /Sinkronisasi gagal:/)
+  assert.match(ui, /Synchronization failed:/)
 })

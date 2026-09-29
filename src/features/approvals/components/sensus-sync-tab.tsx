@@ -315,8 +315,8 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
       </div>
       {activeRun?.status === 'failed' && (
         <div className='rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive'>
-          Sinkronisasi failed: {activeRun.error ?? 'Unknown error'}.
-          Run sync again to retry.
+          Synchronization failed: {activeRun.error ?? 'Unknown error'}. Run sync
+          again to retry.
         </div>
       )}
       <div className='overflow-x-auto rounded-md border'>
@@ -427,7 +427,9 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                           ) : (
                             <div className='grid gap-1'>
                               <div>
-                                <span className='font-medium'>Participant:</span>{' '}
+                                <span className='font-medium'>
+                                  Participant:
+                                </span>{' '}
                                 {item.patch.current?.name ?? '—'}
                               </div>
                               <div>
