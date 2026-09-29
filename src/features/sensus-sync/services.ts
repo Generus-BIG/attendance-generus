@@ -90,6 +90,11 @@ export async function listCronSensusRuns(): Promise<SensusSyncRun[]> {
   return data as unknown as SensusSyncRun[]
 }
 
+export async function deleteSensusRun(runId: string): Promise<void> {
+  const { error } = await supabase.from('sensus_sync_runs').delete().eq('id', runId)
+  if (error) throw error
+}
+
 export async function listSensusItems(
   runId: string
 ): Promise<SensusSyncItem[]> {
