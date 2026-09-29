@@ -94,6 +94,7 @@ export function matchRow(
         : (() => {
             const sourceWords = nameWords(src.name)
             const similar = existing.filter((row) => {
+              if (row.kelompok !== src.kelompok) return false
               const existingName = normalizeName(row.name)
               const existingWords = new Set(nameWords(row.name))
               const sharedWords = sourceWords.filter((word) => existingWords.has(word)).length
@@ -107,7 +108,15 @@ export function matchRow(
               : { confidence: 'none' as const, participantId: null }
           })()
 
-  if (sourceRows && name && sourceRows.filter((row) => normalizeName(row.name) === name).length > 1) {
+  // Same normalized name twice in one fetch: only demote when there are
+  // candidates to disambiguate — same-name people in different kelompok are
+  // just different people.
+  if (
+    sourceRows &&
+    name &&
+    sourceRows.filter((row) => normalizeName(row.name) === name).length > 1 &&
+    (result.confidence === 'exact' || (result.candidates?.length ?? 0) > 0)
+  ) {
     return { confidence: 'similar', participantId: null, candidates: result.candidates ?? exact }
   }
   return result

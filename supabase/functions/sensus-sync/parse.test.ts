@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseTableRows } from './parse'
+import { parseTableRows } from './parse.ts'
 const header =
   '<tr><th>No</th><th>Kelompok</th><th>KK</th><th>Nama</th><th>Jenis Kelamin</th>' +
   '<th>Tanggal Lahir</th><th>Usia</th><th>Kategori</th><th>Status</th><th>Keterangan</th></tr>'

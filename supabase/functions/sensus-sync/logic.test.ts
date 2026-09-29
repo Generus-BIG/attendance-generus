@@ -51,7 +51,7 @@ describe('sensus sync logic', () => {
       existing,
     )
     const similar = matchRow(
-      { name: 'Nuhi Khoiri', kelompok: 'BIG 2', gender: 'L' },
+      { name: 'Nuhi Khoiri', kelompok: 'BIG 1', gender: 'L' },
       existing,
     )
 
@@ -66,6 +66,20 @@ describe('sensus sync logic', () => {
     )
   })
 
+  it('treats name lookalikes from a different kelompok as new', () => {
+    const existing = [
+      { id: '1', name: 'Nuhi Khoiri Febriansyah', kelompok: 'BIG 1', gender: 'L' },
+    ]
+    const crossGroup = matchRow(
+      { name: 'Nuhi Khoiri', kelompok: 'BIG 2', gender: 'L' },
+      existing,
+    )
+
+    assert.equal(crossGroup.confidence, 'none')
+    assert.equal(crossGroup.participantId, null)
+    assert.equal(crossGroup.candidates?.length ?? 0, 0)
+  })
+
   it('does not auto-select the same participant for duplicate source names', () => {
     const existing = [{ id: '1', name: 'Siti Aminah', kelompok: 'BIG 1', gender: 'P' }]
     const sourceRows = [
@@ -75,7 +89,7 @@ describe('sensus sync logic', () => {
     const results = sourceRows.map((source) => matchRow(source, existing, sourceRows))
 
     assert.deepEqual(results.map((result) => result.participantId), [null, null])
-    assert.deepEqual(results.map((result) => result.confidence), ['similar', 'similar'])
+    assert.deepEqual(results.map((result) => result.confidence), ['similar', 'none'])
     assert.deepEqual(results[0].candidates?.map((candidate) => candidate.id), ['1'])
   })
 
@@ -93,9 +107,9 @@ describe('sensus sync logic', () => {
   it('returns ambiguous similar candidates without selecting one', () => {
     const existing = [
       { id: '1', name: 'Nuhi Khoiri Febriansyah', kelompok: 'BIG 1', gender: 'L' },
-      { id: '2', name: 'Nuhi Khoiri Pratama', kelompok: 'BIG 2', gender: 'L' },
+      { id: '2', name: 'Nuhi Khoiri Pratama', kelompok: 'BIG 1', gender: 'L' },
     ]
-    const result = matchRow({ name: 'Nuhi Khoiri', kelompok: 'BIG 9', gender: 'L' }, existing)
+    const result = matchRow({ name: 'Nuhi Khoiri', kelompok: 'BIG 1', gender: 'L' }, existing)
     assert.equal(result.confidence, 'similar')
     assert.equal(result.participantId, null)
     assert.deepEqual(result.candidates?.map((candidate) => candidate.id), ['1', '2'])
@@ -125,7 +139,7 @@ describe('sensus sync logic', () => {
     assert.equal(oneShared.confidence, 'none')
 
     const reordered = matchRow(
-      { name: 'Fauzi Ahmad Hidayat', kelompok: 'BIG 1', gender: 'L' },
+      { name: 'Fauzi Ahmad Hidayat', kelompok: 'Limo', gender: 'L' },
       existing,
     )
     assert.equal(reordered.confidence, 'similar')
