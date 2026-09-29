@@ -47,11 +47,6 @@ export function SensusCardList({
                 <div className='text-sm leading-tight font-semibold'>
                   {CATEGORY_LABELS[code]}
                 </div>
-                {isDerived && (
-                  <span className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
-                    Auto Fetched
-                  </span>
-                )}
               </div>
               <div className='text-right tabular-nums'>
                 <div className='text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase'>
