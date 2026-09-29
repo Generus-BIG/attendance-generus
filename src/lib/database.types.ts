@@ -1942,6 +1942,7 @@ export type Database = {
         Args: { p_token: string }
         Returns: boolean
       }
+      sensus_sync_reconcile_applied: { Args: never; Returns: undefined }
       submit_attendance_guarded: {
         Args: {
           p_form_id: string
