@@ -100,4 +100,35 @@ describe('sensus sync logic', () => {
     assert.equal(result.participantId, null)
     assert.deepEqual(result.candidates?.map((candidate) => candidate.id), ['1', '2'])
   })
+
+  it('flags abbreviated names as similar via shared words', () => {
+    const existing = [
+      { id: '9', name: 'M Izzan Maldini', kelompok: 'Limo', gender: 'L' },
+    ]
+    const result = matchRow(
+      { name: 'Muhamad Izzan Maldini', kelompok: 'Limo', gender: 'L' },
+      existing,
+    )
+    assert.equal(result.confidence, 'similar')
+    assert.equal(result.participantId, null)
+    assert.deepEqual(result.candidates?.map((candidate) => candidate.id), ['9'])
+  })
+
+  it('requires at least two shared words for similarity', () => {
+    const existing = [
+      { id: '1', name: 'Ahmad Fauzi Rahman', kelompok: 'Limo', gender: 'L' },
+    ]
+    const oneShared = matchRow(
+      { name: 'Ahmad Yani', kelompok: 'Limo', gender: 'L' },
+      existing,
+    )
+    assert.equal(oneShared.confidence, 'none')
+
+    const reordered = matchRow(
+      { name: 'Fauzi Ahmad Hidayat', kelompok: 'BIG 1', gender: 'L' },
+      existing,
+    )
+    assert.equal(reordered.confidence, 'similar')
+    assert.equal(reordered.participantId, null)
+  })
 })

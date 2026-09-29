@@ -51,11 +51,18 @@ edgeRuntime.serve(async (req: Request) => {
 
     const token = authHeader.slice('Bearer '.length)
     admin = createClient(supabaseUrl, serviceRoleKey)
-    // Scheduled runs arrive from pg_cron via pg_net with the service role key
-    // (stored in Supabase Vault) as the bearer. Only the DB job can produce
-    // that token — the anon key is public and must never count as cron.
+    // Scheduled runs arrive from pg_cron via pg_net with a service role key
+    // stored in Supabase Vault as the bearer. The vault string may differ from
+    // this env key (legacy JWT vs new sb_secret format), so the vault match is
+    // evaluated by a service_role-only RPC where the secret lives.
     // ponytail: plain === compare (no timing-safe primitive in this runtime)
-    const isCron = token === serviceRoleKey
+    let isCron = token === serviceRoleKey
+    if (!isCron) {
+      const { data: vaultMatch } = await admin.rpc('sensus_sync_is_cron_bearer', {
+        p_token: token,
+      })
+      isCron = vaultMatch === true
+    }
     let callerUserId: string | null = null
     if (!isCron) {
       const { data: authData, error: authError } = await admin.auth.getUser(token)
