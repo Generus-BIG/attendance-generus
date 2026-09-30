@@ -3,6 +3,16 @@ import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 import test from 'node:test'
 
+test('pnpm exposes Supabase parent types to the Vercel compiler', async () => {
+  const workspace = await readFile(
+    new URL('../../pnpm-workspace.yaml', import.meta.url),
+    'utf8'
+  )
+  // Vercel's language-service host resolves from logical node_modules paths,
+  // not pnpm's real paths. The AuthClient parent must be publicly resolvable.
+  assert.match(workspace, /publicHoistPattern:\s*\n\s*- ['"]@supabase\/\*['"]/)
+})
+
 async function sourceFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true })
   const files = await Promise.all(
