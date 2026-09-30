@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/popover'
 import { Textarea } from '@/components/ui/textarea'
 import { PublicAttendanceForm } from '@/features/forms/components/PublicAttendanceForm'
+import { kategoriOptions } from '@/features/participants/data/data'
 import { FormTypeSelector } from './form-type-selector'
 
 // Schema matches the one in form-dialogs.tsx but we might want to ensure types align
@@ -55,13 +56,6 @@ const formSchema = z.object({
 })
 
 type FormValues = z.infer<typeof formSchema>
-
-const CATEGORIES = [
-  { id: 'A', label: 'GPN A' },
-  { id: 'B', label: 'GPN B' },
-  { id: 'AR', label: 'AR' },
-  { id: 'APR', label: 'APR' },
-]
 
 export function CreateFormPage() {
   const navigate = useNavigate()
@@ -366,29 +360,32 @@ export function CreateFormPage() {
                           </FormDescription>
                         </div>
                         <div className='grid grid-cols-3 gap-2'>
-                          {CATEGORIES.map((item) => (
+                          {kategoriOptions.map((item) => (
                             <FormField
-                              key={item.id}
+                              key={item.value}
                               control={form.control}
                               name='allowedCategories'
                               render={({ field }) => {
                                 return (
                                   <FormItem
-                                    key={item.id}
+                                    key={item.value}
                                     className='flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4 shadow-sm'
                                   >
                                     <FormControl>
                                       <Checkbox
-                                        checked={field.value?.includes(item.id)}
+                                        checked={field.value?.includes(
+                                          item.value
+                                        )}
                                         onCheckedChange={(checked) => {
                                           return checked
                                             ? field.onChange([
                                                 ...field.value,
-                                                item.id,
+                                                item.value,
                                               ])
                                             : field.onChange(
                                                 field.value?.filter(
-                                                  (value) => value !== item.id
+                                                  (value) =>
+                                                    value !== item.value
                                                 )
                                               )
                                         }}

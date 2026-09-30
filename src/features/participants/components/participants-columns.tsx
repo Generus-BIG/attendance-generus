@@ -24,7 +24,7 @@ export const participantsColumns: ColumnDef<Participant>[] = [
       />
     ),
     meta: {
-      className: cn('w-8 max-md:sticky start-0 z-20 rounded-tl-[inherit]'),
+      className: cn('w-10 max-md:sticky start-0 z-20 rounded-tl-[inherit]'),
     },
     cell: ({ row }) => (
       <Checkbox
@@ -50,7 +50,7 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)]',
-        'ps-0.5 max-md:sticky start-8 z-10 @4xl/content:table-cell @4xl/content:drop-shadow-none'
+        'min-w-40 ps-1 max-md:sticky start-10 z-10 @4xl/content:table-cell @4xl/content:drop-shadow-none'
       ),
     },
     enableHiding: false,
@@ -73,8 +73,13 @@ export const participantsColumns: ColumnDef<Participant>[] = [
     cell: ({ row }) => {
       const kategori = row.getValue('kategori') as string
       const label =
-        kategori === 'AR' || kategori === 'APR' ? kategori : `GPN ${kategori}`
-      return <Badge variant='outline'>{label}</Badge>
+        kategori === 'A' || kategori === 'B' ? `GPN ${kategori}` : kategori
+      return (
+        <div className='flex flex-wrap gap-1'>
+          <Badge variant='outline'>{label}</Badge>
+          {row.original.isKhusus && <Badge>Khusus</Badge>}
+        </div>
+      )
     },
     filterFn: (row, id, value) => {
       return Array.isArray(value) && value.includes(row.getValue(id))

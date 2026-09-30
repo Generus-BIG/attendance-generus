@@ -229,8 +229,8 @@ export function SensusMaster() {
               </div>
               <div className='ms-auto max-w-[48ch] text-xs text-muted-foreground'>
                 {isDesaMode
-                  ? `Rekap desa menjumlahkan ${kelompokIds.length} kelompok dan bersifat baca saja. Pilih kelompok untuk mengedit angka manual.`
-                  : 'Sensus adalah data master yang selalu mencerminkan keadaan saat ini. Snapshot per bulan otomatis dibuat saat laporan bulanan dikirim.'}
+                  ? `Rekap desa menjumlahkan ${kelompokIds.length} kelompok dan bersifat baca saja. Pilih kelompok untuk mengedit Pendidik MT/MS.`
+                  : 'Sensus adalah data master yang selalu mencerminkan keadaan saat ini. Hanya Pendidik MT/MS yang diinput manual; kategori lain otomatis mengikuti data peserta.'}
               </div>
             </div>
             {isDesaMode && (
@@ -271,14 +271,7 @@ export function SensusMaster() {
                           )}
                         >
                           <TableCell className='font-medium'>
-                            <div className='flex items-center gap-2'>
-                              {CATEGORY_LABELS[code]}
-                              {isDerived && !isDesaMode && (
-                                <span className='text-[0.625rem] font-medium tracking-[0.1em] text-muted-foreground uppercase'>
-                                  Auto Fetched
-                                </span>
-                              )}
-                            </div>
+                            {CATEGORY_LABELS[code]}
                           </TableCell>
                           <TableCell className='text-center'>
                             {isReadOnly || !resolvedKelompokId ? (

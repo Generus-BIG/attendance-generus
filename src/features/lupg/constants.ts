@@ -22,7 +22,12 @@ export const CATEGORY_LABELS: Record<CategoryCode, string> = {
   PENDIDIK_MS: 'Pendidik MS',
 }
 
+// Participant-derived categories (auto-synced from `participants` via
+// tg_participants_sync_sensus / lupg_sensus_participant_derived). Only
+// Pendidik MT/MS remain manually editable.
 export const DERIVED_SENSUS_CATEGORIES: ReadonlySet<CategoryCode> = new Set([
+  'PAUD',
+  'ACR',
   'GPN_A',
   'GPN_B',
   'AR',

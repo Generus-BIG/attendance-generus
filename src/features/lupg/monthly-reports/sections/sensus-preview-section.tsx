@@ -121,14 +121,7 @@ export function SensusPreviewSection({ report }: Props) {
               return (
                 <TableRow key={code}>
                   <TableCell className='font-medium'>
-                    <div className='flex items-baseline gap-2'>
-                      <span>{CATEGORY_LABELS[code]}</span>
-                      {isDerived && (
-                        <span className='text-xs font-normal text-muted-foreground'>
-                          Auto Sync
-                        </span>
-                      )}
-                    </div>
+                    {CATEGORY_LABELS[code]}
                   </TableCell>
                   <TableCell className='text-right'>
                     {isSubmitted || isDerived ? (

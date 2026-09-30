@@ -717,6 +717,7 @@ export function initializeData(): void {
           gender: 'P',
           kelompok: 'Limo',
           kategori: 'AR',
+          isKhusus: false,
           status: 'active',
         })
       }

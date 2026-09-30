@@ -46,6 +46,7 @@ export async function fetchCensusParticipants(
     `
     )
     .eq('status_active', true)
+    .eq('is_khusus', false)
 
   if (kelompokId) {
     query = query.eq('group_id', kelompokId)
@@ -106,6 +107,7 @@ export async function fetchMonthlyAttendance({
       participants!attendance_participant_id_fkey (
         name,
         gender,
+        is_khusus,
         lookup_values!participants_category_id_fkey (value),
         group:lookup_values!participants_group_id_fkey (value)
       )
@@ -126,6 +128,7 @@ export async function fetchMonthlyAttendance({
     const participant = row.participants as unknown as {
       name: string
       gender: 'L' | 'P' | null
+      is_khusus: boolean | null
       lookup_values: { value: string } | null
       group: { value: string } | null
     } | null
@@ -154,6 +157,7 @@ export async function fetchMonthlyAttendance({
       group_value: participant?.group?.value ?? null,
       gender_value,
       permission_reason,
+      is_khusus: participant?.is_khusus ?? false,
     }
   })
 }
@@ -352,12 +356,14 @@ function computeByGroupGender(
 }
 
 export function aggregateMonthlyRecap(
-  records: AttendanceRecord[],
+  rawRecords: AttendanceRecord[],
   month: Date,
   censusParticipants: CensusParticipant[] = [],
   options: { totalMeetings?: number } = {}
 ): MonthlyFormRecap {
   const monthKey = format(month, 'yyyy-MM')
+  // Khusus attendance is private: never counted toward any rate or total.
+  const records = rawRecords.filter((record) => !record.is_khusus)
   const totalCensus = censusParticipants.length
   const censusByGroup: Record<string, number> = {}
 

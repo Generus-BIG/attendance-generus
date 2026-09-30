@@ -30,8 +30,8 @@ export function DataTableToolbar<TData>({
     table.getState().columnFilters.length > 0 || table.getState().globalFilter
 
   return (
-    <div className='flex items-center justify-between'>
-      <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
+    <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+      <div className='flex min-w-0 flex-1 flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center'>
         {searchKey ? (
           <Input
             placeholder={searchPlaceholder}
@@ -41,17 +41,17 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn(searchKey)?.setFilterValue(event.target.value)
             }
-            className='h-8 w-full sm:w-[150px] lg:w-[250px]'
+            className='h-10 w-full text-base sm:h-8 sm:w-[150px] sm:text-sm lg:w-[250px]'
           />
         ) : (
           <Input
             placeholder={searchPlaceholder}
             value={table.getState().globalFilter ?? ''}
             onChange={(event) => table.setGlobalFilter(event.target.value)}
-            className='h-8 w-full sm:w-[150px] lg:w-[250px]'
+            className='h-10 w-full text-base sm:h-8 sm:w-[150px] sm:text-sm lg:w-[250px]'
           />
         )}
-        <div className='flex gap-x-2'>
+        <div className='flex max-w-full gap-2 overflow-x-auto pb-1 sm:overflow-visible sm:pb-0'>
           {filters.map((filter) => {
             const column = table.getColumn(filter.columnId)
             if (!column) return null
@@ -79,7 +79,9 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
-      <DataTableViewOptions table={table} />
+      <div className='self-end sm:self-auto'>
+        <DataTableViewOptions table={table} />
+      </div>
     </div>
   )
 }

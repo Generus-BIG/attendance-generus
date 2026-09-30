@@ -102,6 +102,7 @@ async function assertAttendanceMatchesFormScope(
       .from('participants')
       .select('group_id, categories:category_id(value)')
       .eq('id', data.participantId)
+      .eq('status_active', true)
       .single()
 
     if (error) throw error
@@ -231,8 +232,8 @@ interface ParticipantSearchResult {
   category: string
 }
 
-// Map database category values to internal form values
-// Database: "GPN A", "GPN B", "AR" -> Form: "A", "B", "AR"
+// Map database category values to internal form values.
+// Paud, ACR, AR, and APR are identical in both schemas.
 function mapDbCategoryToInternal(dbCategory: string): string {
   if (dbCategory === 'GPN A') return 'A'
   if (dbCategory === 'GPN B') return 'B'

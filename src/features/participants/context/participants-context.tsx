@@ -69,11 +69,11 @@ async function fetchLookupMaps(): Promise<{
   return { groups, categories }
 }
 
-// Map app kategori ('A', 'B', 'AR', 'APR') to DB value ('GPN A', 'GPN B', 'AR', 'APR')
+// Map app kategori to DB value. Only GPN labels differ.
 function mapKategoriToDb(kategori: string): string {
   if (kategori === 'A') return 'GPN A'
   if (kategori === 'B') return 'GPN B'
-  return kategori // 'AR' and 'APR' stay as-is
+  return kategori
 }
 
 // Map DB category value to app kategori
@@ -81,6 +81,8 @@ function mapKategoriFromDb(dbValue: string): (typeof KATEGORI)[number] {
   if (dbValue === 'GPN A') return 'A'
   if (dbValue === 'GPN B') return 'B'
   if (dbValue === 'APR') return 'APR'
+  if (dbValue === 'Paud') return 'Paud'
+  if (dbValue === 'ACR') return 'ACR'
   return 'AR'
 }
 
@@ -116,6 +118,7 @@ export function ParticipantsCRUDProvider({
           birth_date,
           birth_place,
           status_active,
+          is_khusus,
           created_at,
           group:group_id(value),
           category:category_id(value)
@@ -152,6 +155,7 @@ export function ParticipantsCRUDProvider({
         gender: item.gender || 'L',
         kelompok: item.group?.value || 'BIG 1',
         kategori: mapKategoriFromDb(item.category?.value || 'GPN A'),
+        isKhusus: item.is_khusus ?? false,
         birthDate: fromDateOnly(item.birth_date),
         birthPlace: item.birth_place ?? null,
         status: item.status_active ? 'active' : 'inactive',
@@ -185,6 +189,7 @@ export function ParticipantsCRUDProvider({
           group_id: groupId,
           category_id: categoryId,
           status_active: newParticipant.status === 'active',
+          is_khusus: newParticipant.isKhusus,
           birth_date: toDateOnly(newParticipant.birthDate),
           birth_place: newParticipant.birthPlace?.trim() || null,
         })
@@ -243,6 +248,7 @@ export function ParticipantsCRUDProvider({
       if (data.gender !== undefined) payload.gender = data.gender
       if (data.status !== undefined)
         payload.status_active = data.status === 'active'
+      if (data.isKhusus !== undefined) payload.is_khusus = data.isKhusus
       if (data.birthDate !== undefined)
         payload.birth_date = toDateOnly(data.birthDate)
       if (data.birthPlace !== undefined)

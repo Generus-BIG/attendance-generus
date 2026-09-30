@@ -238,6 +238,7 @@ export const pendingParticipantService = {
         gender: pending.suggestedGender,
         kelompok: pending.suggestedKelompok,
         kategori: pending.suggestedKategori,
+        isKhusus: false,
         status: 'active',
       })
       participantId = newParticipant.id
@@ -298,6 +299,7 @@ export function seedParticipants(
     gender: item.gender,
     kelompok: item.kelompok,
     kategori: item.kategori,
+    isKhusus: false,
     status: 'active' as const,
     createdAt: now,
     updatedAt: now,

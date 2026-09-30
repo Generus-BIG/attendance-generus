@@ -24,7 +24,7 @@ export function getAbsensiNavGroups(role: Role): NavGroup[] {
       icon: LayoutDashboard,
     },
     {
-      title: 'Peserta',
+      title: 'Sensus',
       url: '/admin/participants',
       icon: Users,
     },

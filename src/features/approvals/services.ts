@@ -102,6 +102,7 @@ export const approvalService = {
       )
       // Filter by status_active = true
       .eq('status_active', true)
+      .eq('is_khusus', false)
       .order('name')
 
     if (error) throw error
@@ -123,12 +124,16 @@ export const approvalService = {
       if (dbCategory === 'GPN B') return 'B'
       if (dbCategory === 'AR') return 'AR'
       if (dbCategory === 'APR') return 'APR'
-      // Fallback: if already internal (A/B/AR/APR)
+      if (dbCategory === 'Paud') return 'Paud'
+      if (dbCategory === 'ACR') return 'ACR'
+      // Fallback: if already internal
       if (
         dbCategory === 'A' ||
         dbCategory === 'B' ||
         dbCategory === 'AR' ||
-        dbCategory === 'APR'
+        dbCategory === 'APR' ||
+        dbCategory === 'Paud' ||
+        dbCategory === 'ACR'
       )
         return dbCategory
       // If unknown, default to AR (should not happen, but avoids runtime crash)
@@ -141,6 +146,7 @@ export const approvalService = {
       gender: p.gender,
       kelompok: (p.groups?.value || '') as Participant['kelompok'],
       kategori: mapDbCategoryToInternal(p.categories?.value || ''),
+      isKhusus: false,
       status: p.status_active ? 'active' : 'inactive',
       createdAt: new Date(p.created_at),
       updatedAt: new Date(p.created_at),
