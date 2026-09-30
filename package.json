@@ -3,6 +3,7 @@
   "private": false,
   "version": "2.2.1",
   "type": "module",
+  "packageManager": "pnpm@10.34.6",
   "scripts": {
     "dev": "vite",
     "assistant:dev": "mastra dev --dir src/mastra",
