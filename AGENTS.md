@@ -54,7 +54,9 @@ pnpm knip             # Find unused exports/dependencies
 pnpm typecheck:functions # Type-check Supabase Edge Functions
 ```
 
-Package manager is **pnpm** (not npm/yarn). No test framework is installed — verify changes via `pnpm build` (tsc) + `pnpm lint` + manual browser check. Standalone checks use Node assert + `.test.mjs` files run directly: `node --test <file>` (assistant: `src/mastra/*.test.mjs`, `src/mastra/tools/*.test.mjs`, `src/features/assistant/*.test.mjs`).
+Package manager is **pnpm** (not npm/yarn), pinned by `package.json#packageManager` for consistent Vercel installs. No test framework is installed — verify changes via `pnpm build` (tsc) + `pnpm lint` + manual browser check. Standalone checks use Node assert + `.test.mjs` files run directly: `node --test <file>` (assistant: `src/mastra/*.test.mjs`, `src/mastra/tools/*.test.mjs`, `src/features/assistant/*.test.mjs`).
+
+For chunking changes, run `node --test scripts/bundle-size.test.mjs`: it checks the production bundle's 500 kB budget and keeps Assistant/ExcelJS outside the initial static import graph. ExcelJS's prebuilt browser module is the sole size exception (1,000 kB), matching Vite's warning threshold, and remains dynamically loaded. Keep shared runtime helpers out of feature chunks to avoid eager loading through vendor dependencies.
 
 If `pnpm build` fails with "missing route" errors, run `pnpm exec vite build` first to regenerate `src/routeTree.gen.ts`, then `pnpm build` again.
 
