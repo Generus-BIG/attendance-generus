@@ -94,6 +94,11 @@ export function SensusMaster() {
       ? undefined
       : adminKelompokId
 
+  const selectedKelompokName = isTeamManager
+    ? (teamManagerKelompok?.value ?? kelompok ?? 'Kelompok')
+    : (kelompokOptions.find((option) => option.id === resolvedKelompokId)
+        ?.value ?? 'Kelompok')
+
   const { data: rows = [], isLoading } = useSensus(resolvedKelompokId)
   const { data: desaTotals = [], isLoading: isDesaTotalsLoading } =
     useDesaSensusTotals()
@@ -233,11 +238,28 @@ export function SensusMaster() {
                   : 'Sensus adalah data master yang selalu mencerminkan keadaan saat ini. Hanya Pendidik MT/MS yang diinput manual; kategori lain otomatis mengikuti data peserta.'}
               </div>
             </div>
-            {isDesaMode && (
+            {(isDesaMode || resolvedKelompokId) && (
               <SensusDesaChart
                 byCell={byCell}
                 derivedByKey={derivedByKey}
-                kelompokCount={isTeamManager ? undefined : kelompokIds.length}
+                kelompokCount={
+                  isDesaMode && !isTeamManager ? kelompokIds.length : undefined
+                }
+                title={
+                  isDesaMode
+                    ? 'Komposisi Sensus Desa'
+                    : `Komposisi Sensus ${selectedKelompokName}`
+                }
+                subtitle={
+                  isDesaMode
+                    ? `Gabungan${!isTeamManager ? ` ${kelompokIds.length} kelompok,` : ''} dipisah laki-laki dan perempuan.`
+                    : `Per kategori kelompok ${selectedKelompokName}, dipisah laki-laki dan perempuan.`
+                }
+                emptyText={
+                  isDesaMode
+                    ? 'Belum ada data sensus desa.'
+                    : 'Belum ada data sensus kelompok ini.'
+                }
               />
             )}
             <div className='hidden md:block'>
@@ -345,10 +367,16 @@ function SensusDesaChart({
   byCell,
   derivedByKey,
   kelompokCount,
+  title,
+  subtitle,
+  emptyText,
 }: {
   byCell: Record<string, number>
   derivedByKey: Map<string, number>
   kelompokCount?: number
+  title: string
+  subtitle: string
+  emptyText: string
 }) {
   const chartRows = useMemo(() => {
     const rawRows = CATEGORY_CODES.map((code) => {
@@ -444,12 +472,9 @@ function SensusDesaChart({
         <div className='mb-6 flex flex-wrap items-start justify-between gap-4'>
           <div>
             <h2 className='text-lg font-bold tracking-tight text-foreground'>
-              Komposisi Sensus Desa
+              {title}
             </h2>
-            <p className='text-sm text-muted-foreground'>
-              Gabungan{kelompokCount ? ` ${kelompokCount} kelompok,` : ''}{' '}
-              dipisah laki-laki dan perempuan.
-            </p>
+            <p className='text-sm text-muted-foreground'>{subtitle}</p>
           </div>
           <div className='text-right'>
             <div className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
@@ -462,7 +487,7 @@ function SensusDesaChart({
         </div>
         {!hasData ? (
           <div className='flex h-72 items-center justify-center text-sm text-muted-foreground'>
-            Belum ada data sensus desa.
+            {emptyText}
           </div>
         ) : (
           <div className='flex flex-col gap-4'>

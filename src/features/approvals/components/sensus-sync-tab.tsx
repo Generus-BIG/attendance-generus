@@ -499,7 +499,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                         type='button'
                         variant='link'
                         size='sm'
-                        className='h-auto p-0 text-left font-medium'
+                        className='h-auto p-0 text-left font-medium text-foreground'
                         aria-expanded={expanded.has(item.id)}
                         onClick={() => toggleRowExpansion(item.id)}
                       >
