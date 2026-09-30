@@ -79,6 +79,22 @@ export async function listSensusRuns(): Promise<SensusSyncRun[]> {
   return data as unknown as SensusSyncRun[]
 }
 
+export async function listCronSensusRuns(): Promise<SensusSyncRun[]> {
+  const { data, error } = await supabase
+    .from('sensus_sync_runs')
+    .select('*')
+    .eq('mode', 'cron')
+    .order('created_at', { ascending: false })
+    .limit(20)
+  if (error) throw error
+  return data as unknown as SensusSyncRun[]
+}
+
+export async function deleteSensusRun(runId: string): Promise<void> {
+  const { error } = await supabase.from('sensus_sync_runs').delete().eq('id', runId)
+  if (error) throw error
+}
+
 export async function listSensusItems(
   runId: string
 ): Promise<SensusSyncItem[]> {

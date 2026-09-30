@@ -51,11 +51,18 @@ edgeRuntime.serve(async (req: Request) => {
 
     const token = authHeader.slice('Bearer '.length)
     admin = createClient(supabaseUrl, serviceRoleKey)
-    // Scheduled runs arrive from pg_cron via pg_net with the service role key
-    // (stored in Supabase Vault) as the bearer. Only the DB job can produce
-    // that token — the anon key is public and must never count as cron.
+    // Scheduled runs arrive from pg_cron via pg_net with a service role key
+    // stored in Supabase Vault as the bearer. The vault string may differ from
+    // this env key (legacy JWT vs new sb_secret format), so the vault match is
+    // evaluated by a service_role-only RPC where the secret lives.
     // ponytail: plain === compare (no timing-safe primitive in this runtime)
-    const isCron = token === serviceRoleKey
+    let isCron = token === serviceRoleKey
+    if (!isCron) {
+      const { data: vaultMatch } = await admin.rpc('sensus_sync_is_cron_bearer', {
+        p_token: token,
+      })
+      isCron = vaultMatch === true
+    }
     let callerUserId: string | null = null
     if (!isCron) {
       const { data: authData, error: authError } = await admin.auth.getUser(token)
@@ -158,9 +165,17 @@ edgeRuntime.serve(async (req: Request) => {
 
     const items = normalized.map((row) => {
       const matched = matchRow(row, existing, sourceRows)
-      const current = matched.participantId
-        ? existing.find((candidate) => candidate.id === matched.participantId) ?? null
-        : null
+      // Sole similar candidate: auto-map it (review UI still lets admins
+      // change the pick); several candidates stay needs-review.
+      const picked =
+        matched.confidence === 'similar' && (matched.candidates?.length ?? 0) === 1
+          ? matched.candidates![0]
+          : null
+      const matchedId =
+        matched.confidence === 'similar' ? null : matched.participantId
+      const current = matchedId
+        ? existing.find((candidate) => candidate.id === matchedId) ?? null
+        : picked
       return {
         run_id: currentRunId,
         source_name: row.name,
@@ -169,8 +184,7 @@ edgeRuntime.serve(async (req: Request) => {
         source_birth_date: row.birth,
         source_kategori: row.kategori,
         source_khusus: row.keep === 'khusus',
-        matched_participant_id:
-          matched.confidence === 'similar' ? null : matched.participantId,
+        matched_participant_id: matchedId ?? picked?.id ?? null,
         confidence: matched.confidence,
         patch: {
           birth_date: row.birth,
@@ -237,6 +251,12 @@ edgeRuntime.serve(async (req: Request) => {
         autoApplied = (appliedResult as { applied?: number } | null)?.applied ?? 0
       }
     }
+
+    // Freshly staged rows for people already applied in earlier runs should
+    // show applied immediately instead of pending (idempotent; the auto-apply
+    // RPC above already reconciled when it ran).
+    const { error: reconcileError } = await admin.rpc('sensus_sync_reconcile_applied')
+    if (reconcileError) throw reconcileError
 
     return jsonResponse({ run_id: runId, staged: items.length, auto_applied: autoApplied })
   } catch (error) {

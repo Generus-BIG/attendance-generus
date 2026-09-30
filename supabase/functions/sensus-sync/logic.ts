@@ -2,6 +2,13 @@ export function normalizeName(name: string): string {
   return name.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
 }
 
+function nameWords(name: string): string[] {
+  return name
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((word) => word.length > 2)
+}
+
 const KELOMPOK_MAP: Record<string, string> = {
   big1: 'BIG 1',
   big2: 'BIG 2',
@@ -85,16 +92,31 @@ export function matchRow(
       : exact.length > 1
         ? { confidence: 'none' as const, participantId: null, candidates: exact }
         : (() => {
+            const sourceWords = nameWords(src.name)
             const similar = existing.filter((row) => {
+              if (row.kelompok !== src.kelompok) return false
               const existingName = normalizeName(row.name)
-              return name.length > 0 && (existingName.includes(name) || name.includes(existingName))
+              const existingWords = new Set(nameWords(row.name))
+              const sharedWords = sourceWords.filter((word) => existingWords.has(word)).length
+              return (
+                name.length > 0 &&
+                (existingName.includes(name) || name.includes(existingName) || sharedWords >= 2)
+              )
             })
             return similar.length > 0
               ? { confidence: 'similar' as const, participantId: null, candidates: similar }
               : { confidence: 'none' as const, participantId: null }
           })()
 
-  if (sourceRows && name && sourceRows.filter((row) => normalizeName(row.name) === name).length > 1) {
+  // Same normalized name twice in one fetch: only demote when there are
+  // candidates to disambiguate — same-name people in different kelompok are
+  // just different people.
+  if (
+    sourceRows &&
+    name &&
+    sourceRows.filter((row) => normalizeName(row.name) === name).length > 1 &&
+    (result.confidence === 'exact' || (result.candidates?.length ?? 0) > 0)
+  ) {
     return { confidence: 'similar', participantId: null, candidates: result.candidates ?? exact }
   }
   return result

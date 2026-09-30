@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -25,9 +26,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { isSyncAutoPromoted } from '@/features/sensus-sync/auto-promote'
 import {
   applySensusSyncItems,
+  deleteSensusRun,
   listSensusItems,
   listSensusRuns,
   type SensusSyncCandidate,
@@ -63,6 +66,40 @@ function isAppliable(item: SensusSyncItem) {
   )
 }
 
+// Expanded-row diff field: unchanged values render quiet; changed ones show
+// "old → new" with the incoming value emphasized.
+function ExpandField({
+  label,
+  from,
+  to,
+}: {
+  label: string
+  from?: string
+  to: string
+}) {
+  const changed = from !== undefined && from !== to
+  return (
+    <div className='min-w-0'>
+      <div className='text-[0.6875rem] font-medium tracking-[0.08em] text-muted-foreground uppercase'>
+        {label}
+      </div>
+      <div className='mt-0.5 truncate tabular-nums' title={to}>
+        {changed ? (
+          <>
+            <span className='text-muted-foreground'>{from}</span>
+            <span className='mx-1.5 text-muted-foreground' aria-hidden='true'>
+              →
+            </span>
+            <span className='font-medium text-foreground'>{to}</span>
+          </>
+        ) : (
+          <span className='text-foreground/80'>{to}</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function SensusSyncTab({ runId }: { runId?: string }) {
   const { can } = usePermissions()
   const queryClient = useQueryClient()
@@ -71,15 +108,29 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [kelompok, setGroup] = useState('all')
   const [confidence, setConfidence] = useState('all')
+  const [status, setStatus] = useState('all')
+  const [khusus, setKhusus] = useState('all')
   const [name, setName] = useState('')
   const [savingMatch, setSavingMatch] = useState<string | null>(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deletingRun, setDeletingRun] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<'apply' | 'reject' | null>(
+    null
+  )
+  const [actionBusy, setActionBusy] = useState(false)
 
   const runsQuery = useQuery({
     queryKey: ['sensus-sync', 'runs'],
     queryFn: listSensusRuns,
     enabled: can.syncSensus,
   })
-  const selectedRun = pickedRun || runId || runsQuery.data?.[0]?.id || ''
+  // A stale ?run= URL id (deleted run) must not stick — fall through to newest.
+  const selectedRun =
+    pickedRun ||
+    (runsQuery.data?.some((run) => run.id === runId) ? (runId ?? '') : '') ||
+    runsQuery.data?.[0]?.id ||
+    ''
+  const selectedRunLabel = runsQuery.data?.find((run) => run.id === selectedRun)
 
   const itemsQuery = useQuery({
     queryKey: ['sensus-sync', 'items', selectedRun],
@@ -100,9 +151,12 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
         (item) =>
           (kelompok === 'all' || item.source_kelompok === kelompok) &&
           (confidence === 'all' || item.confidence === confidence) &&
+          (status === 'all' || item.status === status) &&
+          (khusus === 'all' ||
+            (khusus === 'khusus' ? item.source_khusus : !item.source_khusus)) &&
           item.source_name.toLowerCase().includes(name.toLowerCase())
       ),
-    [confidence, itemsQuery.data, kelompok, name]
+    [confidence, itemsQuery.data, kelompok, khusus, name, status]
   )
   const pendingIds = useMemo(
     () => new Set(candidates.filter(isPending).map((item) => item.id)),
@@ -137,6 +191,14 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
     setConfidence(value)
     setSelected(new Set())
   }
+  const handleStatusChange = (value: string) => {
+    setStatus(value)
+    setSelected(new Set())
+  }
+  const handleKhususChange = (value: string) => {
+    setKhusus(value)
+    setSelected(new Set())
+  }
   const handleNameChange = (value: string) => {
     setName(value)
     setSelected(new Set())
@@ -156,12 +218,12 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
       return next
     })
 
-  const apply = async () => {
+  const apply = async (): Promise<boolean> => {
     const itemsById = new Map(
       (itemsQuery.data ?? []).map((item) => [item.id, item])
     )
     const ids = [...selected].filter((id) => appliableIds.has(id))
-    if (ids.length === 0) return
+    if (ids.length === 0) return false
     const autoPromoteCount = ids.filter((id) => {
       const item = itemsById.get(id)
       return item ? isSyncAutoPromoted(item) : false
@@ -179,14 +241,16 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
         queryClient.invalidateQueries({ queryKey: ['sensus-sync'] }),
         queryClient.invalidateQueries({ queryKey: ['participants'] }),
       ])
+      return true
     } catch (_error) {
       toast.error('Could not apply sensus sync')
+      return false
     }
   }
 
-  const reject = async () => {
+  const reject = async (): Promise<boolean> => {
     const ids = [...selected].filter((id) => pendingIds.has(id))
-    if (ids.length === 0) return
+    if (ids.length === 0) return false
     const { error } = await supabase
       .from('sensus_sync_items')
       .update({ status: 'rejected' })
@@ -194,11 +258,38 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
       .eq('status', 'pending')
     if (error) {
       toast.error('Could not reject items')
-      return
+      return false
     }
     toast.success(`${ids.length} items rejected`)
     setSelected(new Set())
     void queryClient.invalidateQueries({ queryKey: ['sensus-sync'] })
+    return true
+  }
+
+  const confirmRun = async () => {
+    if (!confirmAction) return
+    setActionBusy(true)
+    const ok = confirmAction === 'apply' ? await apply() : await reject()
+    setActionBusy(false)
+    if (ok) setConfirmAction(null)
+  }
+
+  const handleDeleteRun = async () => {
+    if (!selectedRun) return
+    setDeletingRun(true)
+    try {
+      await deleteSensusRun(selectedRun)
+      toast.success('Sync run deleted')
+      setDeleteOpen(false)
+      setPickedRun('')
+      setSelected(new Set())
+      setExpanded(new Set())
+      void queryClient.invalidateQueries({ queryKey: ['sensus-sync', 'runs'] })
+    } catch {
+      toast.error('Could not delete sync run')
+    } finally {
+      setDeletingRun(false)
+    }
   }
 
   const rowNeedsCandidate = (item: SensusSyncItem) =>
@@ -246,30 +337,51 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
 
   return (
     <div className='space-y-4'>
-      <div className='flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center'>
-        <Select
-          value={selectedRun}
-          onValueChange={(id) => {
-            setPickedRun(id)
-            setSelected(new Set())
-            setExpanded(new Set())
-          }}
-        >
-          <SelectTrigger className='w-64'>
-            <SelectValue placeholder='Select a sync run' />
-          </SelectTrigger>
-          <SelectContent>
-            {(runsQuery.data ?? []).map((run) => (
-              <SelectItem key={run.id} value={run.id}>
-                {new Date(run.created_at).toLocaleString('id-ID')} ·{' '}
-                {run.status === 'failed' ? 'Failed' : `${run.row_count} rows`}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Query band: pick a run, then narrow the rows. One row from xl up,
+          3-col / 2-col grids below — never a fixed-width single row, the
+          minimums overflow the admin content area. */}
+      <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[minmax(13rem,1.4fr)_minmax(8.5rem,0.8fr)_minmax(9rem,0.8fr)_minmax(8.5rem,0.8fr)_minmax(8rem,0.7fr)_minmax(11rem,1.1fr)] xl:items-center'>
+        <div className='flex items-center gap-2'>
+          <Select
+            value={selectedRun}
+            onValueChange={(id) => {
+              setPickedRun(id)
+              setSelected(new Set())
+              setExpanded(new Set())
+            }}
+          >
+            <SelectTrigger className='w-full min-w-0'>
+              <SelectValue placeholder='Select a sync run'>
+                {selectedRunLabel
+                  ? `${new Date(selectedRunLabel.created_at).toLocaleString('id-ID')} · ${selectedRunLabel.status === 'failed' ? 'Failed' : `${selectedRunLabel.row_count} rows`}`
+                  : undefined}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {(runsQuery.data ?? []).map((run) => (
+                <SelectItem key={run.id} value={run.id}>
+                  {new Date(run.created_at).toLocaleString('id-ID')} ·{' '}
+                  {run.status === 'failed' ? 'Failed' : `${run.row_count} rows`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant='outline'
+            size='icon'
+            className='size-11 shrink-0 lg:size-9'
+            aria-label='Delete this sync run'
+            disabled={!selectedRun}
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2 className='size-4' aria-hidden='true' />
+          </Button>
+        </div>
         <Select value={kelompok} onValueChange={handleGroupChange}>
-          <SelectTrigger className='w-44'>
-            <SelectValue placeholder='All groups' />
+          <SelectTrigger className='w-full min-w-0'>
+            <SelectValue placeholder='All groups'>
+              {kelompok === 'all' ? 'All groups' : kelompok}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value='all'>All groups</SelectItem>
@@ -281,8 +393,12 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
           </SelectContent>
         </Select>
         <Select value={confidence} onValueChange={handleConfidenceChange}>
-          <SelectTrigger className='w-36'>
-            <SelectValue placeholder='All confidence levels' />
+          <SelectTrigger className='w-full min-w-0'>
+            <SelectValue placeholder='All confidence'>
+              {confidence === 'all'
+                ? 'All confidence'
+                : confidenceLabels[confidence as keyof typeof confidenceLabels]}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value='all'>All confidence levels</SelectItem>
@@ -291,32 +407,48 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
             <SelectItem value='none'>New</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={status} onValueChange={handleStatusChange}>
+          <SelectTrigger className='w-full min-w-0'>
+            <SelectValue placeholder='All statuses'>
+              {status === 'all'
+                ? 'All statuses'
+                : status.charAt(0).toUpperCase() + status.slice(1)}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>All statuses</SelectItem>
+            <SelectItem value='pending'>Pending</SelectItem>
+            <SelectItem value='applied'>Applied</SelectItem>
+            <SelectItem value='rejected'>Rejected</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={khusus} onValueChange={handleKhususChange}>
+          <SelectTrigger className='w-full min-w-0'>
+            <SelectValue placeholder='All rows'>
+              {khusus === 'all'
+                ? 'All rows'
+                : khusus === 'khusus'
+                  ? 'Khusus'
+                  : 'Non-Khusus'}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>All rows</SelectItem>
+            <SelectItem value='khusus'>Khusus</SelectItem>
+            <SelectItem value='regular'>Non-Khusus</SelectItem>
+          </SelectContent>
+        </Select>
         <Input
-          className='w-52'
+          className='h-11 w-full text-base sm:col-span-2 lg:col-span-1 lg:h-9 lg:text-sm'
           placeholder='Search source name'
           value={name}
           onChange={(event) => handleNameChange(event.target.value)}
         />
-        <div className='flex gap-2 sm:ms-auto'>
-          <Button
-            variant='outline'
-            onClick={() => void reject()}
-            disabled={selectedPendingCount === 0}
-          >
-            Reject selected
-          </Button>
-          <Button
-            onClick={() => void apply()}
-            disabled={selectedAppliableCount === 0}
-          >
-            Apply selected
-          </Button>
-        </div>
       </div>
       {activeRun?.status === 'failed' && (
         <div className='rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive'>
-          Sinkronisasi failed: {activeRun.error ?? 'Unknown error'}.
-          Run sync again to retry.
+          Synchronization failed: {activeRun.error ?? 'Unknown error'}. Run sync
+          again to retry.
         </div>
       )}
       <div className='overflow-x-auto rounded-md border'>
@@ -336,7 +468,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
               <TableHead>Source birth date</TableHead>
               <TableHead>Source category → label</TableHead>
               <TableHead>Confidence</TableHead>
-              <TableHead>Special</TableHead>
+              <TableHead>Khusus</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -391,69 +523,90 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                     </TableCell>
                     <TableCell>
                       {item.source_khusus ? (
-                        <Badge variant='secondary'>Special</Badge>
+                        <Badge variant='secondary'>Khusus</Badge>
                       ) : (
                         '—'
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={
-                          item.status === 'pending'
-                            ? 'outline'
+                      {item.status === 'pending' && rowNeedsCandidate(item) ? (
+                        <Badge
+                          variant='outline'
+                          className='border-amber-200 bg-amber-50 text-amber-700'
+                        >
+                          Needs review
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant={
+                            item.status === 'pending'
+                              ? 'outline'
+                              : item.status === 'applied'
+                                ? 'default'
+                                : 'destructive'
+                          }
+                        >
+                          {item.status === 'pending'
+                            ? 'Pending'
                             : item.status === 'applied'
-                              ? 'default'
-                              : 'destructive'
-                        }
-                      >
-                        {item.status}
-                      </Badge>
+                              ? 'Applied'
+                              : 'Rejected'}
+                        </Badge>
+                      )}
                     </TableCell>
                   </TableRow>
                   {expanded.has(item.id) && (
                     <TableRow>
                       <TableCell colSpan={9} className='bg-muted/30'>
-                        <div className='space-y-2 text-sm'>
+                        <div className='flex animate-in flex-col gap-4 px-1 py-1 text-sm duration-200 fade-in slide-in-from-top-1'>
                           {item.matched_participant_id === null ? (
                             rowNeedsCandidate(item) ? (
-                              <div className='text-muted-foreground'>
-                                Select matching participant senot yet applying.
-                              </div>
+                              <p className='text-muted-foreground'>
+                                Select a matching participant before applying.
+                              </p>
                             ) : (
-                              <div className='text-muted-foreground'>
-                                Participant baru akan dibuat saat diterapkan.
-                              </div>
+                              <p className='text-muted-foreground'>
+                                No existing match — a new participant is created
+                                when applied.
+                              </p>
                             )
                           ) : (
-                            <div className='grid gap-1'>
-                              <div>
-                                <span className='font-medium'>Participant:</span>{' '}
-                                {item.patch.current?.name ?? '—'}
-                              </div>
-                              <div>
-                                <span className='font-medium'>birth_date:</span>{' '}
-                                {item.patch.current?.birth_date ?? '—'} →{' '}
-                                {item.patch.birth_date ?? '—'}
-                              </div>
-                              <div>
-                                <span className='font-medium'>category:</span>{' '}
-                                {formatKategoriLabel(
+                            <div className='grid gap-x-10 gap-y-4 sm:grid-cols-2 lg:grid-cols-4'>
+                              <ExpandField
+                                label='Maps to'
+                                to={item.patch.current?.name ?? '—'}
+                              />
+                              <ExpandField
+                                label='Birth date'
+                                from={item.patch.current?.birth_date ?? '—'}
+                                to={item.patch.birth_date ?? '—'}
+                              />
+                              <ExpandField
+                                label='Category'
+                                from={formatKategoriLabel(
                                   item.patch.current?.kategori ??
                                     item.patch.kategori
-                                )}{' '}
-                                → {formatKategoriLabel(item.patch.kategori)}
-                              </div>
-                              <div>
-                                <span className='font-medium'>special:</span>{' '}
-                                {String(item.patch.current?.khusus ?? false)} →{' '}
-                                {String(item.patch.khusus)}
-                              </div>
+                                )}
+                                to={formatKategoriLabel(item.patch.kategori)}
+                              />
+                              <ExpandField
+                                label='Khusus'
+                                from={
+                                  item.patch.current
+                                    ? item.patch.current.khusus
+                                      ? 'Yes'
+                                      : 'No'
+                                    : 'No'
+                                }
+                                to={item.patch.khusus ? 'Yes' : 'No'}
+                              />
                             </div>
                           )}
-                          {rowNeedsCandidate(item) ? (
-                            <div className='flex items-center gap-2'>
+                          {(item.patch.candidates?.length ?? 0) > 0 &&
+                          item.status === 'pending' ? (
+                            <div className='flex flex-wrap items-center gap-2'>
                               <Label htmlFor={`sensus-sync-match-${item.id}`}>
-                                Select participant:
+                                Select participant
                               </Label>
                               <Select
                                 value={item.matched_participant_id ?? ''}
@@ -468,7 +621,7 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
                               >
                                 <SelectTrigger
                                   id={`sensus-sync-match-${item.id}`}
-                                  className='w-72'
+                                  className='w-full sm:w-72'
                                 >
                                   <SelectValue placeholder='Select matching participant' />
                                 </SelectTrigger>
@@ -502,6 +655,88 @@ export function SensusSyncTab({ runId }: { runId?: string }) {
           </TableBody>
         </Table>
       </div>
+      {selected.size > 0 && (
+        // Concentric radii: rounded-xl container (14px) = p-1.5 (6px) +
+        // rounded-md buttons (8px).
+        <div
+          className='fixed inset-x-0 bottom-4 z-40 mx-auto flex w-fit animate-in items-center gap-1.5 rounded-xl border border-border/70 bg-popover py-1.5 pr-1.5 pl-2 shadow-[0_4px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.07)] duration-200 fade-in slide-in-from-bottom-2'
+          role='toolbar'
+          aria-label='Selection actions'
+        >
+          <Button
+            variant='ghost'
+            size='icon'
+            className='size-11 shrink-0 transition-transform active:scale-[0.96] lg:size-9'
+            aria-label='Clear selection'
+            onClick={() => setSelected(new Set())}
+          >
+            <X className='size-4' aria-hidden='true' />
+          </Button>
+          <span
+            role='status'
+            className='px-1 text-sm whitespace-nowrap text-foreground'
+          >
+            <span className='font-semibold tabular-nums'>{selected.size}</span>{' '}
+            {selected.size === 1 ? 'row' : 'rows'} selected
+          </span>
+          <div className='mx-1 h-5 w-px bg-border' aria-hidden='true' />
+          <Button
+            variant='destructive'
+            className='min-h-11 transition-transform active:scale-[0.96] lg:min-h-9'
+            onClick={() => setConfirmAction('reject')}
+            disabled={selectedPendingCount === 0}
+          >
+            Reject&nbsp;
+            <span className='tabular-nums opacity-80'>
+              {selectedPendingCount}
+            </span>
+          </Button>
+          <Button
+            className='min-h-11 transition-transform active:scale-[0.96] lg:min-h-9'
+            onClick={() => setConfirmAction('apply')}
+            disabled={selectedAppliableCount === 0}
+          >
+            Apply&nbsp;
+            <span className='tabular-nums opacity-80'>
+              {selectedAppliableCount}
+            </span>
+          </Button>
+        </div>
+      )}
+      <ConfirmDialog
+        open={confirmAction !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmAction(null)
+        }}
+        title={
+          confirmAction === 'apply'
+            ? `Apply ${selectedAppliableCount} ${selectedAppliableCount === 1 ? 'row' : 'rows'} to participants?`
+            : `Reject ${selectedPendingCount} ${selectedPendingCount === 1 ? 'row' : 'rows'}?`
+        }
+        desc={
+          confirmAction === 'apply'
+            ? 'Unmatched rows become new participants. Matched participants get their birth date, category, and khusus flag updated from the desabig source. Identical pending rows in other sync runs are marked applied too.'
+            : 'Rejected rows stay in this run for reference and will not be applied.'
+        }
+        confirmText={confirmAction === 'apply' ? 'Apply' : 'Reject'}
+        destructive={confirmAction === 'reject'}
+        isLoading={actionBusy}
+        handleConfirm={() => void confirmRun()}
+      />
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={
+          selectedRunLabel
+            ? `Delete sync run from ${new Date(selectedRunLabel.created_at).toLocaleString('id-ID')}?`
+            : 'Delete sync run?'
+        }
+        desc='This permanently removes the run together with all of its staged rows.'
+        confirmText='Delete'
+        destructive
+        isLoading={deletingRun}
+        handleConfirm={() => void handleDeleteRun()}
+      />
     </div>
   )
 }
