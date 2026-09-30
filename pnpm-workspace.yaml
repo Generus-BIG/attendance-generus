@@ -5,6 +5,9 @@ allowBuilds:
 blockExoticSubdeps: true
 minimumReleaseAge: 10080
 trustPolicy: no-downgrade
+# Vercel's TypeScript host cannot follow pnpm realpaths for Supabase parent types.
+publicHoistPattern:
+  - '@supabase/*'
 overrides:
   'semver@^6': ^7.7.4
   'reselect@5.1.1': ^5.3.0
