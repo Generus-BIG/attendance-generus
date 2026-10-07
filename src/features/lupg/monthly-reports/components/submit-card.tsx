@@ -70,6 +70,8 @@ export function SubmitCard({ report }: Props) {
   ).length
   const hasIncompleteWork =
     incompleteCharacterCount > 0 || incompleteTargetCount > 0
+  const mustinAttendanceIncomplete =
+    report.mustin_attendance_kk === null || report.mustin_sensus_kk === null
 
   const isDone = report.status === 'submitted'
 
@@ -77,16 +79,21 @@ export function SubmitCard({ report }: Props) {
     const label = submittedByLabel.trim()
     if (!label) return
 
-    markDone.mutate({ id: report.id, submittedByLabel: label }, {
-      onSuccess: () => {
-        toast.success('Laporan ditandai Selesai. Masih bisa diedit kapan saja.')
-        setConfirmDone(false)
-      },
-      onError: (e: unknown) => {
-        const msg = e instanceof Error ? e.message : 'Gagal menandai selesai'
-        toast.error(msg)
-      },
-    })
+    markDone.mutate(
+      { id: report.id, submittedByLabel: label },
+      {
+        onSuccess: () => {
+          toast.success(
+            'Laporan ditandai Selesai. Masih bisa diedit kapan saja.'
+          )
+          setConfirmDone(false)
+        },
+        onError: (e: unknown) => {
+          const msg = e instanceof Error ? e.message : 'Gagal menandai selesai'
+          toast.error(msg)
+        },
+      }
+    )
   }
 
   const handleRevert = () => {
@@ -172,6 +179,12 @@ export function SubmitCard({ report }: Props) {
               snapshot sensus akan disimpan. Anda tetap bisa mengedit laporan
               setelah ditandai selesai.
             </AlertDialogDescription>
+            {mustinAttendanceIncomplete ? (
+              <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
+                Kehadiran dan sensus KK pada Resume Mustin wajib diisi sebelum
+                laporan diselesaikan.
+              </div>
+            ) : null}
             {hasIncompleteWork ? (
               <div className='rounded-md bg-muted p-3 text-sm text-muted-foreground'>
                 <p className='font-medium text-foreground'>
@@ -210,7 +223,11 @@ export function SubmitCard({ report }: Props) {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleMarkDone}
-              disabled={!submittedByLabel.trim() || markDone.isPending}
+              disabled={
+                !submittedByLabel.trim() ||
+                mustinAttendanceIncomplete ||
+                markDone.isPending
+              }
             >
               Ya, Tandai Selesai
             </AlertDialogAction>

@@ -21,6 +21,20 @@ const submissionMigration = readFileSync(
   ),
   'utf8'
 )
+const mustinAttendanceMigration = readFileSync(
+  new URL(
+    '../../../../../supabase/migrations/20261007000000_lupg_mustin_attendance.sql',
+    import.meta.url
+  ),
+  'utf8'
+)
+const mustinAttendanceHardeningMigration = readFileSync(
+  new URL(
+    '../../../../../supabase/migrations/20261007010000_harden_submitted_mustin_attendance.sql',
+    import.meta.url
+  ),
+  'utf8'
+)
 const historyMigration = readFileSync(
   new URL(
     '../../../../../supabase/migrations/20260906010000_lupg_monthly_report_edit_history.sql',
@@ -91,6 +105,23 @@ test('submission stores the typed editor label', () => {
   assert.match(submissionMigration, /submitted_by_label text/)
   assert.match(submissionMigration, /Submission editor label is required/)
   assert.match(submitCard, /submittedByLabel/)
+})
+
+test('Mustin attendance is constrained and required at submission', () => {
+  assert.match(mustinAttendanceMigration, /mustin_attendance_kk integer/)
+  assert.match(mustinAttendanceMigration, /mustin_sensus_kk integer/)
+  assert.match(mustinAttendanceMigration, /GENERATED ALWAYS AS/)
+  assert.match(
+    mustinAttendanceMigration,
+    /mustin_attendance_kk <= mustin_sensus_kk/
+  )
+  assert.match(mustinAttendanceMigration, /Mustin attendance is required/)
+  assert.match(mustinAttendanceMigration, /SET search_path = ''/)
+  assert.match(
+    mustinAttendanceHardeningMigration,
+    /lupg_monthly_reports_submitted_mustin_attendance/
+  )
+  assert.match(mustinAttendanceHardeningMigration, /status <> 'submitted'/)
 })
 
 test('history is append-only and parent scoped', () => {

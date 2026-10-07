@@ -30,6 +30,17 @@ test('auto-scroll exposes speed controls and follows manual scroll position', ()
   assert.match(player, /lupg:mustin-toggle-autoscroll/)
 })
 
+test('Resume Mustin renders compact household attendance metadata', () => {
+  assert.match(mustinRenderer, /mustin_attendance_kk/)
+  assert.match(mustinRenderer, /mustin_sensus_kk/)
+  assert.match(mustinRenderer, /mustin_attendance_percent/)
+  assert.match(mustinRenderer, /Kehadiran/)
+  assert.match(mustinRenderer, /Sensus/)
+  assert.match(mustinRenderer, /Persentase/)
+  assert.match(mustinRenderer, /inline-flex shrink-0 flex-wrap/)
+  assert.doesNotMatch(mustinRenderer, /grid shrink-0 grid-cols-3/)
+})
+
 test('Resume Mustin creates one slide for every selected kelompok', async () => {
   const vite = await createServer({
     appType: 'custom',
