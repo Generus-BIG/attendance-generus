@@ -31,6 +31,7 @@ export const CHARACTER_STATUS_META: Record<
     label: string
     shortLabel: string
     priority: number
+    percent: number
     className: string
     optionClassName: string
   }
@@ -39,6 +40,7 @@ export const CHARACTER_STATUS_META: Record<
     label: 'Perlu Pembinaan',
     shortLabel: 'Pembinaan',
     priority: 1,
+    percent: 0,
     className:
       'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300',
     optionClassName:
@@ -48,6 +50,7 @@ export const CHARACTER_STATUS_META: Record<
     label: 'Belum diterapkan',
     shortLabel: 'Belum',
     priority: 2,
+    percent: 30,
     className:
       'border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/60 dark:bg-orange-950/40 dark:text-orange-300',
     optionClassName:
@@ -57,6 +60,7 @@ export const CHARACTER_STATUS_META: Record<
     label: 'Mulai diterapkan',
     shortLabel: 'Mulai',
     priority: 3,
+    percent: 70,
     className:
       'border-yellow-300 bg-yellow-50 text-yellow-800 dark:border-yellow-900/70 dark:bg-yellow-950/40 dark:text-yellow-300',
     optionClassName:
@@ -66,6 +70,7 @@ export const CHARACTER_STATUS_META: Record<
     label: 'Mulai konsisten',
     shortLabel: 'Konsisten',
     priority: 4,
+    percent: 85,
     className:
       'border-lime-200 bg-lime-50 text-lime-700 dark:border-lime-900/60 dark:bg-lime-950/40 dark:text-lime-300',
     optionClassName:
@@ -75,6 +80,7 @@ export const CHARACTER_STATUS_META: Record<
     label: 'Sudah menjadi kebiasaan',
     shortLabel: 'Kebiasaan',
     priority: 5,
+    percent: 100,
     className:
       'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300',
     optionClassName:
@@ -92,6 +98,13 @@ export function normalizeCharacterStatus(
   value: string | null | undefined
 ): CharacterMonitoringStatus | null {
   return value && isCharacterMonitoringStatus(value) ? value : null
+}
+
+export function characterStatusPercent(
+  value: string | null | undefined
+): number | null {
+  const status = normalizeCharacterStatus(value)
+  return status ? CHARACTER_STATUS_META[status].percent : null
 }
 
 export function statusBadgeClassName(

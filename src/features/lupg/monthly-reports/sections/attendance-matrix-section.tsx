@@ -5,6 +5,16 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { type Role } from '@/lib/rbac'
 import { supabase } from '@/lib/supabase'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -44,6 +54,10 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
   const typedRole = role as Role
   const isTeamManager = typedRole === 'team_manager'
   const [view, setView] = useState<MatrixView>('kehadiran')
+  const [showPiketReminder, setShowPiketReminder] = useState(false)
+  const remindedRef = useRef(false)
+  const attendanceInitializedRef = useRef(false)
+  const completedAttendanceRef = useRef(new Set<string>())
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const year = parseInt(report.month.slice(0, 4), 10)
@@ -104,6 +118,39 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
     }
     return m
   }, [data])
+
+  useEffect(() => {
+    if (isLoading || attendanceInitializedRef.current) return
+    const currentReport = reportByMonthKey.get(report.month.slice(0, 7))
+    completedAttendanceRef.current = new Set(
+      currentReport
+        ? CATEGORIES.map((category) =>
+            attendanceMetricCode(category.code)
+          ).filter((code) => metricByKey.has(`${currentReport.id}__${code}`))
+        : []
+    )
+    attendanceInitializedRef.current = true
+  }, [isLoading, metricByKey, report.month, reportByMonthKey])
+
+  const handleSaved = (monthKey: string, metricCode: string) => {
+    if (
+      monthKey !== report.month.slice(0, 7) ||
+      !metricCode.startsWith('ATT_PCT_') ||
+      metricCode.startsWith('ATT_PCT_PIKET_')
+    ) {
+      return
+    }
+    const before = completedAttendanceRef.current.size
+    completedAttendanceRef.current.add(metricCode)
+    if (
+      before < CATEGORIES.length &&
+      completedAttendanceRef.current.size === CATEGORIES.length &&
+      !remindedRef.current
+    ) {
+      remindedRef.current = true
+      setShowPiketReminder(true)
+    }
+  }
 
   return (
     <section
@@ -185,6 +232,7 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
                       userOwnsKelompok={userOwnsKelompok}
                       readOnly={readOnly}
                       view={view}
+                      onSaved={handleSaved}
                     />
                   ))}
                 </tbody>
@@ -193,6 +241,27 @@ export function AttendanceMatrixSection({ report, readOnly = false }: Props) {
           </div>
         )}
       </div>
+      <AlertDialog open={showPiketReminder} onOpenChange={setShowPiketReminder}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Kehadiran sudah lengkap</AlertDialogTitle>
+            <AlertDialogDescription>
+              Lanjutkan pengisian persentase pada tab Piket LUPG.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Tetap di Kehadiran</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setView('piket')
+                setShowPiketReminder(false)
+              }}
+            >
+              Lanjut ke Piket LUPG
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   )
 }
@@ -208,6 +277,7 @@ interface MatrixRowProps {
   userOwnsKelompok: boolean
   readOnly: boolean
   view: MatrixView
+  onSaved: (monthKey: string, metricCode: string) => void
 }
 
 function MatrixRow({
@@ -221,6 +291,7 @@ function MatrixRow({
   userOwnsKelompok,
   readOnly,
   view,
+  onSaved,
 }: MatrixRowProps) {
   return (
     <tr className='border-b'>
@@ -254,6 +325,7 @@ function MatrixRow({
               disabled={disabled}
               reason={editability.reason}
               showLock={disabled && !!editability.reason}
+              onSaved={onSaved}
             />
           </td>
         )
@@ -270,6 +342,7 @@ interface MatrixCellProps {
   disabled: boolean
   reason: string | undefined
   showLock: boolean
+  onSaved: (monthKey: string, metricCode: string) => void
 }
 
 function MatrixCell({
@@ -280,6 +353,7 @@ function MatrixCell({
   disabled,
   reason,
   showLock,
+  onSaved,
 }: MatrixCellProps) {
   const upsert = useUpsertMetricMonth()
   const [val, setVal] = useState(
@@ -309,6 +383,7 @@ function MatrixCell({
         current_value: num,
       },
       {
+        onSuccess: () => onSaved(monthKey, metricCode),
         onError: (e: unknown) => {
           toast.error(e instanceof Error ? e.message : 'Gagal menyimpan')
         },

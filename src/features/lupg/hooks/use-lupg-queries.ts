@@ -612,6 +612,20 @@ export function useEnsureMonthlyReport() {
   })
 }
 
+export function useUpdateMustinAttendance() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: monthlyReportSvc.updateMustinAttendance,
+    onSuccess: (report) => {
+      qc.invalidateQueries({ queryKey: KEYS.monthlyReport(report.id) })
+      qc.invalidateQueries({ queryKey: ['lupg', 'monthly-reports'] })
+      qc.invalidateQueries({
+        queryKey: KEYS.monthlyAuditDashboard(report.month.slice(0, 7)),
+      })
+    },
+  })
+}
+
 export function useSubmitMonthlyReport() {
   const qc = useQueryClient()
   return useMutation({

@@ -719,6 +719,9 @@ export type Database = {
           last_edited_by: string | null
           locked: boolean
           month: string
+          mustin_attendance_kk: number | null
+          mustin_attendance_percent: number | null
+          mustin_sensus_kk: number | null
           status: string
           submitted_at: string | null
           submitted_by: string | null
@@ -733,6 +736,9 @@ export type Database = {
           last_edited_by?: string | null
           locked?: boolean
           month: string
+          mustin_attendance_kk?: number | null
+          mustin_attendance_percent?: number | null
+          mustin_sensus_kk?: number | null
           status?: string
           submitted_at?: string | null
           submitted_by?: string | null
@@ -747,6 +753,9 @@ export type Database = {
           last_edited_by?: string | null
           locked?: boolean
           month?: string
+          mustin_attendance_kk?: number | null
+          mustin_attendance_percent?: number | null
+          mustin_sensus_kk?: number | null
           status?: string
           submitted_at?: string | null
           submitted_by?: string | null

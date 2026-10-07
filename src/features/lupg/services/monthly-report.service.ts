@@ -117,6 +117,24 @@ export async function ensureMonthlyReport(
   return createMonthlyReport({ kelompok_id: kelompokId, month })
 }
 
+export async function updateMustinAttendance(input: {
+  id: string
+  attendanceKk: number | null
+  sensusKk: number | null
+}): Promise<MonthlyReportRow> {
+  const { data, error } = await supabase
+    .from('lupg_monthly_reports')
+    .update({
+      mustin_attendance_kk: input.attendanceKk,
+      mustin_sensus_kk: input.sensusKk,
+    })
+    .eq('id', input.id)
+    .select()
+    .single()
+  if (error) throw error
+  return data as MonthlyReportRow
+}
+
 export async function submitMonthlyReport(input: {
   id: string
   submittedByLabel: string

@@ -10,8 +10,7 @@ import {
 } from '../../../types'
 import {
   CHARACTER_LEVELS,
-  CHARACTER_STATUS_CODES,
-  CHARACTER_STATUS_META,
+  characterStatusPercent,
   normalizeCharacterStatus,
   sortCharacterActivities,
   type CharacterLevelCode,
@@ -39,7 +38,8 @@ export interface TargetRecapGroup {
 export interface MonitoringRecapRow {
   activity: CharacterMonitoringActivityRow
   statuses: (CharacterMonitoringStatus | null)[]
-  desa: string
+  values: (number | null)[]
+  desa: number | null
 }
 
 export function averageFilled(values: readonly (number | null)[]) {
@@ -155,13 +155,8 @@ export function buildMonitoringRecapRows(
         ? (statusByCell.get(`${report.id}:${activity.id}`) ?? null)
         : null
     })
-    const counts = CHARACTER_STATUS_CODES.flatMap((status) => {
-      const count = statuses.filter((value) => value === status).length
-      return count === 0
-        ? []
-        : [`${count} ${CHARACTER_STATUS_META[status].label}`]
-    })
-    return [{ activity, statuses, desa: counts.join(', ') || 'Belum' }]
+    const values = statuses.map(characterStatusPercent)
+    return [{ activity, statuses, values, desa: averageFilled(values) }]
   })
 }
 
