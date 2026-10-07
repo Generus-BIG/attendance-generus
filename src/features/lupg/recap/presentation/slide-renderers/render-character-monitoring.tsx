@@ -655,23 +655,21 @@ export function renderCharacterSummarySlide(args: SlideArgs): Slide {
 
 function MonitoringValue({
   status,
+  value,
 }: {
   status: CharacterMonitoringStatus | null
+  value: number | null
 }) {
   const p = usePresPalette()
-  if (!status) {
-    return (
-      <EditorialTableCell className='text-center' style={{ color: p.muted }}>
-        Belum
-      </EditorialTableCell>
-    )
-  }
   return (
     <EditorialTableCell
-      className='max-w-[14ch] text-center wrap-break-word whitespace-normal'
-      style={{ color: statusColors(status, p).color, fontWeight: 700 }}
+      className='text-center tabular-nums'
+      style={{
+        color: status ? statusColors(status, p).color : p.muted,
+        fontWeight: 700,
+      }}
     >
-      {CHARACTER_STATUS_META[status].label}
+      {value === null ? '—' : `${value}%`}
     </EditorialTableCell>
   )
 }
@@ -768,7 +766,10 @@ function MonitoringRecapBody({
                           {sensus}
                         </EditorialTableCell>
                       ) : null}
-                      <MonitoringValue status={row.statuses[0] ?? null} />
+                      <MonitoringValue
+                        status={row.statuses[0] ?? null}
+                        value={row.values[0] ?? null}
+                      />
                     </>
                   ) : (
                     <>
@@ -784,10 +785,11 @@ function MonitoringRecapBody({
                         <MonitoringValue
                           key={effectiveKelompokList[statusIndex].id}
                           status={status}
+                          value={row.values[statusIndex]}
                         />
                       ))}
-                      <EditorialTableCell className='max-w-[16ch] text-center wrap-break-word whitespace-normal'>
-                        {row.desa}
+                      <EditorialTableCell className='text-center font-bold tabular-nums'>
+                        {row.desa === null ? '—' : `${row.desa}%`}
                       </EditorialTableCell>
                     </>
                   )}
