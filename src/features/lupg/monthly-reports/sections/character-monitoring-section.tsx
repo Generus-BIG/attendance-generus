@@ -90,6 +90,19 @@ export function CharacterMonitoringSection({ report, readOnly }: Props) {
               : 'complete'
         }
       />
+      <div className='flex flex-wrap gap-x-3 gap-y-1 rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground'>
+        <span className='font-medium text-foreground'>
+          Konversi presentasi:
+        </span>
+        {CHARACTER_STATUS_CODES.map((status) => (
+          <span key={status}>
+            {CHARACTER_STATUS_META[status].label}{' '}
+            <strong className='font-semibold text-foreground tabular-nums'>
+              {CHARACTER_STATUS_META[status].percent}%
+            </strong>
+          </span>
+        ))}
+      </div>
 
       {isLoading ? (
         <div className='flex items-center justify-center rounded-md border border-dashed py-8 text-muted-foreground'>
@@ -241,7 +254,7 @@ function CharacterSetAll({
               <ToggleGroupItem
                 key={status}
                 value={status}
-                aria-label={CHARACTER_STATUS_META[status].label}
+                aria-label={`${CHARACTER_STATUS_META[status].label} ${CHARACTER_STATUS_META[status].percent}%`}
                 className={cn(
                   'min-h-10 w-full transition-[color,background-color,border-color,box-shadow]',
                   CHARACTER_STATUS_META[status].optionClassName
@@ -295,8 +308,8 @@ function CharacterMonitoringRow({
   readOnly,
 }: RowProps) {
   const upsert = useUpsertCharacterMonitoringReport()
-  const [status, setStatus] = useState<CharacterMonitoringStatus | null>(
-    () => normalizeCharacterStatus(existing?.status)
+  const [status, setStatus] = useState<CharacterMonitoringStatus | null>(() =>
+    normalizeCharacterStatus(existing?.status)
   )
   const [notes, setNotes] = useState(existing?.notes ?? '')
   const [notesVisible, setNotesVisible] = useState(
@@ -414,8 +427,8 @@ function CharacterMonitoringRow({
             <ToggleGroupItem
               key={code}
               value={code}
-              aria-label={CHARACTER_STATUS_META[code].label}
-              title={CHARACTER_STATUS_META[code].label}
+              aria-label={`${CHARACTER_STATUS_META[code].label} ${CHARACTER_STATUS_META[code].percent}%`}
+              title={`${CHARACTER_STATUS_META[code].label} · ${CHARACTER_STATUS_META[code].percent}%`}
               className={cn(
                 'min-h-12 w-full px-2 py-2 text-center text-xs leading-tight whitespace-normal transition-[color,background-color,border-color,box-shadow]',
                 CHARACTER_STATUS_META[code].optionClassName,

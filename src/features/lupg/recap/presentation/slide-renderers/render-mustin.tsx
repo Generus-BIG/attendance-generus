@@ -9,8 +9,8 @@ import {
   type MustinTemplateRow,
 } from '../../../types'
 import { AnimateItem } from '../components/animate-element'
-import { useCaptureMode } from '../context/capture-context'
 import { SlideFrame } from '../components/slide-frame'
+import { useCaptureMode } from '../context/capture-context'
 import { type Slide } from '../slides'
 import { usePresPalette } from '../use-pres-palette'
 
@@ -114,11 +114,46 @@ function NoteItem({ note, index }: { note: MustinNoteRow; index: number }) {
   )
 }
 
+function MustinAttendance({ report }: { report?: MonthlyReportRow }) {
+  const p = usePresPalette()
+  const values = [
+    ['Kehadiran', report?.mustin_attendance_kk, ' KK'],
+    ['Sensus', report?.mustin_sensus_kk, ' KK'],
+    ['Persentase', report?.mustin_attendance_percent, '%'],
+  ] as const
+
+  return (
+    <div
+      className='mb-3 inline-flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 self-start rounded-lg border px-3 py-2 text-sm'
+      style={{ borderColor: p.rule }}
+    >
+      {values.map(([label, value, suffix], index) => (
+        <div
+          key={label}
+          className={
+            index === 0
+              ? 'flex items-baseline gap-1.5'
+              : 'flex items-baseline gap-1.5 border-l pl-4'
+          }
+          style={{ borderColor: p.rule }}
+        >
+          <span style={{ color: p.muted }}>{label}</span>
+          <strong className='tabular-nums' style={{ color: p.ink }}>
+            {value === null || value === undefined ? '—' : `${value}${suffix}`}
+          </strong>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function MustinContent({
   notes,
+  report,
   slideKey,
 }: {
   notes: MustinNoteRow[]
+  report?: MonthlyReportRow
   slideKey: string
 }) {
   const p = usePresPalette()
@@ -186,14 +221,29 @@ function MustinContent({
       window.removeEventListener('lupg:mustin-toggle-autoscroll', handleToggle)
   }, [capture, isScrolling, notes.length, reduceMotion, slideKey, start])
 
-  if (capture) return (
-    <div data-mustin-columns className='grid h-full min-h-0 grid-cols-2 gap-5'>
-      <div data-mustin-column className='flex min-h-0 flex-col gap-3'>
-        {notes.length ? notes.map((note, index) => <div data-mustin-card key={note.id}><NoteItem note={note} index={index} /></div>) : <p>Tidak ada catatan.</p>}
+  if (capture)
+    return (
+      <div className='flex h-full min-h-0 flex-col'>
+        <MustinAttendance report={report} />
+        <div
+          data-mustin-columns
+          className='grid min-h-0 flex-1 grid-cols-2 gap-5'
+        >
+          <div data-mustin-column className='flex min-h-0 flex-col gap-3'>
+            {notes.length ? (
+              notes.map((note, index) => (
+                <div data-mustin-card key={note.id}>
+                  <NoteItem note={note} index={index} />
+                </div>
+              ))
+            ) : (
+              <p>Tidak ada catatan.</p>
+            )}
+          </div>
+          <div data-mustin-column className='flex min-h-0 flex-col gap-3' />
+        </div>
       </div>
-      <div data-mustin-column className='flex min-h-0 flex-col gap-3' />
-    </div>
-  )
+    )
 
   return (
     <div className='flex h-full min-h-0 items-center gap-3'>
@@ -201,6 +251,7 @@ function MustinContent({
         className='flex h-full min-h-0 flex-1 flex-col rounded-[1.5rem] border p-6'
         style={{ borderColor: p.rule }}
       >
+        <MustinAttendance report={report} />
         <div
           ref={scrollRef}
           className='min-h-0 flex-1 overflow-y-auto pr-3'
@@ -309,7 +360,11 @@ export function renderMustinSlide(args: SlideArgs): Slide {
         slideNumber={slideNumber}
         totalSlides={totalSlides}
       >
-        <MustinContent notes={notes} slideKey={`mustin-${kelompok.id}`} />
+        <MustinContent
+          notes={notes}
+          report={report}
+          slideKey={`mustin-${kelompok.id}`}
+        />
       </SlideFrame>
     ),
   }

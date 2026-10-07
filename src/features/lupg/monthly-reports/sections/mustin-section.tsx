@@ -1,4 +1,4 @@
-import { useMemo, useRef, type KeyboardEvent } from 'react'
+import { useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Plus, Trash2, Loader2, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import {
   useDeleteMustinNote,
   useMustinNotes,
   useSeedMustinFromTemplates,
+  useUpdateMustinAttendance,
   useUpdateMustinNote,
 } from '../../hooks/use-lupg-queries'
 import {
@@ -149,6 +150,94 @@ function defaultPlaceholder(template: MustinTemplateRow): string {
   return `Tulis temuan untuk:\n${lines.join('\n')}`
 }
 
+function MustinAttendanceFields({ report, readOnly }: Props) {
+  const update = useUpdateMustinAttendance()
+  const [attendanceKk, setAttendanceKk] = useState(
+    () => report.mustin_attendance_kk?.toString() ?? ''
+  )
+  const [sensusKk, setSensusKk] = useState(
+    () => report.mustin_sensus_kk?.toString() ?? ''
+  )
+  const attendance = attendanceKk === '' ? null : Number(attendanceKk)
+  const sensus = sensusKk === '' ? null : Number(sensusKk)
+  const percent =
+    attendance !== null && sensus !== null && sensus > 0
+      ? Math.round((attendance * 1000) / sensus) / 10
+      : null
+
+  const save = () => {
+    if (readOnly) return
+    if (
+      (attendance !== null &&
+        (!Number.isInteger(attendance) || attendance < 0)) ||
+      (sensus !== null && (!Number.isInteger(sensus) || sensus < 0)) ||
+      (attendance !== null && sensus !== null && attendance > sensus)
+    ) {
+      toast.error(
+        'Kehadiran dan sensus harus bilangan bulat, serta kehadiran tidak boleh melebihi sensus'
+      )
+      return
+    }
+    if (
+      attendance === report.mustin_attendance_kk &&
+      sensus === report.mustin_sensus_kk
+    ) {
+      return
+    }
+    update.mutate(
+      { id: report.id, attendanceKk: attendance, sensusKk: sensus },
+      {
+        onError: (error: unknown) =>
+          toast.error(
+            error instanceof Error ? error.message : 'Gagal menyimpan'
+          ),
+      }
+    )
+  }
+
+  return (
+    <div className='grid gap-3 rounded-md border bg-muted/20 p-3 sm:grid-cols-3'>
+      <div className='space-y-1'>
+        <Label htmlFor='mustin-attendance-kk'>Kehadiran (KK)</Label>
+        <Input
+          id='mustin-attendance-kk'
+          type='number'
+          min={0}
+          step={1}
+          value={attendanceKk}
+          onChange={(event) => setAttendanceKk(event.target.value)}
+          onBlur={save}
+          disabled={readOnly || update.isPending}
+          inputMode='numeric'
+        />
+      </div>
+      <div className='space-y-1'>
+        <Label htmlFor='mustin-sensus-kk'>Sensus (KK)</Label>
+        <Input
+          id='mustin-sensus-kk'
+          type='number'
+          min={0}
+          step={1}
+          value={sensusKk}
+          onChange={(event) => setSensusKk(event.target.value)}
+          onBlur={save}
+          disabled={readOnly || update.isPending}
+          inputMode='numeric'
+        />
+      </div>
+      <div className='space-y-1'>
+        <Label htmlFor='mustin-attendance-percent'>Persentase (%)</Label>
+        <output
+          id='mustin-attendance-percent'
+          className='flex h-9 items-center rounded-md border bg-background px-3 text-sm tabular-nums'
+        >
+          {percent === null ? '—' : `${percent}%`}
+        </output>
+      </div>
+    </div>
+  )
+}
+
 export function MustinSection({ report, readOnly }: Props) {
   const { data: notes = [], isLoading: notesLoading } = useMustinNotes(
     report.id
@@ -271,6 +360,11 @@ export function MustinSection({ report, readOnly }: Props) {
             </Button>
           ) : undefined
         }
+      />
+      <MustinAttendanceFields
+        key={report.id}
+        report={report}
+        readOnly={readOnly}
       />
       <div className='flex flex-col gap-3'>
         {isLoading ? (
