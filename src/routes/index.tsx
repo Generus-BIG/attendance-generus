@@ -1,13 +1,6 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
+import { LandingPage } from '@/features/landing'
 
 export const Route = createFileRoute('/')({
-  beforeLoad: () => {
-    throw redirect({
-      to: '/admin/dashboard',
-      search: {
-        tab: 'desa',
-        month: new Date().toLocaleDateString('sv').slice(0, 7),
-      },
-    })
-  },
+  component: LandingPage,
 })
