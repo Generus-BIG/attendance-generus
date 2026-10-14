@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { Command } from 'lucide-react'
 import heroMountain from '@/features/auth/sign-in/assets/hero-mountain.jpg'
 
@@ -38,7 +39,12 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         />
 
         {/* Logo — pinned top-left on all viewports */}
-        <div className='absolute top-6 left-6 z-10 flex items-center gap-3 lg:top-12 lg:left-12'>
+        <Link
+          to='/'
+          preload={false}
+          aria-label='Generus Dashboard home'
+          className='absolute top-6 left-6 z-10 flex min-h-11 items-center gap-3 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[oklch(0.98_0.005_265)] lg:top-12 lg:left-12'
+        >
           <div className='flex h-9 w-9 items-center justify-center rounded-md bg-[oklch(0.98_0.005_265)]'>
             <Command className='h-5 w-5 text-[oklch(0.14_0.02_265)]' />
           </div>
@@ -51,7 +57,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           >
             Generus Dashboard
           </span>
-        </div>
+        </Link>
 
         {/* Headline block — bottom-left, editorial placement.
             Hidden on mobile (the 35vh band is too short to carry copy as well as a photo).
