@@ -1598,6 +1598,7 @@ export type Database = {
         Row: {
           confidence: string
           created_at: string
+          deleted_participant_id: string | null
           error: string | null
           id: string
           matched_participant_id: string | null
@@ -1614,6 +1615,7 @@ export type Database = {
         Insert: {
           confidence: string
           created_at?: string
+          deleted_participant_id?: string | null
           error?: string | null
           id?: string
           matched_participant_id?: string | null
@@ -1630,6 +1632,7 @@ export type Database = {
         Update: {
           confidence?: string
           created_at?: string
+          deleted_participant_id?: string | null
           error?: string | null
           id?: string
           matched_participant_id?: string | null
