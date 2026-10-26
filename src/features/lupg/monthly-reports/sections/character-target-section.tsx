@@ -22,14 +22,14 @@ import {
 } from '../../hooks/use-lupg-queries'
 import {
   type CharacterTargetItemRow,
+  type CharacterTargetLevel,
   type CharacterTargetReportRow,
   type MonthlyReportRow,
 } from '../../types'
 import {
-  CHARACTER_LEVEL_LABELS,
-  CHARACTER_LEVELS,
-  type CharacterLevelCode,
-} from '../../utils/character-monitoring'
+  TARGET_LEVEL_LABELS,
+  TARGET_LEVELS,
+} from '../../utils/character-targets'
 import { SectionHeading } from '../components/section-heading'
 
 interface Props {
@@ -57,7 +57,7 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
     isLoading: reportsLoading,
     error: reportsError,
   } = useCharacterTargetReports(report.id)
-  const [activeLevel, setActiveLevel] = useState<CharacterLevelCode | ''>('')
+  const [activeLevel, setActiveLevel] = useState<CharacterTargetLevel | ''>('')
   const [bulkPercent, setBulkPercent] = useState(90)
 
   const items = useMemo(() => data?.items ?? [], [data?.items])
@@ -70,11 +70,11 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
 
   const grouped = useMemo(() => {
     const map = new Map<
-      CharacterLevelCode,
+      CharacterTargetLevel,
       Map<string, CharacterTargetItemRow[]>
     >()
     for (const item of items) {
-      const level = item.level_code as CharacterLevelCode
+      const level = item.level_code as CharacterTargetLevel
       const levelMap =
         map.get(level) ?? new Map<string, CharacterTargetItemRow[]>()
       const rows = levelMap.get(item.category_label) ?? []
@@ -86,12 +86,12 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
   }, [items])
 
   const availableLevels = useMemo(
-    () => CHARACTER_LEVELS.filter((level) => grouped.has(level)),
+    () => TARGET_LEVELS.filter((level) => grouped.has(level)),
     [grouped]
   )
   const progressByLevel = useMemo(() => {
     const progress = new Map<
-      CharacterLevelCode,
+      CharacterTargetLevel,
       { completed: number; total: number }
     >()
     for (const level of availableLevels) {
@@ -172,19 +172,19 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
           <Tabs
             value={activeLevel}
             onValueChange={(value) =>
-              setActiveLevel(value as CharacterLevelCode)
+              setActiveLevel(value as CharacterTargetLevel)
             }
           >
-            <TabsList className='h-auto w-full justify-start gap-1 overflow-x-auto p-1 sm:grid sm:grid-cols-4'>
+            <TabsList className='h-auto w-full justify-start gap-1 overflow-x-auto p-1 sm:grid sm:grid-cols-3 xl:grid-cols-5'>
               {availableLevels.map((level) => {
                 const progress = progressByLevel.get(level)
                 return (
                   <TabsTrigger
                     key={level}
                     value={level}
-                    className='min-h-11 min-w-24 shrink-0 gap-2 px-3 sm:min-w-0'
+                    className='min-h-11 min-w-24 flex-none gap-2 px-3 sm:min-w-0'
                   >
-                    <span>{CHARACTER_LEVEL_LABELS[level]}</span>
+                    <span>{TARGET_LEVEL_LABELS[level]}</span>
                     <span className='text-xs font-normal tabular-nums opacity-75'>
                       {progress?.completed ?? 0}/{progress?.total ?? 0}
                     </span>
@@ -198,7 +198,7 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
             <div className='flex flex-wrap items-center justify-between gap-3 border-y bg-muted/20 px-3 py-2.5'>
               <div>
                 <p className='text-sm font-semibold'>
-                  {CHARACTER_LEVEL_LABELS[activeLevel]}
+                  {TARGET_LEVEL_LABELS[activeLevel]}
                 </p>
                 <p className='text-xs text-muted-foreground tabular-nums'>
                   {progressByLevel.get(activeLevel)?.completed ?? 0} dari{' '}
@@ -208,7 +208,7 @@ export function CharacterTargetSection({ report, readOnly }: Props) {
               {!readOnly ? (
                 <TargetFillAll
                   reportId={report.id}
-                  levelLabel={CHARACTER_LEVEL_LABELS[activeLevel]}
+                  levelLabel={TARGET_LEVEL_LABELS[activeLevel]}
                   items={[...activeCategoryMap.values()].flat()}
                   reportByItem={reportByItem}
                   percent={bulkPercent}

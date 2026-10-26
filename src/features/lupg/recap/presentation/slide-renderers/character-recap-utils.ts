@@ -3,18 +3,19 @@ import {
   type CharacterMonitoringReportRow,
   type CharacterMonitoringStatus,
   type CharacterTargetItemRow,
+  type CharacterTargetLevel,
   type CharacterTargetReportRow,
   type MonthlyReportRow,
   type SensusRow,
   type SensusSnapshotRow,
 } from '../../../types'
 import {
-  CHARACTER_LEVELS,
   characterStatusPercent,
   normalizeCharacterStatus,
   sortCharacterActivities,
   type CharacterLevelCode,
 } from '../../../utils/character-monitoring'
+import { TARGET_LEVELS } from '../../../utils/character-targets'
 
 export interface KelompokOption {
   id: string
@@ -29,7 +30,7 @@ export interface TargetRecapRow {
 }
 
 export interface TargetRecapGroup {
-  level: CharacterLevelCode
+  level: CharacterTargetLevel
   category: string
   rows: TargetRecapRow[]
   average: number | null
@@ -65,7 +66,7 @@ export function buildTargetRecapGroups(
     ])
   )
 
-  return CHARACTER_LEVELS.flatMap((level) => {
+  return TARGET_LEVELS.flatMap((level) => {
     const byCategory = new Map<string, CharacterTargetItemRow[]>()
     for (const item of items) {
       if (item.level_code !== level || !item.detail_label?.trim()) continue
@@ -123,7 +124,7 @@ export function buildTargetRecapLevel(
   targetReports: CharacterTargetReportRow[],
   reports: MonthlyReportRow[],
   kelompok: KelompokOption[],
-  level: CharacterLevelCode
+  level: CharacterTargetLevel
 ) {
   return buildTargetRecapGroups(items, targetReports, reports, kelompok).filter(
     (group) => group.level === level

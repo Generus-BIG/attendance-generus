@@ -67,15 +67,23 @@ import {
   useUpdateCharacterTargetTemplate,
 } from '../hooks/use-lupg-queries'
 import {
-  type CharacterMonitoringLevel,
+  type CharacterTargetLevel,
   type CharacterTargetItemInsert,
   type CharacterTargetItemRow,
   type CharacterTargetTemplateRow,
 } from '../types'
 import {
-  CHARACTER_LEVEL_LABELS,
-  CHARACTER_LEVELS,
-} from '../utils/character-monitoring'
+  readWorkbookPreview,
+  deterministicParse,
+  forceParseLevel,
+  normalizeParseResult,
+  findHeaderRowIndex,
+  isReferenceMaterialText,
+  detectTargetLevel,
+  type ParsedItem,
+  type ParseResult,
+} from '../utils/character-target-import'
+import { TARGET_LEVEL_LABELS, TARGET_LEVELS } from '../utils/character-targets'
 
 const BUCKET = 'lupg-character-targets'
 const MONTH_LABELS = [
@@ -92,40 +100,6 @@ const MONTH_LABELS = [
   'NOVEMBER',
   'DESEMBER',
 ] as const
-
-interface WorkbookPreviewRow {
-  rowNumber: number
-  cells: string[]
-}
-
-interface WorkbookPreviewSheet {
-  name: string
-  rows: WorkbookPreviewRow[]
-}
-
-interface ParsedItem {
-  month_label: string
-  month_index: number
-  level_code: CharacterMonitoringLevel
-  category_label: string
-  material_label: string
-  detail_label: string | null
-  reference_from: string | null
-  reference_to: string | null
-  uses_reference: boolean
-  source_sheet: string | null
-  source_row: number | null
-  confidence: number
-}
-
-interface ParseResult {
-  parser_method: 'deterministic'
-  confidence: number
-  mapping: Record<string, string | null>
-  issues: Array<{ severity: 'info' | 'warning' | 'error'; message: string }>
-  items: ParsedItem[]
-  deployment_name?: string
-}
 
 type EditableItem = ParsedItem & { localId: string }
 
@@ -278,8 +252,8 @@ export function CharacterTargetTemplatesTab() {
                     )}
                   </div>
                   <span className='block text-[11px] text-muted-foreground/80'>
-                    {template.year} · {template.level_code} ·{' '}
-                    {template.parser_method}
+                    {template.year} · {TARGET_LEVEL_LABELS[template.level_code]}{' '}
+                    · {template.parser_method}
                   </span>
                 </button>
               )
@@ -386,8 +360,8 @@ export function CharacterTargetTemplatesTab() {
                   </div>
                   <CardDescription className='mt-1 text-xs'>
                     Year {selectedTemplate.year} · Level{' '}
-                    {selectedTemplate.level_code} · Parsed via{' '}
-                    {selectedTemplate.parser_method}
+                    {TARGET_LEVEL_LABELS[selectedTemplate.level_code]} · Parsed
+                    via {selectedTemplate.parser_method}
                     {selectedTemplate.source_filename
                       ? ` · File: ${selectedTemplate.source_filename}`
                       : ''}
@@ -517,9 +491,9 @@ function LogDetailDialog({
           </div>
 
           {/* How parser processed detail inside dialog */}
-          <div className='rounded-lg border border-border bg-gradient-to-br from-indigo-50/20 to-violet-50/10 p-3.5 text-xs dark:from-indigo-950/10 dark:to-violet-950/5'>
+          <div className='rounded-lg border border-border bg-muted/40 p-3.5 text-xs'>
             <h6 className='mb-1.5 flex items-center gap-1.5 font-bold text-foreground'>
-              <WandSparkles className='h-3.5 w-3.5 text-indigo-500' />
+              <WandSparkles className='h-3.5 w-3.5 text-muted-foreground' />
               How This Parser Processed the Document
             </h6>
             <p className='leading-normal text-muted-foreground'>
@@ -555,8 +529,7 @@ function TemplateImportCard({
   const activateTemplate = useActivateCharacterTargetTemplate()
   const [year, setYear] = useState(new Date().getFullYear())
   const [name, setName] = useState(`Target 29 Karakter ${year}`)
-  const [defaultLevel, setDefaultLevel] =
-    useState<CharacterMonitoringLevel>('GPN')
+  const [defaultLevel, setDefaultLevel] = useState<CharacterTargetLevel>('GPN')
   const [activateAfterSave, setActivateAfterSave] = useState(true)
   const [file, setFile] = useState<File | null>(null)
   const [parsed, setParsed] = useState<ParseResult | null>(null)
@@ -645,7 +618,12 @@ function TemplateImportCard({
       addLog('info', `Running local deterministic parser...`)
       await delay(120)
 
-      let parseResult = deterministicParse({ year, defaultLevel, sheets })
+      let parseResult = deterministicParse({
+        year,
+        defaultLevel,
+        sheets,
+        filename: file.name,
+      })
       addLog(
         'success',
         `Local deterministic parser processed the file successfully.`
@@ -834,17 +812,19 @@ function TemplateImportCard({
             <Label>Default Level</Label>
             <Select
               value={defaultLevel}
-              onValueChange={(value) =>
-                setDefaultLevel(value as CharacterMonitoringLevel)
-              }
+              onValueChange={(value) => {
+                setDefaultLevel(value as CharacterTargetLevel)
+                setParsed(null)
+                setItems([])
+              }}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {CHARACTER_LEVELS.map((level) => (
+                {TARGET_LEVELS.map((level) => (
                   <SelectItem key={level} value={level}>
-                    {CHARACTER_LEVEL_LABELS[level]}
+                    {TARGET_LEVEL_LABELS[level]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -858,7 +838,10 @@ function TemplateImportCard({
               className='cursor-pointer'
               accept='.xlsx,.xls,.csv'
               onChange={(e) => {
-                setFile(e.target.files?.[0] ?? null)
+                const selected = e.target.files?.[0] ?? null
+                setFile(selected)
+                const detected = selected && detectTargetLevel(selected.name)
+                if (detected) setDefaultLevel(detected)
                 setParsed(null)
                 setItems([])
                 setCurrentLogs([])
@@ -991,7 +974,7 @@ interface EditTemplateDialogProps {
   onSave: (patch: {
     name: string
     year: number
-    level_code: CharacterMonitoringLevel
+    level_code: CharacterTargetLevel
   }) => void
 }
 
@@ -1041,16 +1024,16 @@ function EditTemplateDialog({
               <Select
                 value={levelCode}
                 onValueChange={(value) =>
-                  setLevelCode(value as CharacterMonitoringLevel)
+                  setLevelCode(value as CharacterTargetLevel)
                 }
               >
-                <SelectTrigger id='edit-template-level'>
+                <SelectTrigger id='edit-template-level' className='w-full'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CHARACTER_LEVELS.map((level) => (
+                  {TARGET_LEVELS.map((level) => (
                     <SelectItem key={level} value={level}>
-                      {level}
+                      {TARGET_LEVEL_LABELS[level]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1130,7 +1113,7 @@ function TemplateItemsEditor({
   const handleSaveMetadata = (patch: {
     name: string
     year: number
-    level_code: CharacterMonitoringLevel
+    level_code: CharacterTargetLevel
   }) => {
     updateTemplate.mutate(
       { id: template.id, patch },
@@ -1376,17 +1359,17 @@ function StoredItemRow({
             onValueChange={(value) =>
               setDraft((current) => ({
                 ...current,
-                level_code: value as CharacterMonitoringLevel,
+                level_code: value as CharacterTargetLevel,
               }))
             }
           >
-            <SelectTrigger className='w-24'>
+            <SelectTrigger className='w-40'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {CHARACTER_LEVELS.map((level) => (
+              {TARGET_LEVELS.map((level) => (
                 <SelectItem key={level} value={level}>
-                  {level}
+                  {TARGET_LEVEL_LABELS[level]}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -1518,7 +1501,7 @@ function StoredItemRow({
         </TableCell>
       ) : null}
       <TableCell className='font-semibold text-muted-foreground'>
-        {item.level_code}
+        {TARGET_LEVEL_LABELS[item.level_code]}
       </TableCell>
       <TableCell className='max-w-[18ch] wrap-break-word whitespace-normal'>
         {item.category_label}
@@ -1622,17 +1605,17 @@ function EditableItemsTable({
                   value={item.level_code}
                   onValueChange={(value) =>
                     update(item.localId, {
-                      level_code: value as CharacterMonitoringLevel,
+                      level_code: value as CharacterTargetLevel,
                     })
                   }
                 >
-                  <SelectTrigger className='w-24'>
+                  <SelectTrigger className='w-40'>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CHARACTER_LEVELS.map((level) => (
+                    {TARGET_LEVELS.map((level) => (
                       <SelectItem key={level} value={level}>
-                        {level}
+                        {TARGET_LEVEL_LABELS[level]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1726,362 +1709,6 @@ function EditableItemsTable({
   )
 }
 
-async function readWorkbookPreview(
-  file: File
-): Promise<WorkbookPreviewSheet[]> {
-  if (file.name.toLowerCase().endsWith('.csv')) {
-    const text = await file.text()
-    return [
-      {
-        name: 'CSV',
-        rows: text.split(/\r?\n/).map((line, index) => ({
-          rowNumber: index + 1,
-          cells: line
-            .split(',')
-            .map((cell) => cell.trim())
-            .slice(0, 24),
-        })),
-      },
-    ]
-  }
-
-  const ExcelJS = await import('exceljs')
-  const workbook = new ExcelJS.Workbook()
-  await workbook.xlsx.load(await file.arrayBuffer())
-
-  return workbook.worksheets.map((sheet) => {
-    const rows: WorkbookPreviewRow[] = []
-    sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-      const cells: string[] = []
-      const columnCount = Math.min(Math.max(sheet.columnCount, 12), 24)
-      for (let col = 1; col <= columnCount; col += 1) {
-        cells.push(row.getCell(col).text.trim())
-      }
-      if (cells.some(Boolean)) rows.push({ rowNumber, cells })
-    })
-    return { name: sheet.name, rows }
-  })
-}
-
-const MONTHS = [
-  ['JANUARI', 1],
-  ['FEBRUARI', 2],
-  ['MARET', 3],
-  ['APRIL', 4],
-  ['MEI', 5],
-  ['JUNI', 6],
-  ['JULI', 7],
-  ['AGUSTUS', 8],
-  ['SEPTEMBER', 9],
-  ['OKTOBER', 10],
-  ['NOVEMBER', 11],
-  ['DESEMBER', 12],
-] as const
-
-// eslint-disable-next-line react-refresh/only-export-components
-export function deterministicParse({
-  year: _year,
-  defaultLevel,
-  sheets,
-}: {
-  year: number
-  defaultLevel: CharacterMonitoringLevel
-  sheets: WorkbookPreviewSheet[]
-}): ParseResult {
-  const items: ParsedItem[] = []
-  const issues: ParseResult['issues'] = []
-
-  for (const sheet of sheets) {
-    if (sheet.rows.length === 0) continue
-    const headerRowIndex = findHeaderRowIndex(sheet.rows)
-    const first = sheet.rows[headerRowIndex]?.cells ?? []
-    const second = sheet.rows[headerRowIndex + 1]?.cells ?? []
-    const headers = Array.from({
-      length: Math.max(first.length, second.length, 12),
-    }).map((_, index) => {
-      const firstValue = normalizeText(first[index])
-      const secondValue = normalizeText(second[index])
-      return firstValue === secondValue
-        ? firstValue
-        : normalizeText(`${firstValue} ${secondValue}`)
-    })
-    const mapping = makeMapping(headers)
-    let currentMonth: { label: string; index: number } | null = null
-    let currentCategory = ''
-    let currentMaterial = ''
-
-    for (const row of sheet.rows.slice(headerRowIndex + 1)) {
-      const cells = row.cells.map(normalizeText)
-      const rowText = cells.join(' ')
-      const month = normalizeMonth(rowText)
-      if (month && month.index !== currentMonth?.index) currentMaterial = ''
-      if (month) currentMonth = month
-      if (!currentMonth) continue
-
-      const material = normalizeMaterialText(cells[mapping.material])
-      const detail = normalizeMaterialText(cells[mapping.detail])
-      if (material) currentMaterial = material
-      const rawCategory = normalizeText(cells[mapping.category])
-      if (isUsefulCategory(rawCategory)) currentCategory = rawCategory
-      const category = normalizeCategoryLabel(
-        currentCategory,
-        currentMaterial,
-        defaultLevel
-      )
-
-      if (!detail || !currentMaterial) continue
-      if (isNonMaterialRow(currentMaterial, detail)) continue
-
-      items.push({
-        month_label: currentMonth.label,
-        month_index: currentMonth.index,
-        level_code: defaultLevel,
-        category_label: category,
-        material_label: currentMaterial,
-        detail_label: detail,
-        reference_from:
-          mapping.referenceFrom >= 0
-            ? normalizeText(cells[mapping.referenceFrom])
-            : null,
-        reference_to:
-          mapping.referenceTo >= 0
-            ? normalizeText(cells[mapping.referenceTo])
-            : null,
-        uses_reference:
-          isReferenceMaterialText(currentMaterial, detail) ||
-          Boolean(
-            mapping.referenceFrom >= 0 &&
-            normalizeText(cells[mapping.referenceFrom])
-          ) ||
-          Boolean(
-            mapping.referenceTo >= 0 &&
-            normalizeText(cells[mapping.referenceTo])
-          ),
-        source_sheet: sheet.name,
-        source_row: row.rowNumber,
-        confidence: 0.62,
-      })
-    }
-  }
-
-  if (items.length === 0) {
-    issues.push({
-      severity: 'error',
-      message: 'Tidak ada baris materi yang bisa dibaca dari workbook.',
-    })
-  }
-
-  return {
-    parser_method: 'deterministic',
-    confidence: items.length > 0 ? 0.78 : 0,
-    mapping: {
-      month_column: 'Bulan',
-      level_column: null,
-      category_column: 'Kategori terakhir',
-      material_column: 'Materi',
-      detail_column: 'Detail Materi',
-      reference_from_column: 'Dari',
-      reference_to_column: 'Sampai',
-    },
-    issues,
-    items,
-  }
-}
-
-function forceParseLevel(
-  result: ParseResult,
-  level: CharacterMonitoringLevel
-): ParseResult {
-  return {
-    ...result,
-    mapping: {
-      ...result.mapping,
-      level_column: `Default Jenjang (${level})`,
-    },
-    items: result.items.map((item) => ({
-      ...item,
-      level_code: level,
-      material_label: normalizeMaterialText(item.material_label),
-      detail_label: normalizeMaterialText(item.detail_label) || null,
-    })),
-  }
-}
-
-function normalizeParseResult(result: ParseResult): ParseResult {
-  let skippedRows = 0
-  const items = result.items.reduce<ParsedItem[]>((acc, item) => {
-    const material = normalizeMaterialText(item.material_label)
-    const detail = normalizeMaterialText(item.detail_label)
-    if (!material || !detail || isNonMaterialRow(material, detail)) {
-      skippedRows += 1
-      return acc
-    }
-    acc.push({
-      ...item,
-      material_label: material,
-      detail_label: detail,
-      reference_from: normalizeMaterialText(item.reference_from) || null,
-      reference_to: normalizeMaterialText(item.reference_to) || null,
-      uses_reference:
-        item.uses_reference ||
-        isReferenceMaterialText(material, detail) ||
-        Boolean(item.reference_from || item.reference_to),
-    })
-    return acc
-  }, [])
-
-  return {
-    ...result,
-    issues:
-      skippedRows > 0
-        ? [
-            ...result.issues,
-            {
-              severity: 'info',
-              message: `${skippedRows} baris kosong/placeholder diabaikan saat parsing.`,
-            },
-          ]
-        : result.issues,
-    items,
-  }
-}
-
-function findHeaderRowIndex(rows: WorkbookPreviewRow[]): number {
-  const index = rows.findIndex((row) => {
-    const text = normalizeText(row.cells.join(' ')).toLowerCase()
-    return (
-      text.includes('bulan') &&
-      text.includes('materi') &&
-      (text.includes('realisasi') ||
-        text.includes('ayat') ||
-        text.includes('hal'))
-    )
-  })
-  return index >= 0 ? index : 0
-}
-
-function normalizeText(value: unknown): string {
-  return String(value ?? '')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-function normalizeMaterialText(value: unknown): string {
-  const text = normalizeText(value)
-  if (/^(?:0|[-–—])$/.test(text)) return ''
-  return text
-}
-
-function normalizeMonth(
-  value: string
-): { label: string; index: number } | null {
-  const upper = value.toUpperCase()
-  const match = MONTHS.find(([label]) => upper.includes(label))
-  if (!match) return null
-  return { label: match[0], index: match[1] }
-}
-
-function isUsefulCategory(value: string): boolean {
-  const lower = value.toLowerCase()
-  if (!lower) return false
-  if (lower.includes('kategori')) return false
-  if (lower.includes('29 karakter')) return false
-  if (lower.includes('bulan')) return false
-  return true
-}
-
-function normalizeCategoryLabel(
-  value: string,
-  material: string,
-  defaultLevel: CharacterMonitoringLevel
-): string {
-  const lower = `${value} ${material}`.toLowerCase()
-  if (lower.includes('akhlak')) return 'Akhlakul Karimah'
-  if (lower.includes('kemandirian')) return 'Kemandirian'
-  if (lower.includes('monitoring') || lower.includes('penerapan 29')) {
-    return 'Monitoring'
-  }
-  if (
-    lower.includes('faqih') ||
-    lower.includes('faham') ||
-    lower.includes('jamaah') ||
-    lower.includes('surga') ||
-    lower.includes('praktik ibadah')
-  ) {
-    return 'Faqih'
-  }
-  if (
-    lower.includes('alim') ||
-    lower.includes('quran') ||
-    lower.includes('hadist') ||
-    lower.includes('hafalan') ||
-    lower.includes('doa') ||
-    lower.includes('arab')
-  ) {
-    return 'Alim'
-  }
-  return defaultLevel === 'ACR' ? 'Akhlakul Karimah' : 'Lainnya'
-}
-
-function isNonMaterialRow(material: string, detail: string): boolean {
-  const lower = `${material} ${detail}`.toLowerCase()
-  if (lower.includes('rata-rata')) return true
-  if (lower.includes('bulan') && lower.includes('materi')) return true
-  if (lower.includes('realisasi') && lower.includes('kurang materi'))
-    return true
-  if (lower.includes('paraf')) return true
-  return false
-}
-
-function isReferenceMaterialText(
-  material: string | null,
-  detail: string | null
-): boolean {
-  const lower = `${material ?? ''} ${detail ?? ''}`.toLowerCase()
-  return (
-    lower.includes('quran') ||
-    lower.includes('qur') ||
-    lower.includes('hadist') ||
-    lower.includes('hadis')
-  )
-}
-
-function makeMapping(headers: string[]) {
-  const lower = headers.map((header) => header.toLowerCase())
-  const findIndex = (terms: string[]) =>
-    lower.findIndex((header) => terms.every((term) => header.includes(term)))
-  const kategoriColumns = lower.reduce<
-    Array<{ header: string; index: number }>
-  >((columns, header, index) => {
-    if (header.includes('kategori')) columns.push({ header, index })
-    return columns
-  }, [])
-  const detailIndex = findIndex(['detail', 'materi'])
-  const materialIndex = lower.findIndex(
-    (header, index) => header.includes('materi') && index !== detailIndex
-  )
-  const dariIndex = findIndex(['dari'])
-  const sampaiIndex = findIndex(['sampai'])
-  const ayatIndex = findIndex(['ayat'])
-  const halIndex = findIndex(['hal'])
-  const categoryIndex =
-    materialIndex > 0
-      ? materialIndex - 1
-      : kategoriColumns.length > 1
-        ? kategoriColumns[kategoriColumns.length - 1].index
-        : findIndex(['kategori'])
-
-  return {
-    month: Math.max(findIndex(['bulan']), 0),
-    level: findIndex(['jenjang']),
-    category: categoryIndex,
-    material: materialIndex >= 0 ? materialIndex : 3,
-    detail: detailIndex >= 0 ? detailIndex : 4,
-    referenceFrom: dariIndex >= 0 ? dariIndex : ayatIndex,
-    referenceTo: sampaiIndex >= 0 ? sampaiIndex : halIndex,
-  }
-}
-
 async function uploadSourceFile(file: File, year: number): Promise<string> {
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-')
   const path = `${year}/${crypto.randomUUID()}-${safeName}`
@@ -2121,7 +1748,7 @@ function toInsertItem(
 }
 
 function emptyEditableItem(
-  level: CharacterMonitoringLevel,
+  level: CharacterTargetLevel,
   index: number
 ): EditableItem {
   return {

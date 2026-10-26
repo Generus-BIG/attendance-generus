@@ -1,4 +1,7 @@
 import { type Database } from '@/lib/database.types'
+import type { CharacterTargetLevel } from './utils/character-targets'
+
+export type { CharacterTargetLevel } from './utils/character-targets'
 
 type Tables = Database['public']['Tables']
 
@@ -120,7 +123,7 @@ export type CharacterTargetParserMethod =
 
 export type CharacterTargetTemplateRow =
   Tables['lupg_character_target_templates']['Row'] & {
-    level_code: CharacterMonitoringLevel
+    level_code: CharacterTargetLevel
     status: CharacterTargetTemplateStatus
     parser_method: CharacterTargetParserMethod
   }
@@ -128,7 +131,7 @@ export type CharacterTargetTemplateInsert = Omit<
   Tables['lupg_character_target_templates']['Insert'],
   'level_code' | 'status' | 'parser_method'
 > & {
-  level_code?: CharacterMonitoringLevel
+  level_code?: CharacterTargetLevel
   status?: CharacterTargetTemplateStatus
   parser_method?: CharacterTargetParserMethod
 }
@@ -136,26 +139,26 @@ export type CharacterTargetTemplateUpdate = Omit<
   Tables['lupg_character_target_templates']['Update'],
   'level_code' | 'status' | 'parser_method'
 > & {
-  level_code?: CharacterMonitoringLevel
+  level_code?: CharacterTargetLevel
   status?: CharacterTargetTemplateStatus
   parser_method?: CharacterTargetParserMethod
 }
 
 export type CharacterTargetItemRow =
   Tables['lupg_character_target_items']['Row'] & {
-    level_code: CharacterMonitoringLevel
+    level_code: CharacterTargetLevel
   }
 export type CharacterTargetItemInsert = Omit<
   Tables['lupg_character_target_items']['Insert'],
   'level_code'
 > & {
-  level_code: CharacterMonitoringLevel
+  level_code: CharacterTargetLevel
 }
 export type CharacterTargetItemUpdate = Omit<
   Tables['lupg_character_target_items']['Update'],
   'level_code'
 > & {
-  level_code?: CharacterMonitoringLevel
+  level_code?: CharacterTargetLevel
 }
 
 export type CharacterTargetReportRow =
