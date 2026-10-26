@@ -20,6 +20,7 @@ import {
   type CharacterTargetReportRow,
   type MonthlyReportRow,
 } from '../../types'
+import { TARGET_LEVEL_LABELS } from '../../utils/character-targets'
 
 type KelompokLite = { id: string; value: string }
 
@@ -85,7 +86,7 @@ export function CharacterTargetRecap({
     const map = new Map<
       string,
       {
-        level: string
+        level: CharacterTargetItemRow['level_code']
         category: string
         total: number
         filled: number
@@ -198,7 +199,8 @@ export function CharacterTargetRecap({
                                       {item.material_label}
                                     </p>
                                     <p className='text-xs text-muted-foreground'>
-                                      {item.level_code} · {item.category_label}
+                                      {TARGET_LEVEL_LABELS[item.level_code]} ·{' '}
+                                      {item.category_label}
                                     </p>
                                     {row?.notes ? (
                                       <p className='mt-1 text-xs text-muted-foreground'>
@@ -264,8 +266,8 @@ export function CharacterTargetRecap({
                             {summary.category}
                           </p>
                           <p className='text-xs text-muted-foreground'>
-                            {summary.level} · {summary.filled}/{summary.total}{' '}
-                            terisi
+                            {TARGET_LEVEL_LABELS[summary.level]} ·{' '}
+                            {summary.filled}/{summary.total} terisi
                             {summary.discussion > 0
                               ? ` · ${summary.discussion} musyawarah`
                               : ''}

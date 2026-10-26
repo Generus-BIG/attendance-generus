@@ -6,6 +6,7 @@ import {
   type CharacterMonitoringActivityRow,
   type CharacterMonitoringReportRow,
   type CharacterTargetItemRow,
+  type CharacterTargetLevel,
   type CharacterTargetReportRow,
   type MetricDefinitionRow,
   type MetricReportRow,
@@ -20,6 +21,7 @@ import {
   type SensusRow,
   type ShodaqohRow,
 } from '../../types'
+import { TARGET_LEVELS } from '../../utils/character-targets'
 import { formatMonthLabel } from '../../utils/month-utils'
 import { renderCharacterMonitoringRecapSlide } from './slide-renderers/render-character-monitoring'
 import { renderCharacterTargetRecapSlide } from './slide-renderers/render-character-targets'
@@ -172,7 +174,7 @@ export function buildSlides(data: PresentationData): Slide[] {
     | { kind: 'sarpras' }
     | { kind: 'shodaqoh' }
     | { kind: 'program'; program: ProgramDefinitionRow }
-    | { kind: 'character-target-recap'; level: 'ACR' | 'APR' | 'AR' | 'GPN' }
+    | { kind: 'character-target-recap'; level: CharacterTargetLevel }
     | {
         kind: 'character-monitoring-recap'
         level?: 'ACR' | 'APR' | 'AR' | 'GPN'
@@ -207,7 +209,7 @@ export function buildSlides(data: PresentationData): Slide[] {
     descriptors.push({ kind: 'program', program })
   }
   descriptors.push({ kind: 'character-monitoring-recap' })
-  for (const level of ['ACR', 'APR', 'AR', 'GPN'] as const) {
+  for (const level of TARGET_LEVELS) {
     descriptors.push({ kind: 'character-target-recap', level })
   }
   for (const kelompok of effectiveKelompokList) {

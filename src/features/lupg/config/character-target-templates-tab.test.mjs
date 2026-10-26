@@ -10,7 +10,7 @@ test('regional material rows inherit merged labels and keep Ayat/Hal ranges', as
   })
   try {
     const { deterministicParse } = await vite.ssrLoadModule(
-      '/src/features/lupg/config/character-target-templates-tab.tsx'
+      '/src/features/lupg/utils/character-target-import.ts'
     )
     const result = deterministicParse({
       year: 2026,

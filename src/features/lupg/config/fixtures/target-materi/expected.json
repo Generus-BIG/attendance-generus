@@ -1,0 +1,5279 @@
+{
+  "ACR-1.xlsx": [
+    [7, 1, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      8,
+      1,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Ta'dhim dan Berbuat baik kepada orang tua"
+    ],
+    [
+      9,
+      1,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan huruf hijaiyah dengan tanda baca fathah"
+    ],
+    [10, 1, "Alim", "Menulis Huruf Arab", "Menulis huruf tunggal fathah"],
+    [11, 1, "Alim", "Hafalan Surat-surat", "Surat AL-kautsar"],
+    [12, 1, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 40)"],
+    [13, 1, "Alim", "Materi Dasar Keagamaan", "Dasar- dasar aqidah"],
+    [
+      14,
+      1,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      15,
+      1,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kewajiban beribadah kepada Alloh berdasarkan Qur’an Hadist"
+    ],
+    [16, 1, "Faqih", "Faham Jamaah", "Mengetahui dan hafal Lima Bab"],
+    [
+      17,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      18,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [19, 1, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      20,
+      1,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [22, 2, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      23,
+      2,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Ta'dhim dan Berbuat baik kepada orang tua"
+    ],
+    [
+      25,
+      2,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan huruf hijaiyah dengan tanda baca fathah"
+    ],
+    [28, 2, "Alim", "Menulis Huruf Arab", "Menulis huruf tunggal fathah"],
+    [30, 2, "Alim", "Hafalan Surat-surat", "Surat AL-kautsar"],
+    [32, 2, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 40)"],
+    [36, 2, "Alim", "Materi Dasar Keagamaan", "Dasar- dasar aqidah"],
+    [
+      38,
+      2,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      39,
+      2,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kewajiban beribadah kepada Alloh berdasarkan Qur’an Hadist"
+    ],
+    [41, 2, "Faqih", "Faham Jamaah", "Mengetahui dan hafal Lima Bab"],
+    [
+      42,
+      2,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      43,
+      2,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [45, 2, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      46,
+      2,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [48, 3, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      49,
+      3,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Menghormati saudara yang lebih tua dan menyayangi saudara yang lebih tua"
+    ],
+    [
+      50,
+      3,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama menghormati guru dan mubalegh mubaleghot"
+    ],
+    [51, 3, "Alim", "Baca Huruf Al-Quran", "Melafalkan huruf hijaiyah"],
+    [52, 3, "Alim", "Baca Huruf Al-Quran", "Melafalkan Angka Arab"],
+    [54, 3, "Alim", "Menulis Huruf Arab", "Menulis huruf tunggal fathah"],
+    [56, 3, "Alim", "Hafalan Surat-surat", "Surat AL-Maun"],
+    [58, 3, "Alim", "Hafalan Doa-doa Harian", "Doa dan dzikir setelah sholat"],
+    [
+      62,
+      3,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Rukun iman, rukun Islam dan ihsan"
+    ],
+    [
+      64,
+      3,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [65, 3, "Faqih", "Faham Quran Hadist", "Mengetahui rukun iman"],
+    [
+      67,
+      3,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Empat Tali Keimanan"
+    ],
+    [
+      68,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      69,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      70,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [71, 3, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      72,
+      3,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [74, 4, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [
+      75,
+      4,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama bergaul dengan teman"
+    ],
+    [77, 4, "Alim", "Baca Huruf Al-Quran", "Melafalkan Angka Arab"],
+    [80, 4, "Alim", "Menulis Huruf Arab", "Menulis huruf tunggal fathah"],
+    [82, 4, "Alim", "Hafalan Surat-surat", "Surat AL-Maun"],
+    [84, 4, "Alim", "Hafalan Doa-doa Harian", "Doa ketetapan iman"],
+    [
+      88,
+      4,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Rukun iman, rukun Islam dan ihsan"
+    ],
+    [
+      90,
+      4,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [91, 4, "Faqih", "Faham Quran Hadist", "Mengetahui rukun islam"],
+    [
+      93,
+      4,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Empat Tali Keimanan"
+    ],
+    [
+      94,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      95,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      96,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [97, 4, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      98,
+      4,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [100, 5, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [101, 5, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika di masjid"],
+    [
+      103,
+      5,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan Huruf berharokat Fathah, kasroh, dlomah dan Tanwin"
+    ],
+    [106, 5, "Alim", "Menulis Huruf Arab", "Menulis angka Arab"],
+    [108, 5, "Alim", "Hafalan Surat-surat", "Surat AL-Quraisy"],
+    [110, 5, "Alim", "Hafalan Doa-doa Harian", "Doa minta ilmu yang manfaat"],
+    [
+      114,
+      5,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengertian Qur'an Hadits Jamaah"
+    ],
+    [
+      116,
+      5,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [117, 5, "Faqih", "Faham Quran Hadist", "Mengetahui Quran Hadist Jamaah"],
+    [
+      119,
+      5,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      120,
+      5,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      121,
+      5,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [123, 5, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      124,
+      5,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [
+      126,
+      6,
+      "Akhlakul Karimah",
+      "Akhlakul Karimah",
+      "Ulil Amri, Guru dan Mubaligh -Mubalighot"
+    ],
+    [
+      127,
+      6,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama ketika di tempat pengajian dan sekolah"
+    ],
+    [
+      129,
+      6,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan Huruf berharokat Fathah, kasroh, dlomah dan Tanwin"
+    ],
+    [132, 6, "Alim", "Menulis Huruf Arab", "Menulis angka Arab"],
+    [134, 6, "Alim", "Hafalan Surat-surat", "Surat AL-Quraisy"],
+    [136, 6, "Alim", "Hafalan Doa-doa Harian", "Doa minta ilham yang baik"],
+    [
+      140,
+      6,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengertian Qur'an Hadits Jamaah"
+    ],
+    [
+      142,
+      6,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [143, 6, "Faqih", "Faham Quran Hadist", "Mengetahui Quran Hadist Jamaah"],
+    [
+      145,
+      6,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      146,
+      6,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan menjaga kesucian (mengenal suci najis)"
+    ],
+    [
+      147,
+      6,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [149, 6, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      150,
+      6,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [
+      152,
+      7,
+      "Akhlakul Karimah",
+      "Akhlakul Karimah",
+      "Ulil Amri, Guru dan Mubaligh -Mubalighot"
+    ],
+    [
+      153,
+      7,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama terhadap lingkungan dan alam sekitar"
+    ],
+    [155, 7, "Alim", "Baca Huruf Al-Quran", "Melafalkan bacaan Panjang 1 Alif"],
+    [158, 7, "Alim", "Menulis Huruf Arab", "Menulis angka Arab"],
+    [160, 7, "Alim", "Hafalan Surat-surat", "Surat AL-Fiil"],
+    [162, 7, "Alim", "Hafalan Doa-doa Harian", "Doa masuk dan keluar rumah"],
+    [
+      166,
+      7,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengetahuan wajibnya taat dan haromnya maksiat"
+    ],
+    [
+      168,
+      7,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [169, 7, "Faqih", "Faham Quran Hadist", "Mengetahui halal dan haram"],
+    [
+      171,
+      7,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [
+      172,
+      7,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan menjaga kesucian (mengenal suci najis)"
+    ],
+    [
+      173,
+      7,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [175, 7, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      176,
+      7,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [178, 8, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [179, 8, "Akhlakul Karimah", "Tata Krama", "Tata Krama terhadap ulil amri"],
+    [181, 8, "Alim", "Baca Huruf Al-Quran", "Melafalkan bacaan Panjang 1 Alif"],
+    [184, 8, "Alim", "Menulis Huruf Arab", "Menulis angka Arab"],
+    [186, 8, "Alim", "Hafalan Surat-surat", "Surat AL-Fiil"],
+    [188, 8, "Alim", "Hafalan Doa-doa Harian", "Doa pagi dan sore"],
+    [
+      192,
+      8,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengetahuan wajibnya taat dan haromnya maksiat"
+    ],
+    [
+      194,
+      8,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [195, 8, "Faqih", "Faham Quran Hadist", "Mengetahui halal dan haram"],
+    [
+      197,
+      8,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [
+      198,
+      8,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara buang air kecil ( kencing ) dan air besar ( BAB )"
+    ],
+    [
+      199,
+      8,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [201, 8, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      202,
+      8,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [204, 9, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [
+      205,
+      9,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama bertamu/diajak bertamu dan kedatangan tamu"
+    ],
+    [207, 9, "Alim", "Baca Huruf Al-Quran", "Melafalkan bacaan Panjang 1 Alif"],
+    [
+      210,
+      9,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis Huruf sambung (didepan,tengah, dan belakang )"
+    ],
+    [212, 9, "Alim", "Hafalan Surat-surat", "Surat AL - Humazah"],
+    [214, 9, "Alim", "Hafalan Doa-doa Harian", "Doa pagi dan sore"],
+    [218, 9, "Alim", "Materi Dasar Keagamaan", "Pengetahuan hukum halal-harom"],
+    [
+      220,
+      9,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [221, 9, "Faqih", "Faham Quran Hadist", "Mengetahui taat dan maksiat"],
+    [
+      223,
+      9,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [
+      224,
+      9,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara mensucikan najis setelah kencing dan BAB"
+    ],
+    [
+      225,
+      9,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      227,
+      9,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      228,
+      9,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [230, 10, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [231, 10, "Akhlakul Karimah", "Tata Krama", "Tata Krama berpakaian"],
+    [
+      233,
+      10,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "bentuk-bentuk ta’ (awal,tengah,akhir)"
+    ],
+    [
+      236,
+      10,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis Huruf sambung (didepan,tengah, dan belakang )"
+    ],
+    [238, 10, "Alim", "Hafalan Surat-surat", "Surat AL - Humazah"],
+    [240, 10, "Alim", "Hafalan Doa-doa Harian", "Doa masuk dan keluar masjid"],
+    [
+      244,
+      10,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengetahuan hukum halal-harom"
+    ],
+    [
+      246,
+      10,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [247, 10, "Faqih", "Faham Quran Hadist", "Mengetahui taat dan maksiat"],
+    [
+      249,
+      10,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [250, 10, "Faqih", "Praktik Ibadah", "Mempraktikkan sholat berjamaah"],
+    [
+      251,
+      10,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      253,
+      10,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      254,
+      10,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [256, 11, "Akhlakul Karimah", "Akhlakul Karimah", "Lingkungan Sekitar"],
+    [257, 11, "Akhlakul Karimah", "Tata Krama", "Tata Krama tidur"],
+    [
+      259,
+      11,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "bentuk-bentuk ta’ (awal,tengah,akhir)"
+    ],
+    [
+      262,
+      11,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis Huruf sambung (didepan,tengah, dan belakang )"
+    ],
+    [264, 11, "Alim", "Hafalan Surat-surat", "Surat AL-asyr"],
+    [266, 11, "Alim", "Hafalan Doa-doa Harian", "Doa memakai pakaian"],
+    [270, 11, "Alim", "Materi Dasar Keagamaan", "Thoharoh dan sholat"],
+    [
+      272,
+      11,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [
+      273,
+      11,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui suci dan najis / thoharoh"
+    ],
+    [
+      275,
+      11,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [
+      276,
+      11,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan dzikir dan Do'a setiap selesai sholat"
+    ],
+    [
+      277,
+      11,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      279,
+      11,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      280,
+      11,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [282, 12, "Akhlakul Karimah", "Akhlakul Karimah", "Lingkungan Sekitar"],
+    [283, 12, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika menguap"],
+    [284, 12, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika bersin"],
+    [
+      285,
+      12,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "bentuk-bentuk ta’ (awal,tengah,akhir)"
+    ],
+    [
+      288,
+      12,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis Huruf sambung (didepan,tengah, dan belakang )"
+    ],
+    [290, 12, "Alim", "Hafalan Surat-surat", "Surat AL-asyr"],
+    [292, 12, "Alim", "Hafalan Doa-doa Harian", "Doa ketika berbuka puasa"],
+    [296, 12, "Alim", "Materi Dasar Keagamaan", "Puasa Ramadhan"],
+    [
+      298,
+      12,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [
+      299,
+      12,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui suci dan najis / thoharoh"
+    ],
+    [
+      301,
+      12,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [302, 12, "Faqih", "Praktik Ibadah", "Mempraktikkan puasa Romadhan"],
+    [
+      303,
+      12,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      305,
+      12,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      306,
+      12,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ]
+  ],
+  "ACR-2.xlsx": [
+    [7, 1, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      8,
+      1,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Ta'dhim dan Berbuat baik kepada orang tua"
+    ],
+    [
+      9,
+      1,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Cara membuat huruf - huruf yang bersukun"
+    ],
+    [10, 1, "Alim", "Menulis Huruf Arab", "Menulis Rangkaian Kata"],
+    [11, 1, "Alim", "Hafalan Surat-surat", "Surat AL-kautsar"],
+    [12, 1, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 60)"],
+    [13, 1, "Alim", "Materi Dasar Keagamaan", "Dasar- dasar aqidah"],
+    [
+      14,
+      1,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      15,
+      1,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kewajiban beribadah kepada Alloh berdasarkan Qur’an Hadist"
+    ],
+    [16, 1, "Faqih", "Faham Jamaah", "Mengetahui dan hafal Lima Bab"],
+    [
+      17,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      18,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [19, 1, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      20,
+      1,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [22, 2, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      23,
+      2,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Ta'dhim dan Berbuat baik kepada orang tua"
+    ],
+    [
+      25,
+      2,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Cara membuat huruf - huruf yang bersukun"
+    ],
+    [28, 2, "Alim", "Menulis Huruf Arab", "Menulis Rangkaian Kata"],
+    [30, 2, "Alim", "Hafalan Surat-surat", "Surat AL-kautsar"],
+    [32, 2, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 60)"],
+    [36, 2, "Alim", "Materi Dasar Keagamaan", "Dasar- dasar aqidah"],
+    [
+      38,
+      2,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      39,
+      2,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kewajiban beribadah kepada Alloh berdasarkan Qur’an Hadist"
+    ],
+    [41, 2, "Faqih", "Faham Jamaah", "Mengetahui dan hafal Lima Bab"],
+    [
+      42,
+      2,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      43,
+      2,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [45, 2, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      46,
+      2,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [48, 3, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      49,
+      3,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Menghormati saudara yang lebih tua dan menyayangi saudara yang lebih tua"
+    ],
+    [
+      50,
+      3,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama menghormati guru dan mubalegh mubaleghot"
+    ],
+    [
+      51,
+      3,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Cara membaca huruf huruf yang bertasydid"
+    ],
+    [54, 3, "Alim", "Menulis Huruf Arab", "Menulis Rangkaian Kata"],
+    [56, 3, "Alim", "Hafalan Surat-surat", "Surat AL-Maun"],
+    [58, 3, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 60)"],
+    [
+      62,
+      3,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Rukun iman, rukun Islam dan ihsan"
+    ],
+    [
+      64,
+      3,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [65, 3, "Faqih", "Faham Quran Hadist", "Mengetahui rukun iman"],
+    [
+      67,
+      3,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Empat Tali Keimanan"
+    ],
+    [
+      68,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      69,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      70,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [71, 3, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      72,
+      3,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [74, 4, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [
+      75,
+      4,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama bergaul dengan teman"
+    ],
+    [
+      77,
+      4,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Cara membaca huruf huruf yang bertasydid"
+    ],
+    [80, 4, "Alim", "Menulis Huruf Arab", "Menulis Rangkaian Kata"],
+    [82, 4, "Alim", "Hafalan Surat-surat", "Surat AL-Quraisy"],
+    [84, 4, "Alim", "Hafalan Doa-doa Harian", "Doa mohon kesabaran"],
+    [
+      88,
+      4,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Rukun iman, rukun Islam dan ihsan"
+    ],
+    [
+      90,
+      4,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [91, 4, "Faqih", "Faham Quran Hadist", "Mengetahui rukun islam"],
+    [
+      93,
+      4,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Empat Tali Keimanan"
+    ],
+    [
+      94,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      95,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      96,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [97, 4, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      98,
+      4,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [100, 5, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [101, 5, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika di masjid"],
+    [
+      103,
+      5,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan Bacaan Idgham Bighunnah"
+    ],
+    [106, 5, "Alim", "Menulis Huruf Arab", "Menulis Rangkaian Kata"],
+    [108, 5, "Alim", "Hafalan Surat-surat", "Surat AL-Fiil"],
+    [110, 5, "Alim", "Hafalan Doa-doa Harian", "Doa mohon kesabaran"],
+    [
+      114,
+      5,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengertian Qur'an Hadits Jamaah"
+    ],
+    [
+      116,
+      5,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [117, 5, "Faqih", "Faham Quran Hadist", "Mengetahui Quran Hadist Jamaah"],
+    [
+      119,
+      5,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      120,
+      5,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      121,
+      5,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [123, 5, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      124,
+      5,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [
+      126,
+      6,
+      "Akhlakul Karimah",
+      "Akhlakul Karimah",
+      "Ulil Amri, Guru dan Mubaligh -Mubalighot"
+    ],
+    [
+      127,
+      6,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama ketika di tempat pengajian dan sekolah"
+    ],
+    [
+      129,
+      6,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan Bacaan Idgham Bighunnah"
+    ],
+    [132, 6, "Alim", "Menulis Huruf Arab", "Menulis Rangkaian Kata"],
+    [134, 6, "Alim", "Hafalan Surat-surat", "Surat AL - Humazah"],
+    [136, 6, "Alim", "Hafalan Doa-doa Harian", "Doa mohon kesehatan"],
+    [
+      140,
+      6,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengertian Qur'an Hadits Jamaah"
+    ],
+    [
+      142,
+      6,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [143, 6, "Faqih", "Faham Quran Hadist", "Mengetahui Quran Hadist Jamaah"],
+    [
+      145,
+      6,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      146,
+      6,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan menjaga kesucian (mengenal suci najis)"
+    ],
+    [
+      147,
+      6,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [149, 6, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      150,
+      6,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [
+      152,
+      7,
+      "Akhlakul Karimah",
+      "Akhlakul Karimah",
+      "Ulil Amri, Guru dan Mubaligh -Mubalighot"
+    ],
+    [
+      153,
+      7,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama terhadap lingkungan dan alam sekitar"
+    ],
+    [
+      155,
+      7,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan Bacaan Idgham Bighunnah"
+    ],
+    [
+      158,
+      7,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis kata Arab baku / potongan ayat"
+    ],
+    [160, 7, "Alim", "Hafalan Surat-surat", "Surat AL-asyr"],
+    [162, 7, "Alim", "Hafalan Doa-doa Harian", "Doa mohon kesehatan"],
+    [
+      166,
+      7,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengetahuan wajibnya taat dan haromnya maksiat"
+    ],
+    [
+      168,
+      7,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [169, 7, "Faqih", "Faham Quran Hadist", "Mengetahui halal dan haram"],
+    [
+      171,
+      7,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [
+      172,
+      7,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan menjaga kesucian (mengenal suci najis)"
+    ],
+    [
+      173,
+      7,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [175, 7, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      176,
+      7,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [178, 8, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [179, 8, "Akhlakul Karimah", "Tata Krama", "Tata Krama terhadap ulil amri"],
+    [181, 8, "Alim", "Baca Huruf Al-Quran", "Melafalkan Bacaan Ikhfa"],
+    [
+      184,
+      8,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis kata Arab baku / potongan ayat"
+    ],
+    [186, 8, "Alim", "Hafalan Surat-surat", "Surat At -Takatsur"],
+    [188, 8, "Alim", "Hafalan Doa-doa Harian", "Doa ketika bersin"],
+    [
+      192,
+      8,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengetahuan wajibnya taat dan haromnya maksiat"
+    ],
+    [
+      194,
+      8,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [195, 8, "Faqih", "Faham Quran Hadist", "Mengetahui halal dan haram"],
+    [
+      197,
+      8,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [
+      198,
+      8,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara buang air kecil ( kencing ) dan air besar ( BAB )"
+    ],
+    [
+      199,
+      8,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [201, 8, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      202,
+      8,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [204, 9, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [
+      205,
+      9,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama bertamu/diajak bertamu dan kedatangan tamu"
+    ],
+    [207, 9, "Alim", "Baca Huruf Al-Quran", "Melafalkan Bacaan Ikhfa"],
+    [
+      210,
+      9,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis kata Arab baku / potongan ayat"
+    ],
+    [212, 9, "Alim", "Hafalan Surat-surat", "Surat At -Takatsur"],
+    [214, 9, "Alim", "Hafalan Doa-doa Harian", "Doa ketika bersin"],
+    [218, 9, "Alim", "Materi Dasar Keagamaan", "Pengetahuan hukum halal-harom"],
+    [
+      220,
+      9,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [221, 9, "Faqih", "Faham Quran Hadist", "Mengetahui taat dan maksiat"],
+    [
+      223,
+      9,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [
+      224,
+      9,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara mensucikan najis setelah kencing dan BAB"
+    ],
+    [
+      225,
+      9,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      227,
+      9,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      228,
+      9,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [230, 10, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [231, 10, "Akhlakul Karimah", "Tata Krama", "Tata Krama berpakaian"],
+    [233, 10, "Alim", "Baca Huruf Al-Quran", "Melafalkan Bacaan Ikhfa"],
+    [
+      236,
+      10,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis kata Arab baku / potongan ayat"
+    ],
+    [238, 10, "Alim", "Hafalan Surat-surat", "Surat AL- Qori'ah"],
+    [240, 10, "Alim", "Hafalan Doa-doa Harian", "Doa ketika ada angin kencang"],
+    [
+      244,
+      10,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengetahuan hukum halal-harom"
+    ],
+    [
+      246,
+      10,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [247, 10, "Faqih", "Faham Quran Hadist", "Mengetahui taat dan maksiat"],
+    [
+      249,
+      10,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [250, 10, "Faqih", "Praktik Ibadah", "Mempraktikkan sholat berjamaah"],
+    [
+      251,
+      10,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      253,
+      10,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      254,
+      10,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [256, 11, "Akhlakul Karimah", "Akhlakul Karimah", "Lingkungan Sekitar"],
+    [257, 11, "Akhlakul Karimah", "Tata Krama", "Tata Krama tidur"],
+    [259, 11, "Alim", "Baca Huruf Al-Quran", "Bacaan mad wajib dan Mad Jaiz"],
+    [
+      262,
+      11,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis kata Arab baku / potongan ayat"
+    ],
+    [264, 11, "Alim", "Hafalan Surat-surat", "Surat AL- 'Adiyat"],
+    [266, 11, "Alim", "Hafalan Doa-doa Harian", "Doa ketika ada angin kencang"],
+    [270, 11, "Alim", "Materi Dasar Keagamaan", "Thoharoh dan sholat"],
+    [
+      272,
+      11,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [
+      273,
+      11,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui suci dan najis / thoharoh"
+    ],
+    [
+      275,
+      11,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [
+      276,
+      11,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan dzikir dan Do'a setiap selesai sholat"
+    ],
+    [
+      277,
+      11,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      279,
+      11,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      280,
+      11,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [282, 12, "Akhlakul Karimah", "Akhlakul Karimah", "Lingkungan Sekitar"],
+    [283, 12, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika menguap"],
+    [284, 12, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika bersin"],
+    [285, 12, "Alim", "Baca Huruf Al-Quran", "Bacaan mad wajib dan Mad Jaiz"],
+    [
+      288,
+      12,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis kata Arab baku / potongan ayat"
+    ],
+    [290, 12, "Alim", "Hafalan Surat-surat", "Surat Az-Zalzalah"],
+    [292, 12, "Alim", "Hafalan Doa-doa Harian", "Doa ketika ada angin kencang"],
+    [296, 12, "Alim", "Materi Dasar Keagamaan", "Puasa Ramadhan"],
+    [
+      298,
+      12,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [
+      299,
+      12,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui suci dan najis / thoharoh"
+    ],
+    [
+      301,
+      12,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [302, 12, "Faqih", "Praktik Ibadah", "Mempraktikkan puasa Romadhan"],
+    [
+      303,
+      12,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      305,
+      12,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      306,
+      12,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ]
+  ],
+  "ACR-3.xlsx": [
+    [7, 1, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      8,
+      1,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Ta'dhim dan Berbuat baik kepada orang tua"
+    ],
+    [
+      9,
+      1,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Cara membuat huruf - huruf yang bersukun"
+    ],
+    [10, 1, "Alim", "Menulis Huruf Arab", "Menulis Rangkaian Kata"],
+    [11, 1, "Alim", "Hafalan Surat-surat", "Surat AL-kautsar"],
+    [12, 1, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 60)"],
+    [13, 1, "Alim", "Materi Dasar Keagamaan", "Dasar- dasar aqidah"],
+    [
+      14,
+      1,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      15,
+      1,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kewajiban beribadah kepada Alloh berdasarkan Qur’an Hadist"
+    ],
+    [16, 1, "Faqih", "Faham Jamaah", "Mengetahui dan hafal Lima Bab"],
+    [
+      17,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      18,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [19, 1, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      20,
+      1,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [22, 2, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      23,
+      2,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Ta'dhim dan Berbuat baik kepada orang tua"
+    ],
+    [
+      25,
+      2,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Cara membuat huruf - huruf yang bersukun"
+    ],
+    [28, 2, "Alim", "Menulis Huruf Arab", "Menulis Rangkaian Kata"],
+    [30, 2, "Alim", "Hafalan Surat-surat", "Surat AL-kautsar"],
+    [32, 2, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 60)"],
+    [36, 2, "Alim", "Materi Dasar Keagamaan", "Dasar- dasar aqidah"],
+    [
+      38,
+      2,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      39,
+      2,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kewajiban beribadah kepada Alloh berdasarkan Qur’an Hadist"
+    ],
+    [41, 2, "Faqih", "Faham Jamaah", "Mengetahui dan hafal Lima Bab"],
+    [
+      42,
+      2,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      43,
+      2,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [45, 2, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      46,
+      2,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [48, 3, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      49,
+      3,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Menghormati saudara yang lebih tua dan menyayangi saudara yang lebih tua"
+    ],
+    [
+      50,
+      3,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama menghormati guru dan mubalegh mubaleghot"
+    ],
+    [
+      51,
+      3,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Cara membaca huruf huruf yang bertasydid"
+    ],
+    [54, 3, "Alim", "Menulis Huruf Arab", "Menulis Rangkaian Kata"],
+    [56, 3, "Alim", "Hafalan Surat-surat", "Surat AL-Maun"],
+    [58, 3, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 60)"],
+    [
+      62,
+      3,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Rukun iman, rukun Islam dan ihsan"
+    ],
+    [
+      64,
+      3,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [65, 3, "Faqih", "Faham Quran Hadist", "Mengetahui rukun iman"],
+    [
+      67,
+      3,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Empat Tali Keimanan"
+    ],
+    [
+      68,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      69,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      70,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [71, 3, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      72,
+      3,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [74, 4, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [
+      75,
+      4,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama bergaul dengan teman"
+    ],
+    [
+      77,
+      4,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Cara membaca huruf huruf yang bertasydid"
+    ],
+    [80, 4, "Alim", "Menulis Huruf Arab", "Menulis Rangkaian Kata"],
+    [82, 4, "Alim", "Hafalan Surat-surat", "Surat AL-Quraisy"],
+    [84, 4, "Alim", "Hafalan Doa-doa Harian", "Doa mohon kesabaran"],
+    [
+      88,
+      4,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Rukun iman, rukun Islam dan ihsan"
+    ],
+    [
+      90,
+      4,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [91, 4, "Faqih", "Faham Quran Hadist", "Mengetahui rukun islam"],
+    [
+      93,
+      4,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Empat Tali Keimanan"
+    ],
+    [
+      94,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      95,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      96,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [97, 4, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      98,
+      4,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [100, 5, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [101, 5, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika di masjid"],
+    [
+      103,
+      5,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan Bacaan Idgham Bighunnah"
+    ],
+    [106, 5, "Alim", "Menulis Huruf Arab", "Menulis Rangkaian Kata"],
+    [108, 5, "Alim", "Hafalan Surat-surat", "Surat AL-Fiil"],
+    [110, 5, "Alim", "Hafalan Doa-doa Harian", "Doa mohon kesabaran"],
+    [
+      114,
+      5,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengertian Qur'an Hadits Jamaah"
+    ],
+    [
+      116,
+      5,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [117, 5, "Faqih", "Faham Quran Hadist", "Mengetahui Quran Hadist Jamaah"],
+    [
+      119,
+      5,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      120,
+      5,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      121,
+      5,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [123, 5, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      124,
+      5,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [
+      126,
+      6,
+      "Akhlakul Karimah",
+      "Akhlakul Karimah",
+      "Ulil Amri, Guru dan Mubaligh -Mubalighot"
+    ],
+    [
+      127,
+      6,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama ketika di tempat pengajian dan sekolah"
+    ],
+    [
+      129,
+      6,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan Bacaan Idgham Bighunnah"
+    ],
+    [132, 6, "Alim", "Menulis Huruf Arab", "Menulis Rangkaian Kata"],
+    [134, 6, "Alim", "Hafalan Surat-surat", "Surat AL - Humazah"],
+    [136, 6, "Alim", "Hafalan Doa-doa Harian", "Doa mohon kesehatan"],
+    [
+      140,
+      6,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengertian Qur'an Hadits Jamaah"
+    ],
+    [
+      142,
+      6,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [143, 6, "Faqih", "Faham Quran Hadist", "Mengetahui Quran Hadist Jamaah"],
+    [
+      145,
+      6,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      146,
+      6,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan menjaga kesucian (mengenal suci najis)"
+    ],
+    [
+      147,
+      6,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [149, 6, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      150,
+      6,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [
+      152,
+      7,
+      "Akhlakul Karimah",
+      "Akhlakul Karimah",
+      "Ulil Amri, Guru dan Mubaligh -Mubalighot"
+    ],
+    [
+      153,
+      7,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama terhadap lingkungan dan alam sekitar"
+    ],
+    [
+      155,
+      7,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan Bacaan Idgham Bighunnah"
+    ],
+    [
+      158,
+      7,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis kata Arab baku / potongan ayat"
+    ],
+    [160, 7, "Alim", "Hafalan Surat-surat", "Surat AL-asyr"],
+    [162, 7, "Alim", "Hafalan Doa-doa Harian", "Doa mohon kesehatan"],
+    [
+      166,
+      7,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengetahuan wajibnya taat dan haromnya maksiat"
+    ],
+    [
+      168,
+      7,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [169, 7, "Faqih", "Faham Quran Hadist", "Mengetahui halal dan haram"],
+    [
+      171,
+      7,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [
+      172,
+      7,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan menjaga kesucian (mengenal suci najis)"
+    ],
+    [
+      173,
+      7,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [175, 7, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      176,
+      7,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [178, 8, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [179, 8, "Akhlakul Karimah", "Tata Krama", "Tata Krama terhadap ulil amri"],
+    [181, 8, "Alim", "Baca Huruf Al-Quran", "Melafalkan Bacaan Ikhfa"],
+    [
+      184,
+      8,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis kata Arab baku / potongan ayat"
+    ],
+    [186, 8, "Alim", "Hafalan Surat-surat", "Surat At -Takatsur"],
+    [188, 8, "Alim", "Hafalan Doa-doa Harian", "Doa ketika bersin"],
+    [
+      192,
+      8,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengetahuan wajibnya taat dan haromnya maksiat"
+    ],
+    [
+      194,
+      8,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [195, 8, "Faqih", "Faham Quran Hadist", "Mengetahui halal dan haram"],
+    [
+      197,
+      8,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [
+      198,
+      8,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara buang air kecil ( kencing ) dan air besar ( BAB )"
+    ],
+    [
+      199,
+      8,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [201, 8, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      202,
+      8,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [204, 9, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [
+      205,
+      9,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama bertamu/diajak bertamu dan kedatangan tamu"
+    ],
+    [207, 9, "Alim", "Baca Huruf Al-Quran", "Melafalkan Bacaan Ikhfa"],
+    [
+      210,
+      9,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis kata Arab baku / potongan ayat"
+    ],
+    [212, 9, "Alim", "Hafalan Surat-surat", "Surat At -Takatsur"],
+    [214, 9, "Alim", "Hafalan Doa-doa Harian", "Doa ketika bersin"],
+    [218, 9, "Alim", "Materi Dasar Keagamaan", "Pengetahuan hukum halal-harom"],
+    [
+      220,
+      9,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [221, 9, "Faqih", "Faham Quran Hadist", "Mengetahui taat dan maksiat"],
+    [
+      223,
+      9,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [
+      224,
+      9,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara mensucikan najis setelah kencing dan BAB"
+    ],
+    [
+      225,
+      9,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      227,
+      9,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      228,
+      9,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [230, 10, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [231, 10, "Akhlakul Karimah", "Tata Krama", "Tata Krama berpakaian"],
+    [233, 10, "Alim", "Baca Huruf Al-Quran", "Melafalkan Bacaan Ikhfa"],
+    [
+      236,
+      10,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis kata Arab baku / potongan ayat"
+    ],
+    [238, 10, "Alim", "Hafalan Surat-surat", "Surat AL- Qori'ah"],
+    [240, 10, "Alim", "Hafalan Doa-doa Harian", "Doa ketika ada angin kencang"],
+    [
+      244,
+      10,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengetahuan hukum halal-harom"
+    ],
+    [
+      246,
+      10,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [247, 10, "Faqih", "Faham Quran Hadist", "Mengetahui taat dan maksiat"],
+    [
+      249,
+      10,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [250, 10, "Faqih", "Praktik Ibadah", "Mempraktikkan sholat berjamaah"],
+    [
+      251,
+      10,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      253,
+      10,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      254,
+      10,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [256, 11, "Akhlakul Karimah", "Akhlakul Karimah", "Lingkungan Sekitar"],
+    [257, 11, "Akhlakul Karimah", "Tata Krama", "Tata Krama tidur"],
+    [259, 11, "Alim", "Baca Huruf Al-Quran", "Bacaan mad wajib dan Mad Jaiz"],
+    [
+      262,
+      11,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis kata Arab baku / potongan ayat"
+    ],
+    [264, 11, "Alim", "Hafalan Surat-surat", "Surat AL- 'Adiyat"],
+    [266, 11, "Alim", "Hafalan Doa-doa Harian", "Doa ketika ada angin kencang"],
+    [270, 11, "Alim", "Materi Dasar Keagamaan", "Thoharoh dan sholat"],
+    [
+      272,
+      11,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [
+      273,
+      11,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui suci dan najis / thoharoh"
+    ],
+    [
+      275,
+      11,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [
+      276,
+      11,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan dzikir dan Do'a setiap selesai sholat"
+    ],
+    [
+      277,
+      11,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      279,
+      11,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      280,
+      11,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [282, 12, "Akhlakul Karimah", "Akhlakul Karimah", "Lingkungan Sekitar"],
+    [283, 12, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika menguap"],
+    [284, 12, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika bersin"],
+    [285, 12, "Alim", "Baca Huruf Al-Quran", "Bacaan mad wajib dan Mad Jaiz"],
+    [
+      288,
+      12,
+      "Alim",
+      "Menulis Huruf Arab",
+      "Menulis kata Arab baku / potongan ayat"
+    ],
+    [290, 12, "Alim", "Hafalan Surat-surat", "Surat Az-Zalzalah"],
+    [292, 12, "Alim", "Hafalan Doa-doa Harian", "Doa ketika ada angin kencang"],
+    [296, 12, "Alim", "Materi Dasar Keagamaan", "Puasa Ramadhan"],
+    [
+      298,
+      12,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [
+      299,
+      12,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui suci dan najis / thoharoh"
+    ],
+    [
+      301,
+      12,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [302, 12, "Faqih", "Praktik Ibadah", "Mempraktikkan puasa Romadhan"],
+    [
+      303,
+      12,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      305,
+      12,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      306,
+      12,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ]
+  ],
+  "ACR-5.xlsx": [
+    [7, 1, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      8,
+      1,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Ta'dhim dan Berbuat baik kepada orang tua"
+    ],
+    [
+      9,
+      1,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan Huruf berharokat Fathah, kasroh, dlomah dan Tanwin"
+    ],
+    [10, 1, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 3 dan 4"],
+    [
+      11,
+      1,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 3 dan 4"
+    ],
+    [12, 1, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [13, 1, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [14, 1, "Alim", "Hafalan Surat-surat", "Surat Ad-Dhuha"],
+    [
+      15,
+      1,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat An-Nas, Al-Falaq, Al-Ikhlas, Al-Lahab"
+    ],
+    [16, 1, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [17, 1, "Alim", "Hafalan Doa-doa Harian", "Doa ketika berbuka puasa"],
+    [18, 1, "Alim", "Hafalan Doa-doa Harian", "Doa mohon kesabaran"],
+    [
+      19,
+      1,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a minta dimudahkan dalam segala urusan"
+    ],
+    [
+      20,
+      1,
+      "Alim",
+      "Hafalan Dalil-dalil",
+      "Kewajiban beribadah kepada Alloh, beragama islam, dan menetapi QHJ"
+    ],
+    [21, 1, "Alim", "Materi Dasar Keagamaan", "Dasar- dasar aqidah"],
+    [
+      22,
+      1,
+      "Alim",
+      "Latihan Manqul Al-Quran",
+      "Makna Juz 30 (Surat Al-Balad s/d Surat An-Nas)"
+    ],
+    [
+      24,
+      1,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      25,
+      1,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kewajiban beribadah kepada Alloh berdasarkan Qur’an Hadist"
+    ],
+    [27, 1, "Faqih", "Faham Jamaah", "Mengetahui dan hafal Lima Bab"],
+    [
+      28,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      29,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      30,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [31, 1, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      32,
+      1,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [34, 2, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      35,
+      2,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Menghormati saudara yang lebih tua dan menyayangi saudara yang lebih tua"
+    ],
+    [37, 2, "Alim", "Baca Huruf Al-Quran", "Melafalkan bacaan Panjang 1 Alif"],
+    [38, 2, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 3 dan 4"],
+    [
+      39,
+      2,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 3 dan 4"
+    ],
+    [40, 2, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [41, 2, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [42, 2, "Alim", "Hafalan Surat-surat", "Surat Ad-Dhuha"],
+    [
+      43,
+      2,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat An-Nashr, Al-Kafirun, Al-Maun, Al-Quraisy"
+    ],
+    [44, 2, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [45, 2, "Alim", "Hafalan Doa-doa Harian", "Doa mohon kesehatan"],
+    [46, 2, "Alim", "Hafalan Doa-doa Harian", "Doa ketika bersin"],
+    [
+      47,
+      2,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a minta dimudahkan dalam segala urusan"
+    ],
+    [
+      48,
+      2,
+      "Alim",
+      "Hafalan Dalil-dalil",
+      "Kewajiban beribadah kepada Alloh, beragama islam, dan menetapi QHJ"
+    ],
+    [
+      49,
+      2,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Rukun iman, rukun Islam dan ihsan"
+    ],
+    [
+      51,
+      2,
+      "Alim",
+      "Latihan Manqul Al-Quran",
+      "Makna Juz 30 (Surat Al-Balad s/d Surat An-Nas)"
+    ],
+    [
+      53,
+      2,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [54, 2, "Faqih", "Faham Quran Hadist", "Mengetahui rukun iman"],
+    [
+      56,
+      2,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Empat Tali Keimanan"
+    ],
+    [
+      57,
+      2,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan menjaga kesucian (mengenal suci najis)"
+    ],
+    [
+      58,
+      2,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [60, 2, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      61,
+      2,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [63, 3, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      64,
+      3,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama menghormati guru dan mubalegh mubaleghot"
+    ],
+    [
+      66,
+      3,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "bentuk-bentuk ta’ (awal,tengah,akhir)"
+    ],
+    [67, 3, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 3 dan 4"],
+    [
+      68,
+      3,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 3 dan 4"
+    ],
+    [69, 3, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [70, 3, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [71, 3, "Alim", "Hafalan Surat-surat", "Surat Ad-Dhuha"],
+    [
+      72,
+      3,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Al-Fil, Al-Humazah, Al-Ashr"
+    ],
+    [73, 3, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [74, 3, "Alim", "Hafalan Doa-doa Harian", "Doa ketika ada angin kencang"],
+    [
+      75,
+      3,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a ketika menjenguk orang yang sakit"
+    ],
+    [
+      76,
+      3,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a minta dipilihkan sesuatu yang baik"
+    ],
+    [
+      77,
+      3,
+      "Alim",
+      "Hafalan Dalil-dalil",
+      "Kewajiban beribadah kepada Alloh, beragama islam, dan menetapi QHJ"
+    ],
+    [
+      78,
+      3,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengertian Qur'an Hadits Jamaah"
+    ],
+    [
+      80,
+      3,
+      "Alim",
+      "Latihan Manqul Al-Quran",
+      "Makna Juz 30 (Surat Al-Balad s/d Surat An-Nas)"
+    ],
+    [
+      82,
+      3,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [83, 3, "Faqih", "Faham Quran Hadist", "Mengetahui rukun islam"],
+    [
+      85,
+      3,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      86,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara buang air kecil ( kencing ) dan air besar ( BAB )"
+    ],
+    [
+      87,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [89, 3, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      90,
+      3,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [92, 4, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [
+      93,
+      4,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama bergaul dengan teman"
+    ],
+    [
+      95,
+      4,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Cara membuat huruf - huruf yang bersukun"
+    ],
+    [96, 4, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 3 dan 4"],
+    [
+      97,
+      4,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 3 dan 4"
+    ],
+    [98, 4, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [99, 4, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [100, 4, "Alim", "Hafalan Surat-surat", "Surat Al-lail"],
+    [
+      101,
+      4,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat At-Takatsur, Al-Qori’ah, Al-‘Adiyat"
+    ],
+    [102, 4, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [
+      103,
+      4,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a ketika memakai pakaian baru"
+    ],
+    [104, 4, "Alim", "Hafalan Doa-doa Harian", "Do'a ketika naik kendaraan"],
+    [
+      105,
+      4,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a minta dipilihkan sesuatu yang baik"
+    ],
+    [
+      106,
+      4,
+      "Alim",
+      "Hafalan Dalil-dalil",
+      "Kewajiban beribadah kepada Alloh, beragama islam, dan menetapi QHJ"
+    ],
+    [
+      107,
+      4,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengetahuan wajibnya taat dan haromnya maksiat"
+    ],
+    [108, 4, "Alim", "Materi Dasar Keagamaan", "Pengetahuan hukum halal-harom"],
+    [
+      109,
+      4,
+      "Alim",
+      "Latihan Manqul Al-Quran",
+      "Makna Juz 30 (Surat Al-Balad s/d Surat An-Nas)"
+    ],
+    [
+      111,
+      4,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui tujuan ibadah (mencari surga dan selamat dari neraka)"
+    ],
+    [112, 4, "Faqih", "Faham Quran Hadist", "Mengetahui Quran Hadist Jamaah"],
+    [
+      114,
+      4,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      115,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara mensucikan najis setelah kencing dan BAB"
+    ],
+    [
+      116,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [118, 4, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      119,
+      4,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [121, 5, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [122, 5, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika di masjid"],
+    [
+      123,
+      5,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama ketika di tempat pengajian dan sekolah"
+    ],
+    [
+      124,
+      5,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Cara membaca huruf huruf yang bertasydid"
+    ],
+    [125, 5, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 3 dan 4"],
+    [
+      126,
+      5,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 3 dan 4"
+    ],
+    [127, 5, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [128, 5, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [129, 5, "Alim", "Hafalan Surat-surat", "Surat Al-lail"],
+    [
+      130,
+      5,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Al-Zalzalah, Al-Bayyinah"
+    ],
+    [131, 5, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [132, 5, "Alim", "Hafalan Doa-doa Harian", "Doa lailatul qodar"],
+    [133, 5, "Alim", "Hafalan Doa-doa Harian", "Doa ketika masuk pasar"],
+    [
+      134,
+      5,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a minta 10 kebaikan (tetapnya iman, hati yang khusyuk, tegaknya agamaa, dll)"
+    ],
+    [135, 5, "Alim", "Hafalan Dalil-dalil", "Lima Bab"],
+    [136, 5, "Alim", "Materi Dasar Keagamaan", "Thoharoh dan sholat"],
+    [137, 5, "Alim", "Materi Dasar Keagamaan", "Sholat sunah rowatib dan Duha"],
+    [
+      138,
+      5,
+      "Alim",
+      "Latihan Manqul Al-Quran",
+      "Makna Juz 30 (Surat Al-Balad s/d Surat An-Nas)"
+    ],
+    [
+      140,
+      5,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui tentang sakdermo karena Alloh"
+    ],
+    [141, 5, "Faqih", "Faham Quran Hadist", "Mengetahui halal dan haram"],
+    [
+      143,
+      5,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [144, 5, "Faqih", "Praktik Ibadah", "Mempraktikkan sholat berjamaah"],
+    [
+      145,
+      5,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan dzikir dan Do'a setiap selesai sholat"
+    ],
+    [
+      146,
+      5,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [147, 5, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      148,
+      5,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [
+      150,
+      6,
+      "Akhlakul Karimah",
+      "Akhlakul Karimah",
+      "Ulil Amri, Guru dan Mubaligh -Mubalighot"
+    ],
+    [
+      151,
+      6,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama terhadap lingkungan dan alam sekitar"
+    ],
+    [152, 6, "Akhlakul Karimah", "Tata Krama", "Tata Krama terhadap ulil amri"],
+    [
+      153,
+      6,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan Bacaan Idgham Bighunnah"
+    ],
+    [154, 6, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 3 dan 4"],
+    [
+      155,
+      6,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 3 dan 4"
+    ],
+    [156, 6, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [157, 6, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [158, 6, "Alim", "Hafalan Surat-surat", "Surat Al-lail"],
+    [
+      159,
+      6,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Al-Qadar, Al-‘Alaq, At-Tin. Al-Insyiroh"
+    ],
+    [160, 6, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [161, 6, "Alim", "Hafalan Doa-doa Harian", "Doa berlindung dari syirik"],
+    [
+      162,
+      6,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a minta 10 kebaikan (tetapnya iman, hati yang khusyuk, tegaknya agamaa, dll)"
+    ],
+    [164, 6, "Alim", "Hafalan Dalil-dalil", "Lima Bab"],
+    [165, 6, "Alim", "Materi Dasar Keagamaan", "Puasa Ramadhan"],
+    [
+      166,
+      6,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Kefadholan puasa dan hal-hal yang diperbolehkan serta membatalkan puasa"
+    ],
+    [
+      167,
+      6,
+      "Alim",
+      "Latihan Manqul Al-Quran",
+      "Makna Juz 30 (Surat Al-Balad s/d Surat An-Nas)"
+    ],
+    [
+      169,
+      6,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [170, 6, "Faqih", "Faham Quran Hadist", "Mengetahui taat dan maksiat"],
+    [
+      171,
+      6,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui tentang macam-macam dosa besar dan akibatnya"
+    ],
+    [
+      172,
+      6,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [173, 6, "Faqih", "Praktik Ibadah", "Mempraktikkan puasa Romadhan"],
+    [
+      174,
+      6,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [176, 6, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      177,
+      6,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [
+      179,
+      7,
+      "Akhlakul Karimah",
+      "Akhlakul Karimah",
+      "Ulil Amri, Guru dan Mubaligh -Mubalighot"
+    ],
+    [
+      180,
+      7,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama bertamu/diajak bertamu dan kedatangan tamu"
+    ],
+    [181, 7, "Akhlakul Karimah", "Tata Krama", "Tata Krama berpakaian"],
+    [
+      182,
+      7,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Melafalkan Bacaan Idgham Bighunnah"
+    ],
+    [183, 7, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 5 dan 6"],
+    [
+      184,
+      7,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 5 dan 6"
+    ],
+    [185, 7, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [186, 7, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [187, 7, "Alim", "Hafalan Surat-surat", "Surat As-Syams"],
+    [
+      188,
+      7,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat An-Nas, Al-Falaq, Al-Ikhlas, Al-Lahab"
+    ],
+    [189, 7, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [
+      190,
+      7,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Doa berlindung dari siksa kubur"
+    ],
+    [191, 7, "Alim", "Hafalan Doa-doa Harian", "Do'a sujud al-Qur'an"],
+    [
+      192,
+      7,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a minta 10 kebaikan (tetapnya iman, hati yang khusyuk, tegaknya agamaa, dll)"
+    ],
+    [193, 7, "Alim", "Hafalan Dalil-dalil", "Lima Bab"],
+    [194, 7, "Alim", "Materi Dasar Keagamaan", "Kemurniah Ibadah"],
+    [
+      197,
+      7,
+      "Alim",
+      "Latihan Manqul Hadist",
+      "Makna K.Sholah (Hadist pilihan : Bab Thoharoh, Sholat, Bab Dzikir sesudah sholat)"
+    ],
+    [
+      198,
+      7,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [
+      199,
+      7,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui suci dan najis / thoharoh"
+    ],
+    [
+      201,
+      7,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [202, 7, "Faqih", "Praktik Ibadah", "Mempraktikan sholat sunah rowatib"],
+    [203, 7, "Faqih", "Praktik Ibadah", "Mempraktikan sholat dhuha"],
+    [
+      204,
+      7,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [205, 7, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      206,
+      7,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [208, 8, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [209, 8, "Akhlakul Karimah", "Tata Krama", "Tata Krama tidur"],
+    [210, 8, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika menguap"],
+    [211, 8, "Alim", "Baca Huruf Al-Quran", "Melafalkan Bacaan Ikhfa"],
+    [212, 8, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 5 dan 6"],
+    [
+      213,
+      8,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 5 dan 6"
+    ],
+    [214, 8, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [215, 8, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [216, 8, "Alim", "Hafalan Surat-surat", "Surat As-Syams"],
+    [
+      217,
+      8,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat An-Nashr, Al-Kafirun, Al-Maun, Al-Quraisy"
+    ],
+    [218, 8, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [219, 8, "Alim", "Hafalan Doa-doa Harian", "Kumpulan do'a Nabi Muhammad"],
+    [220, 8, "Alim", "Hafalan Doa-doa Harian", "Do'a ketika ada petir"],
+    [222, 8, "Alim", "Hafalan Dalil-dalil", "Lima Bab"],
+    [223, 8, "Alim", "Materi Dasar Keagamaan", "Hukum Mahrom"],
+    [
+      226,
+      8,
+      "Alim",
+      "Latihan Manqul Hadist",
+      "Makna K.Sholah (Hadist pilihan : Bab Thoharoh, Sholat, Bab Dzikir sesudah sholat)"
+    ],
+    [
+      227,
+      8,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [228, 8, "Faqih", "Faham Quran Hadist", "Mengetahui batas-batas mahrom"],
+    [
+      230,
+      8,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [
+      231,
+      8,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikan menjaga pergaulan antara laki-laki dan perempuan yg bukan mahromnya"
+    ],
+    [
+      232,
+      8,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [234, 8, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      235,
+      8,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [237, 9, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [238, 9, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika bersin"],
+    [239, 9, "Akhlakul Karimah", "Tata Krama", "Tata Krama terhadap kerabat"],
+    [240, 9, "Alim", "Baca Huruf Al-Quran", "Melafalkan Bacaan Ikhfa"],
+    [241, 9, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 5 dan 6"],
+    [
+      242,
+      9,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 5 dan 6"
+    ],
+    [243, 9, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [244, 9, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [245, 9, "Alim", "Hafalan Surat-surat", "Surat As-Syams"],
+    [
+      246,
+      9,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Al-Fil, Al-Humazah, Al-Ashr"
+    ],
+    [247, 9, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [
+      248,
+      9,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a berlindung dari sifat munafiq"
+    ],
+    [249, 9, "Alim", "Hafalan Doa-doa Harian", "Do'a ketika ada petir"],
+    [251, 9, "Alim", "Hafalan Dalil-dalil", "Empat Tali Keimanan"],
+    [252, 9, "Alim", "Materi Dasar Keagamaan", "Ilmu manqul musnad muttashil"],
+    [
+      255,
+      9,
+      "Alim",
+      "Latihan Manqul Hadist",
+      "Makna K.Sholah (Hadist pilihan : Bab Thoharoh, Sholat, Bab Dzikir sesudah sholat)"
+    ],
+    [
+      256,
+      9,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui tujuan ibadah (mencari surga dan selamat dari neraka)"
+    ],
+    [
+      257,
+      9,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kemurnian ibadah berdasarkan al-Qur'an dan al-Hadits"
+    ],
+    [
+      259,
+      9,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui struktur kepengurusan dalam jamaah"
+    ],
+    [260, 9, "Faqih", "Praktik Ibadah", "Mempraktikan mandi Junub"],
+    [
+      261,
+      9,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      263,
+      9,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      264,
+      9,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [266, 10, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [267, 10, "Akhlakul Karimah", "Tata Krama", "Tata Krama terhadap tetangga"],
+    [268, 10, "Akhlakul Karimah", "Tata Krama", "Tata Krama bersepeda"],
+    [269, 10, "Alim", "Baca Huruf Al-Quran", "Bacaan mad wajib dan Mad Jaiz"],
+    [270, 10, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 5 dan 6"],
+    [
+      271,
+      10,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 5 dan 6"
+    ],
+    [272, 10, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [273, 10, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [274, 10, "Alim", "Hafalan Surat-surat", "Surat Al-Balad"],
+    [
+      275,
+      10,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat At-Takatsur, Al-Qori’ah, Al-‘Adiyat"
+    ],
+    [276, 10, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [277, 10, "Alim", "Hafalan Doa-doa Harian", "Doa agar bisa bersyukur"],
+    [
+      278,
+      10,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Doa perlindungan dari bencana"
+    ],
+    [280, 10, "Alim", "Hafalan Dalil-dalil", "Empat Tali Keimanan"],
+    [281, 10, "Alim", "Materi Dasar Keagamaan", "Mandi Junub"],
+    [
+      284,
+      10,
+      "Alim",
+      "Latihan Manqul Hadist",
+      "Makna K.Sholah (Hadist pilihan : Bab Thoharoh, Sholat, Bab Dzikir sesudah sholat)"
+    ],
+    [
+      285,
+      10,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui tentang sakdermo karena Alloh"
+    ],
+    [
+      286,
+      10,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui ilmu manqul musnad muttashil"
+    ],
+    [
+      288,
+      10,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui struktur kepengurusan dalam jamaah"
+    ],
+    [
+      289,
+      10,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikan membiasakan berpakaian yang syar'i"
+    ],
+    [
+      290,
+      10,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      292,
+      10,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      293,
+      10,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [295, 11, "Akhlakul Karimah", "Akhlakul Karimah", "Lingkungan Sekitar"],
+    [
+      296,
+      11,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama ketika makan bersama"
+    ],
+    [298, 11, "Alim", "Baca Huruf Al-Quran", "Bacaan mad wajib dan Mad Jaiz"],
+    [299, 11, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 5 dan 6"],
+    [
+      300,
+      11,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 5 dan 6"
+    ],
+    [301, 11, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [302, 11, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [303, 11, "Alim", "Hafalan Surat-surat", "Surat Al-Balad"],
+    [
+      304,
+      11,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Al-Zalzalah, Al-Bayyinah"
+    ],
+    [305, 11, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [
+      306,
+      11,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Doa berlindung dari jeleknya pendengaran, penglihatan, dan ucapan"
+    ],
+    [
+      307,
+      11,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Doa perlindungan dari bencana"
+    ],
+    [309, 11, "Alim", "Hafalan Dalil-dalil", "Empat Tali Keimanan"],
+    [
+      310,
+      11,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Hukum haid, mani, madzi, dan wadhi"
+    ],
+    [
+      313,
+      11,
+      "Alim",
+      "Latihan Manqul Hadist",
+      "Makna K.Sholah (Hadist pilihan : Bab Thoharoh, Sholat, Bab Dzikir sesudah sholat)"
+    ],
+    [
+      314,
+      11,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      315,
+      11,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui hukum dan permasalahan haid, mani, madzi, wahdi"
+    ],
+    [
+      317,
+      11,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya Budi Luhur"
+    ],
+    [
+      318,
+      11,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan menjaga diri dari lahan, kemaksiyatan, dan keharoman"
+    ],
+    [
+      319,
+      11,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      321,
+      11,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      322,
+      11,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [324, 12, "Akhlakul Karimah", "Akhlakul Karimah", "Lingkungan Sekitar"],
+    [325, 12, "Akhlakul Karimah", "Tata Krama", "Tata Krama mencari ilmu"],
+    [327, 12, "Alim", "Baca Huruf Al-Quran", "Bacaan mad wajib dan Mad Jaiz"],
+    [328, 12, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 5 dan 6"],
+    [
+      329,
+      12,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 5 dan 6"
+    ],
+    [330, 12, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [331, 12, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [332, 12, "Alim", "Hafalan Surat-surat", "Surat Al-Balad"],
+    [
+      333,
+      12,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Al-Qadar, Al-‘Alaq, At-Tin. Al-Insyiroh"
+    ],
+    [334, 12, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [
+      335,
+      12,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Doa berlindung dari sifat pelit dan penakut"
+    ],
+    [
+      336,
+      12,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Doa perlindungan dari bencana"
+    ],
+    [338, 12, "Alim", "Hafalan Dalil-dalil", "Empat Tali Keimanan"],
+    [339, 12, "Alim", "Materi Dasar Keagamaan", "Aurot"],
+    [
+      342,
+      12,
+      "Alim",
+      "Latihan Manqul Hadist",
+      "Makna K.Sholah (Hadist pilihan : Bab Thoharoh, Sholat, Bab Dzikir sesudah sholat)"
+    ],
+    [
+      343,
+      12,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [
+      344,
+      12,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui haromnya bid'ah, syirik, khurofat, takhayyul"
+    ],
+    [
+      345,
+      12,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui haromnya adat jahiliyah"
+    ],
+    [346, 12, "Faqih", "Faham Jamaah", "Mengetahui 5 Syarat Kerukunan"],
+    [
+      347,
+      12,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan do'a dan sholat malam /sholat tahajjud"
+    ],
+    [
+      348,
+      12,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      350,
+      12,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      351,
+      12,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ]
+  ],
+  "ACR-6.xlsx": [
+    [7, 1, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      8,
+      1,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Ta'dhim dan Berbuat baik kepada orang tua"
+    ],
+    [9, 1, "Alim", "Baca Huruf Al-Quran", "Cara membaca Qolqolah"],
+    [10, 1, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 7 dan 8"],
+    [
+      11,
+      1,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 7 dan 8"
+    ],
+    [12, 1, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [13, 1, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [14, 1, "Alim", "Hafalan Surat-surat", "Surat Al-Fajr"],
+    [
+      15,
+      1,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat An-Nas, Al-Falaq, Al-Ikhlas, Al-Lahab"
+    ],
+    [16, 1, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [
+      17,
+      1,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a ketika menjenguk orang yang sakit"
+    ],
+    [
+      18,
+      1,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a ketika memakai pakaian baru"
+    ],
+    [
+      19,
+      1,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a perlidungan dari penganiayaan"
+    ],
+    [
+      20,
+      1,
+      "Alim",
+      "Hafalan Dalil-dalil",
+      "Kewajiban beribadah kepada Alloh, beragama islam, dan menetapi QHJ"
+    ],
+    [21, 1, "Alim", "Materi Dasar Keagamaan", "Dasar- dasar aqidah"],
+    [
+      22,
+      1,
+      "Alim",
+      "Latihan Manqul Al-Quran",
+      "Makna Pegon Juz 30 (Surat An-Naba' s/d Al-Fajr)"
+    ],
+    [
+      24,
+      1,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      25,
+      1,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kewajiban beribadah kepada Alloh berdasarkan Qur’an Hadist"
+    ],
+    [26, 1, "Faqih", "Faham Jamaah", "Mengetahui dan hafal Lima Bab"],
+    [
+      27,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      28,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      29,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [30, 1, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      34,
+      1,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [36, 2, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [
+      37,
+      2,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Menghormati saudara yang lebih tua dan menyayangi saudara yang lebih tua"
+    ],
+    [39, 2, "Alim", "Baca Huruf Al-Quran", "Cara membaca Iqlab"],
+    [40, 2, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 7 dan 8"],
+    [
+      41,
+      2,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 7 dan 8"
+    ],
+    [42, 2, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [43, 2, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [44, 2, "Alim", "Hafalan Surat-surat", "Surat Al-Fajr"],
+    [
+      45,
+      2,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat An-Nashr, Al-Kafirun, Al-Maun, Al-Quraisy"
+    ],
+    [46, 2, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [47, 2, "Alim", "Hafalan Doa-doa Harian", "Do'a ketika naik kendaraan"],
+    [48, 2, "Alim", "Hafalan Doa-doa Harian", "Doa lailatul qodar"],
+    [
+      49,
+      2,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a perlidungan dari penganiayaan"
+    ],
+    [
+      50,
+      2,
+      "Alim",
+      "Hafalan Dalil-dalil",
+      "Kewajiban beribadah kepada Alloh, beragama islam, dan menetapi QHJ"
+    ],
+    [
+      51,
+      2,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Rukun iman, rukun Islam dan ihsan"
+    ],
+    [
+      53,
+      2,
+      "Alim",
+      "Latihan Manqul Al-Quran",
+      "Makna Pegon Juz 30 (Surat An-Naba' s/d Al-Fajr)"
+    ],
+    [
+      55,
+      2,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [56, 2, "Faqih", "Faham Quran Hadist", "Mengetahui rukun iman"],
+    [
+      58,
+      2,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Empat Tali Keimanan"
+    ],
+    [
+      59,
+      2,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan menjaga kesucian (mengenal suci najis)"
+    ],
+    [
+      60,
+      2,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [62, 2, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      66,
+      2,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [
+      68,
+      3,
+      "Akhlakul Karimah",
+      "Akhlakul Karimah",
+      "Ulil Amri, Guru dan Mubaligh -Mubalighot"
+    ],
+    [
+      69,
+      3,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama menghormati guru dan mubalegh mubaleghot"
+    ],
+    [71, 3, "Alim", "Baca Huruf Al-Quran", "Bacaan Idhar, Idghom Bila Ghunnah"],
+    [72, 3, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 7 dan 8"],
+    [
+      73,
+      3,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 7 dan 8"
+    ],
+    [74, 3, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [75, 3, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [76, 3, "Alim", "Hafalan Surat-surat", "Surat Al-Fajr"],
+    [
+      77,
+      3,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Al-Fil, Al-Humazah, Al-Ashr"
+    ],
+    [78, 3, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [79, 3, "Alim", "Hafalan Doa-doa Harian", "Doa ketika masuk pasar"],
+    [80, 3, "Alim", "Hafalan Doa-doa Harian", "Doa berlindung dari syirik"],
+    [
+      81,
+      3,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a ketika takut pada orang kafir"
+    ],
+    [82, 3, "Alim", "Hafalan Dalil-dalil", "Tri Sukses Generus"],
+    [
+      83,
+      3,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengertian Qur'an Hadits Jamaah"
+    ],
+    [
+      85,
+      3,
+      "Alim",
+      "Latihan Manqul Al-Quran",
+      "Makna Pegon Juz 30 (Surat An-Naba' s/d Al-Fajr)"
+    ],
+    [
+      87,
+      3,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [88, 3, "Faqih", "Faham Quran Hadist", "Mengetahui rukun islam"],
+    [
+      90,
+      3,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      91,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara buang air kecil ( kencing ) dan air besar ( BAB )"
+    ],
+    [
+      92,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [94, 3, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      98,
+      3,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [100, 4, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [
+      101,
+      4,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama bergaul dengan teman"
+    ],
+    [
+      103,
+      4,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Bacaan mad Lazim Mutsaqqol Kalimi dan mad Lazim Muhoffaf Harfi"
+    ],
+    [104, 4, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 7 dan 8"],
+    [
+      105,
+      4,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 7 dan 8"
+    ],
+    [106, 4, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [107, 4, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [108, 4, "Alim", "Hafalan Surat-surat", "Surat Al-Ghasiyyah"],
+    [
+      109,
+      4,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat At-Takatsur, Al-Qori’ah, Al-‘Adiyat"
+    ],
+    [110, 4, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [
+      111,
+      4,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Doa berlindung dari siksa kubur"
+    ],
+    [112, 4, "Alim", "Hafalan Doa-doa Harian", "Do'a sujud al-Qur'an"],
+    [
+      113,
+      4,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a ketika bertempat di tempat yang baru"
+    ],
+    [114, 4, "Alim", "Hafalan Dalil-dalil", "Tri Sukses Generus"],
+    [
+      115,
+      4,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengetahuan wajibnya taat dan haromnya maksiat"
+    ],
+    [116, 4, "Alim", "Materi Dasar Keagamaan", "Pengetahuan hukum halal-harom"],
+    [
+      117,
+      4,
+      "Alim",
+      "Latihan Manqul Al-Quran",
+      "Makna Pegon Juz 30 (Surat An-Naba' s/d Al-Fajr)"
+    ],
+    [
+      119,
+      4,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui tujuan ibadah (mencari surga dan selamat dari neraka)"
+    ],
+    [120, 4, "Faqih", "Faham Quran Hadist", "Mengetahui Quran Hadist Jamaah"],
+    [
+      122,
+      4,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      123,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara mensucikan najis setelah kencing dan BAB"
+    ],
+    [
+      124,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [126, 4, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      130,
+      4,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [132, 5, "Akhlakul Karimah", "Akhlakul Karimah", "Lingkungan Sekitar"],
+    [133, 5, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika di masjid"],
+    [
+      134,
+      5,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama ketika di tempat pengajian dan sekolah"
+    ],
+    [135, 5, "Alim", "Baca Huruf Al-Quran", "Tanda-tanda Waqof"],
+    [136, 5, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 7 dan 8"],
+    [
+      137,
+      5,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 7 dan 8"
+    ],
+    [138, 5, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [139, 5, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [140, 5, "Alim", "Hafalan Surat-surat", "Surat Al-Ghasiyyah"],
+    [
+      141,
+      5,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Al-Zalzalah, Al-Bayyinah"
+    ],
+    [142, 5, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [143, 5, "Alim", "Hafalan Doa-doa Harian", "Kumpulan do'a Nabi Muhammad"],
+    [
+      144,
+      5,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a berlindung dari sifat munafiq"
+    ],
+    [
+      145,
+      5,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a ketika mimpi yang baik dan jelek"
+    ],
+    [146, 5, "Alim", "Hafalan Dalil-dalil", "Lima Bab"],
+    [147, 5, "Alim", "Materi Dasar Keagamaan", "Thoharoh dan sholat"],
+    [148, 5, "Alim", "Materi Dasar Keagamaan", "Sholat sunah rowatib dan Duha"],
+    [
+      149,
+      5,
+      "Alim",
+      "Latihan Manqul Al-Quran",
+      "Makna Pegon Juz 30 (Surat An-Naba' s/d Al-Fajr)"
+    ],
+    [
+      151,
+      5,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui tentang sakdermo karena Alloh"
+    ],
+    [152, 5, "Faqih", "Faham Quran Hadist", "Mengetahui halal dan haram"],
+    [
+      154,
+      5,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [155, 5, "Faqih", "Praktik Ibadah", "Mempraktikkan sholat berjamaah"],
+    [
+      156,
+      5,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan dzikir dan Do'a setiap selesai sholat"
+    ],
+    [
+      157,
+      5,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [158, 5, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      162,
+      5,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [164, 6, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      165,
+      6,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama terhadap lingkungan dan alam sekitar"
+    ],
+    [166, 6, "Akhlakul Karimah", "Tata Krama", "Tata Krama terhadap ulil amri"],
+    [
+      167,
+      6,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Membaca Surat-surat Pendek Mulai Surat Ad-Dhuha s/d An-Anas"
+    ],
+    [168, 6, "Alim", "Baca Huruf Al-Quran", "Bacaan Al-Quran juz 7 dan 8"],
+    [
+      169,
+      6,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 7 dan 8"
+    ],
+    [170, 6, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [171, 6, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [172, 6, "Alim", "Hafalan Surat-surat", "Surat Al-Ghasiyyah"],
+    [
+      173,
+      6,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Al-Qadar, Al-‘Alaq, At-Tin. Al-Insyiroh"
+    ],
+    [174, 6, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [175, 6, "Alim", "Hafalan Doa-doa Harian", "Doa agar bisa bersyukur"],
+    [
+      176,
+      6,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Doa berlindung dari jeleknya pendengaran, penglihatan, dan ucapan"
+    ],
+    [
+      177,
+      6,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a ketika mimpi yang baik dan jelek"
+    ],
+    [178, 6, "Alim", "Hafalan Dalil-dalil", "Lima Bab"],
+    [179, 6, "Alim", "Materi Dasar Keagamaan", "Puasa Ramadhan"],
+    [
+      180,
+      6,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Kefadholan puasa dan hal-hal yang diperbolehkan serta membatalkan puasa"
+    ],
+    [
+      181,
+      6,
+      "Alim",
+      "Latihan Manqul Al-Quran",
+      "Makna Pegon Juz 30 (Surat An-Naba' s/d Al-Fajr)"
+    ],
+    [
+      183,
+      6,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [184, 6, "Faqih", "Faham Quran Hadist", "Mengetahui taat dan maksiat"],
+    [
+      185,
+      6,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui tentang macam-macam dosa besar dan akibatnya"
+    ],
+    [
+      186,
+      6,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [187, 6, "Faqih", "Praktik Ibadah", "Mempraktikkan puasa Romadhan"],
+    [
+      188,
+      6,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [190, 6, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      194,
+      6,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [196, 7, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [
+      197,
+      7,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama bertamu/diajak bertamu dan kedatangan tamu"
+    ],
+    [198, 7, "Akhlakul Karimah", "Tata Krama", "Tata Krama berpakaian"],
+    [
+      199,
+      7,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Membaca Surat-surat Pendek Mulai Surat Ad-Dhuha s/d An-Anas"
+    ],
+    [200, 7, "Alim", "Baca Huruf Al-Quran", "Bacaan al-Qur'an juz 9,10,11"],
+    [
+      201,
+      7,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 9,10,11"
+    ],
+    [202, 7, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [203, 7, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [204, 7, "Alim", "Hafalan Surat-surat", "Surat Al-A'la"],
+    [
+      205,
+      7,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Ad-Dhuha, Surat Al-lail"
+    ],
+    [206, 7, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [207, 7, "Alim", "Hafalan Doa-doa Harian", "Doa mohon kesabaran"],
+    [
+      208,
+      7,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Doa berlindung dari sifat pelit dan penakut"
+    ],
+    [209, 7, "Alim", "Hafalan Doa-doa Harian", "Do'a minta surga Firdaus"],
+    [210, 7, "Alim", "Hafalan Dalil-dalil", "Empat Tali Keimanan"],
+    [211, 7, "Alim", "Materi Dasar Keagamaan", "Kemurniah Ibadah"],
+    [
+      214,
+      7,
+      "Alim",
+      "Latihan Manqul Hadist",
+      "K.Adab (Hadist pilihan : Bab Kasih sayang, sabar, pemaaf, ramah tamah, tawadu'/rendah hati, 6 Thobiat luhur dan Birrul Walidain)"
+    ],
+    [
+      215,
+      7,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [
+      216,
+      7,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui suci dan najis / thoharoh"
+    ],
+    [
+      218,
+      7,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [219, 7, "Faqih", "Praktik Ibadah", "Mempraktikan sholat sunah rowatib"],
+    [220, 7, "Faqih", "Praktik Ibadah", "Mempraktikan sholat dhuha"],
+    [
+      221,
+      7,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [222, 7, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      226,
+      7,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [
+      228,
+      8,
+      "Akhlakul Karimah",
+      "Akhlakul Karimah",
+      "Ulil Amri, Guru dan Mubaligh -Mubalighot"
+    ],
+    [229, 8, "Akhlakul Karimah", "Tata Krama", "Tata Krama tidur"],
+    [230, 8, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika menguap"],
+    [231, 8, "Alim", "Baca Huruf Al-Quran", "Membaca Ayat-ayat Pilihan"],
+    [232, 8, "Alim", "Baca Huruf Al-Quran", "Bacaan al-Qur'an juz 9,10,11"],
+    [
+      233,
+      8,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 9,10,11"
+    ],
+    [234, 8, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [235, 8, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [236, 8, "Alim", "Hafalan Surat-surat", "Surat Al-A'la"],
+    [
+      237,
+      8,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat As-Syams, Al-Balad"
+    ],
+    [238, 8, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [239, 8, "Alim", "Hafalan Doa-doa Harian", "Doa mohon kesehatan"],
+    [240, 8, "Alim", "Hafalan Doa-doa Harian", "Doa ketika bersin"],
+    [241, 8, "Alim", "Hafalan Doa-doa Harian", "Do'a pengayoman"],
+    [242, 8, "Alim", "Hafalan Dalil-dalil", "Empat Tali Keimanan"],
+    [243, 8, "Alim", "Materi Dasar Keagamaan", "Hukum Mahrom"],
+    [
+      246,
+      8,
+      "Alim",
+      "Latihan Manqul Hadist",
+      "K.Adab (Hadist pilihan : Bab Kasih sayang, sabar, pemaaf, ramah tamah, tawadu'/rendah hati, 6 Thobiat luhur dan Birrul Walidain)"
+    ],
+    [
+      247,
+      8,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui Mengetahui dan hafal enam alam kehidupan manusia ( alam ruh, alam rahim,alam dunia,alam kubur, alam qiyamat, dan alam akhirat)"
+    ],
+    [248, 8, "Faqih", "Faham Quran Hadist", "Mengetahui batas-batas mahrom"],
+    [
+      250,
+      8,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya berjamaah"
+    ],
+    [
+      251,
+      8,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikan menjaga pergaulan antara laki-laki dan perempuan yg bukan mahromnya"
+    ],
+    [
+      252,
+      8,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [254, 8, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      258,
+      8,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [260, 9, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [261, 9, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika bersin"],
+    [262, 9, "Akhlakul Karimah", "Tata Krama", "Tata Krama terhadap kerabat"],
+    [263, 9, "Alim", "Baca Huruf Al-Quran", "Membaca Ayat-ayat Pilihan"],
+    [264, 9, "Alim", "Baca Huruf Al-Quran", "Bacaan al-Qur'an juz 9,10,11"],
+    [
+      265,
+      9,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 9,10,11"
+    ],
+    [266, 9, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [267, 9, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [268, 9, "Alim", "Hafalan Surat-surat", "Surat Al-A'la"],
+    [
+      269,
+      9,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Al-Zalzalah, Al-Bayyinah"
+    ],
+    [270, 9, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [271, 9, "Alim", "Hafalan Doa-doa Harian", "Doa ketika ada angin kencang"],
+    [
+      272,
+      9,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a minta dimudahkan dalam segala urusan"
+    ],
+    [273, 9, "Alim", "Hafalan Doa-doa Harian", "Do'a pengayoman"],
+    [274, 9, "Alim", "Hafalan Dalil-dalil", "Empat Tali Keimanan"],
+    [275, 9, "Alim", "Materi Dasar Keagamaan", "Ilmu manqul musnad muttashil"],
+    [
+      278,
+      9,
+      "Alim",
+      "Latihan Manqul Hadist",
+      "K.Adab (Hadist pilihan : Bab Kasih sayang, sabar, pemaaf, ramah tamah, tawadu'/rendah hati, 6 Thobiat luhur dan Birrul Walidain)"
+    ],
+    [
+      279,
+      9,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui tujuan ibadah (mencari surga dan selamat dari neraka)"
+    ],
+    [
+      280,
+      9,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kemurnian ibadah berdasarkan al-Qur'an dan al-Hadits"
+    ],
+    [
+      282,
+      9,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui struktur kepengurusan dalam jamaah"
+    ],
+    [283, 9, "Faqih", "Praktik Ibadah", "Mempraktikan mandi Junub"],
+    [
+      284,
+      9,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      286,
+      9,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      290,
+      9,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [292, 10, "Akhlakul Karimah", "Akhlakul Karimah", "Lingkungan Sekitar"],
+    [293, 10, "Akhlakul Karimah", "Tata Krama", "Tata Krama terhadap tetangga"],
+    [294, 10, "Akhlakul Karimah", "Tata Krama", "Tata Krama bersepeda"],
+    [
+      295,
+      10,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Musykilat dan Ghorib (bacaan-bacaan asing dan tidak sesuai dengan tulisan)"
+    ],
+    [296, 10, "Alim", "Baca Huruf Al-Quran", "Bacaan al-Qur'an juz 9,10,11"],
+    [
+      297,
+      10,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 9,10,11"
+    ],
+    [298, 10, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [299, 10, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [300, 10, "Alim", "Hafalan Surat-surat", "Surat At-Thooriq"],
+    [
+      301,
+      10,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Al-Qadar, Al-‘Alaq, At-Tin. Al-Insyiroh"
+    ],
+    [302, 10, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [
+      303,
+      10,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a minta dipilihkan sesuatu yang baik"
+    ],
+    [
+      304,
+      10,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a minta 10 kebaikan (tetapnya iman, hati yang khusyuk, tegaknya agamaa, dll)"
+    ],
+    [305, 10, "Alim", "Hafalan Doa-doa Harian", "Do'a pengayoman"],
+    [306, 10, "Alim", "Hafalan Dalil-dalil", "Enam Thobiat luhur"],
+    [307, 10, "Alim", "Materi Dasar Keagamaan", "Mandi Junub"],
+    [
+      310,
+      10,
+      "Alim",
+      "Latihan Manqul Hadist",
+      "K.Adab (Hadist pilihan : Bab Kasih sayang, sabar, pemaaf, ramah tamah, tawadu'/rendah hati, 6 Thobiat luhur dan Birrul Walidain)"
+    ],
+    [
+      311,
+      10,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui tentang sakdermo karena Alloh"
+    ],
+    [
+      312,
+      10,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui ilmu manqul musnad muttashil"
+    ],
+    [
+      314,
+      10,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui struktur kepengurusan dalam jamaah"
+    ],
+    [
+      315,
+      10,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikan membiasakan berpakaian yang syar'i"
+    ],
+    [
+      316,
+      10,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      318,
+      10,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      322,
+      10,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [324, 11, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      325,
+      11,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama ketika makan bersama"
+    ],
+    [
+      327,
+      11,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Musykilat dan Ghorib (bacaan-bacaan asing dan tidak sesuai dengan tulisan)"
+    ],
+    [328, 11, "Alim", "Baca Huruf Al-Quran", "Bacaan al-Qur'an juz 9,10,11"],
+    [
+      329,
+      11,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 9,10,11"
+    ],
+    [330, 11, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [331, 11, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [332, 11, "Alim", "Hafalan Surat-surat", "Surat At-Thooriq"],
+    [
+      333,
+      11,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat Ad-Dhuha, Surat Al-lail"
+    ],
+    [334, 11, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [335, 11, "Alim", "Hafalan Doa-doa Harian", "Do'a ketika ada petir"],
+    [336, 11, "Alim", "Hafalan Doa-doa Harian", "Do'a maskumambang sapu jagat"],
+    [338, 11, "Alim", "Hafalan Dalil-dalil", "Enam Thobiat luhur"],
+    [
+      339,
+      11,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Hukum haid, mani, madzi, dan wadhi"
+    ],
+    [
+      342,
+      11,
+      "Alim",
+      "Latihan Manqul Hadist",
+      "K.Adab (Hadist pilihan : Bab Kasih sayang, sabar, pemaaf, ramah tamah, tawadu'/rendah hati, 6 Thobiat luhur dan Birrul Walidain)"
+    ],
+    [
+      343,
+      11,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      344,
+      11,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui hukum dan permasalahan haid, mani, madzi, wahdi"
+    ],
+    [
+      346,
+      11,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui pengertian dan wajibnya Budi Luhur"
+    ],
+    [
+      347,
+      11,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan menjaga diri dari lahan, kemaksiyatan, dan keharoman"
+    ],
+    [
+      348,
+      11,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      350,
+      11,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      354,
+      11,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [356, 12, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [357, 12, "Akhlakul Karimah", "Tata Krama", "Tata Krama mencari ilmu"],
+    [
+      359,
+      12,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Musykilat dan Ghorib (bacaan-bacaan asing dan tidak sesuai dengan tulisan)"
+    ],
+    [360, 12, "Alim", "Baca Huruf Al-Quran", "Bacaan al-Qur'an juz 9,10,11"],
+    [
+      361,
+      12,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Tajwid: Mempraktikan tajwid yang sudah dipelajari dalam membaca al-Qur'an Juz 9,10,11"
+    ],
+    [362, 12, "Alim", "Menulis Huruf Arab", "Terampil menulis Arab"],
+    [363, 12, "Alim", "Menulis Huruf Arab", "Terampil Menulis Makna Pegon"],
+    [364, 12, "Alim", "Hafalan Surat-surat", "Surat At-Thooriq"],
+    [
+      365,
+      12,
+      "Alim",
+      "Hafalan Surat-surat",
+      "Menjaga hafalan surat As-Syams, Al-Balad"
+    ],
+    [366, 12, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 99)"],
+    [
+      367,
+      12,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Doa perlindungan dari bencana"
+    ],
+    [368, 12, "Alim", "Hafalan Doa-doa Harian", "Do'a maskumambang sapu jagat"],
+    [370, 12, "Alim", "Hafalan Dalil-dalil", "Enam Thobiat luhur"],
+    [371, 12, "Alim", "Materi Dasar Keagamaan", "Aurot"],
+    [
+      374,
+      12,
+      "Alim",
+      "Latihan Manqul Hadist",
+      "K.Adab (Hadist pilihan : Bab Kasih sayang, sabar, pemaaf, ramah tamah, tawadu'/rendah hati, 6 Thobiat luhur dan Birrul Walidain)"
+    ],
+    [
+      375,
+      12,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [
+      376,
+      12,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui haromnya bid'ah, syirik, khurofat, takhayyul"
+    ],
+    [
+      377,
+      12,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui haromnya adat jahiliyah"
+    ],
+    [378, 12, "Faqih", "Faham Jamaah", "Mengetahui 5 Syarat Kerukunan"],
+    [
+      379,
+      12,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan do'a dan sholat malam /sholat tahajjud"
+    ],
+    [
+      380,
+      12,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      382,
+      12,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      386,
+      12,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ]
+  ],
+  "PAUD-2026.xlsx": [
+    [7, 1, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      8,
+      1,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Ta'dhim dan Berbuat baik kepada orang tua"
+    ],
+    [9, 1, "Alim", "Baca Huruf Al-Quran", "Melafalkan huruf hijaiyah"],
+    [10, 1, "Alim", "Menulis Huruf Arab", "Menulis huruf tunggal hijaiyah"],
+    [11, 1, "Alim", "Hafalan Surat-surat", "Surat AL-Fatihah"],
+    [12, 1, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 20)"],
+    [13, 1, "Alim", "Materi Dasar Keagamaan", "Dasar- dasar aqidah"],
+    [
+      14,
+      1,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      15,
+      1,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kewajiban beribadah kepada Alloh berdasarkan Qur’an Hadist"
+    ],
+    [16, 1, "Faqih", "Faham Jamaah", "Mengetahui dan hafal Lima Bab"],
+    [
+      17,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      18,
+      1,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [19, 1, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      20,
+      1,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [22, 2, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      23,
+      2,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Ta'dhim dan Berbuat baik kepada orang tua"
+    ],
+    [24, 2, "Alim", "Baca Huruf Al-Quran", "Melafalkan huruf hijaiyah"],
+    [25, 2, "Alim", "Menulis Huruf Arab", "Menulis huruf tunggal hijaiyah"],
+    [26, 2, "Alim", "Hafalan Surat-surat", "Surat AL-Fatihah"],
+    [27, 2, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 20)"],
+    [28, 2, "Alim", "Materi Dasar Keagamaan", "Dasar- dasar aqidah"],
+    [
+      29,
+      2,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      30,
+      2,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kewajiban beribadah kepada Alloh berdasarkan Qur’an Hadist"
+    ],
+    [31, 2, "Faqih", "Faham Jamaah", "Mengetahui dan hafal Lima Bab"],
+    [
+      32,
+      2,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan wudlu beserta Do'a sebelum dan sesudahnya"
+    ],
+    [
+      33,
+      2,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [34, 2, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      35,
+      2,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [37, 3, "Akhlakul Karimah", "Akhlakul Karimah", "Pribadi"],
+    [
+      38,
+      3,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Menghormati saudara yang lebih tua dan menyayangi saudara yang lebih tua"
+    ],
+    [40, 3, "Alim", "Baca Huruf Al-Quran", "Melafalkan huruf hijaiyah"],
+    [43, 3, "Alim", "Menulis Huruf Arab", "Menulis huruf tunggal hijaiyah"],
+    [45, 3, "Alim", "Hafalan Surat-surat", "Surat An-Naas"],
+    [47, 3, "Alim", "Hafalan Doa-doa Harian", "Asmaul husna (1 sampai 20)"],
+    [51, 3, "Alim", "Materi Dasar Keagamaan", "Dasar- dasar aqidah"],
+    [
+      53,
+      3,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [
+      54,
+      3,
+      "Faqih",
+      "Faham Quran Hadist",
+      "Mengetahui kewajiban beribadah kepada Alloh berdasarkan Qur’an Hadist"
+    ],
+    [56, 3, "Faqih", "Faham Jamaah", "Mengetahui dan hafal Lima Bab"],
+    [
+      57,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      58,
+      3,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [60, 3, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      61,
+      3,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [63, 4, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [
+      64,
+      4,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama Menghormati saudara yang lebih tua dan menyayangi saudara yang lebih tua"
+    ],
+    [66, 4, "Alim", "Baca Huruf Al-Quran", "Melafalkan huruf hijaiyah"],
+    [69, 4, "Alim", "Menulis Huruf Arab", "Menulis huruf tunggal hijaiyah"],
+    [71, 4, "Alim", "Hafalan Surat-surat", "Surat An-Naas"],
+    [
+      73,
+      4,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a ketika akan tidur dan setelah bangun tidur"
+    ],
+    [
+      77,
+      4,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Rukun iman, rukun Islam dan ihsan"
+    ],
+    [
+      79,
+      4,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [80, 4, "Faqih", "Faham Quran Hadist", "Mengetahui rukun iman"],
+    [
+      82,
+      4,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Empat Tali Keimanan"
+    ],
+    [
+      83,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan sholat beserta bacaan dan Do'anya"
+    ],
+    [
+      84,
+      4,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [86, 4, "Kemandirian", "Kemandirian", "Kemandirian Pribadi"],
+    [
+      87,
+      4,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [89, 5, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [
+      90,
+      5,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama menghormati guru dan mubalegh mubaleghot"
+    ],
+    [92, 5, "Alim", "Baca Huruf Al-Quran", "Melafalkan huruf hijaiyah"],
+    [95, 5, "Alim", "Menulis Huruf Arab", "Menulis huruf tunggal hijaiyah"],
+    [97, 5, "Alim", "Hafalan Surat-surat", "Surat AL-Falaq"],
+    [
+      99,
+      5,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a ketika akan tidur dan setelah bangun tidur"
+    ],
+    [
+      103,
+      5,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Rukun iman, rukun Islam dan ihsan"
+    ],
+    [
+      105,
+      5,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [106, 5, "Faqih", "Faham Quran Hadist", "Mengetahui rukun iman"],
+    [
+      108,
+      5,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Empat Tali Keimanan"
+    ],
+    [
+      109,
+      5,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan menjaga kesucian (mengenal suci najis)"
+    ],
+    [
+      110,
+      5,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [112, 5, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      113,
+      5,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [115, 6, "Akhlakul Karimah", "Akhlakul Karimah", "Keluarga"],
+    [
+      116,
+      6,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama menghormati guru dan mubalegh mubaleghot"
+    ],
+    [118, 6, "Alim", "Baca Huruf Al-Quran", "Melafalkan huruf hijaiyah"],
+    [121, 6, "Alim", "Menulis Huruf Arab", "Menulis huruf tunggal hijaiyah"],
+    [123, 6, "Alim", "Hafalan Surat-surat", "Surat AL-Falaq"],
+    [
+      125,
+      6,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Doa ketika akan makan dan selesai makan"
+    ],
+    [
+      129,
+      6,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Rukun iman, rukun Islam dan ihsan"
+    ],
+    [
+      131,
+      6,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan baik yang berpahala dan memasukkan ke surga"
+    ],
+    [132, 6, "Faqih", "Faham Quran Hadist", "Mengetahui rukun iman"],
+    [
+      134,
+      6,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Empat Tali Keimanan"
+    ],
+    [
+      135,
+      6,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan menjaga kesucian (mengenal suci najis)"
+    ],
+    [
+      136,
+      6,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [138, 6, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      139,
+      6,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [
+      141,
+      7,
+      "Akhlakul Karimah",
+      "Akhlakul Karimah",
+      "Ulil Amri, Guru dan Mubaligh -Mubalighot"
+    ],
+    [
+      142,
+      7,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama bergaul dengan teman"
+    ],
+    [
+      144,
+      7,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Mengucapkan dua huruf hijaiyah berharokat fathah"
+    ],
+    [147, 7, "Alim", "Menulis Huruf Arab", "Menulis angka Arab"],
+    [149, 7, "Alim", "Hafalan Surat-surat", "Surat AL-Ikhlas"],
+    [
+      151,
+      7,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a kebaikan dunia dan akhirat"
+    ],
+    [
+      155,
+      7,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengertian Qur'an Hadits Jamaah"
+    ],
+    [
+      157,
+      7,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [158, 7, "Faqih", "Faham Quran Hadist", "Mengetahui rukun islam"],
+    [
+      160,
+      7,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      161,
+      7,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara buang air kecil ( kencing ) dan air besar ( BAB )"
+    ],
+    [
+      162,
+      7,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [164, 7, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      165,
+      7,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [
+      167,
+      8,
+      "Akhlakul Karimah",
+      "Akhlakul Karimah",
+      "Ulil Amri, Guru dan Mubaligh -Mubalighot"
+    ],
+    [
+      168,
+      8,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama bergaul dengan teman"
+    ],
+    [
+      170,
+      8,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Mengucapkan dua huruf hijaiyah berharokat fathah"
+    ],
+    [173, 8, "Alim", "Menulis Huruf Arab", "Menulis angka Arab"],
+    [175, 8, "Alim", "Hafalan Surat-surat", "Surat AL-Ikhlas"],
+    [
+      177,
+      8,
+      "Alim",
+      "Hafalan Doa-doa Harian",
+      "Do'a kebaikan dunia dan akhirat"
+    ],
+    [
+      181,
+      8,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengertian Qur'an Hadits Jamaah"
+    ],
+    [
+      183,
+      8,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [184, 8, "Faqih", "Faham Quran Hadist", "Mengetahui rukun islam"],
+    [
+      186,
+      8,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      187,
+      8,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara buang air kecil ( kencing ) dan air besar ( BAB )"
+    ],
+    [
+      188,
+      8,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [190, 8, "Kemandirian", "Kemandirian", "Kemandirian dalam Keluarga"],
+    [
+      191,
+      8,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [193, 9, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [194, 9, "Akhlakul Karimah", "Tata Krama", "Tata Krama ketika di masjid"],
+    [
+      196,
+      9,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Mengucapkan dua huruf hijaiyah berharokat fathah"
+    ],
+    [199, 9, "Alim", "Menulis Huruf Arab", "Menulis angka Arab"],
+    [201, 9, "Alim", "Hafalan Surat-surat", "Surat AL-Lahab"],
+    [203, 9, "Alim", "Hafalan Doa-doa Harian", "Doa untuk kedua orang tua"],
+    [
+      207,
+      9,
+      "Alim",
+      "Materi Dasar Keagamaan",
+      "Pengertian Qur'an Hadits Jamaah"
+    ],
+    [
+      209,
+      9,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [210, 9, "Faqih", "Faham Quran Hadist", "Mengetahui rukun islam"],
+    [
+      212,
+      9,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Tri Sukses Generasi Penerus"
+    ],
+    [
+      213,
+      9,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara mensucikan najis setelah kencing dan BAB"
+    ],
+    [
+      214,
+      9,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      216,
+      9,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      217,
+      9,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [219, 10, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [
+      220,
+      10,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama ketika di tempat pengajian dan sekolah"
+    ],
+    [
+      222,
+      10,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Mengucapkan dua huruf hijaiyah berharokat fathah"
+    ],
+    [225, 10, "Alim", "Menulis Huruf Arab", "Menulis angka Arab"],
+    [227, 10, "Alim", "Hafalan Surat-surat", "Surat AL-Lahab"],
+    [229, 10, "Alim", "Hafalan Doa-doa Harian", "Doa untuk kedua orang tua"],
+    [233, 10, "Alim", "Materi Dasar Keagamaan", "Thoharoh dan sholat"],
+    [
+      235,
+      10,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [236, 10, "Faqih", "Faham Quran Hadist", "Mengetahui Quran Hadist Jamaah"],
+    [
+      238,
+      10,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [
+      239,
+      10,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara mensucikan najis setelah kencing dan BAB"
+    ],
+    [
+      240,
+      10,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      242,
+      10,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      243,
+      10,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [245, 11, "Akhlakul Karimah", "Akhlakul Karimah", "Masyarakat"],
+    [
+      246,
+      11,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama ketika di tempat pengajian dan sekolah"
+    ],
+    [
+      248,
+      11,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Mengucapkan dua huruf hijaiyah berharokat fathah"
+    ],
+    [251, 11, "Alim", "Menulis Huruf Arab", "Menulis angka Arab"],
+    [253, 11, "Alim", "Hafalan Surat-surat", "Surat An-Nasr"],
+    [255, 11, "Alim", "Hafalan Doa-doa Harian", "Doa masuk dan keluar WC"],
+    [259, 11, "Alim", "Materi Dasar Keagamaan", "Thoharoh dan sholat"],
+    [
+      261,
+      11,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [262, 11, "Faqih", "Faham Quran Hadist", "Mengetahui Quran Hadist Jamaah"],
+    [
+      264,
+      11,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [
+      265,
+      11,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara mensucikan najis setelah kencing dan BAB"
+    ],
+    [
+      266,
+      11,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      268,
+      11,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      269,
+      11,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ],
+    [271, 12, "Akhlakul Karimah", "Akhlakul Karimah", "Lingkungan Sekitar"],
+    [
+      272,
+      12,
+      "Akhlakul Karimah",
+      "Tata Krama",
+      "Tata Krama terhadap lingkungan dan alam sekitar"
+    ],
+    [
+      274,
+      12,
+      "Alim",
+      "Baca Huruf Al-Quran",
+      "Mengucapkan dua huruf hijaiyah berharokat fathah"
+    ],
+    [277, 12, "Alim", "Menulis Huruf Arab", "Menulis angka Arab"],
+    [279, 12, "Alim", "Hafalan Surat-surat", "Surat AL-Kafirun"],
+    [281, 12, "Alim", "Hafalan Doa-doa Harian", "Doa masuk dan keluar WC"],
+    [285, 12, "Alim", "Materi Dasar Keagamaan", "Thoharoh dan sholat"],
+    [
+      287,
+      12,
+      "Faqih",
+      "Faham Surga Neraka",
+      "Mengetahui perbuatan jelek yang berdosa dan memasukkan ke neraka"
+    ],
+    [288, 12, "Faqih", "Faham Quran Hadist", "Mengetahui Quran Hadist Jamaah"],
+    [
+      290,
+      12,
+      "Faqih",
+      "Faham Jamaah",
+      "Mengetahui dan hafal Enam Thobiat Luhur Jamaah"
+    ],
+    [
+      291,
+      12,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan cara mensucikan najis setelah kencing dan BAB"
+    ],
+    [
+      292,
+      12,
+      "Faqih",
+      "Praktik Ibadah",
+      "Mempraktikkan doa-doa yag telah dihafal"
+    ],
+    [
+      294,
+      12,
+      "Kemandirian",
+      "Kemandirian",
+      "Kemandirian dalam lingkungan Jamaah dan Sekolah"
+    ],
+    [
+      295,
+      12,
+      "Monitoring",
+      "Penerapan 29 karakter",
+      "Monitoring penerapan 29 karakter luhur JM"
+    ]
+  ]
+}

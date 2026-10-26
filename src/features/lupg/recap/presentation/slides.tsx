@@ -2,11 +2,11 @@
 // Each renderer lives in `./slide-renderers/render-*.tsx`.
 import { type ReactNode } from 'react'
 import { PROGRAM_ORDER } from '../../constants'
-import { CaptureContext } from './context/capture-context'
 import {
   type CharacterMonitoringActivityRow,
   type CharacterMonitoringReportRow,
   type CharacterTargetItemRow,
+  type CharacterTargetLevel,
   type CharacterTargetReportRow,
   type MetricDefinitionRow,
   type MetricReportRow,
@@ -21,7 +21,9 @@ import {
   type SensusRow,
   type ShodaqohRow,
 } from '../../types'
+import { TARGET_LEVELS } from '../../utils/character-targets'
 import { formatMonthLabel } from '../../utils/month-utils'
+import { CaptureContext } from './context/capture-context'
 import { renderCharacterMonitoringRecapSlide } from './slide-renderers/render-character-monitoring'
 import { renderCharacterTargetRecapSlide } from './slide-renderers/render-character-targets'
 import { renderClosingSlide } from './slide-renderers/render-closing'
@@ -106,7 +108,10 @@ function orderPrograms(
   return ordered
 }
 
-export function buildSlides(data: PresentationData, options?: { capture?: boolean }): Slide[] {
+export function buildSlides(
+  data: PresentationData,
+  options?: { capture?: boolean }
+): Slide[] {
   const {
     monthKey,
     kelompokList,
@@ -173,7 +178,7 @@ export function buildSlides(data: PresentationData, options?: { capture?: boolea
     | { kind: 'sarpras' }
     | { kind: 'shodaqoh' }
     | { kind: 'program'; program: ProgramDefinitionRow }
-    | { kind: 'character-target-recap'; level: 'ACR' | 'APR' | 'AR' | 'GPN' }
+    | { kind: 'character-target-recap'; level: CharacterTargetLevel }
     | {
         kind: 'character-monitoring-recap'
         level?: 'ACR' | 'APR' | 'AR' | 'GPN'
@@ -208,7 +213,7 @@ export function buildSlides(data: PresentationData, options?: { capture?: boolea
     descriptors.push({ kind: 'program', program })
   }
   descriptors.push({ kind: 'character-monitoring-recap' })
-  for (const level of ['ACR', 'APR', 'AR', 'GPN'] as const) {
+  for (const level of TARGET_LEVELS) {
     descriptors.push({ kind: 'character-target-recap', level })
   }
   for (const kelompok of effectiveKelompokList) {

@@ -136,3 +136,68 @@ test('target recap drops empty details and spans consecutive materials', async (
     await vite.close()
   }
 })
+
+test('PAUD and all ACR classes keep separate kelompok and Desa values', async () => {
+  const vite = await createServer({
+    appType: 'custom',
+    optimizeDeps: { noDiscovery: true, include: [] },
+    server: { middlewareMode: true, hmr: false, watch: null },
+  })
+  try {
+    const { TARGET_LEVELS } = await vite.ssrLoadModule(
+      '/src/features/lupg/utils/character-targets.ts'
+    )
+    const { buildTargetRecapGroups } = await vite.ssrLoadModule(
+      '/src/features/lupg/recap/presentation/slide-renderers/character-recap-utils.ts'
+    )
+    const items = TARGET_LEVELS.map((level_code, index) => ({
+      id: `item-${index}`,
+      level_code,
+      category_label: 'Alim',
+      material_label: 'Bacaan',
+      detail_label: 'Detail',
+      sort_order: index,
+    }))
+    const reports = [
+      { id: 'r1', kelompok_id: 'k1' },
+      { id: 'r2', kelompok_id: 'k2' },
+    ]
+    const kelompok = [
+      { id: 'k1', value: 'Kel. 1' },
+      { id: 'k2', value: 'Kel. 2' },
+    ]
+    const values = items.flatMap((item, index) => [
+      {
+        target_item_id: item.id,
+        monthly_report_id: 'r1',
+        realization_percent: index * 10,
+      },
+      {
+        target_item_id: item.id,
+        monthly_report_id: 'r2',
+        realization_percent: 100,
+      },
+    ])
+    const desa = buildTargetRecapGroups(items, values, reports, kelompok)
+    assert.deepEqual(
+      desa.map((group) => group.level),
+      [...TARGET_LEVELS]
+    )
+    assert.deepEqual(
+      desa.map((group) => group.average),
+      [50, 55, 60, 65, 70, 75, 80, 85, 90, 95]
+    )
+    const single = buildTargetRecapGroups(
+      items,
+      values,
+      reports,
+      kelompok.slice(0, 1)
+    )
+    assert.deepEqual(
+      single.map((group) => group.average),
+      [0, 10, 20, 30, 40, 50, 60, 70, 80, 90]
+    )
+  } finally {
+    await vite.close()
+  }
+})

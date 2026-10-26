@@ -1,12 +1,13 @@
 import {
   type CharacterTargetItemRow,
+  type CharacterTargetLevel,
   type CharacterTargetReportRow,
   type MonthlyReportRow,
 } from '../../../types'
 import {
-  CHARACTER_LEVELS,
-  type CharacterLevelCode,
-} from '../../../utils/character-monitoring'
+  TARGET_LEVELS,
+  TARGET_LEVEL_LABELS,
+} from '../../../utils/character-targets'
 import { DataPane } from '../components/data-pane'
 import {
   EditorialTable,
@@ -41,7 +42,7 @@ interface JoinedTargetRow {
 }
 
 interface TargetSummaryRow {
-  level: CharacterLevelCode
+  level: CharacterTargetLevel
   category: string
   total: number
   filled: number
@@ -51,9 +52,7 @@ interface TargetSummaryRow {
 const SUMMARY_ROW_LIMIT = 7
 const AGENDA_ROW_LIMIT = 6
 
-const levelOrder = new Map(
-  CHARACTER_LEVELS.map((level, index) => [level, index])
-)
+const levelOrder = new Map(TARGET_LEVELS.map((level, index) => [level, index]))
 
 function hasText(value: string | null | undefined) {
   return Boolean(value?.trim())
@@ -352,7 +351,7 @@ function SummaryBody(
 
             return (
               <div
-                key={`${row.level}_${row.category}`}
+                key={`${TARGET_LEVEL_LABELS[row.level]}_${row.category}`}
                 className='grid grid-cols-[minmax(0,1.15fr)_minmax(8rem,0.85fr)_7rem_6rem] items-center gap-5 border-b py-2.5'
                 style={{ borderColor: p.rule }}
               >
@@ -367,7 +366,7 @@ function SummaryBody(
                       letterSpacing: '0.12em',
                     }}
                   >
-                    {row.level}
+                    {TARGET_LEVEL_LABELS[row.level]}
                   </div>
                   <div
                     className='text-pretty whitespace-normal'
@@ -515,7 +514,8 @@ function AgendaBody(
                     letterSpacing: '0.12em',
                   }}
                 >
-                  {row.item.level_code} · {row.item.category_label}
+                  {TARGET_LEVEL_LABELS[row.item.level_code]} ·{' '}
+                  {row.item.category_label}
                 </div>
                 <div
                   className='mt-1 text-pretty whitespace-normal'
@@ -701,7 +701,7 @@ function TargetRecapBody({
   | 'reports'
   | 'targetItems'
   | 'targetReports'
-> & { level: CharacterLevelCode }) {
+> & { level: CharacterTargetLevel }) {
   const groups = buildTargetRecapLevel(
     targetItems,
     targetReports,
@@ -712,7 +712,7 @@ function TargetRecapBody({
 
   if (groups.length === 0) {
     return (
-      <EmptyState>{`Belum ada target materi aktif untuk ${level}.`}</EmptyState>
+      <EmptyState>{`Belum ada target materi aktif untuk ${TARGET_LEVEL_LABELS[level]}.`}</EmptyState>
     )
   }
 
@@ -825,11 +825,11 @@ function TargetValue({ value }: { value: number | null }) {
 }
 
 export function renderCharacterTargetRecapSlide(
-  args: SlideArgs & { level: CharacterLevelCode }
+  args: SlideArgs & { level: CharacterTargetLevel }
 ): Slide {
   return {
     key: `character-target-recap-${args.level}`,
-    title: `Rekap Target Capaian Materi | ${args.level}`,
+    title: `Rekap Target Capaian Materi | ${TARGET_LEVEL_LABELS[args.level]}`,
     render: () => (
       <SlideFrame
         slideKey={`character-target-recap-${args.level}`}
@@ -845,7 +845,7 @@ export function renderCharacterTargetRecapSlide(
             : 'table'
         }
         eyebrow='TARGET CAPAIAN MATERI'
-        title={`Rekap Target Capaian Materi | ${args.level}`}
+        title={`Rekap Target Capaian Materi | ${TARGET_LEVEL_LABELS[args.level]}`}
         meta={args.monthLabel}
         scope={args.scope}
         slideNumber={args.slideNumber}
